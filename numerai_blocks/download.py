@@ -39,7 +39,7 @@ class BaseDownloader(ABC):
         rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
 
-    def _append_folder(self, folder: str) -> PosixPath:
+    def _append_folder(self, folder: str) -> Path:
         """
         Return base directory appended with 'folder'.
         Create directory if it does not exist.
@@ -60,7 +60,7 @@ class BaseDownloader(ABC):
     @property
     def get_all_files(self) -> list:
         """ Return all contents in directory. """
-        return list(base_down.dir.iterdir())
+        return list(self.dir.iterdir())
 
     @property
     def is_empty(self) -> bool:
@@ -86,13 +86,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
 
-    def download_training_data(self, folder: str = "", version: int = 2, int8: bool = False, *args, **kwargs):
+    def download_training_data(self, folder: str = "", version: int = 2, int8: bool = False):
         """
         Get Numerai classic training and validation data.
         :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
         :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
         :param int8: Integer version of data
-        *args, **kwargs are passed to NumerAPI downloader
         """
         dir = self._append_folder(folder)
         if int8:
@@ -106,8 +105,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         train_val_files = self._get_version_files(version_mapping, version)
         for file in train_val_files:
             self.download_single_dataset(filename=file,
-                                         dest_path=str(dir.joinpath(file)),
-                                         *args, **kwargs)
+                                         dest_path=str(dir.joinpath(file)))
 
 
     def download_inference_data(self, folder: str = "", version: int = 2, int8: bool = False, round_num: int = None):
@@ -134,21 +132,19 @@ class NumeraiClassicDownloader(BaseDownloader):
                                          dest_path=str(dir.joinpath(file)),
                                          round_num=round_num)
 
-    def download_single_dataset(self, filename: str, dest_path: str, round_num: int = None, *args, **kwargs):
+    def download_single_dataset(self, filename: str, dest_path: str, round_num: int = None):
         """
         Download one of the available datasets through NumerAPI.
 
         :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets())
         :param dest_path: Full path where file will be saved.
         :param round_num: Numerai tournament round number. Downloads latest round by default.
-        *args, **kwargs will be passed to NumerAPI downloader
         """
         assert filename in self.napi.list_datasets(), f"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}."
         rich_print(f":file_folder: [green]Downloading[/green] '{filename}' :file_folder:")
         self.napi.download_dataset(filename=filename,
                                    dest_path=dest_path,
-                                   round_num=round_num,
-                                   *args, **kwargs)
+                                   round_num=round_num)
 
 
     def download_example_data(self, folder: str = "", version: int = 2, round_num: int = None):
