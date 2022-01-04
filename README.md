@@ -46,6 +46,19 @@ print(uuid.uuid4())
     649ce02a-6fb4-4b1f-8375-d3b46ed391c9
 
 
+```
+from numerai_blocks.download import Check
+ch = Check()
+ch.one
+```
+
+
+
+
+    1
+
+
+
 ## Contributing
 
 After you clone this repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which clean up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran) which causes unnecessary merge conflicts.
