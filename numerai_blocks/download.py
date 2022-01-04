@@ -31,7 +31,7 @@ class BaseDownloader(ABC):
     def remove_base_directory(self):
         """ Remove download directory with all contents. """
         abs_path = self.dir.resolve()
-        rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]': :warning:\nPath: '{abs_path}'")
+        rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
 
     def _append_folder(self, folder: str) -> PosixPath:
