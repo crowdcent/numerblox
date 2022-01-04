@@ -5,7 +5,15 @@
 ```
 %load_ext autoreload
 %autoreload 2
+%load_ext nb_black
+%load_ext lab_black
 ```
+
+    The autoreload extension is already loaded. To reload it, use:
+      %reload_ext autoreload
+    The lab_black extension is already loaded. To reload it, use:
+      %reload_ext lab_black
+
 
 ## Install
 
@@ -43,7 +51,7 @@ import uuid
 print(uuid.uuid4())
 ```
 
-    649ce02a-6fb4-4b1f-8375-d3b46ed391c9
+    44ef9b6c-43b1-4c3c-8678-04e9a8e38e15
 
 
 ## Contributing
@@ -54,7 +62,7 @@ After you clone this repository, please run `nbdev_install_git_hooks` in your te
 
 
 
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Brranch structure                                                                                   
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    
 <span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 main (release)                                                                               
 <span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev                                                                                    
 <span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/1                                                                            

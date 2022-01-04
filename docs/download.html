@@ -38,9 +38,47 @@ nb_path: "nbs/00_download.ipynb"
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
 <span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">load_ext</span> nb_black
+<span class="o">%</span><span class="k">load_ext</span> lab_black
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="554a6053-7558-4c4b-8f55-ad59cdcb41e8"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#554a6053-7558-4c4b-8f55-ad59cdcb41e8');
+
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -73,7 +111,7 @@ nb_path: "nbs/00_download.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseDownloader" class="doc_header"><code>class</code> <code>BaseDownloader</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/download.py#L14" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <code>ABC</code></p>
+<h2 id="BaseDownloader" class="doc_header"><code>class</code> <code>BaseDownloader</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/download.py#L17" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <code>ABC</code></p>
 </blockquote>
 <p>Abstract base class for downloaders.
 :param directory_path: Base directory where data will be saved.</p>
@@ -91,6 +129,42 @@ nb_path: "nbs/00_download.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="0e650045-3449-43c6-8a75-a93e79676224"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#0e650045-3449-43c6-8a75-a93e79676224');
+
+            setTimeout(function() {
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "#export\nclass BaseDownloader(ABC):\n    \"\"\"\n    Abstract base class for downloaders.\n    :param directory_path: Base directory where data will be saved.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        if not self.dir.is_dir():\n            rich_print(f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\")\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Download all necessary files needed for training. \"\"\"\n        raise NotImplementedError(f\"No method for downloading training data is implemented in '{self.__class__.__name__}'\")\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" Download minimal amount of files needed for weekly inference. \"\"\"\n        raise NotImplementedError(f\"No method for downloading inference data is implemented in '{self.__class__.__name__}'.\")\n\n    def remove_base_directory(self):\n        \"\"\" Remove download directory with all contents. \"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\")\n        shutil.rmtree(abs_path)\n\n    def _append_folder(self, folder: str) -> PosixPath:\n        \"\"\"\n        Return base directory appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    @staticmethod\n    def _load_json(file_path: str, verbose = False, *args, **kwargs) -> dict:\n        \"\"\" Load JSON from file and return as dictionary. \"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\" Return all contents in directory. \"\"\"\n        return list(base_down.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\" Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
+                var nbb_formatted_code = "# export\nclass BaseDownloader(ABC):\n    \"\"\"\n    Abstract base class for downloaders.\n    :param directory_path: Base directory where data will be saved.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Download all necessary files needed for training.\"\"\"\n        raise NotImplementedError(\n            f\"No method for downloading training data is implemented in '{self.__class__.__name__}'\"\n        )\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"Download minimal amount of files needed for weekly inference.\"\"\"\n        raise NotImplementedError(\n            f\"No method for downloading inference data is implemented in '{self.__class__.__name__}'.\"\n        )\n\n    def remove_base_directory(self):\n        \"\"\"Remove download directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def _append_folder(self, folder: str) -> PosixPath:\n        \"\"\"\n        Return base directory appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\"Load JSON from file and return as dictionary.\"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\"Return all contents in directory.\"\"\"\n        return list(base_down.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\"Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}
@@ -153,11 +227,41 @@ nb_path: "nbs/00_download.ipynb"
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'BaseDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span>: ⚠
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'BaseDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
 Path: 
 <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/test_base_1234321234321'</span>
 </pre>
 
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="8e54962d-4cfd-4551-8250-fcf89565d8eb"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#8e54962d-4cfd-4551-8250-fcf89565d8eb');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "test_dir = \"test_base_1234321234321/\"\n\n# Test building class\nbase_down = BaseDownloader(directory_path=test_dir)\nassert isinstance(base_down.dir, PosixPath)\nassert base_down.dir.is_dir()\n\n# Test properties\n(base_down.dir / \"test.txt\").write_text(\"test\")\nrich_print(f\"Directory contents:\\n{base_down.get_all_files}\")\nassert not base_down.is_empty\n\n# Remove contents\nbase_down.remove_base_directory()\nassert not os.path.exists(test_dir)";
+                var nbb_formatted_code = "test_dir = \"test_base_1234321234321/\"\n\n# Test building class\nbase_down = BaseDownloader(directory_path=test_dir)\nassert isinstance(base_down.dir, PosixPath)\nassert base_down.dir.is_dir()\n\n# Test properties\n(base_down.dir / \"test.txt\").write_text(\"test\")\nrich_print(f\"Directory contents:\\n{base_down.get_all_files}\")\nassert not base_down.is_empty\n\n# Remove contents\nbase_down.remove_base_directory()\nassert not os.path.exists(test_dir)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
 </div>
 
 </div>
@@ -177,56 +281,24 @@ Path:
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">NumeraiClassicDownloader</span><span class="p">(</span><span class="n">BaseDownloader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Downloading from NumerAPI for Numerai Classic data</span>
+<div class="output_wrapper">
+<div class="output">
 
-<span class="sd">    :param directory_path: Main folder to download data in.</span>
-<span class="sd">    All *args, **kwargs will be passed to NumerAPI.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">NumeraiClassicDownloader</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="n">directory_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">napi</span> <span class="o">=</span> <span class="n">NumerAPI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">napi</span><span class="o">.</span><span class="n">get_current_round</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">download_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="c1"># TODO Implement train set downloading</span>
-        <span class="o">...</span>
-
-    <span class="k">def</span> <span class="nf">download_inference_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TODO implement inference downloading</span>
-        <span class="o">...</span>
-
-    <span class="k">def</span> <span class="nf">download_single_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">round_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Download arbitrary dataset through NumerAPI &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">napi</span><span class="o">.</span><span class="n">download_dataset</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-                                   <span class="n">dest_path</span><span class="o">=</span><span class="n">dest_path</span><span class="p">,</span>
-                                   <span class="n">round_num</span><span class="o">=</span><span class="n">round_num</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="output_area">
 
 
-    <span class="k">def</span> <span class="nf">get_example_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">round_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Download all example prediction data for given version in specified folder.</span>
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NumeraiClassicDownloader" class="doc_header"><code>class</code> <code>NumeraiClassicDownloader</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/download.py#L77" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+</blockquote>
+<p>Downloading from NumerAPI for Numerai Classic data</p>
+<p>:param directory_path: Main folder to download data in.
+All *args, **kwargs will be passed to NumerAPI initialization.</p>
 
-<span class="sd">        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.</span>
-<span class="sd">        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)</span>
-<span class="sd">        :param round_num: Numerai tournament round number. Downloads latest round by default.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_append_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
-        <span class="n">version_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;example_predictions.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;example_validation_predictions.csv&#39;</span><span class="p">],</span> <span class="mi">2</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;example_predictions.parquet&#39;</span><span class="p">,</span> <span class="s1">&#39;example_validation_predictions.parquet&#39;</span><span class="p">]}</span>
-        <span class="n">example_files</span> <span class="o">=</span> <span class="n">version_mapping</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">example_files</span><span class="p">:</span>
-            <span class="n">rich_print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:file_folder: [green]Downloading[/green] &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39; :file_folder:&quot;</span><span class="p">,</span> <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">napi</span><span class="o">.</span><span class="n">download_dataset</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
-                                       <span class="n">dest_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)),</span>
-                                       <span class="n">round_num</span><span class="o">=</span><span class="n">round_num</span><span class="p">)</span>
-</pre></div>
+</div>
 
-    </div>
+</div>
+
 </div>
 </div>
 
@@ -236,17 +308,395 @@ Path:
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="2ecfe7cf-cbd8-4352-b3e6-756363e4410d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#2ecfe7cf-cbd8-4352-b3e6-756363e4410d');
+
+            setTimeout(function() {
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "#export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    Downloading from NumerAPI for Numerai Classic data\n\n    :param directory_path: Main folder to download data in.\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super(NumeraiClassicDownloader, self).__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n\n    def download_training_data(self, folder: str = \"\", version: int = 2, int8: bool = False, *args, **kwargs):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param int8: Integer version of data\n        *args, **kwargs are passed to NumerAPI downloader\n        \"\"\"\n        dir = self._append_folder(folder)\n        if int8:\n            version_mapping = {1: ['numerai_training_data_int8.csv', 'numerai_validation_data_int8.csv'],\n                               2: ['numerai_training_data_int8.parquet', 'numerai_validation_data_int8.parquet']\n                               }\n        else:\n            version_mapping = {1: ['numerai_training_data.csv', 'numerai_validation_data.csv'],\n                               2: ['numerai_training_data.parquet', 'numerai_validation_data.parquet']\n                               }\n        train_val_files = self._get_version_files(version_mapping, version)\n        for file in train_val_files:\n            self.download_single_dataset(filename=file,\n                                         dest_path=str(dir.joinpath(file)),\n                                         *args, **kwargs)\n\n\n    def download_inference_data(self, folder: str = \"\", version: int = 2, int8: bool = False, round_num: int = None):\n        \"\"\"\n        Get Numerai classic inference data.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(folder)\n        if int8:\n            version_mapping = {1: ['numerai_tournament_data_int8.csv'],\n                               2: ['numerai_tournament_data_int8.parquet']\n                               }\n        else:\n            version_mapping = {1: ['numerai_tournament_data.csv'],\n                               2: ['numerai_tournament_data.parquet']\n                               }\n        train_val_files = self._get_version_files(version_mapping, version)\n        rich_print(f\":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'.\")\n        for file in train_val_files:\n            self.download_single_dataset(filename=file,\n                                         dest_path=str(dir.joinpath(file)),\n                                         round_num=round_num)\n\n    def download_single_dataset(self, filename: str, dest_path: str, round_num: int = None, *args, **kwargs):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets())\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        *args, **kwargs will be passed to NumerAPI downloader\n        \"\"\"\n        assert filename in self.napi.list_datasets(), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\")\n        self.napi.download_dataset(filename=filename,\n                                   dest_path=dest_path,\n                                   round_num=round_num,\n                                   *args, **kwargs)\n\n\n    def download_example_data(self, folder: str = \"\", version: int = 2, round_num: int = None):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(folder)\n        version_mapping = {1: ['example_predictions.csv', 'example_validation_predictions.csv'],\n                           2: ['example_predictions.parquet', 'example_validation_predictions.parquet']\n                           }\n        example_files = self._get_version_files(version_mapping, version)\n        for file in example_files:\n            self.download_single_dataset(filename=file,\n                                         dest_path=str(dir.joinpath(file)),\n                                         round_num=round_num)\n\n    def get_classic_features(self, folder: str = \"\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        *args, **kwargs will be passed to the JSON loader\n        \"\"\"\n        dir = self._append_folder(folder)\n        filename = \"features.json\"\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename,\n                                     dest_path=dest_path)\n        # Load in json\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    @staticmethod\n    def _get_version_files(version_mapping: dict, version: int) -> list:\n        \"\"\" Check if version is supported and return files corresponding to version mapping \"\"\"\n        try:\n            files = version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(f\"Version '{version}' is not implemented. Available versions are {list(version_mapping.keys())}\")\n        return files";
+                var nbb_formatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    Downloading from NumerAPI for Numerai Classic data\n\n    :param directory_path: Main folder to download data in.\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super(NumeraiClassicDownloader, self).__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n\n    def download_training_data(\n        self, folder: str = \"\", version: int = 2, int8: bool = False, *args, **kwargs\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param int8: Integer version of data\n        *args, **kwargs are passed to NumerAPI downloader\n        \"\"\"\n        dir = self._append_folder(folder)\n        if int8:\n            version_mapping = {\n                1: [\n                    \"numerai_training_data_int8.csv\",\n                    \"numerai_validation_data_int8.csv\",\n                ],\n                2: [\n                    \"numerai_training_data_int8.parquet\",\n                    \"numerai_validation_data_int8.parquet\",\n                ],\n            }\n        else:\n            version_mapping = {\n                1: [\"numerai_training_data.csv\", \"numerai_validation_data.csv\"],\n                2: [\"numerai_training_data.parquet\", \"numerai_validation_data.parquet\"],\n            }\n        train_val_files = self._get_version_files(version_mapping, version)\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), *args, **kwargs\n            )\n\n    def download_inference_data(\n        self,\n        folder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference data.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(folder)\n        if int8:\n            version_mapping = {\n                1: [\"numerai_tournament_data_int8.csv\"],\n                2: [\"numerai_tournament_data_int8.parquet\"],\n            }\n        else:\n            version_mapping = {\n                1: [\"numerai_tournament_data.csv\"],\n                2: [\"numerai_tournament_data.parquet\"],\n            }\n        train_val_files = self._get_version_files(version_mapping, version)\n        rich_print(\n            f\":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'.\"\n        )\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None, *args, **kwargs\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets())\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        *args, **kwargs will be passed to NumerAPI downloader\n        \"\"\"\n        assert (\n            filename in self.napi.list_datasets()\n        ), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num, *args, **kwargs\n        )\n\n    def download_example_data(\n        self, folder: str = \"\", version: int = 2, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(folder)\n        version_mapping = {\n            1: [\"example_predictions.csv\", \"example_validation_predictions.csv\"],\n            2: [\n                \"example_predictions.parquet\",\n                \"example_validation_predictions.parquet\",\n            ],\n        }\n        example_files = self._get_version_files(version_mapping, version)\n        for file in example_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def get_classic_features(self, folder: str = \"\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load.\n        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.\n        *args, **kwargs will be passed to the JSON loader\n        \"\"\"\n        dir = self._append_folder(folder)\n        filename = \"features.json\"\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        # Load in json\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    @staticmethod\n    def _get_version_files(version_mapping: dict, version: int) -> list:\n        \"\"\"Check if version is supported and return files corresponding to version mapping\"\"\"\n        try:\n            files = version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not implemented. Available versions are {list(version_mapping.keys())}\"\n            )\n        return files";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Example-usage">Example usage<a class="anchor-link" href="#Example-usage"> </a></h2>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="NumeraiClassicDownloader.download_training_data" class="doc_header"><code>NumeraiClassicDownloader.download_training_data</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/download.py#L89" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>NumeraiClassicDownloader.download_training_data</code>(<strong><code>folder</code></strong>:<code>str</code>=<em><code>''</code></em>, <strong><code>version</code></strong>:<code>int</code>=<em><code>2</code></em>, <strong><code>int8</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+</blockquote>
+<p>Get Numerai classic training and validation data.
+:param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+:param version: Numerai version (1=classic, 2=super massive dataset (parquet)
+:param int8: Integer version of data
+*args, **kwargs are passed to NumerAPI downloader</p>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="NumeraiClassicDownloader.download_inference_data" class="doc_header"><code>NumeraiClassicDownloader.download_inference_data</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/download.py#L113" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>NumeraiClassicDownloader.download_inference_data</code>(<strong><code>folder</code></strong>:<code>str</code>=<em><code>''</code></em>, <strong><code>version</code></strong>:<code>int</code>=<em><code>2</code></em>, <strong><code>int8</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>round_num</code></strong>:<code>int</code>=<em><code>None</code></em>)</p>
+</blockquote>
+<p>Get Numerai classic inference data.
+:param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+:param version: Numerai version (1=classic, 2=super massive dataset (parquet)
+:param int8: Integer version of data
+:param round_num: Numerai tournament round number. Downloads latest round by default.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Training">Training<a class="anchor-link" href="#Training"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initialization</span>
+<span class="n">train_base_directory</span> <span class="o">=</span> <span class="s2">&quot;test_numerai_classic_train_1234321&quot;</span>
+<span class="c1"># numer_classic_downloader = NumeraiClassicDownloader(train_base_directory)</span>
+
+<span class="c1"># Download training and validation data</span>
+<span class="c1"># numer_classic_downloader.download_training_data(&quot;train_val&quot;, version=2, int8=False)</span>
+
+<span class="c1"># Save example predictions in new folder and get feature overview</span>
+<span class="c1"># numer_classic_downloader.download_example_data(&quot;example&quot;)</span>
+<span class="c1"># feature_stats = numer_classic_downloader.get_classic_features()</span>
+
+<span class="c1"># Remove contents</span>
+<span class="c1"># numer_classic_downloader.remove_base_directory()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="c4afca95-41bc-453d-9b27-d6194e94ec78"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#c4afca95-41bc-453d-9b27-d6194e94ec78');
+
+            setTimeout(function() {
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "#slow\n# initialization\ntrain_base_directory = \"test_numerai_classic_train_1234321\"\n# numer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", version=2, int8=False)\n\n# Save example predictions in new folder and get feature overview\n# numer_classic_downloader.download_example_data(\"example\")\n# feature_stats = numer_classic_downloader.get_classic_features()\n\n# Remove contents\n# numer_classic_downloader.remove_base_directory()";
+                var nbb_formatted_code = "# slow\n# initialization\ntrain_base_directory = \"test_numerai_classic_train_1234321\"\n# numer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", version=2, int8=False)\n\n# Save example predictions in new folder and get feature overview\n# numer_classic_downloader.download_example_data(\"example\")\n# feature_stats = numer_classic_downloader.get_classic_features()\n\n# Remove contents\n# numer_classic_downloader.remove_base_directory()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>For the training example the directory structure will be:</strong></p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 test_numerai_classic_train_1234321 (base_directory)                                              
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📄 features.json                                                                                
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 train_val                                                                                    
+<span style="color: #808080; text-decoration-color: #808080">┃   ┣━━ </span>📄 numerai_training_data.parquet                                                            
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 numerai_validation_data.parquet                                                          
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 example                                                                                      
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 example_predictions.parquet                                                              
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 example_validation_predictions.parquet                                                   
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="24b32772-225f-4a64-92cc-06adb7e5700a"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#24b32772-225f-4a64-92cc-06adb7e5700a');
+
+            setTimeout(function() {
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "#hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(f\":file_folder: {train_base_directory} (base_directory)\", guide_style=\"bold bright_black\")\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(':page_facing_up: numerai_training_data.parquet')\ntrain_val_tree.add(':page_facing_up: numerai_validation_data.parquet')\nexample_tree = tree.add(\":file_folder: example\")\nexample_tree.add(':page_facing_up: example_predictions.parquet')\nexample_tree.add(':page_facing_up: example_validation_predictions.parquet')\n\nconsole.print(tree)";
+                var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {train_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(\":page_facing_up: numerai_training_data.parquet\")\ntrain_val_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\nexample_tree = tree.add(\":file_folder: example\")\nexample_tree.add(\":page_facing_up: example_predictions.parquet\")\nexample_tree.add(\":page_facing_up: example_validation_predictions.parquet\")\n\nconsole.print(tree)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Inference">Inference<a class="anchor-link" href="#Inference"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initialization</span>
+<span class="n">inference_base_directory</span> <span class="o">=</span> <span class="s2">&quot;test_numerai_classic_inference_1234321&quot;</span>
+<span class="c1"># numer_classic_downloader = NumeraiClassicDownloader(inference_base_directory)</span>
+
+<span class="c1"># Download tournament (inference) data</span>
+<span class="c1"># numer_classic_downloader.download_inference_data(&quot;inference&quot;, version=2, int8=False)</span>
+
+<span class="c1"># Save example predictions in inference folder</span>
+<span class="c1"># numer_classic_downloader.get_example_data(&quot;inference&quot;)</span>
+
+<span class="c1"># Remove folder when done with inference</span>
+<span class="c1"># numer_classic_downloader.remove_base_directory()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="862fda50-3077-4b47-9c88-3d93def3ee0e"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#862fda50-3077-4b47-9c88-3d93def3ee0e');
+
+            setTimeout(function() {
+                var nbb_cell_id = 11;
+                var nbb_unformatted_code = "#slow\n# initialization\ninference_base_directory = \"test_numerai_classic_inference_1234321\"\n# numer_classic_downloader = NumeraiClassicDownloader(inference_base_directory)\n\n# Download tournament (inference) data\n# numer_classic_downloader.download_inference_data(\"inference\", version=2, int8=False)\n\n# Save example predictions in inference folder\n# numer_classic_downloader.get_example_data(\"inference\")\n\n# Remove folder when done with inference\n# numer_classic_downloader.remove_base_directory()";
+                var nbb_formatted_code = "# slow\n# initialization\ninference_base_directory = \"test_numerai_classic_inference_1234321\"\n# numer_classic_downloader = NumeraiClassicDownloader(inference_base_directory)\n\n# Download tournament (inference) data\n# numer_classic_downloader.download_inference_data(\"inference\", version=2, int8=False)\n\n# Save example predictions in inference folder\n# numer_classic_downloader.get_example_data(\"inference\")\n\n# Remove folder when done with inference\n# numer_classic_downloader.remove_base_directory()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>For the inference example the directory structure will be:</strong></p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 test_numerai_classic_inference_1234321 (base_directory)                                          
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 inference                                                                                    
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 numerai_tournament_data.parquet                                                          
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 numerai_validation_data.parquet                                                          
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 example_predictions.parquet                                                              
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 example_validation_predictions.parquet                                                   
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="866b0f00-70e0-4250-8335-f28d1bc68bec"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#866b0f00-70e0-4250-8335-f28d1bc68bec');
+
+            setTimeout(function() {
+                var nbb_cell_id = 12;
+                var nbb_unformatted_code = "#hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(f\":file_folder: {inference_base_directory} (base_directory)\", guide_style=\"bold bright_black\")\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(':page_facing_up: numerai_tournament_data.parquet')\ninference_tree.add(':page_facing_up: numerai_validation_data.parquet')\ninference_tree.add(':page_facing_up: example_predictions.parquet')\ninference_tree.add(':page_facing_up: example_validation_predictions.parquet')\n\nconsole.print(tree)";
+                var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {inference_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\ninference_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\ninference_tree.add(\":page_facing_up: example_predictions.parquet\")\ninference_tree.add(\":page_facing_up: example_validation_predictions.parquet\")\n\nconsole.print(tree)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Additional-tests">Additional tests<a class="anchor-link" href="#Additional-tests"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_dir_classic</span> <span class="o">=</span> <span class="s2">&quot;test_numerai_classic_1234321&quot;</span>
 <span class="n">numer_classic_downloader</span> <span class="o">=</span> <span class="n">NumeraiClassicDownloader</span><span class="p">(</span><span class="n">test_dir_classic</span><span class="p">)</span>
-<span class="c1"># TODO test for ClassicDownloader (including full #slow tests)</span>
 
 <span class="c1"># Downloading example data</span>
-<span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;test1/&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;test2/&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">round_num</span><span class="o">=</span><span class="mi">290</span><span class="p">)</span>
+<span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">download_example_data</span><span class="p">(</span><span class="s2">&quot;test1/&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">download_example_data</span><span class="p">(</span><span class="s2">&quot;test2/&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">round_num</span><span class="o">=</span><span class="mi">290</span><span class="p">)</span>
+
+<span class="c1"># Features</span>
+<span class="n">feature_stats_test</span> <span class="o">=</span> <span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">get_classic_features</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_stats_test</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
 
 <span class="c1"># Remove contents</span>
 <span class="n">numer_classic_downloader</span><span class="o">.</span><span class="n">remove_base_directory</span><span class="p">()</span>
@@ -274,11 +724,8 @@ Path:
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-01-04 18:27:36,147 INFO numerapi.utils: target file already exists
-2022-01-04 18:27:36,148 INFO numerapi.utils: resuming download
-/opt/anaconda3/envs/numerai-blocks/lib/python3.10/site-packages/urllib3/connectionpool.py:1013: InsecureRequestWarning: Unverified HTTPS request is being made to host &#39;numerai-datasets.s3.amazonaws.com&#39;. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
-  warnings.warn(
-test_numerai_classic_1234321/test1/example_predictions.csv: 51.2MB [00:20, 2.49MB/s]                            
+<pre>2022-01-04 22:44:19,536 INFO numerapi.utils: starting download
+test_numerai_classic_1234321/test1/example_predictions.csv: 51.2MB [01:43, 495kB/s]                             
 </pre>
 </div>
 </div>
@@ -297,8 +744,8 @@ test_numerai_classic_1234321/test1/example_predictions.csv: 51.2MB [00:20, 2.49M
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-01-04 18:27:58,686 INFO numerapi.utils: starting download
-test_numerai_classic_1234321/test1/example_validation_predictions.csv: 19.6MB [00:06, 3.15MB/s]                            
+<pre>2022-01-04 22:46:04,826 INFO numerapi.utils: starting download
+test_numerai_classic_1234321/test1/example_validation_predictions.csv: 19.6MB [00:05, 3.85MB/s]                            
 </pre>
 </div>
 </div>
@@ -317,8 +764,8 @@ test_numerai_classic_1234321/test1/example_validation_predictions.csv: 19.6MB [0
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-01-04 18:28:06,690 INFO numerapi.utils: starting download
-test_numerai_classic_1234321/test2/example_predictions.parquet: 33.5MB [00:09, 3.35MB/s]                            
+<pre>2022-01-04 22:46:11,597 INFO numerapi.utils: starting download
+test_numerai_classic_1234321/test2/example_predictions.parquet: 33.5MB [01:35, 352kB/s]                             
 </pre>
 </div>
 </div>
@@ -337,8 +784,8 @@ test_numerai_classic_1234321/test2/example_predictions.parquet: 33.5MB [00:09, 3
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-01-04 18:28:17,922 INFO numerapi.utils: starting download
-test_numerai_classic_1234321/test2/example_validation_predictions.parquet: 13.0MB [00:03, 3.70MB/s]                            
+<pre>2022-01-04 22:47:48,664 INFO numerapi.utils: starting download
+test_numerai_classic_1234321/test2/example_validation_predictions.parquet: 13.0MB [00:28, 451kB/s]                             
 </pre>
 </div>
 </div>
@@ -347,11 +794,61 @@ test_numerai_classic_1234321/test2/example_validation_predictions.parquet: 13.0M
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'NumeraiClassicDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span>: ⚠
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'features.json'</span> 📁
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-01-04 22:48:19,437 INFO numerapi.utils: starting download
+test_numerai_classic_1234321/features.json: 441kB [00:00, 471kB/s]                             
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'NumeraiClassicDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
 Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/test_numerai_class</span>
 <span style="color: #008000; text-decoration-color: #008000">ic_1234321'</span>
 </pre>
 
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="4f67b94d-49da-4a82-96d2-72ef2afce9ac"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#4f67b94d-49da-4a82-96d2-72ef2afce9ac');
+
+            setTimeout(function() {
+                var nbb_cell_id = 13;
+                var nbb_unformatted_code = "#slow\ntest_dir_classic = \"test_numerai_classic_1234321\"\nnumer_classic_downloader = NumeraiClassicDownloader(test_dir_classic)\n\n# Downloading example data\nnumer_classic_downloader.download_example_data(\"test1/\", version=1)\nnumer_classic_downloader.download_example_data(\"test2/\", version=2, round_num=290)\n\n# Features\nfeature_stats_test = numer_classic_downloader.get_classic_features()\nassert isinstance(feature_stats_test, dict)\n\n# Remove contents\nnumer_classic_downloader.remove_base_directory()\nassert not os.path.exists(test_dir_classic)";
+                var nbb_formatted_code = "# slow\ntest_dir_classic = \"test_numerai_classic_1234321\"\nnumer_classic_downloader = NumeraiClassicDownloader(test_dir_classic)\n\n# Downloading example data\nnumer_classic_downloader.download_example_data(\"test1/\", version=1)\nnumer_classic_downloader.download_example_data(\"test2/\", version=2, round_num=290)\n\n# Features\nfeature_stats_test = numer_classic_downloader.get_classic_features()\nassert isinstance(feature_stats_test, dict)\n\n# Remove contents\nnumer_classic_downloader.remove_base_directory()\nassert not os.path.exists(test_dir_classic)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
 </div>
 
 </div>

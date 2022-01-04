@@ -2,7 +2,8 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"BaseDownloader": "00_download.ipynb"}
+index = {"BaseDownloader": "00_download.ipynb",
+         "NumeraiClassicDownloader": "00_download.ipynb"}
 
 modules = ["download.py"]
 
