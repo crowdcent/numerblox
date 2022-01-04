@@ -28,11 +28,16 @@ class BaseDownloader(ABC):
     def download_inference_data(self, *args, **kwargs):
         raise NotImplementedError(f"No method for downloading inference data is implemented in '{self.__class__.__name__}'.")
 
-    def remove_directory(self):
+    def remove_base_directory(self):
         """ Remove download directory with all contents. """
         abs_path = self.dir.resolve()
         rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]': :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
+
+    def _append_folder(self, folder: str) -> PosixPath:
+        dir = Path(self.dir / folder)
+        dir.mkdir(parents=True, exist_ok=True)
+        return dir
 
     @property
     def get_all_files(self):
