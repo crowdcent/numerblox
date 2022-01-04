@@ -7,25 +7,25 @@
 %autoreload 2
 ```
 
-This file will become your README and also the index of your documentation.
-
 ## Install
 
 `pip install numerai-blocks`
 
 ## How to use
 
-Development notebooks are in the `dev_nbs` directory. Example and educational notebooks can be found in the `edu_nbs` directory.
+Development notebooks are in the `nbs` directory. Example and educational notebooks can be found in the `edu_nbs` directory.
 
-1. Downloaders
-2. Dataloaders
-3. Dataset objects (with arbitrary metadata)
-4. Preprocessors and Postprocessors
-5. Model, ModelPipeline and ModelPipelineCollection (Or FeatureUnion??)
-6. Predictions (with arbitrary metadata)
-7. Evaluators
-8. Submittors
-9. Key (containing authentication info)
+- Downloaders
+- Dataloaders
+- Dataset objects (with arbitrary metadata)
+- Preprocessing
+- Model
+- ModelPipeline and ModelPipelineCollection (Or FeatureUnion??)
+- Postprocessing
+- Prediction dataset (with arbitrary metadata)
+- Evaluators
+- Key (containing authentication info)
+- Submittors
 
 ```
 1+1
@@ -47,6 +47,7 @@ print(uuid.uuid4())
 
 
 ```
+# Dumb check to see if syncing is working properly
 from numerai_blocks.download import Check
 ch = Check()
 ch.one
