@@ -8,7 +8,7 @@ import json
 import shutil
 from numerapi import NumerAPI, SignalsAPI
 from pathlib import Path, PosixPath
-from abc import ABC
+from abc import ABC, abstractmethod
 from rich.tree import Tree
 from rich.console import Console
 from rich import print as rich_print
@@ -17,7 +17,7 @@ from rich import print as rich_print
 class BaseDownloader(ABC):
     """
     Abstract base class for downloaders.
-    :param directory_path: Base directory where data will be saved.
+    :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
@@ -25,10 +25,12 @@ class BaseDownloader(ABC):
             rich_print(f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...")
             self.dir.mkdir(parents=True, exist_ok=True)
 
+    @abstractmethod
     def download_training_data(self, *args, **kwargs):
         """ Download all necessary files needed for training. """
         raise NotImplementedError(f"No method for downloading training data is implemented in '{self.__class__.__name__}'")
 
+    @abstractmethod
     def download_inference_data(self, *args, **kwargs):
         """ Download minimal amount of files needed for weekly inference. """
         raise NotImplementedError(f"No method for downloading inference data is implemented in '{self.__class__.__name__}'.")
@@ -78,7 +80,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     """
     Downloading from NumerAPI for Numerai Classic data
 
-    :param directory_path: Main folder to download data in.
+    :param directory_path: Base folder to download files to.
     All *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, *args, **kwargs):
@@ -100,14 +102,14 @@ class NumeraiClassicDownloader(BaseDownloader):
                                     "example": ['example_predictions.parquet', 'example_validation_predictions.parquet']}
                                 }
 
-    def download_training_data(self, folder: str = "", version: int = 2, int8: bool = False):
+    def download_training_data(self, subfolder: str = "", version: int = 2, int8: bool = False):
         """
         Get Numerai classic training and validation data.
-        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
         :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
         :param int8: Integer version of data
         """
-        dir = self._append_folder(folder)
+        dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         train_val_files = self._get_version_mapping(version)['train'][data_type]
         for file in train_val_files:
@@ -115,15 +117,15 @@ class NumeraiClassicDownloader(BaseDownloader):
                                          dest_path=str(dir.joinpath(file)))
 
 
-    def download_inference_data(self, folder: str = "", version: int = 2, int8: bool = False, round_num: int = None):
+    def download_inference_data(self, subfolder: str = "", version: int = 2, int8: bool = False, round_num: int = None):
         """
         Get Numerai classic inference data.
-        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
         :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        dir = self._append_folder(folder)
+        dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         inference_files = self._get_version_mapping(version)['inference'][data_type]
         rich_print(f":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'.")
@@ -147,28 +149,28 @@ class NumeraiClassicDownloader(BaseDownloader):
                                    round_num=round_num)
 
 
-    def download_example_data(self, folder: str = "", version: int = 2, round_num: int = None):
+    def download_example_data(self, subfolder: str = "", version: int = 2, round_num: int = None):
         """
         Download all example prediction data in specified folder for given version.
 
-        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
         :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        dir = self._append_folder(folder)
+        dir = self._append_folder(subfolder)
         example_files = self._get_version_mapping(version)['example']
         for file in example_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)),
                                          round_num=round_num)
 
-    def get_classic_features(self, folder: str = "", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", *args, **kwargs) -> dict:
         """
         Download feature overview (stats and feature sets) through NumerAPI and load.
-        :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
         *args, **kwargs will be passed to the JSON loader.
         """
-        dir = self._append_folder(folder)
+        dir = self._append_folder(subfolder)
         filename = "features.json"
         dest_path = str(dir.joinpath(filename))
         self.download_single_dataset(filename=filename,
