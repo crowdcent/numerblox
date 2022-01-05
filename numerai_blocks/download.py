@@ -21,9 +21,7 @@ class BaseDownloader(ABC):
     """
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
-        if not self.dir.is_dir():
-            rich_print(f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...")
-            self.dir.mkdir(parents=True, exist_ok=True)
+        self._create_directory()
 
     @abstractmethod
     def download_training_data(self, *args, **kwargs):
@@ -58,6 +56,12 @@ class BaseDownloader(ABC):
         if verbose:
             rich_print(json_data)
         return json_data
+
+    def _create_directory(self):
+        """ Create base directory if it does not exist. """
+        if not self.dir.is_dir():
+            rich_print(f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...")
+            self.dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def get_all_files(self) -> list:

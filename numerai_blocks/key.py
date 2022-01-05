@@ -12,6 +12,7 @@ from rich import print as rich_print
 @dataclass(frozen=True)
 class Key:
     """ Immutable and validated Numerai credentials. """
+    # TODO INsturction for encoding or option to pass encoded?
     pub_id: str = ""
     secret_key: str = ""
     # Decode credentials
@@ -19,10 +20,10 @@ class Key:
     secret_key = base64.b64decode(secret_key, validate=True).decode('utf-8')
 
     def __post_init__(self):
-        rich_print(f":key: Intialized {self.__repr__()} :key:")
+        rich_print(f":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:")
 
     def __repr__(self):
-        return f"Numerai Authentication Key. pub_id: '{pub_id}'"
+        return f"Numerai Auth Key. pub_id = '{self.pub_id}'"
 
     def __str__(self):
         return self.__repr__()
