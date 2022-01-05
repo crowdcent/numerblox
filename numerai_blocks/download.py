@@ -85,6 +85,20 @@ class NumeraiClassicDownloader(BaseDownloader):
         super(NumeraiClassicDownloader, self).__init__(directory_path=directory_path)
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
+        # NumerAPI filenames corresponding to version, class and data type
+        self.version_mapping = {1: {"train":
+                                        {"int8": ['numerai_training_data_int8.csv', 'numerai_validation_data_int8.csv'],
+                                         "float": ['numerai_training_data.csv', 'numerai_validation_data.csv']},
+                                    "inference": {"int8": ['numerai_tournament_data_int8.csv'],
+                                                  "float": ['numerai_tournament_data.csv']},
+                                    "example": ['example_predictions.csv', 'example_validation_predictions.csv']},
+                                2: {"train":
+                                        {"int8": ['numerai_training_data_int8.parquet', 'numerai_validation_data_int8.parquet'],
+                                         "float": ['numerai_training_data.parquet', 'numerai_validation_data.parquet']},
+                                    "inference": {"int8": ['numerai_tournament_data_int8.parquet'],
+                                                  "float": ['numerai_tournament_data.parquet']},
+                                    "example": ['example_predictions.parquet', 'example_validation_predictions.parquet']}
+                                }
 
     def download_training_data(self, folder: str = "", version: int = 2, int8: bool = False):
         """
@@ -94,15 +108,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param int8: Integer version of data
         """
         dir = self._append_folder(folder)
-        if int8:
-            version_mapping = {1: ['numerai_training_data_int8.csv', 'numerai_validation_data_int8.csv'],
-                               2: ['numerai_training_data_int8.parquet', 'numerai_validation_data_int8.parquet']
-                               }
-        else:
-            version_mapping = {1: ['numerai_training_data.csv', 'numerai_validation_data.csv'],
-                               2: ['numerai_training_data.parquet', 'numerai_validation_data.parquet']
-                               }
-        train_val_files = self._get_version_mapping(version_mapping, version)
+        data_type = "int8" if int8 else "float"
+        train_val_files = self._get_version_mapping(version)['train'][data_type]
         for file in train_val_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)))
@@ -117,17 +124,10 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         dir = self._append_folder(folder)
-        if int8:
-            version_mapping = {1: ['numerai_tournament_data_int8.csv'],
-                               2: ['numerai_tournament_data_int8.parquet']
-                               }
-        else:
-            version_mapping = {1: ['numerai_tournament_data.csv'],
-                               2: ['numerai_tournament_data.parquet']
-                               }
-        train_val_files = self._get_version_mapping(version_mapping, version)
+        data_type = "int8" if int8 else "float"
+        inference_files = self._get_version_mapping(version)['inference'][data_type]
         rich_print(f":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'.")
-        for file in train_val_files:
+        for file in inference_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)),
                                          round_num=round_num)
@@ -156,10 +156,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         dir = self._append_folder(folder)
-        version_mapping = {1: ['example_predictions.csv', 'example_validation_predictions.csv'],
-                           2: ['example_predictions.parquet', 'example_validation_predictions.parquet']
-                           }
-        example_files = self._get_version_mapping(version_mapping, version)
+        example_files = self._get_version_mapping(version)['example']
         for file in example_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)),
@@ -169,22 +166,20 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         Download feature overview (stats and feature sets) through NumerAPI and load.
         :param folder: Specify folder to create folder within directory root. Saves in directory root by default.
-        *args, **kwargs will be passed to the JSON loader
+        *args, **kwargs will be passed to the JSON loader.
         """
         dir = self._append_folder(folder)
         filename = "features.json"
         dest_path = str(dir.joinpath(filename))
         self.download_single_dataset(filename=filename,
                                      dest_path=dest_path)
-        # Load in json
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
-    @staticmethod
-    def _get_version_mapping(version_mapping: dict, version: int) -> list:
-        """ Check if version is supported and return files corresponding to version mapping """
+    def _get_version_mapping(self, version: int) -> dict:
+        """ Check if version is supported and return file mapping for version. """
         try:
-            files = version_mapping[version]
+            mapping_dictionary = self.version_mapping[version]
         except KeyError:
-            raise NotImplementedError(f"Version '{version}' is not implemented. Available versions are {list(version_mapping.keys())}")
-        return files
+            raise NotImplementedError(f"Version '{version}' is not implemented. Available versions are {list(self.version_mapping.keys())}")
+        return mapping_dictionary

@@ -5,7 +5,8 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 index = {"BaseDownloader": "00_download.ipynb",
          "NumeraiClassicDownloader": "00_download.ipynb"}
 
-modules = ["download.py"]
+modules = ["download.py",
+           "key.py"]
 
 doc_url = "https://crowdcent.github.io/numerai_blocks/"
 
