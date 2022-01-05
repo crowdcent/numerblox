@@ -2,19 +2,6 @@
 > Tools for solid Numerai pipelines
 
 
-```
-%load_ext autoreload
-%autoreload 2
-%load_ext nb_black
-%load_ext lab_black
-```
-
-    The autoreload extension is already loaded. To reload it, use:
-      %reload_ext autoreload
-    The lab_black extension is already loaded. To reload it, use:
-      %reload_ext lab_black
-
-
 ## Install
 
 `pip install numerai-blocks`

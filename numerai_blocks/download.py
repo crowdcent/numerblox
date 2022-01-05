@@ -102,7 +102,7 @@ class NumeraiClassicDownloader(BaseDownloader):
             version_mapping = {1: ['numerai_training_data.csv', 'numerai_validation_data.csv'],
                                2: ['numerai_training_data.parquet', 'numerai_validation_data.parquet']
                                }
-        train_val_files = self._get_version_files(version_mapping, version)
+        train_val_files = self._get_version_mapping(version_mapping, version)
         for file in train_val_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)))
@@ -125,7 +125,7 @@ class NumeraiClassicDownloader(BaseDownloader):
             version_mapping = {1: ['numerai_tournament_data.csv'],
                                2: ['numerai_tournament_data.parquet']
                                }
-        train_val_files = self._get_version_files(version_mapping, version)
+        train_val_files = self._get_version_mapping(version_mapping, version)
         rich_print(f":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'.")
         for file in train_val_files:
             self.download_single_dataset(filename=file,
@@ -159,7 +159,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         version_mapping = {1: ['example_predictions.csv', 'example_validation_predictions.csv'],
                            2: ['example_predictions.parquet', 'example_validation_predictions.parquet']
                            }
-        example_files = self._get_version_files(version_mapping, version)
+        example_files = self._get_version_mapping(version_mapping, version)
         for file in example_files:
             self.download_single_dataset(filename=file,
                                          dest_path=str(dir.joinpath(file)),
@@ -181,7 +181,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         return json_data
 
     @staticmethod
-    def _get_version_files(version_mapping: dict, version: int) -> list:
+    def _get_version_mapping(version_mapping: dict, version: int) -> list:
         """ Check if version is supported and return files corresponding to version mapping """
         try:
             files = version_mapping[version]
