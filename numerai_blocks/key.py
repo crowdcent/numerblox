@@ -12,7 +12,7 @@ from rich import print as rich_print
 @dataclass(frozen=True)
 class Key:
     """ Immutable and validated Numerai credentials. """
-    # TODO INsturction for encoding or option to pass encoded?
+    # TODO Instruction for encoding or option to pass encoded?
     pub_id: str = ""
     secret_key: str = ""
     # Decode credentials

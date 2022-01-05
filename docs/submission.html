@@ -54,10 +54,10 @@ nb_path: "nbs/09_submission.ipynb"
 
 
 
-<div id="7919bfa6-0333-45db-9c45-ee7f4efc9bb0"></div>
+<div id="0fdfcf68-4df5-40ab-90b5-85f230a20767"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7919bfa6-0333-45db-9c45-ee7f4efc9bb0');
+var element = $('#0fdfcf68-4df5-40ab-90b5-85f230a20767');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -116,10 +116,10 @@ var element = $('#7919bfa6-0333-45db-9c45-ee7f4efc9bb0');
 
 
 
-<div id="035ee95e-7774-4ae7-99d0-5543eb1055f9"></div>
+<div id="36448152-a44b-4204-9a7f-9fa0181d7c59"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#035ee95e-7774-4ae7-99d0-5543eb1055f9');
+var element = $('#36448152-a44b-4204-9a7f-9fa0181d7c59');
 
             setTimeout(function() {
                 var nbb_cell_id = 4;
@@ -212,10 +212,10 @@ var element = $('#035ee95e-7774-4ae7-99d0-5543eb1055f9');
 
 
 
-<div id="536540b9-0013-4338-9d90-1b9ddde00d20"></div>
+<div id="556bd61d-4fda-434b-95b9-64688277e603"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#536540b9-0013-4338-9d90-1b9ddde00d20');
+var element = $('#556bd61d-4fda-434b-95b9-64688277e603');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -282,11 +282,12 @@ var element = $('#536540b9-0013-4338-9d90-1b9ddde00d20');
         <span class="n">rich_print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:thumbs_up: Submission of &#39;</span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">&#39; for [bold blue]</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">[/bold blue] is successful! :thumbs_up:&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_model_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_mapping</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">mapping</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot; Get ID needed for prediction uploading. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_mapping</span><span class="p">()[</span><span class="n">model_name</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_model_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Mapping between raw model names and model IDs. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">napi</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span>
 </pre></div>
 
@@ -302,15 +303,15 @@ var element = $('#536540b9-0013-4338-9d90-1b9ddde00d20');
 
 
 
-<div id="c207d16c-af91-4a9a-912e-a5287f40183a"></div>
+<div id="838266e5-14c6-48c3-a5fa-e21e7d089fab"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c207d16c-af91-4a9a-912e-a5287f40183a');
+var element = $('#838266e5-14c6-48c3-a5fa-e21e7d089fab');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "class NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic through NumerAPI\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, key=key)\n        self.napi = NumerAPI(public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs)\n\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        rich_print(f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\")\n        dataf[target_columns].to_csv(full_path, *args, **kwargs)\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(f\":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\")\n        self.napi.upload_predictions(file_path=full_path,\n                                     model_id=model_id,\n                                     *args, **kwargs)\n        rich_print(f\":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\")\n\n    def _get_model_id(self, model_name: str) -> str:\n        mapping = self.get_model_mapping()\n        return mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        return self.napi.get_models()";
-                var nbb_formatted_code = "class NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic through NumerAPI\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        super(NumeraiClassicSubmittor, self).__init__(\n            directory_path=directory_path, key=key\n        )\n        self.napi = NumerAPI(\n            public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs\n        )\n\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs\n    ):\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf[target_columns].to_csv(full_path, *args, **kwargs)\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(\n            f\":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.napi.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def _get_model_id(self, model_name: str) -> str:\n        mapping = self.get_model_mapping()\n        return mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        return self.napi.get_models()";
+                var nbb_unformatted_code = "class NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic through NumerAPI\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, key=key)\n        self.napi = NumerAPI(public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs)\n\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        rich_print(f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\")\n        dataf[target_columns].to_csv(full_path, *args, **kwargs)\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(f\":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\")\n        self.napi.upload_predictions(file_path=full_path,\n                                     model_id=model_id,\n                                     *args, **kwargs)\n        rich_print(f\":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\")\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\" Get ID needed for prediction uploading. \"\"\"\n        return self.get_model_mapping()[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\" Mapping between raw model names and model IDs. \"\"\"\n        return self.napi.get_models()";
+                var nbb_formatted_code = "class NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic through NumerAPI\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        super(NumeraiClassicSubmittor, self).__init__(\n            directory_path=directory_path, key=key\n        )\n        self.napi = NumerAPI(\n            public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs\n        )\n\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs\n    ):\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf[target_columns].to_csv(full_path, *args, **kwargs)\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(\n            f\":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.napi.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"Get ID needed for prediction uploading.\"\"\"\n        return self.get_model_mapping()[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.napi.get_models()";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -441,27 +442,27 @@ var element = $('#c207d16c-af91-4a9a-912e-a5287f40183a');
   </thead>
   <tbody>
     <tr>
-      <th>f6573b07-5160-4f80-ac0b-1073d74df4df</th>
-      <td>0.57029</td>
-      <td>0.547674</td>
-      <td>0.639208</td>
-      <td>0.478428</td>
-      <td>0.039853</td>
-      <td>0.561924</td>
-      <td>0.627814</td>
-      <td>0.722491</td>
-      <td>0.357301</td>
-      <td>0.599959</td>
-      <td>0.806091</td>
-      <td>0.51567</td>
-      <td>0.342018</td>
-      <td>0.448455</td>
-      <td>0.871416</td>
-      <td>0.599185</td>
-      <td>0.817916</td>
-      <td>0.791231</td>
-      <td>0.422417</td>
-      <td>0.367146</td>
+      <th>55ca016d-88fe-4816-b4c5-3872a59bd4fa</th>
+      <td>0.338271</td>
+      <td>0.342862</td>
+      <td>0.163207</td>
+      <td>0.503047</td>
+      <td>0.51955</td>
+      <td>0.216349</td>
+      <td>0.685899</td>
+      <td>0.177614</td>
+      <td>0.021423</td>
+      <td>0.099496</td>
+      <td>0.169947</td>
+      <td>0.981945</td>
+      <td>0.712902</td>
+      <td>0.764103</td>
+      <td>0.151564</td>
+      <td>0.770629</td>
+      <td>0.439339</td>
+      <td>0.38892</td>
+      <td>0.236237</td>
+      <td>0.047851</td>
     </tr>
   </tbody>
 </table>
@@ -475,10 +476,10 @@ var element = $('#c207d16c-af91-4a9a-912e-a5287f40183a');
 
 
 
-<div id="e8c50a7d-a2f8-4bb8-b3d4-99a8f7ac7459"></div>
+<div id="c94cae26-aacf-4fcb-9de7-5201595501a8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e8c50a7d-a2f8-4bb8-b3d4-99a8f7ac7459');
+var element = $('#c94cae26-aacf-4fcb-9de7-5201595501a8');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -513,8 +514,7 @@ var element = $('#e8c50a7d-a2f8-4bb8-b3d4-99a8f7ac7459');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_sub</span><span class="o">.</span><span class="n">full_submission</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;test.csv&#39;</span><span class="p">,</span>
-                        <span class="n">target_columns</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># num_sub.full_submission(dataf=dataf, file_name=&#39;test.csv&#39;, target_columns=targets, model_name=&quot;test&quot;)</span>
 </pre></div>
 
     </div>
@@ -527,98 +527,17 @@ var element = $('#e8c50a7d-a2f8-4bb8-b3d4-99a8f7ac7459');
 <div class="output_area">
 
 
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📄 Saving predictions CSV to <span style="color: #008000; text-decoration-color: #008000">'test_sub/test.csv'</span>. 📄
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-01-05 23:11:54,600 ERROR numerapi.base_api: Your session is invalid or has expired.
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_2416/401863927.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># Save CSV and upload</span>
-<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> num_sub.full_submission(dataf=dataf, file_name=&#39;test.csv&#39;,
-</span><span class="ansi-green-intense-fg ansi-bold">      3</span>                         target_columns=targets, model_name=&#34;test&#34;)
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks/lib/python3.10/site-packages/typeguard/__init__.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1031</span>         memo <span class="ansi-blue-fg">=</span> _CallMemo<span class="ansi-blue-fg">(</span>python_func<span class="ansi-blue-fg">,</span> _localns<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">=</span>args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">=</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1032</span>         check_argument_types<span class="ansi-blue-fg">(</span>memo<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">-&gt; 1033</span><span class="ansi-red-fg">         </span>retval <span class="ansi-blue-fg">=</span> func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1034</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   1035</span>             check_return_type<span class="ansi-blue-fg">(</span>retval<span class="ansi-blue-fg">,</span> memo<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_2416/3352996793.py</span> in <span class="ansi-cyan-fg">full_submission</span><span class="ansi-blue-fg">(self, dataf, file_name, model_name, target_columns, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     19</span>         <span class="ansi-blue-fg">&#34;&#34;&#34; Save DataFrame and upload predictions through API. &#34;&#34;&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">     20</span>         self<span class="ansi-blue-fg">.</span>save_csv<span class="ansi-blue-fg">(</span>dataf<span class="ansi-blue-fg">=</span>dataf<span class="ansi-blue-fg">,</span> file_name<span class="ansi-blue-fg">=</span>file_name<span class="ansi-blue-fg">,</span> target_columns<span class="ansi-blue-fg">=</span>target_columns<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 21</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>upload_predictions<span class="ansi-blue-fg">(</span>file_name<span class="ansi-blue-fg">=</span>file_name<span class="ansi-blue-fg">,</span> model_name<span class="ansi-blue-fg">=</span>model_name<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     22</span> 
-<span class="ansi-green-intense-fg ansi-bold">     23</span>     <span class="ansi-green-fg">def</span> _create_directory<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_2416/665821294.py</span> in <span class="ansi-cyan-fg">upload_predictions</span><span class="ansi-blue-fg">(self, file_name, model_name, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     17</span>     <span class="ansi-green-fg">def</span> upload_predictions<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> file_name<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span> model_name<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     18</span>         full_path <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>dir <span class="ansi-blue-fg">/</span> file_name<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 19</span><span class="ansi-red-fg">         </span>model_id <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_get_model_id<span class="ansi-blue-fg">(</span>model_name<span class="ansi-blue-fg">=</span>model_name<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     20</span>         rich_print<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">f&#34;:airplane: Uploading predictions from &#39;{full_path}&#39; for model [bold blue]&#39;{model_name}&#39;[/bold blue] (model_id=&#39;{model_id}&#39;) :airplane:&#34;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     21</span>         self.napi.upload_predictions(file_path=full_path,
-
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_2416/665821294.py</span> in <span class="ansi-cyan-fg">_get_model_id</span><span class="ansi-blue-fg">(self, model_name)</span>
-<span class="ansi-green-intense-fg ansi-bold">     25</span> 
-<span class="ansi-green-intense-fg ansi-bold">     26</span>     <span class="ansi-green-fg">def</span> _get_model_id<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> model_name<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> str<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 27</span><span class="ansi-red-fg">         </span>mapping <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>get_model_mapping<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     28</span>         <span class="ansi-green-fg">return</span> mapping<span class="ansi-blue-fg">[</span>model_name<span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">     29</span> 
-
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_2416/665821294.py</span> in <span class="ansi-cyan-fg">get_model_mapping</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">     30</span>     <span class="ansi-blue-fg">@</span>property
-<span class="ansi-green-intense-fg ansi-bold">     31</span>     <span class="ansi-green-fg">def</span> get_model_mapping<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> dict<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 32</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>napi<span class="ansi-blue-fg">.</span>get_models<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks/lib/python3.10/site-packages/numerapi/base_api.py</span> in <span class="ansi-cyan-fg">get_models</span><span class="ansi-blue-fg">(self, tournament)</span>
-<span class="ansi-green-intense-fg ansi-bold">    236</span>         <span class="ansi-green-fg">if</span> tournament <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    237</span>             tournament <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>tournament_id
-<span class="ansi-green-fg">--&gt; 238</span><span class="ansi-red-fg">         data = self.raw_query(
-</span><span class="ansi-green-intense-fg ansi-bold">    239</span>             query, authorization=True)[&#39;data&#39;][&#39;account&#39;][&#39;models&#39;]
-<span class="ansi-green-intense-fg ansi-bold">    240</span>         mapping = {
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks/lib/python3.10/site-packages/numerapi/base_api.py</span> in <span class="ansi-cyan-fg">raw_query</span><span class="ansi-blue-fg">(self, query, variables, authorization)</span>
-<span class="ansi-green-intense-fg ansi-bold">    124</span>             err <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_handle_call_error<span class="ansi-blue-fg">(</span>result<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;errors&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    125</span>             <span class="ansi-red-fg"># fail!</span>
-<span class="ansi-green-fg">--&gt; 126</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> ValueError<span class="ansi-blue-fg">(</span>err<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    127</span>         <span class="ansi-green-fg">return</span> result
-<span class="ansi-green-intense-fg ansi-bold">    128</span> 
-
-<span class="ansi-red-fg">ValueError</span>: Your session is invalid or has expired.</pre>
-</div>
-</div>
-
-<div class="output_area">
 
 
-
-
-<div id="61a92d1e-2ac7-4b83-a70d-4679808427d0"></div>
+<div id="29e4969a-2dbd-487e-91ac-f5b3536bbb1b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#61a92d1e-2ac7-4b83-a70d-4679808427d0');
+var element = $('#29e4969a-2dbd-487e-91ac-f5b3536bbb1b');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
-                var nbb_unformatted_code = "# Save CSV and upload\nnum_sub.full_submission(dataf=dataf, file_name='test.csv',\n                        target_columns=targets, model_name=\"test\")";
-                var nbb_formatted_code = "# Save CSV and upload\nnum_sub.full_submission(\n    dataf=dataf, file_name=\"test.csv\", target_columns=targets, model_name=\"test\"\n)";
+                var nbb_unformatted_code = "# Save CSV and upload\n# num_sub.full_submission(dataf=dataf, file_name='test.csv', target_columns=targets, model_name=\"test\")";
+                var nbb_formatted_code = "# Save CSV and upload\n# num_sub.full_submission(dataf=dataf, file_name='test.csv', target_columns=targets, model_name=\"test\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -648,7 +567,8 @@ var element = $('#61a92d1e-2ac7-4b83-a70d-4679808427d0');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;test_sub/test.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_sub</span><span class="o">.</span><span class="n">save_csv</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;test.csv&#39;</span><span class="p">,</span> <span class="n">target_columns</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;test_sub/test.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -657,6 +577,17 @@ var element = $('#61a92d1e-2ac7-4b83-a70d-4679808427d0');
 
 <div class="output_wrapper">
 <div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📄 Saving predictions CSV to <span style="color: #008000; text-decoration-color: #008000">'test_sub/test.csv'</span>. 📄
+</pre>
+
+</div>
+
+</div>
 
 <div class="output_area">
 
@@ -706,51 +637,51 @@ var element = $('#61a92d1e-2ac7-4b83-a70d-4679808427d0');
   <tbody>
     <tr>
       <th>0</th>
-      <td>f6573b07-5160-4f80-ac0b-1073d74df4df</td>
-      <td>0.570290</td>
-      <td>0.547674</td>
-      <td>0.639208</td>
-      <td>0.478428</td>
-      <td>0.039853</td>
-      <td>0.561924</td>
-      <td>0.627814</td>
-      <td>0.722491</td>
-      <td>0.357301</td>
+      <td>55ca016d-88fe-4816-b4c5-3872a59bd4fa</td>
+      <td>0.338271</td>
+      <td>0.342862</td>
+      <td>0.163207</td>
+      <td>0.503047</td>
+      <td>0.519550</td>
+      <td>0.216349</td>
+      <td>0.685899</td>
+      <td>0.177614</td>
+      <td>0.021423</td>
       <td>...</td>
-      <td>0.806091</td>
-      <td>0.515670</td>
-      <td>0.342018</td>
-      <td>0.448455</td>
-      <td>0.871416</td>
-      <td>0.599185</td>
-      <td>0.817916</td>
-      <td>0.791231</td>
-      <td>0.422417</td>
-      <td>0.367146</td>
+      <td>0.169947</td>
+      <td>0.981945</td>
+      <td>0.712902</td>
+      <td>0.764103</td>
+      <td>0.151564</td>
+      <td>0.770629</td>
+      <td>0.439339</td>
+      <td>0.388920</td>
+      <td>0.236237</td>
+      <td>0.047851</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>23319e09-7440-44ec-9cd1-a84d2f96f84a</td>
-      <td>0.857674</td>
-      <td>0.855701</td>
-      <td>0.256027</td>
-      <td>0.639762</td>
-      <td>0.662072</td>
-      <td>0.326167</td>
-      <td>0.332871</td>
-      <td>0.073530</td>
-      <td>0.969721</td>
+      <td>8d3f2e8c-099f-4b0b-82f8-86e7d5964270</td>
+      <td>0.929092</td>
+      <td>0.241566</td>
+      <td>0.572588</td>
+      <td>0.065058</td>
+      <td>0.139671</td>
+      <td>0.555839</td>
+      <td>0.860676</td>
+      <td>0.103190</td>
+      <td>0.803368</td>
       <td>...</td>
-      <td>0.197043</td>
-      <td>0.656971</td>
-      <td>0.712644</td>
-      <td>0.506917</td>
-      <td>0.567182</td>
-      <td>0.855523</td>
-      <td>0.927963</td>
-      <td>0.171016</td>
-      <td>0.504955</td>
-      <td>0.998586</td>
+      <td>0.297822</td>
+      <td>0.551090</td>
+      <td>0.034394</td>
+      <td>0.313136</td>
+      <td>0.416950</td>
+      <td>0.888671</td>
+      <td>0.459575</td>
+      <td>0.759657</td>
+      <td>0.682948</td>
+      <td>0.683664</td>
     </tr>
   </tbody>
 </table>
@@ -765,15 +696,15 @@ var element = $('#61a92d1e-2ac7-4b83-a70d-4679808427d0');
 
 
 
-<div id="808f639a-10b9-4fab-9d0d-81578e4ca127"></div>
+<div id="4ba8dd56-aeda-4276-86e4-9ee0bf468bb3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#808f639a-10b9-4fab-9d0d-81578e4ca127');
+var element = $('#4ba8dd56-aeda-4276-86e4-9ee0bf468bb3');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
-                var nbb_unformatted_code = "pd.read_csv(\"test_sub/test.csv\").head(2)";
-                var nbb_formatted_code = "pd.read_csv(\"test_sub/test.csv\").head(2)";
+                var nbb_unformatted_code = "num_sub.save_csv(dataf=dataf, file_name='test.csv', target_columns=targets)\npd.read_csv(\"test_sub/test.csv\").head(2)";
+                var nbb_formatted_code = "num_sub.save_csv(dataf=dataf, file_name=\"test.csv\", target_columns=targets)\npd.read_csv(\"test_sub/test.csv\").head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
