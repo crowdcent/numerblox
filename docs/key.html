@@ -29,6 +29,14 @@ nb_path: "nbs/08_key.ipynb"
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Numerai authentication is pretty easily done by passing a <code>pub_id</code> and <code>secret_key</code> for the <code>numerapi</code> APIs.</p>
+<p>However, as stakes get larger we might want additional protection and confidence that credentials are parsed correctly. We might also like to load credentials from a (JSON) file that is stored safely somewhere. This section offers tools to safely load and use Numerai credentials.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -42,49 +50,74 @@ nb_path: "nbs/08_key.ipynb"
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The <a href="/numerai_blocks/key.html#Key"><code>Key</code></a> object ensures immutability of your credentials and allows you to either initialize from Python variables or load from a JSON file.</p>
+<p>In order to <a href="/numerai_blocks/key.html#load_key_from_json"><code>load_key_from_json</code></a>, the file should have the following format:</p>
+<div class="highlight"><pre><span></span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;pub_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PUBLIC_ID&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;secret_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SECRET_KEY&quot;</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Key</span><span class="p">:</span>
-    <span class="n">pub_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">secret_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="c1"># Decode credentials</span>
-    <span class="n">pub_id</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">pub_id</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-    <span class="n">secret_key</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<div class="output_wrapper">
+<div class="output">
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:key: Intialized </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="si">}</span><span class="s2"> :key:&quot;</span><span class="p">)</span>
+<div class="output_area">
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Numerai Authentication Key. pub_id: &#39;</span><span class="si">{</span><span class="n">pub_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="Key" class="doc_header"><code>class</code> <code>Key</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/key.py#L12" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Key</code>(<strong><code>pub_id</code></strong>:<code>str</code>=<em><code>''</code></em>, <strong><code>secret_key</code></strong>:<code>str</code>=<em><code>''</code></em>)</p>
+</blockquote>
+<p>Immutable and validated Numerai credentials.</p>
 
-<span class="k">def</span> <span class="nf">load_key_from_json</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialize Key object from JSON file.</span>
-<span class="sd">    Credentials file should have the following format:</span>
-<span class="sd">    {</span>
-<span class="sd">    &quot;pub_id&quot;: &quot;PUBLIC_ID&quot;,</span>
-<span class="sd">    &quot;secret_key&quot;: &quot;SECRET_KEY&quot;</span>
-<span class="sd">    }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
-        <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">pub_id</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]</span>
-    <span class="n">secret_key</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;secret_key&#39;</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Key</span><span class="p">(</span><span class="n">pub_id</span><span class="o">=</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="n">secret_key</span><span class="p">)</span>
-</pre></div>
+</div>
 
-    </div>
+</div>
+
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="load_key_from_json" class="doc_header"><code>load_key_from_json</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/key.py#L30" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>load_key_from_json</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+</blockquote>
+<p>Initialize Key object from JSON file.
+Credentials file should have the following format:
+{
+"pub_id": "PUBLIC_ID",
+"secret_key": "SECRET_KEY"
+}</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -94,15 +127,15 @@ nb_path: "nbs/08_key.ipynb"
 
 
 
-<div id="4a4341bd-bb41-464b-b651-2292662a9eb7"></div>
+<div id="72b4780c-cb0e-4037-bdeb-6f08d812854a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
+var element = $('#72b4780c-cb0e-4037-bdeb-6f08d812854a');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "@dataclass(frozen=True)\nclass Key:\n    pub_id: str = \"\"\n    secret_key: str = \"\"\n    # Decode credentials\n    pub_id = base64.b64decode(pub_id).decode('utf-8')\n    secret_key = base64.b64decode(secret_key).decode('utf-8')\n\n    def __post_init__(self):\n        rich_print(f\":key: Intialized {self.__repr__} :key:\")\n\n    def __repr__(self):\n        return f\"Numerai Authentication Key. pub_id: '{pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file should have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data['pub_id']\n    secret_key = json_data['secret_key']\n    return Key(pub_id=pub_id, secret_key=secret_key)";
-                var nbb_formatted_code = "@dataclass(frozen=True)\nclass Key:\n    pub_id: str = \"\"\n    secret_key: str = \"\"\n    # Decode credentials\n    pub_id = base64.b64decode(pub_id).decode(\"utf-8\")\n    secret_key = base64.b64decode(secret_key).decode(\"utf-8\")\n\n    def __post_init__(self):\n        rich_print(f\":key: Intialized {self.__repr__} :key:\")\n\n    def __repr__(self):\n        return f\"Numerai Authentication Key. pub_id: '{pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file should have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_unformatted_code = "#export\n@dataclass(frozen=True)\nclass Key:\n    \"\"\" Immutable and validated Numerai credentials. \"\"\"\n    pub_id: str = \"\"\n    secret_key: str = \"\"\n    # Decode credentials\n    pub_id = base64.b64decode(pub_id, validate=True).decode('utf-8')\n    secret_key = base64.b64decode(secret_key, validate=True).decode('utf-8')\n\n    def __post_init__(self):\n        rich_print(f\":key: Intialized {self.__repr__()} :key:\")\n\n    def __repr__(self):\n        return f\"Numerai Authentication Key. pub_id: '{pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file should have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data['pub_id']\n    secret_key = json_data['secret_key']\n    return Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_formatted_code = "# export\n@dataclass(frozen=True)\nclass Key:\n    \"\"\"Immutable and validated Numerai credentials.\"\"\"\n\n    pub_id: str = \"\"\n    secret_key: str = \"\"\n    # Decode credentials\n    pub_id = base64.b64decode(pub_id, validate=True).decode(\"utf-8\")\n    secret_key = base64.b64decode(secret_key, validate=True).decode(\"utf-8\")\n\n    def __post_init__(self):\n        rich_print(f\":key: Intialized {self.__repr__()} :key:\")\n\n    def __repr__(self):\n        return f\"Numerai Authentication Key. pub_id: '{pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file should have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -127,7 +160,7 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Example-usage-(variable-input)">Example usage (variable input)<a class="anchor-link" href="#Example-usage-(variable-input)"> </a></h2>
+<h3 id="Example-initialization-from-variables">Example initialization from variables<a class="anchor-link" href="#Example-initialization-from-variables"> </a></h3>
 </div>
 </div>
 </div>
@@ -138,10 +171,8 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pub_id</span> <span class="o">=</span><span class="s2">&quot;QVdFU09NRV9QVUJMSUNfSUQ=&quot;</span>
-<span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;VkVSWV9FVkVOX01PUkVfU0VDUkVUX0tFWQ==&quot;</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pub_id</span><span class="p">,</span> <span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;QVdFU09NRV9QVUJMSUNfSUQ=&quot;</span><span class="p">,</span> <span class="s2">&quot;VkVSWV9FVkVOX01PUkVfU0VDUkVUX0tFWQ==&quot;</span>
 <span class="n">example_key</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">pub_id</span><span class="o">=</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="n">secret_key</span><span class="p">)</span>
-<span class="n">example_key</span>
 </pre></div>
 
     </div>
@@ -155,8 +186,7 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Intialized <span style="font-weight: bold">&lt;</span><span style="color: #ff00ff; text-decoration-color: #ff00ff; font-weight: bold">bound</span><span style="color: #000000; text-decoration-color: #000000"> method Key.__repr__ of Numerai Authentication Key. pub_id: </span>
-<span style="color: #008000; text-decoration-color: #008000">'QVdFU09NRV9QVUJMSUNfSUQ='</span><span style="font-weight: bold">&gt;</span> 🔑
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Intialized Numerai Authentication Key. pub_id: <span style="color: #008000; text-decoration-color: #008000">'QVdFU09NRV9QVUJMSUNfSUQ='</span> 🔑
 </pre>
 
 </div>
@@ -167,41 +197,28 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 
 
-<div class="output_text output_subarea output_execute_result">
-<pre>Numerai Authentication Key. pub_id: &#39;QVdFU09NRV9QVUJMSUNfSUQ=&#39;</pre>
-</div>
 
-</div>
+<div id="2dd16c58-b8ca-47bd-b98c-0f3e07c4c1b1"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#2dd16c58-b8ca-47bd-b98c-0f3e07c4c1b1');
 
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">example_key</span><span class="o">.</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">example_key</span><span class="o">.</span><span class="n">secret_key</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>(&#39;QVdFU09NRV9QVUJMSUNfSUQ=&#39;, &#39;VkVSWV9FVkVOX01PUkVfU0VDUkVUX0tFWQ==&#39;)</pre>
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "# Random credentials\npub_id, secret_key = \"QVdFU09NRV9QVUJMSUNfSUQ=\", \"VkVSWV9FVkVOX01PUkVfU0VDUkVUX0tFWQ==\"\nexample_key = Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_formatted_code = "# Random credentials\npub_id, secret_key = \"QVdFU09NRV9QVUJMSUNfSUQ=\", \"VkVSWV9FVkVOX01PUkVfU0VDUkVUX0tFWQ==\"\nexample_key = Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
 </div>
 
 </div>
@@ -226,12 +243,116 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="a24894f1-947b-4f8d-b022-d0f7518189e5"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#a24894f1-947b-4f8d-b022-d0f7518189e5');
+
+            setTimeout(function() {
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "assert (example_key.pub_id, example_key.secret_key) == (pub_id, secret_key)";
+                var nbb_formatted_code = "assert (example_key.pub_id, example_key.secret_key) == (pub_id, secret_key)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Example-loading-from-JSON">Example loading from JSON<a class="anchor-link" href="#Example-loading-from-JSON"> </a></h2>
+<p>Variables in the <a href="/numerai_blocks/key.html#Key"><code>Key</code></a> class cannot be changed after initialization.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_immutability</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span>
+    <span class="k">except</span> <span class="n">FrozenInstanceError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="c1"># Manipulating Key should raise FrozenInstanceError</span>
+<span class="k">assert</span> <span class="n">test_immutability</span><span class="p">(</span><span class="n">example_key</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="4da9c1dc-1993-46a2-bdfc-b914752cb3d7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#4da9c1dc-1993-46a2-bdfc-b914752cb3d7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "def test_immutability(key):\n    try: \n        key.secret_key = \"HELLO\" \n    except FrozenInstanceError: \n        return True\n    return False\n\n# Manipulating Key should raise FrozenInstanceError\nassert test_immutability(example_key)";
+                var nbb_formatted_code = "def test_immutability(key):\n    try:\n        key.secret_key = \"HELLO\"\n    except FrozenInstanceError:\n        return True\n    return False\n\n\n# Manipulating Key should raise FrozenInstanceError\nassert test_immutability(example_key)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Example-loading-from-JSON">Example loading from JSON<a class="anchor-link" href="#Example-loading-from-JSON"> </a></h3>
 </div>
 </div>
 </div>
@@ -243,7 +364,6 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">example_key2</span> <span class="o">=</span> <span class="n">load_key_from_json</span><span class="p">(</span><span class="s2">&quot;test_assets/test_credentials.json&quot;</span><span class="p">)</span>
-<span class="n">example_key2</span>
 </pre></div>
 
     </div>
@@ -256,9 +376,40 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 <div class="output_area">
 
 
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Intialized Numerai Authentication Key. pub_id: <span style="color: #008000; text-decoration-color: #008000">'QVdFU09NRV9QVUJMSUNfSUQ='</span> 🔑
+</pre>
 
-<div class="output_text output_subarea output_execute_result">
-<pre>Numerai Authentication Key. pub_id: &#39;QVdFU09NRV9QVUJMSUNfSUQ=&#39;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="0d1a20e4-a8a8-4125-9c4f-bca7759869e1"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#0d1a20e4-a8a8-4125-9c4f-bca7759869e1');
+
+            setTimeout(function() {
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "example_key2 = load_key_from_json(\"test_assets/test_credentials.json\")";
+                var nbb_formatted_code = "example_key2 = load_key_from_json(\"test_assets/test_credentials.json\")";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
 </div>
 
 </div>
@@ -269,6 +420,13 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now this <a href="/numerai_blocks/key.html#Key"><code>Key</code></a> correctly contains the credentials specified in <code>test_assets/test_credentials.json</code>.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -276,7 +434,7 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">example_key2</span><span class="o">.</span><span class="n">pub_id</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="p">(</span><span class="n">example_key2</span><span class="o">.</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">example_key2</span><span class="o">.</span><span class="n">secret_key</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;UFVCTElDX0lE&quot;</span><span class="p">,</span> <span class="s2">&quot;U1VQRVJfU0VDUkVUX0tFWQ==&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -290,8 +448,28 @@ var element = $('#4a4341bd-bb41-464b-b651-2292662a9eb7');
 
 
 
-<div class="output_text output_subarea output_execute_result">
-<pre>&#39;UFVCTElDX0lE&#39;</pre>
+
+<div id="5f0b9e16-4f97-44bd-9eb9-843e0f6fec2a"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#5f0b9e16-4f97-44bd-9eb9-843e0f6fec2a');
+
+            setTimeout(function() {
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "assert (example_key2.pub_id, example_key2.secret_key) == (\"UFVCTElDX0lE\", \"U1VQRVJfU0VDUkVUX0tFWQ==\")";
+                var nbb_formatted_code = "assert (example_key2.pub_id, example_key2.secret_key) == (\n    \"UFVCTElDX0lE\",\n    \"U1VQRVJfU0VDUkVUX0tFWQ==\",\n)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
 </div>
 
 </div>
