@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from rich.tree import Tree
 from rich.console import Console
 from rich import print as rich_print
+from transparentpath import TransparentPath as GCSPath
 
 # Cell
 class BaseDownloader(ABC):
@@ -38,6 +39,21 @@ class BaseDownloader(ABC):
         abs_path = self.dir.resolve()
         rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
+
+    def configure_gcs_path(self, bucket_name: str):
+        """
+        Connect to Google Cloud Storage (GCS) bucket.
+        :param bucket_name: Valid GCS bucket that you have access to.
+
+        Credentials are detected automatically with the following process:
+        1.The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.
+        2. You have a valid Cloud SDK installation. In that case you might see the warning : UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. It is up to you to decide what to do with it.
+        3.The machine running the code is itself a GCP machine.
+        """
+        GCSPath.set_global_fs("gcs", bucket=bucket_name)
+        self.dir = GCSPath(self.dir)
+        self._create_directory()
+        rich_print(f":cloud: Path {self.dir} configured for Google Cloud Storage. :cloud:")
 
     def _append_folder(self, folder: str) -> Path:
         """
