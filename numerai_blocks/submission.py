@@ -27,8 +27,6 @@ from .key import Key
 class BaseSubmittor(BaseIO):
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
         super(BaseSubmittor, self).__init__(directory_path)
-        self.dir = Path(directory_path)
-        self._create_directory()
         self.api = api
 
     @abstractmethod
@@ -113,27 +111,30 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
         super(NumeraiSignalsSubmittor, self).__init__(directory_path=directory_path, api=api)
-        self.supported_ticker_formats = ['ticker', 'cusip', 'sedol', 'numerai_ticker', 'bloomberg_ticker']
+        self.supported_ticker_formats = ['cusip', 'sedol', 'ticker', 'numerai_ticker', 'bloomberg_ticker']
 
     def save_csv(self, dataf: pd.DataFrame, file_name: str, cols : list = None,
                  *args, **kwargs):
         """
         :param dataf: DataFrame which should have at least the following columns:
-         1. ticker [cusip, sedol, numerai_ticker or bloomberg_ticker]
-         2. friday_date
-         3. data_type
-         4. signal (Values between 0 and 1 (exclusive))
-         :param file_name: Name for file (For example 'sub_<model_name>_round<n>.csv')
-         :param cols: All cols that should be passed to CSV. Defaults to 4 standard columns.
-          ('ticker', 'friday_date', 'data_type' and 'signal')
+         1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)
+         2. signal (Values between 0 and 1 (exclusive))
+         Additional columns for if you include validation data (optional):
+         3. friday_date (YYYYMMDD format date indication)
+         4. data_type ('val' and 'live' partitions)
+
+         :param file_name: For example, 'sub_<model_name>_round<n>.csv'
+         :param cols: All cols that should be passed to CSV. Defaults to 2 standard columns.
+          ('bloomberg_ticker', 'signal')
         """
         if not cols:
-            cols = ['ticker', 'friday_date', 'data_type', 'signal']
+            cols = ['bloomberg_ticker', 'signal']
 
         # Check for valid ticker format
         valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
         if not valid_tickers:
-            raise NotImplementedError(f"Ticker format used in given 'target_columns' ({cols}) is not supported.")
+            raise NotImplementedError(f"No supported ticker format in {cols}). \
+            Supported: '{self.supported_ticker_formats}'")
 
         # signal must be in range (0...1)
         if not dataf['signal'].between(0, 1).all():
