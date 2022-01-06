@@ -47,11 +47,12 @@ class BaseSubmittor(BaseIO):
         """
         full_path = str(self.dir / file_name)
         model_id = self._get_model_id(model_name=model_name)
-        rich_print(f":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:")
+        api_type = str(self.api.__class__.__name__)
+        rich_print(f":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:")
         self.api.upload_predictions(file_path=full_path,
                                     model_id=model_id,
                                     *args, **kwargs)
-        rich_print(f":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
+        rich_print(f":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
 
     def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
         """ Save DataFrame and upload predictions through API. """
@@ -140,4 +141,5 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
             raise ValueError(f"Values in 'signal' must be between 0 and 1 (exclusive). Found min value of '{min_val}' and max value of '{max_val}'")
 
         full_path = str(self.dir / file_name)
+        rich_print(f":page_facing_up: Saving Signals predictions CSV to '{full_path}'. :page_facing_up:")
         dataf[cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
