@@ -8,17 +8,18 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from typeguard import typechecked
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
-from transparentpath import TransparentPath as GCSPath
 
+from .download import BaseIO
 from .key import Key
 
 # Cell
 @typechecked
-class BaseSubmittor(ABC):
+class BaseSubmittor(BaseIO):
     def __init__(self, directory_path: str, key: Key):
+        super(BaseSubmittor, self).__init__(directory_path)
         self.dir = Path(directory_path)
         self._create_directory()
         self.key = key
@@ -37,27 +38,6 @@ class BaseSubmittor(ABC):
         """ Save DataFrame and upload predictions through API. """
         self.save_csv(dataf=dataf, file_name=file_name, target_columns=target_columns, *args, **kwargs)
         self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)
-
-    def configure_gcs_path(self, bucket_name: str):
-        """
-        Connect to Google Cloud Storage (GCS) bucket.
-        :param bucket_name: Valid GCS bucket that you have access to.
-
-        Credentials are detected automatically with the following process:
-        1.The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.
-        2. You have a valid Cloud SDK installation. In that case you might see the warning : UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. It is up to you to decide what to do with it.
-        3.The machine running the code is itself a GCP machine.
-        """
-        GCSPath.set_global_fs("gcs", bucket=bucket_name)
-        self.dir = GCSPath(self.dir)
-        self._create_directory()
-        rich_print(f":cloud: Path {self.dir} configured for Google Cloud Storage. :cloud:")
-
-    def _create_directory(self):
-        """ Create base directory if it does not exist. """
-        if not self.dir.is_dir():
-            rich_print(f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...")
-            self.dir.mkdir(parents=True, exist_ok=True)
 
     def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, target_columns: list, *args, **kwargs):
         """

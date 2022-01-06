@@ -54,10 +54,10 @@ nb_path: "nbs/09_submission.ipynb"
 
 
 
-<div id="7a210a78-ee41-4f37-9dee-1dc1e2e2a38d"></div>
+<div id="b31852d2-34a7-4fa0-95fb-c321b26fa2cb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7a210a78-ee41-4f37-9dee-1dc1e2e2a38d');
+var element = $('#b31852d2-34a7-4fa0-95fb-c321b26fa2cb');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -109,10 +109,10 @@ var element = $('#7a210a78-ee41-4f37-9dee-1dc1e2e2a38d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseSubmittor" class="doc_header"><code>class</code> <code>BaseSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L19" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>) :: <code>ABC</code></p>
+<h2 id="BaseSubmittor" class="doc_header"><code>class</code> <code>BaseSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L19" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>) :: <a href="/numerai_blocks/download.html#BaseIO"><code>BaseIO</code></a></p>
 </blockquote>
-<p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
+<p>Basic functionality for IO like downloading and uploading.
+:param directory_path: Base folder for IO. Will be created if it does not exist.</p>
 
 </div>
 
@@ -136,15 +136,15 @@ inheritance.</p>
 
 
 
-<div id="59fdbd12-35eb-4157-b393-b2bbea3b6ddc"></div>
+<div id="82fb3c24-7572-479c-a868-f0c6dac13365"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#59fdbd12-35eb-4157-b393-b2bbea3b6ddc');
+var element = $('#82fb3c24-7572-479c-a868-f0c6dac13365');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseSubmittor(ABC):\n    def __init__(self, directory_path: str, key: Key):\n        self.dir = Path(directory_path)\n        self._create_directory()\n        self.key = key\n\n    @abstractmethod\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs):\n        \"\"\" Save DataFrame with 'id' + 'target_columns'. \"\"\"\n        ...\n\n    @abstractmethod\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\" Upload file for given model name through API. \"\"\"\n        ...\n\n    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, target_columns: list, *args, **kwargs):\n        \"\"\" Save DataFrame and upload predictions through API. \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, target_columns=target_columns, *args, **kwargs)\n        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)\n\n    def configure_gcs_path(self, bucket_name: str):\n        \"\"\"\n        Connect to Google Cloud Storage (GCS) bucket.\n        :param bucket_name: Valid GCS bucket that you have access to.\n\n        Credentials are detected automatically with the following process:\n        1.The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.\n        2. You have a valid Cloud SDK installation. In that case you might see the warning : UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. It is up to you to decide what to do with it.\n        3.The machine running the code is itself a GCP machine.\n        \"\"\"\n        GCSPath.set_global_fs(\"gcs\", bucket=bucket_name)\n        self.dir = GCSPath(self.dir)\n        self._create_directory()\n        rich_print(f\":cloud: Path {self.dir} configured for Google Cloud Storage. :cloud:\")\n\n    def _create_directory(self):\n        \"\"\" Create base directory if it does not exist. \"\"\"\n        if not self.dir.is_dir():\n            rich_print(f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\")\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, target_columns: list, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(dataf=dataf,\n                             file_name=file_name,\n                             model_name=model_name,\n                             target_columns=target_columns,\n                             *args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(ABC):\n    def __init__(self, directory_path: str, key: Key):\n        self.dir = Path(directory_path)\n        self._create_directory()\n        self.key = key\n\n    @abstractmethod\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs\n    ):\n        \"\"\"Save DataFrame with 'id' + 'target_columns'.\"\"\"\n        ...\n\n    @abstractmethod\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"Upload file for given model name through API.\"\"\"\n        ...\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        target_columns: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"Save DataFrame and upload predictions through API.\"\"\"\n        self.save_csv(\n            dataf=dataf,\n            file_name=file_name,\n            target_columns=target_columns,\n            *args,\n            **kwargs,\n        )\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def configure_gcs_path(self, bucket_name: str):\n        \"\"\"\n        Connect to Google Cloud Storage (GCS) bucket.\n        :param bucket_name: Valid GCS bucket that you have access to.\n\n        Credentials are detected automatically with the following process:\n        1.The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.\n        2. You have a valid Cloud SDK installation. In that case you might see the warning : UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. It is up to you to decide what to do with it.\n        3.The machine running the code is itself a GCP machine.\n        \"\"\"\n        GCSPath.set_global_fs(\"gcs\", bucket=bucket_name)\n        self.dir = GCSPath(self.dir)\n        self._create_directory()\n        rich_print(\n            f\":cloud: Path {self.dir} configured for Google Cloud Storage. :cloud:\"\n        )\n\n    def _create_directory(self):\n        \"\"\"Create base directory if it does not exist.\"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        target_columns: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            target_columns=target_columns,\n            *args,\n            **kwargs,\n        )";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, key: Key):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.dir = Path(directory_path)\n        self._create_directory()\n        self.key = key\n\n    @abstractmethod\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs):\n        \"\"\" Save DataFrame with 'id' + 'target_columns'. \"\"\"\n        ...\n\n    @abstractmethod\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\" Upload file for given model name through API. \"\"\"\n        ...\n\n    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, target_columns: list, *args, **kwargs):\n        \"\"\" Save DataFrame and upload predictions through API. \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, target_columns=target_columns, *args, **kwargs)\n        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)\n\n    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, target_columns: list, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(dataf=dataf,\n                             file_name=file_name,\n                             model_name=model_name,\n                             target_columns=target_columns,\n                             *args, **kwargs)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, key: Key):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.dir = Path(directory_path)\n        self._create_directory()\n        self.key = key\n\n    @abstractmethod\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, target_columns: list, *args, **kwargs\n    ):\n        \"\"\"Save DataFrame with 'id' + 'target_columns'.\"\"\"\n        ...\n\n    @abstractmethod\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"Upload file for given model name through API.\"\"\"\n        ...\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        target_columns: list,\n        *args,\n        **kwargs\n    ):\n        \"\"\"Save DataFrame and upload predictions through API.\"\"\"\n        self.save_csv(\n            dataf=dataf,\n            file_name=file_name,\n            target_columns=target_columns,\n            *args,\n            **kwargs\n        )\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        target_columns: list,\n        *args,\n        **kwargs\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            target_columns=target_columns,\n            *args,\n            **kwargs\n        )";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -184,7 +184,7 @@ var element = $('#59fdbd12-35eb-4157-b393-b2bbea3b6ddc');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiClassicSubmittor" class="doc_header"><code>class</code> <code>NumeraiClassicSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L74" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
+<h2 id="NumeraiClassicSubmittor" class="doc_header"><code>class</code> <code>NumeraiClassicSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L54" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
 </blockquote>
 <p>Submit for Numerai Classic through NumerAPI
 :param directory_path: Base directory to save and read prediction files from.
@@ -213,10 +213,10 @@ var element = $('#59fdbd12-35eb-4157-b393-b2bbea3b6ddc');
 
 
 
-<div id="af5cfe88-ea08-4676-af8b-b2f221676d29"></div>
+<div id="f4baef6e-e50f-4f81-93fe-19340303f5bd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#af5cfe88-ea08-4676-af8b-b2f221676d29');
+var element = $('#f4baef6e-e50f-4f81-93fe-19340303f5bd');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -251,9 +251,9 @@ var element = $('#af5cfe88-ea08-4676-af8b-b2f221676d29');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">key</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">pub_id</span><span class="o">=</span><span class="s2">&quot;UFVCTElDX0lE&quot;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s2">&quot;U1VQRVJfU0VDUkVUX0tFWQ==&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">classic_key</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">pub_id</span><span class="o">=</span><span class="s2">&quot;UFVCTElDX0lE&quot;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s2">&quot;U1VQRVJfU0VDUkVUX0tFWQ==&quot;</span><span class="p">)</span>
 <span class="n">num_sub</span> <span class="o">=</span> <span class="n">NumeraiClassicSubmittor</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="s2">&quot;test_sub&quot;</span><span class="p">,</span>
-                                  <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+                                  <span class="n">key</span><span class="o">=</span><span class="n">classic_key</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">num_sub</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
 
 <span class="c1"># Create random dataframe</span>
@@ -352,27 +352,27 @@ var element = $('#af5cfe88-ea08-4676-af8b-b2f221676d29');
   </thead>
   <tbody>
     <tr>
-      <th>e7ea82dd-411c-4a5f-8f2f-b3ece34377f3</th>
-      <td>0.278266</td>
-      <td>0.57115</td>
-      <td>0.960328</td>
-      <td>0.674253</td>
-      <td>0.09427</td>
-      <td>0.984954</td>
-      <td>0.855347</td>
-      <td>0.935789</td>
-      <td>0.327705</td>
-      <td>0.213176</td>
-      <td>0.524148</td>
-      <td>0.189792</td>
-      <td>0.262066</td>
-      <td>0.360628</td>
-      <td>0.146035</td>
-      <td>0.567181</td>
-      <td>0.764313</td>
-      <td>0.353695</td>
-      <td>0.519514</td>
-      <td>0.146709</td>
+      <th>dcd99619-af4c-46f5-bdba-5fd9bfbdbc2a</th>
+      <td>0.356854</td>
+      <td>0.210242</td>
+      <td>0.69456</td>
+      <td>0.612327</td>
+      <td>0.068831</td>
+      <td>0.424903</td>
+      <td>0.681421</td>
+      <td>0.108476</td>
+      <td>0.686033</td>
+      <td>0.449581</td>
+      <td>0.721593</td>
+      <td>0.91747</td>
+      <td>0.692445</td>
+      <td>0.935427</td>
+      <td>0.71167</td>
+      <td>0.006138</td>
+      <td>0.98922</td>
+      <td>0.663762</td>
+      <td>0.806196</td>
+      <td>0.258941</td>
     </tr>
   </tbody>
 </table>
@@ -386,15 +386,15 @@ var element = $('#af5cfe88-ea08-4676-af8b-b2f221676d29');
 
 
 
-<div id="3403ef2a-ad27-4a71-8f66-3534594abc84"></div>
+<div id="d9e1c6e7-d84f-4dae-876c-59e6c155aceb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3403ef2a-ad27-4a71-8f66-3534594abc84');
+var element = $('#d9e1c6e7-d84f-4dae-876c-59e6c155aceb');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "# Initialization (Random credentials)\nkey = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=\"test_sub\",\n                                  key=key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"target_{i}\" for i in range(n_columns)]\ndataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ndataf['id'] = [uuid.uuid4() for _ in range(n_rows)]\ndataf = dataf.set_index('id')\ndataf.head(1)";
-                var nbb_formatted_code = "# Initialization (Random credentials)\nkey = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=\"test_sub\", key=key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"target_{i}\" for i in range(n_columns)]\ndataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ndataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ndataf = dataf.set_index(\"id\")\ndataf.head(1)";
+                var nbb_unformatted_code = "# Initialization (Random credentials)\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=\"test_sub\",\n                                  key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"target_{i}\" for i in range(n_columns)]\ndataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ndataf['id'] = [uuid.uuid4() for _ in range(n_rows)]\ndataf = dataf.set_index('id')\ndataf.head(1)";
+                var nbb_formatted_code = "# Initialization (Random credentials)\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=\"test_sub\", key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"target_{i}\" for i in range(n_columns)]\ndataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ndataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ndataf = dataf.set_index(\"id\")\ndataf.head(1)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -439,10 +439,10 @@ var element = $('#3403ef2a-ad27-4a71-8f66-3534594abc84');
 
 
 
-<div id="5f13e0f9-7789-45af-8c6e-541d8b875ffb"></div>
+<div id="2604609b-1f5d-4776-8d2f-fd6ec214aef1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5f13e0f9-7789-45af-8c6e-541d8b875ffb');
+var element = $('#2604609b-1f5d-4776-8d2f-fd6ec214aef1');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -547,51 +547,51 @@ var element = $('#5f13e0f9-7789-45af-8c6e-541d8b875ffb');
   <tbody>
     <tr>
       <th>0</th>
-      <td>e7ea82dd-411c-4a5f-8f2f-b3ece34377f3</td>
-      <td>0.278266</td>
-      <td>0.571150</td>
-      <td>0.960328</td>
-      <td>0.674253</td>
-      <td>0.09427</td>
-      <td>0.984954</td>
-      <td>0.855347</td>
-      <td>0.935789</td>
-      <td>0.327705</td>
+      <td>dcd99619-af4c-46f5-bdba-5fd9bfbdbc2a</td>
+      <td>0.356854</td>
+      <td>0.210242</td>
+      <td>0.694560</td>
+      <td>0.612327</td>
+      <td>0.068831</td>
+      <td>0.424903</td>
+      <td>0.681421</td>
+      <td>0.108476</td>
+      <td>0.686033</td>
       <td>...</td>
-      <td>0.524148</td>
-      <td>0.189792</td>
-      <td>0.262066</td>
-      <td>0.360628</td>
-      <td>0.146035</td>
-      <td>0.567181</td>
-      <td>0.764313</td>
-      <td>0.353695</td>
-      <td>0.519514</td>
-      <td>0.146709</td>
+      <td>0.721593</td>
+      <td>0.91747</td>
+      <td>0.692445</td>
+      <td>0.935427</td>
+      <td>0.711670</td>
+      <td>0.006138</td>
+      <td>0.989220</td>
+      <td>0.663762</td>
+      <td>0.806196</td>
+      <td>0.258941</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>bfb1ebed-0ed9-4ea5-9479-cbbee2cb02ca</td>
-      <td>0.810822</td>
-      <td>0.234707</td>
-      <td>0.529869</td>
-      <td>0.763643</td>
-      <td>0.14500</td>
-      <td>0.155458</td>
-      <td>0.846352</td>
-      <td>0.658247</td>
-      <td>0.225318</td>
+      <td>8864ba30-1685-4a58-a417-b6820cd5d275</td>
+      <td>0.057623</td>
+      <td>0.698108</td>
+      <td>0.880435</td>
+      <td>0.946488</td>
+      <td>0.195565</td>
+      <td>0.542124</td>
+      <td>0.814636</td>
+      <td>0.239006</td>
+      <td>0.773203</td>
       <td>...</td>
-      <td>0.866812</td>
-      <td>0.158678</td>
-      <td>0.136907</td>
-      <td>0.800027</td>
-      <td>0.572910</td>
-      <td>0.192533</td>
-      <td>0.096786</td>
-      <td>0.038681</td>
-      <td>0.437323</td>
-      <td>0.454955</td>
+      <td>0.518857</td>
+      <td>0.17776</td>
+      <td>0.151123</td>
+      <td>0.736674</td>
+      <td>0.926641</td>
+      <td>0.436305</td>
+      <td>0.023097</td>
+      <td>0.938972</td>
+      <td>0.065533</td>
+      <td>0.607959</td>
     </tr>
   </tbody>
 </table>
@@ -606,10 +606,10 @@ var element = $('#5f13e0f9-7789-45af-8c6e-541d8b875ffb');
 
 
 
-<div id="05f90a0f-adfe-4de9-b7b5-da48434ec656"></div>
+<div id="2cffa30b-71ab-49e4-95ec-c715faa65dbc"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#05f90a0f-adfe-4de9-b7b5-da48434ec656');
+var element = $('#2cffa30b-71ab-49e4-95ec-c715faa65dbc');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
