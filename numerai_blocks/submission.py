@@ -7,6 +7,7 @@ import os
 import uuid
 import numpy as np
 import pandas as pd
+from typing import Union
 from pathlib import Path
 from copy import deepcopy
 from random import choices
@@ -24,11 +25,11 @@ from .key import Key
 # Cell
 @typechecked
 class BaseSubmittor(BaseIO):
-    def __init__(self, directory_path: str, key: Key):
+    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
         super(BaseSubmittor, self).__init__(directory_path)
         self.dir = Path(directory_path)
         self._create_directory()
-        self.key = key
+        self.api = api
 
     @abstractmethod
     def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):
@@ -38,10 +39,19 @@ class BaseSubmittor(BaseIO):
         """
         ...
 
-    @abstractmethod
     def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):
-        """ Upload file for given model name through API. """
-        ...
+        """
+        Upload CSV file to Numerai for given model name.
+        :param file_name: File name/path relative to directory_path.
+        :param model_name: Lowercase raw model name (For example, 'integration_test').
+        """
+        full_path = str(self.dir / file_name)
+        model_id = self._get_model_id(model_name=model_name)
+        rich_print(f":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:")
+        self.api.upload_predictions(file_path=full_path,
+                                    model_id=model_id,
+                                    *args, **kwargs)
+        rich_print(f":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
 
     def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
         """ Save DataFrame and upload predictions through API. """
@@ -59,17 +69,26 @@ class BaseSubmittor(BaseIO):
                              cols=cols,
                              *args, **kwargs)
 
+    def _get_model_id(self, model_name: str) -> str:
+        """ Get ID needed for prediction uploading. """
+        return self.get_model_mapping()[model_name]
+
+    @property
+    def get_model_mapping(self) -> dict:
+        """ Mapping between raw model names and model IDs. """
+        return self.api.get_models()
+
 # Cell
 class NumeraiClassicSubmittor(BaseSubmittor):
     """
-    Submit for Numerai Classic through NumerAPI
+    Submit for Numerai Classic.
     :param directory_path: Base directory to save and read prediction files from.
     :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.
     *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
-        super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, key=key)
-        self.napi = NumerAPI(public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs)
+        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
+        super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, api=api)
 
     def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):
         """
@@ -81,29 +100,18 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         rich_print(f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:")
         dataf[cols].to_csv(full_path, *args, **kwargs)
 
-    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):
-        full_path = str(self.dir / file_name)
-        model_id = self._get_model_id(model_name=model_name)
-        rich_print(f":airplane: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:")
-        self.napi.upload_predictions(file_path=full_path,
-                                     model_id=model_id,
-                                     *args, **kwargs)
-        rich_print(f":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
-
-    def _get_model_id(self, model_name: str) -> str:
-        """ Get ID needed for prediction uploading. """
-        return self.get_model_mapping()[model_name]
-
-    @property
-    def get_model_mapping(self) -> dict:
-        """ Mapping between raw model names and model IDs. """
-        return self.napi.get_models()
 
 # Cell
 class NumeraiSignalsSubmittor(BaseSubmittor):
+    """
+    Submit for Numerai Signals
+    :param directory_path: Base directory to save and read prediction files from.
+    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Signals.
+    *args, **kwargs will be passed to SignalsAPI initialization.
+    """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
-        super(NumeraiSignalsSubmittor, self).__init__(directory_path=directory_path, key=key)
-        self.sapi = SignalsAPI(public_id=self.key.pub_id, secret_key=self.key.secret_key, *args, **kwargs)
+        api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
+        super(NumeraiSignalsSubmittor, self).__init__(directory_path=directory_path, api=api)
         self.supported_ticker_formats = ['ticker', 'cusip', 'sedol', 'numerai_ticker', 'bloomberg_ticker']
 
     def save_csv(self, dataf: pd.DataFrame, file_name: str, cols : list = None,
@@ -114,36 +122,22 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
          2. friday_date
          3. data_type
          4. signal (Values between 0 and 1 (exclusive))
+         :param file_name: Name for file (For example 'sub_<model_name>_round<n>.csv')
+         :param cols: All cols that should be passed to CSV. Defaults to 4 standard columns.
+          ('ticker', 'friday_date', 'data_type' and 'signal')
         """
         if not cols:
             cols = ['ticker', 'friday_date', 'data_type', 'signal']
 
-        # Check for valid prediction format
+        # Check for valid ticker format
         valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
         if not valid_tickers:
             raise NotImplementedError(f"Ticker format used in given 'target_columns' ({cols}) is not supported.")
 
+        # signal must be in range (0...1)
         if not dataf['signal'].between(0, 1).all():
             min_val, max_val = dataf['signal'].min(), dataf['signal'].max()
             raise ValueError(f"Values in 'signal' must be between 0 and 1 (exclusive). Found min value of '{min_val}' and max value of '{max_val}'")
 
         full_path = str(self.dir / file_name)
         dataf[cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
-
-    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):
-        full_path = str(self.dir / file_name)
-        model_id = self._get_model_id(model_name=model_name)
-        rich_print(f":airplane: Uploading Signals predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:")
-        self.sapi.upload_predictions(file_path=full_path,
-                                     model_id=model_id,
-                                     *args, **kwargs)
-        rich_print(f":thumbs_up: Submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
-
-    def _get_model_id(self, model_name: str) -> str:
-        """ Get ID needed for prediction uploading. """
-        return self.get_model_mapping()[model_name]
-
-    @property
-    def get_model_mapping(self) -> dict:
-        """ Mapping between raw model names and model IDs. """
-        return self.sapi.get_models()
