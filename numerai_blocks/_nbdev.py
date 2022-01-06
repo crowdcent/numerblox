@@ -8,7 +8,8 @@ index = {"BaseIO": "00_download.ipynb",
          "Key": "08_key.ipynb",
          "load_key_from_json": "08_key.ipynb",
          "BaseSubmittor": "09_submission.ipynb",
-         "NumeraiClassicSubmittor": "09_submission.ipynb"}
+         "NumeraiClassicSubmittor": "09_submission.ipynb",
+         "NumeraiSignalsSubmittor": "09_submission.ipynb"}
 
 modules = ["download.py",
            "key.py",
