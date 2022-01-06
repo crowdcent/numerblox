@@ -35,10 +35,10 @@ class BaseIO(ABC):
         Connect to Google Cloud Storage (GCS) bucket.
         :param bucket_name: Valid GCS bucket that you have access to.
 
-        Credentials are detected automatically with the following process:
-        1.The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.
-        2. You have a valid Cloud SDK installation. In that case you might see the warning : UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. It is up to you to decide what to do with it.
-        3.The machine running the code is itself a GCP machine.
+        Credentials are detected automatically in the following way:
+        1. The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.
+        2. (Fallback 1) You have a valid Cloud SDK installation.
+        3. (Fallback 2) The machine running the code is a GCP machine.
         """
         GCSPath.set_global_fs("gcs", bucket=bucket_name)
         self.dir = GCSPath(self.dir)
