@@ -4,15 +4,20 @@ __all__ = ['BaseIO', 'BaseDownloader', 'NumeraiClassicDownloader']
 
 # Cell
 import os
+import glob
 import json
 import shutil
-from numerapi import NumerAPI, SignalsAPI
+from rich.tree import Tree
+from datetime import datetime
+from rich.console import Console
 from pathlib import Path, PosixPath
 from abc import ABC, abstractmethod
-from rich.tree import Tree
-from rich.console import Console
 from rich import print as rich_print
+from numerapi import NumerAPI, SignalsAPI
+from dateutil.relativedelta import relativedelta, FR
 from transparentpath import TransparentPath as GCSPath
+
+from google.cloud import storage
 
 # Cell
 class BaseIO(ABC):
@@ -30,20 +35,38 @@ class BaseIO(ABC):
         rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
 
-    def configure_gcs_path(self, bucket_name: str):
-        """
-        Connect to Google Cloud Storage (GCS) bucket.
-        :param bucket_name: Valid GCS bucket that you have access to.
+    def download_file_from_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
+        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
+        blob.download_to_filename(file_name=local_path)
+        rich_print(f":package: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local file '{local_path}'. :page_facing_up: :package:")
 
-        Credentials are detected automatically in the following way:
-        1. The environment variable `GOOGLE_APPLICATION_CREDENTIALS` is set and points to a valid `.json` file.
-        2. (Fallback 1) You have a valid Cloud SDK installation.
-        3. (Fallback 2) The machine running the code is a GCP machine.
-        """
-        GCSPath.set_global_fs("gcs", bucket=bucket_name)
-        self.dir = GCSPath(self.dir)
-        self._create_directory()
-        rich_print(f":cloud: Path {self.dir} configured for Google Cloud Storage. :cloud:")
+    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
+        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
+        blob.upload_from_filename(file_name=local_path)
+        rich_print(f":package: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :package:")
+
+    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):
+        blob_path = self.dir.resolve()
+        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
+        for gcs_file in glob.glob(gcs_path + '/**', recursive=True):
+            if os.path.isfile(gcs_file):
+                blob.download_to_filename(blob_path)
+        rich_print(f":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:")
+
+    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):
+        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
+        for local_path in glob.glob(self.dir + '/**', recursive=True):
+            if os.path.isfile(local_path):
+                blob.upload_from_filename(gcs_path + local_path)
+        rich_print(f":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:")
+
+    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:
+        """ Create blob that interacts with Google Cloud Storage (GCS) """
+        client = storage.Client()
+        # https://console.cloud.google.com/storage/browser/[bucket-id]/
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.blob(blob_path=blob_path)
+        return blob
 
     def _append_folder(self, folder: str) -> Path:
         """
