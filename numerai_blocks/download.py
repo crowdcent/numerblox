@@ -35,10 +35,11 @@ class BaseIO(ABC):
         rich_print(f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
 
-    def download_file_from_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
-        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
+    def download_file_from_gcs(self, bucket_name: str, local_path: str):
+        blob_path = self.dir.resolve()
+        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
         blob.download_to_filename(file_name=local_path)
-        rich_print(f":package: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local file '{local_path}'. :page_facing_up: :package:")
+        rich_print(f":package: :page_facing_up: Downloaded GCS object '{blob_path}' from bucket '{blob.bucket.id}' to local file '{local_path}'. :page_facing_up: :package:")
 
     def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
