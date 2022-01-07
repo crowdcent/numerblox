@@ -15,7 +15,6 @@ from abc import ABC, abstractmethod
 from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
-from transparentpath import TransparentPath as GCSPath
 
 from google.cloud import storage
 
@@ -36,18 +35,18 @@ class BaseIO(ABC):
         shutil.rmtree(abs_path)
 
     def download_file_from_gcs(self, bucket_name: str, local_path: str):
-        blob_path = self.dir.resolve()
+        blob_path = str(self.dir.resolve())
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
-        blob.download_to_filename(file_name=local_path)
-        rich_print(f":package: :page_facing_up: Downloaded GCS object '{blob_path}' from bucket '{blob.bucket.id}' to local file '{local_path}'. :page_facing_up: :package:")
+        blob.download_to_filename(local_path)
+        rich_print(f":cloud: :page_facing_up: Downloaded GCS object '{blob_path}' from bucket '{blob.bucket.id}' to local file '{local_path}'. :page_facing_up: :cloud:")
 
     def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
-        blob.upload_from_filename(file_name=local_path)
-        rich_print(f":package: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :package:")
+        blob.upload_from_filename(local_path)
+        rich_print(f":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:")
 
     def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):
-        blob_path = self.dir.resolve()
+        blob_path = str(self.dir.resolve())
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
         for gcs_file in glob.glob(gcs_path + '/**', recursive=True):
             if os.path.isfile(gcs_file):
@@ -56,9 +55,9 @@ class BaseIO(ABC):
 
     def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
-        for local_path in glob.glob(self.dir + '/**', recursive=True):
+        for local_path in glob.glob(str(self.dir) + '/**', recursive=True):
             if os.path.isfile(local_path):
-                blob.upload_from_filename(gcs_path + local_path)
+                blob.upload_from_filename(local_path)
         rich_print(f":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:")
 
     def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:
@@ -66,7 +65,7 @@ class BaseIO(ABC):
         client = storage.Client()
         # https://console.cloud.google.com/storage/browser/[bucket-id]/
         bucket = client.get_bucket(bucket_name)
-        blob = bucket.blob(blob_path=blob_path)
+        blob = bucket.blob(blob_path)
         return blob
 
     def _append_folder(self, folder: str) -> Path:
