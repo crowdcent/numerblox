@@ -52,9 +52,12 @@ class BaseSubmittor(BaseIO):
         rich_print(f":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
 
     def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
-        """ Save DataFrame and upload predictions through API. """
-        self.save_csv(dataf=dataf, file_name=file_name, cols=cols, *args, **kwargs)
-        self.upload_predictions(file_name=file_name, model_name=model_name)
+        """
+        Save DataFrame to csv and upload predictions through API.
+        *args, **kwargs are passed to numerapi API.
+        """
+        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)
+        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)
 
     def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
         """
