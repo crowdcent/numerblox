@@ -69,7 +69,7 @@ class BaseSubmittor(BaseIO):
 
     def _get_model_id(self, model_name: str) -> str:
         """ Get ID needed for prediction uploading. """
-        return self.get_model_mapping()[model_name]
+        return self.get_model_mapping[model_name]
 
     @property
     def get_model_mapping(self) -> dict:
