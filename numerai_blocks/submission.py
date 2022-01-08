@@ -54,7 +54,7 @@ class BaseSubmittor(BaseIO):
     def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
         """ Save DataFrame and upload predictions through API. """
         self.save_csv(dataf=dataf, file_name=file_name, cols=cols, *args, **kwargs)
-        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)
+        self.upload_predictions(file_name=file_name, model_name=model_name)
 
     def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
         """
