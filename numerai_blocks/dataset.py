@@ -9,6 +9,7 @@ import pandas as pd
 from copy import deepcopy
 import json
 from pathlib import Path
+from typing import Union
 import datetime as dt
 from functools import wraps
 from rich import print as rich_print

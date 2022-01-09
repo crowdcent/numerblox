@@ -10,6 +10,7 @@ import shutil
 from rich.tree import Tree
 from datetime import datetime
 from rich.console import Console
+from typeguard import typechecked
 from pathlib import Path, PosixPath
 from abc import ABC, abstractmethod
 from rich import print as rich_print
@@ -19,6 +20,7 @@ from dateutil.relativedelta import relativedelta, FR
 from google.cloud import storage
 
 # Cell
+@typechecked
 class BaseIO(ABC):
     """
     Basic functionality for IO like downloading and uploading.
@@ -70,7 +72,7 @@ class BaseIO(ABC):
 
     def _append_folder(self, folder: str) -> Path:
         """
-        Return base directory appended with 'folder'.
+        Return base directory Path appended with 'folder'.
         Create directory if it does not exist.
         """
         dir = Path(self.dir / folder)
@@ -94,6 +96,7 @@ class BaseIO(ABC):
         return not bool(self.get_all_files)
 
 # Cell
+@typechecked
 class BaseDownloader(BaseIO):
     """
     Abstract base class for downloaders.

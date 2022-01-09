@@ -29,7 +29,7 @@ class BaseSubmittor(BaseIO):
         self.api = api
 
     @abstractmethod
-    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):
+    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: Union[str, list], *args, **kwargs):
         """
         For Numerai Classic: Save index column + 'cols' (targets) to CSV.
         For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.
@@ -51,7 +51,7 @@ class BaseSubmittor(BaseIO):
                                     *args, **kwargs)
         rich_print(f":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:")
 
-    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
+    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: Union[str, list], *args, **kwargs):
         """
         Save DataFrame to csv and upload predictions through API.
         *args, **kwargs are passed to numerapi API.
@@ -59,7 +59,7 @@ class BaseSubmittor(BaseIO):
         self.save_csv(dataf=dataf, file_name=file_name, cols=cols)
         self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)
 
-    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):
+    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: Union[str, list], *args, **kwargs):
         """
         The most common use case will be to create a CSV and submit it immediately after that.
         full_submission handles this.
@@ -80,6 +80,7 @@ class BaseSubmittor(BaseIO):
         return self.api.get_models()
 
 # Cell
+@typechecked
 class NumeraiClassicSubmittor(BaseSubmittor):
     """
     Submit for Numerai Classic.
@@ -91,7 +92,7 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
         super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, api=api)
 
-    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):
+    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: Union[str, list], *args, **kwargs):
         """
         :param dataf: DataFrame which should have the following columns:
         1. id (as index column)
@@ -99,10 +100,11 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         """
         full_path = str(self.dir / file_name)
         rich_print(f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:")
-        dataf[cols].to_csv(full_path, *args, **kwargs)
+        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
 
 
 # Cell
+@typechecked
 class NumeraiSignalsSubmittor(BaseSubmittor):
     """
     Submit for Numerai Signals
@@ -145,4 +147,4 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
 
         full_path = str(self.dir / file_name)
         rich_print(f":page_facing_up: Saving Signals predictions CSV to '{full_path}'. :page_facing_up:")
-        dataf[cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
+        dataf.loc[:, cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
