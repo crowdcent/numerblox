@@ -12,6 +12,7 @@ index = {"BaseIO": "00_download.ipynb",
          "NumeraiSignalsSubmittor": "09_submission.ipynb"}
 
 modules = ["download.py",
+           "dataset.py",
            "key.py",
            "submission.py"]
 

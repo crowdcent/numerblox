@@ -49,6 +49,690 @@ nb_path: "nbs/02_dataset.ipynb"
 </div>
     {% endraw %}
 
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Considerations">Considerations<a class="anchor-link" href="#Considerations"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Goal: Create dynamic Numerai dataset where we can add metadata and Numerai specific functionality while keeping the flexibility of Pandas DataFrames.</p>
+<p><strong>Options:</strong>
+<strong>1.</strong> Add metadata to DataFrame through <code>df.attrs['META'] = "something"</code>
+1.1. Downside: <a href="https://stackoverflow.com/questions/14688306/adding-meta-information-metadata-to-pandas-dataframe">Not persistent with parquet</a>.</p>
+<p><strong>2.</strong> Subclass from DataFrame and add functionality.
+2.1. Cumbersome when used to using <code>pd.read_csv</code>, <code>pd.read_parquet</code>, etc.
+2.2 More info: <a href="https://stackoverflow.com/questions/22155951/how-can-i-subclass-a-pandas-dataframe">StackOverflow</a>, <a href="https://pandas.pydata.org/pandas-docs/stable/development/extending.html#extending-subclassing-pandas">Pandas Docs</a>.</p>
+<p><strong>3.</strong> Develop dedicated <code>Dataset</code> class on which DataFrame is an attribute (<code>.dataf</code>)
+3.1. Easy to add functionality and typecheck.
+3.2. Does not work out of the box with sklearn Transformers, but can be easily made compatible with a single decorator.
+3.3. Easy to export and import metadata.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Dataset</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span> <span class="o">=</span> <span class="n">dataf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;feature&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;target&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_columns</span>
+
+    <span class="k">def</span> <span class="nf">copy_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Copy Dataset object &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Copy DataFrame part of Dataset &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">export_json_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s2">&quot;config.json&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Export all attributes in Dataset that can be serialized to json file. &quot;&quot;&quot;</span>
+        <span class="n">rich_print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:file_folder: Exporting metadata to </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2"> :file_folder:&quot;</span><span class="p">)</span>
+        <span class="n">json_txt</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="s1">&#39;&lt;not serializable&gt;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">rich_print</span><span class="p">(</span><span class="n">json_txt</span><span class="p">)</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json_txt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">import_json_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s2">&quot;config.json&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Load arbitrary data into Dataset object from json file &quot;&quot;&quot;</span>
+        <span class="n">rich_print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:file_folder: Importing metadata from </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2"> :file_folder:&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">rich_print</span><span class="p">(</span><span class="n">json_data</span><span class="p">)</span>
+        <span class="c1"># Make sure there is no overwrite on DataFrame</span>
+        <span class="n">json_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;dataf&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">json_data</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_feature_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_target_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">]]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_aux_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; All columns that are neither features or targets &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_columns</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Dataset of shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">. Columns: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">all_columns</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Tests">Tests<a class="anchor-link" href="#Tests"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_features</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="s2">&quot;ABCDEFGHIK&quot;</span><span class="p">]</span>
+<span class="n">id_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">test_features</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_col</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;era&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;additional_info&quot;</span><span class="p">:</span> <span class="s2">&quot;test_model&quot;</span><span class="p">,</span> <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;classic&quot;</span><span class="p">}</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>feature_A</th>
+      <th>feature_B</th>
+      <th>feature_C</th>
+      <th>feature_D</th>
+      <th>feature_E</th>
+      <th>feature_F</th>
+      <th>feature_G</th>
+      <th>feature_H</th>
+      <th>feature_I</th>
+      <th>feature_K</th>
+      <th>id</th>
+      <th>target</th>
+      <th>era</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.282598</td>
+      <td>0.545272</td>
+      <td>0.344197</td>
+      <td>0.127119</td>
+      <td>0.388487</td>
+      <td>0.546871</td>
+      <td>0.657288</td>
+      <td>0.400873</td>
+      <td>0.600365</td>
+      <td>0.191064</td>
+      <td>ac775f64c5884973ba1b24bdbb8be913</td>
+      <td>0.731874</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.004041</td>
+      <td>0.788963</td>
+      <td>0.052953</td>
+      <td>0.435246</td>
+      <td>0.420473</td>
+      <td>0.816777</td>
+      <td>0.310608</td>
+      <td>0.081211</td>
+      <td>0.881146</td>
+      <td>0.697920</td>
+      <td>345b7532f7f74f47aff6f96ff95ebf63</td>
+      <td>0.674846</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_feature_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>feature_A</th>
+      <th>feature_B</th>
+      <th>feature_C</th>
+      <th>feature_D</th>
+      <th>feature_E</th>
+      <th>feature_F</th>
+      <th>feature_G</th>
+      <th>feature_H</th>
+      <th>feature_I</th>
+      <th>feature_K</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.282598</td>
+      <td>0.545272</td>
+      <td>0.344197</td>
+      <td>0.127119</td>
+      <td>0.388487</td>
+      <td>0.546871</td>
+      <td>0.657288</td>
+      <td>0.400873</td>
+      <td>0.600365</td>
+      <td>0.191064</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.004041</td>
+      <td>0.788963</td>
+      <td>0.052953</td>
+      <td>0.435246</td>
+      <td>0.420473</td>
+      <td>0.816777</td>
+      <td>0.310608</td>
+      <td>0.081211</td>
+      <td>0.881146</td>
+      <td>0.697920</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">aux_columns</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;id&#39;, &#39;era&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_aux_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>era</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ac775f64c5884973ba1b24bdbb8be913</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>345b7532f7f74f47aff6f96ff95ebf63</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span> <span class="o">==</span> <span class="kc">False</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">export_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 Exporting metadata to config.json 📁
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">import_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 Importing metadata from config.json 📁
+</pre>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{&#39;dataf&#39;:     feature_A  feature_B  feature_C  feature_D  feature_E  feature_F  \
+ 0    0.282598   0.545272   0.344197   0.127119   0.388487   0.546871   
+ 1    0.004041   0.788963   0.052953   0.435246   0.420473   0.816777   
+ 2    0.441437   0.509976   0.500923   0.179379   0.521265   0.228809   
+ 3    0.647950   0.298224   0.147093   0.505925   0.016163   0.993806   
+ 4    0.653441   0.127955   0.046359   0.738709   0.413615   0.119128   
+ ..        ...        ...        ...        ...        ...        ...   
+ 95   0.996016   0.661006   0.481067   0.197794   0.745087   0.028905   
+ 96   0.586763   0.332219   0.555999   0.388498   0.746459   0.483266   
+ 97   0.209631   0.518155   0.142643   0.538900   0.861116   0.442582   
+ 98   0.300793   0.703907   0.285225   0.223078   0.667507   0.104839   
+ 99   0.282371   0.527017   0.974048   0.259523   0.403430   0.760588   
+ 
+     feature_G  feature_H  feature_I  feature_K  \
+ 0    0.657288   0.400873   0.600365   0.191064   
+ 1    0.310608   0.081211   0.881146   0.697920   
+ 2    0.601045   0.489143   0.894882   0.869351   
+ 3    0.325576   0.524060   0.052193   0.160676   
+ 4    0.520915   0.950844   0.541873   0.713047   
+ ..        ...        ...        ...        ...   
+ 95   0.943208   0.488775   0.687355   0.707823   
+ 96   0.311444   0.429735   0.851383   0.758398   
+ 97   0.357202   0.787801   0.456261   0.668677   
+ 98   0.711905   0.656806   0.813214   0.463384   
+ 99   0.689581   0.725541   0.768376   0.617320   
+ 
+                                   id    target  era  
+ 0   ac775f64c5884973ba1b24bdbb8be913  0.731874    0  
+ 1   345b7532f7f74f47aff6f96ff95ebf63  0.674846    1  
+ 2   a3c5064c4d79479bae132677f6c27b45  1.959768    2  
+ 3   f8668571b1924686a41853265adb7404  0.408584    3  
+ 4   09a10b24f3a648189cfcede272832596  0.435376    4  
+ ..                               ...       ...  ...  
+ 95  4625830b04b04a71823a3252e1941c24 -1.396366   95  
+ 96  025696b7a9504a26973df9ea05631d6b  0.235845   96  
+ 97  4a3950653ece470fb33c198908dda6c2  0.041430   97  
+ 98  6e1dbdc8e44c4f2481c1e4b411687662  1.545182   98  
+ 99  016f85ee764a4e20b69d5f0f283d75d2  0.484168   99  
+ 
+ [100 rows x 13 columns],
+ &#39;version&#39;: 2,
+ &#39;additional_info&#39;: &#39;test_model&#39;,
+ &#39;multi_target&#39;: False,
+ &#39;tournament_type&#39;: &#39;classic&#39;,
+ &#39;features&#39;: [&#39;feature_A&#39;,
+  &#39;feature_B&#39;,
+  &#39;feature_C&#39;,
+  &#39;feature_D&#39;,
+  &#39;feature_E&#39;,
+  &#39;feature_F&#39;,
+  &#39;feature_G&#39;,
+  &#39;feature_H&#39;,
+  &#39;feature_I&#39;,
+  &#39;feature_K&#39;],
+ &#39;targets&#39;: [&#39;target&#39;],
+ &#39;aux_columns&#39;: [&#39;id&#39;, &#39;era&#39;],
+ &#39;all_columns&#39;: [&#39;feature_A&#39;,
+  &#39;feature_B&#39;,
+  &#39;feature_C&#39;,
+  &#39;feature_D&#39;,
+  &#39;feature_E&#39;,
+  &#39;feature_F&#39;,
+  &#39;feature_G&#39;,
+  &#39;feature_H&#39;,
+  &#39;feature_I&#39;,
+  &#39;feature_K&#39;,
+  &#39;target&#39;,
+  &#39;id&#39;,
+  &#39;era&#39;]}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf2</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy_dataframe</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">dataf2</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">str</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#34;Dataset of shape (100, 13). Columns: [&#39;feature_A&#39;, &#39;feature_B&#39;, &#39;feature_C&#39;, &#39;feature_D&#39;, &#39;feature_E&#39;, &#39;feature_F&#39;, &#39;feature_G&#39;, &#39;feature_H&#39;, &#39;feature_I&#39;, &#39;feature_K&#39;, &#39;target&#39;, &#39;id&#39;, &#39;era&#39;]&#34;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+
+</div>
+</div>
+</div>
 </div>
  
 

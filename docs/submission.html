@@ -54,10 +54,10 @@ nb_path: "nbs/09_submission.ipynb"
 
 
 
-<div id="faa3cafa-9976-40a8-91d6-c13384a617f9"></div>
+<div id="a0acfcea-0d92-489f-8cb1-7a2e1bf136f3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#faa3cafa-9976-40a8-91d6-c13384a617f9');
+var element = $('#a0acfcea-0d92-489f-8cb1-7a2e1bf136f3');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -136,15 +136,15 @@ var element = $('#faa3cafa-9976-40a8-91d6-c13384a617f9');
 
 
 
-<div id="bcce26b3-5184-4507-9503-e5751141b108"></div>
+<div id="adae44c3-722c-4811-b300-4cfba6d07921"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#bcce26b3-5184-4507-9503-e5751141b108');
+var element = $('#adae44c3-722c-4811-b300-4cfba6d07921');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\")\n        self.api.upload_predictions(file_path=full_path,\n                                    model_id=model_id,\n                                    *args, **kwargs)\n        rich_print(f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\")\n\n    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):\n        \"\"\" Save DataFrame and upload predictions through API. \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols, *args, **kwargs)\n        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)\n\n    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(dataf=dataf,\n                             file_name=file_name,\n                             model_name=model_name,\n                             cols=cols,\n                             *args, **kwargs)\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\" Get ID needed for prediction uploading. \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\" Mapping between raw model names and model IDs. \"\"\"\n        return self.api.get_models()";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"Save DataFrame and upload predictions through API.\"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols, *args, **kwargs)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"Get ID needed for prediction uploading.\"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\")\n        self.api.upload_predictions(file_path=full_path,\n                                    model_id=model_id,\n                                    *args, **kwargs)\n        rich_print(f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\")\n\n    def full_submission(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)\n\n    def __call__(self, dataf: pd.DataFrame, file_name: str, model_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(dataf=dataf,\n                             file_name=file_name,\n                             model_name=model_name,\n                             cols=cols,\n                             *args, **kwargs)\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\" Get ID needed for prediction uploading. \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\" Mapping between raw model names and model IDs. \"\"\"\n        return self.api.get_models()";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super(BaseSubmittor, self).__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: list,\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"Get ID needed for prediction uploading.\"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -184,7 +184,7 @@ var element = $('#bcce26b3-5184-4507-9503-e5751141b108');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiClassicSubmittor" class="doc_header"><code>class</code> <code>NumeraiClassicSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L80" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
+<h2 id="NumeraiClassicSubmittor" class="doc_header"><code>class</code> <code>NumeraiClassicSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L83" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
 </blockquote>
 <p>Submit for Numerai Classic.
 :param directory_path: Base directory to save and read prediction files from.
@@ -213,13 +213,13 @@ var element = $('#bcce26b3-5184-4507-9503-e5751141b108');
 
 
 
-<div id="913896ad-48a1-48f5-a15b-c8410f8e08f3"></div>
+<div id="921ddf01-d212-4463-9251-ea4e12d9cb41"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#913896ad-48a1-48f5-a15b-c8410f8e08f3');
+var element = $('#921ddf01-d212-4463-9251-ea4e12d9cb41');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 6;
                 var nbb_unformatted_code = "#export\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super(NumeraiClassicSubmittor, self).__init__(directory_path=directory_path, api=api)\n\n    def save_csv(self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs):\n        \"\"\"\n        :param dataf: DataFrame which should have the following columns:\n        1. id (as index column)\n        2. cols (for example ['target'] or [20_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\")\n        dataf[cols].to_csv(full_path, *args, **kwargs)";
                 var nbb_formatted_code = "# export\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super(NumeraiClassicSubmittor, self).__init__(\n            directory_path=directory_path, api=api\n        )\n\n    def save_csv(\n        self, dataf: pd.DataFrame, file_name: str, cols: list, *args, **kwargs\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have the following columns:\n        1. id (as index column)\n        2. cols (for example ['target'] or [20_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf[cols].to_csv(full_path, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -370,50 +370,50 @@ var element = $('#913896ad-48a1-48f5-a15b-c8410f8e08f3');
   </thead>
   <tbody>
     <tr>
-      <th>d0a4e80c-e2d2-48ca-b790-330007f59641</th>
-      <td>0.162053</td>
-      <td>0.965693</td>
-      <td>0.076018</td>
-      <td>0.372342</td>
-      <td>0.119428</td>
-      <td>0.038554</td>
-      <td>0.602378</td>
-      <td>0.115207</td>
-      <td>0.985363</td>
-      <td>0.084058</td>
-      <td>0.335267</td>
-      <td>0.346190</td>
-      <td>0.777650</td>
-      <td>0.018870</td>
-      <td>0.758996</td>
-      <td>0.794419</td>
-      <td>0.537957</td>
-      <td>0.069948</td>
-      <td>0.156740</td>
-      <td>0.172063</td>
+      <th>7edbe6a7-0901-42b9-87b8-a0138bef48c5</th>
+      <td>0.686772</td>
+      <td>0.864970</td>
+      <td>0.663493</td>
+      <td>0.210761</td>
+      <td>0.859928</td>
+      <td>0.934393</td>
+      <td>0.063986</td>
+      <td>0.248330</td>
+      <td>0.420479</td>
+      <td>0.876194</td>
+      <td>0.500969</td>
+      <td>0.869749</td>
+      <td>0.484192</td>
+      <td>0.398168</td>
+      <td>0.362578</td>
+      <td>0.324324</td>
+      <td>0.771843</td>
+      <td>0.937105</td>
+      <td>0.576934</td>
+      <td>0.808104</td>
     </tr>
     <tr>
-      <th>b72ada9d-0f7a-4d3d-98e3-bce50ba5157d</th>
-      <td>0.065375</td>
-      <td>0.135405</td>
-      <td>0.667464</td>
-      <td>0.145253</td>
-      <td>0.895294</td>
-      <td>0.323066</td>
-      <td>0.534806</td>
-      <td>0.196110</td>
-      <td>0.660210</td>
-      <td>0.730089</td>
-      <td>0.477571</td>
-      <td>0.640732</td>
-      <td>0.363463</td>
-      <td>0.029247</td>
-      <td>0.417345</td>
-      <td>0.909742</td>
-      <td>0.977418</td>
-      <td>0.688787</td>
-      <td>0.074716</td>
-      <td>0.343665</td>
+      <th>2d4dc10d-5a95-46ef-a63d-387599dc47ee</th>
+      <td>0.218372</td>
+      <td>0.894792</td>
+      <td>0.201770</td>
+      <td>0.226929</td>
+      <td>0.888452</td>
+      <td>0.821616</td>
+      <td>0.357321</td>
+      <td>0.787994</td>
+      <td>0.132264</td>
+      <td>0.711940</td>
+      <td>0.553403</td>
+      <td>0.193619</td>
+      <td>0.271324</td>
+      <td>0.715528</td>
+      <td>0.452274</td>
+      <td>0.518899</td>
+      <td>0.962098</td>
+      <td>0.176164</td>
+      <td>0.968460</td>
+      <td>0.128662</td>
     </tr>
   </tbody>
 </table>
@@ -427,10 +427,10 @@ var element = $('#913896ad-48a1-48f5-a15b-c8410f8e08f3');
 
 
 
-<div id="b8f613df-7d7e-44ef-bc11-ef8c1e1f5c12"></div>
+<div id="3a210779-8a42-46b2-bd66-db1253c55025"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b8f613df-7d7e-44ef-bc11-ef8c1e1f5c12');
+var element = $('#3a210779-8a42-46b2-bd66-db1253c55025');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -536,51 +536,51 @@ var element = $('#b8f613df-7d7e-44ef-bc11-ef8c1e1f5c12');
   <tbody>
     <tr>
       <th>0</th>
-      <td>d0a4e80c-e2d2-48ca-b790-330007f59641</td>
-      <td>0.162053</td>
-      <td>0.965693</td>
-      <td>0.076018</td>
-      <td>0.372342</td>
-      <td>0.119428</td>
-      <td>0.038554</td>
-      <td>0.602378</td>
-      <td>0.115207</td>
-      <td>0.985363</td>
+      <td>7edbe6a7-0901-42b9-87b8-a0138bef48c5</td>
+      <td>0.686772</td>
+      <td>0.864970</td>
+      <td>0.663493</td>
+      <td>0.210761</td>
+      <td>0.859928</td>
+      <td>0.934393</td>
+      <td>0.063986</td>
+      <td>0.248330</td>
+      <td>0.420479</td>
       <td>...</td>
-      <td>0.335267</td>
-      <td>0.346190</td>
-      <td>0.777650</td>
-      <td>0.018870</td>
-      <td>0.758996</td>
-      <td>0.794419</td>
-      <td>0.537957</td>
-      <td>0.069948</td>
-      <td>0.156740</td>
-      <td>0.172063</td>
+      <td>0.500969</td>
+      <td>0.869749</td>
+      <td>0.484192</td>
+      <td>0.398168</td>
+      <td>0.362578</td>
+      <td>0.324324</td>
+      <td>0.771843</td>
+      <td>0.937105</td>
+      <td>0.576934</td>
+      <td>0.808104</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>b72ada9d-0f7a-4d3d-98e3-bce50ba5157d</td>
-      <td>0.065375</td>
-      <td>0.135405</td>
-      <td>0.667464</td>
-      <td>0.145253</td>
-      <td>0.895294</td>
-      <td>0.323066</td>
-      <td>0.534806</td>
-      <td>0.196110</td>
-      <td>0.660210</td>
+      <td>2d4dc10d-5a95-46ef-a63d-387599dc47ee</td>
+      <td>0.218372</td>
+      <td>0.894792</td>
+      <td>0.201770</td>
+      <td>0.226929</td>
+      <td>0.888452</td>
+      <td>0.821616</td>
+      <td>0.357321</td>
+      <td>0.787994</td>
+      <td>0.132264</td>
       <td>...</td>
-      <td>0.477571</td>
-      <td>0.640732</td>
-      <td>0.363463</td>
-      <td>0.029247</td>
-      <td>0.417345</td>
-      <td>0.909742</td>
-      <td>0.977418</td>
-      <td>0.688787</td>
-      <td>0.074716</td>
-      <td>0.343665</td>
+      <td>0.553403</td>
+      <td>0.193619</td>
+      <td>0.271324</td>
+      <td>0.715528</td>
+      <td>0.452274</td>
+      <td>0.518899</td>
+      <td>0.962098</td>
+      <td>0.176164</td>
+      <td>0.968460</td>
+      <td>0.128662</td>
     </tr>
   </tbody>
 </table>
@@ -595,10 +595,10 @@ var element = $('#b8f613df-7d7e-44ef-bc11-ef8c1e1f5c12');
 
 
 
-<div id="b37dd554-9c5d-4021-8fc3-6c8cdca5db7f"></div>
+<div id="b668abdd-a5a8-4b8f-83a8-4345571c4528"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b37dd554-9c5d-4021-8fc3-6c8cdca5db7f');
+var element = $('#b668abdd-a5a8-4b8f-83a8-4345571c4528');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -649,10 +649,10 @@ var element = $('#b37dd554-9c5d-4021-8fc3-6c8cdca5db7f');
 
 
 
-<div id="f12f5ded-5eb3-4954-bad5-9fd5afe1b67f"></div>
+<div id="b10386bf-ac22-4a77-b2ae-198684510fac"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f12f5ded-5eb3-4954-bad5-9fd5afe1b67f');
+var element = $('#b10386bf-ac22-4a77-b2ae-198684510fac');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -715,10 +715,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="9a549ef0-40ca-47f1-b7fc-86298c172843"></div>
+<div id="68e5c5b1-18ca-48c8-9e97-f27769776102"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9a549ef0-40ca-47f1-b7fc-86298c172843');
+var element = $('#68e5c5b1-18ca-48c8-9e97-f27769776102');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -763,7 +763,7 @@ var element = $('#9a549ef0-40ca-47f1-b7fc-86298c172843');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L103" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
+<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L106" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
 </blockquote>
 <p>Submit for Numerai Signals
 :param directory_path: Base directory to save and read prediction files from.
@@ -792,10 +792,10 @@ var element = $('#9a549ef0-40ca-47f1-b7fc-86298c172843');
 
 
 
-<div id="441ef3b8-7069-4abb-be06-76f203ac24e0"></div>
+<div id="4a7ef945-f429-451f-bfdb-a2c246f0cdfe"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#441ef3b8-7069-4abb-be06-76f203ac24e0');
+var element = $('#4a7ef945-f429-451f-bfdb-a2c246f0cdfe');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -866,10 +866,10 @@ var element = $('#441ef3b8-7069-4abb-be06-76f203ac24e0');
 
 
 
-<div id="38a48bbe-0082-4898-93d1-e1b4086523f8"></div>
+<div id="e1c0ec11-327d-4aa0-bbdd-b2caf7d8c28e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#38a48bbe-0082-4898-93d1-e1b4086523f8');
+var element = $('#e1c0ec11-327d-4aa0-bbdd-b2caf7d8c28e');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -953,16 +953,16 @@ var element = $('#38a48bbe-0082-4898-93d1-e1b4086523f8');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.356849</td>
-      <td>KYNE</td>
+      <td>0.314479</td>
+      <td>MZZR</td>
       <td>20220107</td>
       <td>live</td>
       <td>metadata</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.879903</td>
-      <td>RIPI</td>
+      <td>0.294680</td>
+      <td>IUTW</td>
       <td>20220107</td>
       <td>live</td>
       <td>metadata</td>
@@ -979,10 +979,10 @@ var element = $('#38a48bbe-0082-4898-93d1-e1b4086523f8');
 
 
 
-<div id="3c322a06-6516-4ec9-a734-f207c5069ce0"></div>
+<div id="a7493435-9566-4e42-ac4a-9851710ee449"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3c322a06-6516-4ec9-a734-f207c5069ce0');
+var element = $('#a7493435-9566-4e42-ac4a-9851710ee449');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -1072,15 +1072,15 @@ var element = $('#3c322a06-6516-4ec9-a734-f207c5069ce0');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.356849</td>
-      <td>KYNE</td>
+      <td>0.314479</td>
+      <td>MZZR</td>
       <td>20220107</td>
       <td>live</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.879903</td>
-      <td>RIPI</td>
+      <td>0.294680</td>
+      <td>IUTW</td>
       <td>20220107</td>
       <td>live</td>
     </tr>
@@ -1096,10 +1096,10 @@ var element = $('#3c322a06-6516-4ec9-a734-f207c5069ce0');
 
 
 
-<div id="b583de81-2222-4c98-b84f-541962eb9dd1"></div>
+<div id="fb68b778-c162-4946-b5b0-54f0810f539a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b583de81-2222-4c98-b84f-541962eb9dd1');
+var element = $('#fb68b778-c162-4946-b5b0-54f0810f539a');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1175,10 +1175,10 @@ var element = $('#b583de81-2222-4c98-b84f-541962eb9dd1');
 
 
 
-<div id="891cf9bb-def4-4d4f-9f05-893d8f3ff70e"></div>
+<div id="6fb25bf3-6fa3-48dc-99e8-f7f89a0462ec"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#891cf9bb-def4-4d4f-9f05-893d8f3ff70e');
+var element = $('#6fb25bf3-6fa3-48dc-99e8-f7f89a0462ec');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -1229,10 +1229,10 @@ var element = $('#891cf9bb-def4-4d4f-9f05-893d8f3ff70e');
 
 
 
-<div id="96ea15e9-a224-48ac-ad10-71753c8fc7ac"></div>
+<div id="22ce94db-75a4-40f0-8c63-5fb886e481ab"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#96ea15e9-a224-48ac-ad10-71753c8fc7ac');
+var element = $('#22ce94db-75a4-40f0-8c63-5fb886e481ab');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1295,10 +1295,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="b510e2fd-6f81-458f-b915-a11bbfc33d7d"></div>
+<div id="dd0aace9-a6f7-4e70-961a-91a22a0115f8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b510e2fd-6f81-458f-b915-a11bbfc33d7d');
+var element = $('#dd0aace9-a6f7-4e70-961a-91a22a0115f8');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
