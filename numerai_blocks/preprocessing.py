@@ -20,8 +20,8 @@ class BaseProcessor(ABC):
         ...
 
     @abstractmethod
-    def transform(self, dataset: Dataset) -> Dataset:
+    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
         ...
 
-    def __call__(self, dataset: Dataset) -> Dataset:
-        return self.transform(dataset=dataset)
+    def __call__(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        return self.transform(dataset=dataset, *args, **kwargs)
