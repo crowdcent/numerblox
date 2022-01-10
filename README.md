@@ -23,7 +23,7 @@ Development notebooks are in the `nbs` directory. Example and educational notebo
 - Submittors
 
 ```
-1+1
+1 + 1
 ```
 
 
@@ -35,6 +35,7 @@ Development notebooks are in the `nbs` directory. Example and educational notebo
 
 ```
 import uuid
+
 print(uuid.uuid4())
 ```
 
