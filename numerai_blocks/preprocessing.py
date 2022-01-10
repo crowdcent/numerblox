@@ -4,7 +4,6 @@ __all__ = ['BaseProcessor']
 
 # Cell
 import uuid
-import inspect
 import numpy as np
 import pandas as pd
 from functools import wraps
