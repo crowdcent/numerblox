@@ -11,22 +11,26 @@ from rich import print as rich_print
 # Cell
 @dataclass(frozen=True)
 class Key:
-    """ Immutable and validated Numerai credentials. """
+    """Immutable and validated Numerai credentials."""
+
     # TODO Instruction for encoding or option to pass encoded?
     pub_id: str = ""
     secret_key: str = ""
     # Decode credentials
-    pub_id = base64.b64decode(pub_id, validate=True).decode('utf-8')
-    secret_key = base64.b64decode(secret_key, validate=True).decode('utf-8')
+    pub_id = base64.b64decode(pub_id, validate=True).decode("utf-8")
+    secret_key = base64.b64decode(secret_key, validate=True).decode("utf-8")
 
     def __post_init__(self):
-        rich_print(f":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:")
+        rich_print(
+            f":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:"
+        )
 
     def __repr__(self):
         return f"Numerai Auth Key. pub_id = '{self.pub_id}'"
 
     def __str__(self):
         return self.__repr__()
+
 
 def load_key_from_json(file_path: str, *args, **kwargs):
     """
@@ -39,6 +43,6 @@ def load_key_from_json(file_path: str, *args, **kwargs):
     """
     with open(file_path) as json_file:
         json_data = json.load(json_file, *args, **kwargs)
-    pub_id = json_data['pub_id']
-    secret_key = json_data['secret_key']
+    pub_id = json_data["pub_id"]
+    secret_key = json_data["secret_key"]
     return Key(pub_id=pub_id, secret_key=secret_key)
