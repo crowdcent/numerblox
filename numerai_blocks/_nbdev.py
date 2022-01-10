@@ -5,6 +5,8 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 index = {"BaseIO": "00_download.ipynb",
          "BaseDownloader": "00_download.ipynb",
          "NumeraiClassicDownloader": "00_download.ipynb",
+         "Dataset": "02_dataset.ipynb",
+         "BaseProcessor": "03_preprocessing.ipynb",
          "Key": "08_key.ipynb",
          "load_key_from_json": "08_key.ipynb",
          "BaseSubmittor": "09_submission.ipynb",
@@ -13,6 +15,7 @@ index = {"BaseIO": "00_download.ipynb",
 
 modules = ["download.py",
            "dataset.py",
+           "preprocessing.py",
            "key.py",
            "submission.py"]
 
