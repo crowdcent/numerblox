@@ -17,8 +17,8 @@ class Key:
     pub_id: str = ""
     secret_key: str = ""
     # Decode credentials
-    pub_id = base64.b64decode(pub_id, validate=True).decode("utf-8")
-    secret_key = base64.b64decode(secret_key, validate=True).decode("utf-8")
+    pub_id = pub_id
+    secret_key = secret_key
 
     def __post_init__(self):
         rich_print(
