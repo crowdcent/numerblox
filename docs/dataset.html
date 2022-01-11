@@ -54,10 +54,10 @@ nb_path: "nbs/02_dataset.ipynb"
 
 
 
-<div id="2dea6f21-45a1-403a-b598-ea2d323cb733"></div>
+<div id="637a5bd3-03e3-4a26-94e0-7ba0fdb2d345"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2dea6f21-45a1-403a-b598-ea2d323cb733');
+var element = $('#637a5bd3-03e3-4a26-94e0-7ba0fdb2d345');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -169,15 +169,78 @@ More info on subclassing DataFrames: <a href="https://stackoverflow.com/question
 
 
 
-<div id="d0a3eafa-99ff-42db-ae2e-514e2579e1f6"></div>
+<div id="a3fafcb1-f8c3-4bd3-9246-70ed56a2f762"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d0a3eafa-99ff-42db-ae2e-514e2579e1f6');
+var element = $('#a3fafcb1-f8c3-4bd3-9246-70ed56a2f762');
 
             setTimeout(function() {
-                var nbb_cell_id = 27;
+                var nbb_cell_id = 5;
                 var nbb_unformatted_code = "#export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.all_cols if col not in self.not_aux_cols\n        ]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of features and targets\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
                 var nbb_formatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.all_cols if col not in self.not_aux_cols]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(\n        self, multi_target=False\n    ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of features and targets\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function to initialize Dataset object with arbitrary metadata.</span>
+<span class="sd">    Supports file formats for which Pandas has a &#39;read_&#39; function.</span>
+<span class="sd">    For example, .csv, .parquet, .json, .pickle, .html and .xml.</span>
+<span class="sd">    For more details check https://pandas.pydata.org/docs/reference/io.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Suffix without dot</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">dataf</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pd</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;read_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">dataf</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="b78ff9af-d31a-4ffb-a9bd-35807c392790"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#b78ff9af-d31a-4ffb-a9bd-35807c392790');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "def create_dataset(file_path: str, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize Dataset object with arbitrary metadata.\n    Supports file formats for which Pandas has a 'read_' function.\n    For example, .csv, .parquet, .json, .pickle, .html and .xml.\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n    \"\"\"\n    # Suffix without dot\n    suffix = Path(file_path).suffix[1:]\n    dataf = getattr(pd, f\"read_{suffix}\")(file_path)\n    return Dataset(dataf, *args, **kwargs)";
+                var nbb_formatted_code = "def create_dataset(file_path: str, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize Dataset object with arbitrary metadata.\n    Supports file formats for which Pandas has a 'read_' function.\n    For example, .csv, .parquet, .json, .pickle, .html and .xml.\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n    \"\"\"\n    # Suffix without dot\n    suffix = Path(file_path).suffix[1:]\n    dataf = getattr(pd, f\"read_{suffix}\")(file_path)\n    return Dataset(dataf, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -203,6 +266,12 @@ var element = $('#d0a3eafa-99ff-42db-ae2e-514e2579e1f6');
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Tests">Tests<a class="anchor-link" href="#Tests"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Initialize-from-memory">Initialize from memory<a class="anchor-link" href="#Initialize-from-memory"> </a></h3>
 </div>
 </div>
 </div>
@@ -234,13 +303,13 @@ var element = $('#d0a3eafa-99ff-42db-ae2e-514e2579e1f6');
 
 
 
-<div id="b99709a8-1e26-41a8-a95a-4f47ea3540d1"></div>
+<div id="caabd1db-72c9-4a4d-a88d-0c01cfc24a41"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b99709a8-1e26-41a8-a95a-4f47ea3540d1');
+var element = $('#caabd1db-72c9-4a4d-a88d-0c01cfc24a41');
 
             setTimeout(function() {
-                var nbb_cell_id = 6;
+                var nbb_cell_id = 7;
                 var nbb_unformatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
                 var nbb_formatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -273,12 +342,14 @@ var element = $('#b99709a8-1e26-41a8-a95a-4f47ea3540d1');
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
     <span class="s2">&quot;additional_info&quot;</span><span class="p">:</span> <span class="s2">&quot;test_model&quot;</span><span class="p">,</span>
     <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;classic&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">tournament_type</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span>
 </pre></div>
 
     </div>
@@ -293,15 +364,186 @@ var element = $('#b99709a8-1e26-41a8-a95a-4f47ea3540d1');
 
 
 
-<div id="33d3a7a0-e641-43b3-a5e6-eb4916216681"></div>
+<div id="873dd00a-846d-4b3f-9624-68ac2c2d750b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#33d3a7a0-e641-43b3-a5e6-eb4916216681');
+var element = $('#873dd00a-846d-4b3f-9624-68ac2c2d750b');
 
             setTimeout(function() {
-                var nbb_cell_id = 7;
-                var nbb_unformatted_code = "metadata = {\n    \"version\": 2,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\ndataset = Dataset(df, metadata)";
-                var nbb_formatted_code = "metadata = {\n    \"version\": 2,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\ndataset = Dataset(df, metadata)";
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\ndataset = Dataset(df, metadata)\nassert dataset.version == 42\nassert dataset.tournament_type == \"random\"";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\ndataset = Dataset(df, metadata)\nassert dataset.version == 42\nassert dataset.tournament_type == \"random\"";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Initialize-from-file">Initialize from file<a class="anchor-link" href="#Initialize-from-file"> </a></h4>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;additional_info&quot;</span><span class="p">:</span> <span class="s2">&quot;mini_numerai_data_version_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;classic&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>era</th>
+      <th>data_type</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>...</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 314 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="ad53160a-6afa-4b64-b076-a2491f97183d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#ad53160a-6afa-4b64-b076-a2491f97183d');
+
+            setTimeout(function() {
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 1,\n    \"additional_info\": \"mini_numerai_data_version_1\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", metadata)\nassert dataset.version == 1\nassert not dataset.multi_target\ndataset.dataf.head(2)";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 1,\n    \"additional_info\": \"mini_numerai_data_version_1\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", metadata)\nassert dataset.version == 1\nassert not dataset.multi_target\ndataset.dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -363,62 +605,81 @@ var element = $('#33d3a7a0-e641-43b3-a5e6-eb4916216681');
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>feature_A</th>
-      <th>feature_B</th>
-      <th>feature_C</th>
-      <th>feature_D</th>
-      <th>feature_E</th>
-      <th>feature_F</th>
-      <th>feature_G</th>
-      <th>feature_H</th>
-      <th>feature_I</th>
-      <th>feature_K</th>
       <th>id</th>
-      <th>target</th>
-      <th>target_1</th>
-      <th>target_2</th>
       <th>era</th>
+      <th>data_type</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>...</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+      <th>target</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.578753</td>
-      <td>0.405128</td>
-      <td>0.047234</td>
-      <td>0.205910</td>
-      <td>0.637374</td>
-      <td>0.581116</td>
-      <td>0.860202</td>
-      <td>0.446304</td>
-      <td>0.172437</td>
-      <td>0.338446</td>
-      <td>a5eb28feb3f146c49150f697c1cce379</td>
-      <td>0.086451</td>
-      <td>-0.967327</td>
-      <td>2.649563</td>
-      <td>0</td>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>0.50</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.039875</td>
-      <td>0.506594</td>
-      <td>0.361053</td>
-      <td>0.999113</td>
-      <td>0.391599</td>
-      <td>0.839359</td>
-      <td>0.207021</td>
-      <td>0.728092</td>
-      <td>0.471376</td>
-      <td>0.244788</td>
-      <td>778f6c04a85c452b937061f1c43bf101</td>
-      <td>-0.358312</td>
-      <td>0.208280</td>
-      <td>-0.731115</td>
-      <td>1</td>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+      <td>0.25</td>
     </tr>
   </tbody>
 </table>
+<p>2 rows × 314 columns</p>
 </div>
 </div>
 
@@ -429,13 +690,13 @@ var element = $('#33d3a7a0-e641-43b3-a5e6-eb4916216681');
 
 
 
-<div id="fd37e194-8fd2-45a9-9647-31f913c48606"></div>
+<div id="9fd6e578-c8fb-43ab-a44f-92d9de5f93bb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fd37e194-8fd2-45a9-9647-31f913c48606');
+var element = $('#9fd6e578-c8fb-43ab-a44f-92d9de5f93bb');
 
             setTimeout(function() {
-                var nbb_cell_id = 8;
+                var nbb_cell_id = 10;
                 var nbb_unformatted_code = "dataset.dataf.head(2)";
                 var nbb_formatted_code = "dataset.dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -499,47 +760,81 @@ var element = $('#fd37e194-8fd2-45a9-9647-31f913c48606');
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>feature_A</th>
-      <th>feature_B</th>
-      <th>feature_C</th>
-      <th>feature_D</th>
-      <th>feature_E</th>
-      <th>feature_F</th>
-      <th>feature_G</th>
-      <th>feature_H</th>
-      <th>feature_I</th>
-      <th>feature_K</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>feature_intelligence8</th>
+      <th>feature_intelligence9</th>
+      <th>feature_intelligence10</th>
+      <th>...</th>
+      <th>feature_wisdom37</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.578753</td>
-      <td>0.405128</td>
-      <td>0.047234</td>
-      <td>0.205910</td>
-      <td>0.637374</td>
-      <td>0.581116</td>
-      <td>0.860202</td>
-      <td>0.446304</td>
-      <td>0.172437</td>
-      <td>0.338446</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.75</td>
+      <td>...</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.039875</td>
-      <td>0.506594</td>
-      <td>0.361053</td>
-      <td>0.999113</td>
-      <td>0.391599</td>
-      <td>0.839359</td>
-      <td>0.207021</td>
-      <td>0.728092</td>
-      <td>0.471376</td>
-      <td>0.244788</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td>...</td>
+      <td>0.75</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
     </tr>
   </tbody>
 </table>
+<p>2 rows × 310 columns</p>
 </div>
 </div>
 
@@ -550,13 +845,13 @@ var element = $('#fd37e194-8fd2-45a9-9647-31f913c48606');
 
 
 
-<div id="72c6d04e-5775-43ba-948b-841f91e4799f"></div>
+<div id="b1cac42e-e6f0-4859-b74c-fe0c7e44bf38"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#72c6d04e-5775-43ba-948b-841f91e4799f');
+var element = $('#b1cac42e-e6f0-4859-b74c-fe0c7e44bf38');
 
             setTimeout(function() {
-                var nbb_cell_id = 9;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "dataset.get_feature_data.head(2)";
                 var nbb_formatted_code = "dataset.get_feature_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -603,7 +898,7 @@ var element = $('#72c6d04e-5775-43ba-948b-841f91e4799f');
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>[&#39;id&#39;, &#39;era&#39;]</pre>
+<pre>[&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;]</pre>
 </div>
 
 </div>
@@ -613,13 +908,13 @@ var element = $('#72c6d04e-5775-43ba-948b-841f91e4799f');
 
 
 
-<div id="8f30b60a-7e8a-4006-a01f-42f3e47b03e7"></div>
+<div id="3a40f368-1866-4c98-8d7c-72e673ce8595"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8f30b60a-7e8a-4006-a01f-42f3e47b03e7');
+var element = $('#3a40f368-1866-4c98-8d7c-72e673ce8595');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 12;
                 var nbb_unformatted_code = "dataset.aux_cols";
                 var nbb_formatted_code = "dataset.aux_cols";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -685,18 +980,21 @@ var element = $('#8f30b60a-7e8a-4006-a01f-42f3e47b03e7');
       <th></th>
       <th>id</th>
       <th>era</th>
+      <th>data_type</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>a5eb28feb3f146c49150f697c1cce379</td>
-      <td>0</td>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>778f6c04a85c452b937061f1c43bf101</td>
-      <td>1</td>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
     </tr>
   </tbody>
 </table>
@@ -710,13 +1008,13 @@ var element = $('#8f30b60a-7e8a-4006-a01f-42f3e47b03e7');
 
 
 
-<div id="9faa5a4b-01c3-428b-919b-d85f0abd9b52"></div>
+<div id="58712b36-3522-4cb8-b074-134b8a5a6f93"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9faa5a4b-01c3-428b-919b-d85f0abd9b52');
+var element = $('#58712b36-3522-4cb8-b074-134b8a5a6f93');
 
             setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 13;
                 var nbb_unformatted_code = "dataset.get_aux_data.head(2)";
                 var nbb_formatted_code = "dataset.get_aux_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -748,7 +1046,7 @@ var element = $('#9faa5a4b-01c3-428b-919b-d85f0abd9b52');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
 <span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span> <span class="o">==</span> <span class="kc">False</span>
 </pre></div>
 
@@ -764,15 +1062,15 @@ var element = $('#9faa5a4b-01c3-428b-919b-d85f0abd9b52');
 
 
 
-<div id="32902e77-c56d-4065-b9a1-22e79e4d1622"></div>
+<div id="06bade27-c1aa-4f89-966f-284e5f3621ff"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#32902e77-c56d-4065-b9a1-22e79e4d1622');
+var element = $('#06bade27-c1aa-4f89-966f-284e5f3621ff');
 
             setTimeout(function() {
-                var nbb_cell_id = 12;
-                var nbb_unformatted_code = "assert dataset.version == 2\nassert dataset.multi_target == False";
-                var nbb_formatted_code = "assert dataset.version == 2\nassert dataset.multi_target == False";
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "assert dataset.version == 1\nassert dataset.multi_target == False";
+                var nbb_formatted_code = "assert dataset.version == 1\nassert dataset.multi_target == False";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -828,13 +1126,13 @@ var element = $('#32902e77-c56d-4065-b9a1-22e79e4d1622');
 
 
 
-<div id="426d6773-d21f-4ac6-9c10-45f56f4fcbe0"></div>
+<div id="7db9d805-2a07-4f12-9e49-f4a52878db4f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#426d6773-d21f-4ac6-9c10-45f56f4fcbe0');
+var element = $('#7db9d805-2a07-4f12-9e49-f4a52878db4f');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 16;
                 var nbb_unformatted_code = "dataset.export_json_metadata(\"config.json\")";
                 var nbb_formatted_code = "dataset.export_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -892,13 +1190,13 @@ var element = $('#426d6773-d21f-4ac6-9c10-45f56f4fcbe0');
 
 
 
-<div id="e93484db-af05-4643-aa8d-5ad00d918e97"></div>
+<div id="de82e211-1679-4f3c-8c94-b215aa32d14e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e93484db-af05-4643-aa8d-5ad00d918e97');
+var element = $('#de82e211-1679-4f3c-8c94-b215aa32d14e');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 17;
                 var nbb_unformatted_code = "dataset.import_json_metadata(\"config.json\")";
                 var nbb_formatted_code = "dataset.import_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -945,91 +1243,1021 @@ var element = $('#e93484db-af05-4643-aa8d-5ad00d918e97');
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&#39;dataf&#39;:     feature_A  feature_B  feature_C  feature_D  feature_E  feature_F  \
- 0    0.578753   0.405128   0.047234   0.205910   0.637374   0.581116   
- 1    0.039875   0.506594   0.361053   0.999113   0.391599   0.839359   
- 2    0.103328   0.337968   0.446926   0.461889   0.754410   0.341543   
- 3    0.972067   0.385811   0.293181   0.172918   0.159606   0.066749   
- 4    0.466081   0.185161   0.030470   0.562352   0.449155   0.868348   
- ..        ...        ...        ...        ...        ...        ...   
- 95   0.642678   0.902437   0.786457   0.826929   0.660843   0.634481   
- 96   0.649477   0.461011   0.444455   0.982363   0.488417   0.469148   
- 97   0.894097   0.419196   0.746081   0.542510   0.593814   0.407480   
- 98   0.243970   0.974667   0.945914   0.066492   0.986008   0.380426   
- 99   0.778692   0.304823   0.006070   0.164137   0.939141   0.765985   
+<pre>{&#39;dataf&#39;:                  id   era data_type  feature_intelligence1  \
+ 0  n000315175b67977  era1     train                   0.00   
+ 1  n0014af834a96cdd  era1     train                   0.00   
+ 2  n001c93979ac41d4  era1     train                   0.25   
+ 3  n0034e4143f22a13  era1     train                   1.00   
+ 4  n00679d1a636062f  era1     train                   0.25   
+ 5  n009aa2d32389eca  era1     train                   0.50   
+ 6  n009ef1a5fe009b6  era1     train                   0.50   
+ 7  n00ae5d51f55fb0f  era1     train                   0.25   
+ 8  n00b0ac86d77aed7  era1     train                   0.50   
+ 9  n00c63366aeaf76a  era1     train                   0.50   
  
-     feature_G  feature_H  feature_I  feature_K  \
- 0    0.860202   0.446304   0.172437   0.338446   
- 1    0.207021   0.728092   0.471376   0.244788   
- 2    0.898690   0.712849   0.605591   0.869909   
- 3    0.713094   0.500721   0.966870   0.043964   
- 4    0.143321   0.994334   0.585158   0.105797   
- ..        ...        ...        ...        ...   
- 95   0.335249   0.836566   0.999388   0.937586   
- 96   0.863470   0.332742   0.447474   0.357802   
- 97   0.517097   0.376866   0.541703   0.043810   
- 98   0.767440   0.403494   0.340692   0.609356   
- 99   0.497279   0.626782   0.850308   0.465066   
+    feature_intelligence2  feature_intelligence3  feature_intelligence4  \
+ 0                   0.50                   0.25                   0.00   
+ 1                   0.00                   0.00                   0.25   
+ 2                   0.50                   0.25                   0.25   
+ 3                   0.00                   0.00                   0.50   
+ 4                   0.25                   0.25                   0.25   
+ 5                   0.50                   0.25                   0.25   
+ 6                   0.25                   0.25                   0.75   
+ 7                   1.00                   1.00                   0.75   
+ 8                   0.50                   0.50                   1.00   
+ 9                   1.00                   1.00                   0.25   
  
-                                   id    target  target_1  target_2  era  
- 0   a5eb28feb3f146c49150f697c1cce379  0.086451 -0.967327  2.649563    0  
- 1   778f6c04a85c452b937061f1c43bf101 -0.358312  0.208280 -0.731115    1  
- 2   c427b15774a04b0c8fbb4cdcc571961b  0.036298  0.184156  0.403744    2  
- 3   d8e86b81ad5042db9a5ede009cb7205c  1.333000  0.379024  0.592170    3  
- 4   64e3272100d845fdb7c84fdf7a7e4536  0.060025  1.290946 -0.644379    4  
- ..                               ...       ...       ...       ...  ...  
- 95  d5cedb664a6d4bc190c9614f2b24d15f -1.079623 -2.581261  1.045525   95  
- 96  a1b0150e63b042088eea849293878d32 -0.563542 -0.323284  0.289805   96  
- 97  6ece6de174c841578f18163dce215944  0.220234 -0.393528 -0.714050   97  
- 98  bd607d167b164f0a83d6157182c57310 -0.975322 -0.747037 -0.518107   98  
- 99  deae5c04cdbb413c8fd1da20a06a7d03 -2.112340 -1.121692  0.905616   99  
+    feature_intelligence5  feature_intelligence6  feature_intelligence7  ...  \
+ 0                   0.50                   0.25                   0.25  ...   
+ 1                   0.50                   0.00                   0.00  ...   
+ 2                   1.00                   0.75                   0.75  ...   
+ 3                   0.50                   0.25                   0.25  ...   
+ 4                   0.00                   0.25                   0.50  ...   
+ 5                   0.75                   0.75                   0.75  ...   
+ 6                   1.00                   1.00                   1.00  ...   
+ 7                   1.00                   0.75                   0.75  ...   
+ 8                   1.00                   0.25                   0.50  ...   
+ 9                   0.75                   0.25                   0.25  ...   
  
- [100 rows x 15 columns],
- &#39;version&#39;: 2,
- &#39;additional_info&#39;: &#39;test_model&#39;,
+    feature_wisdom38  feature_wisdom39  feature_wisdom40  feature_wisdom41  \
+ 0              1.00              1.00              0.75              0.50   
+ 1              1.00              1.00              0.00              0.00   
+ 2              0.25              0.50              0.00              0.00   
+ 3              1.00              1.00              0.75              0.75   
+ 4              0.75              0.75              0.25              0.50   
+ 5              0.75              0.75              0.00              0.00   
+ 6              1.00              1.00              0.50              0.50   
+ 7              0.50              0.25              0.75              0.75   
+ 8              0.00              0.00              0.00              0.00   
+ 9              0.00              0.00              1.00              1.00   
+ 
+    feature_wisdom42  feature_wisdom43  feature_wisdom44  feature_wisdom45  \
+ 0              0.75              0.50              1.00              0.50   
+ 1              0.75              0.25              0.00              0.25   
+ 2              0.50              1.00              0.00              0.25   
+ 3              1.00              1.00              0.75              1.00   
+ 4              0.75              0.00              0.50              0.25   
+ 5              0.75              0.50              0.00              0.25   
+ 6              0.75              0.50              0.50              0.50   
+ 7              0.00              0.25              0.75              0.50   
+ 8              0.00              1.00              0.00              0.00   
+ 9              0.75              0.50              1.00              1.00   
+ 
+    feature_wisdom46  target  
+ 0              0.75    0.50  
+ 1              1.00    0.25  
+ 2              0.75    0.25  
+ 3              1.00    0.25  
+ 4              0.75    0.75  
+ 5              0.00    0.50  
+ 6              1.00    0.25  
+ 7              0.25    0.25  
+ 8              0.00    0.50  
+ 9              0.75    0.75  
+ 
+ [10 rows x 314 columns],
+ &#39;version&#39;: 1,
+ &#39;additional_info&#39;: &#39;mini_numerai_data_version_1&#39;,
  &#39;multi_target&#39;: False,
  &#39;tournament_type&#39;: &#39;classic&#39;,
- &#39;all_cols&#39;: [&#39;feature_A&#39;,
-  &#39;feature_B&#39;,
-  &#39;feature_C&#39;,
-  &#39;feature_D&#39;,
-  &#39;feature_E&#39;,
-  &#39;feature_F&#39;,
-  &#39;feature_G&#39;,
-  &#39;feature_H&#39;,
-  &#39;feature_I&#39;,
-  &#39;feature_K&#39;,
-  &#39;id&#39;,
-  &#39;target&#39;,
-  &#39;target_1&#39;,
-  &#39;target_2&#39;,
-  &#39;era&#39;],
- &#39;feature_cols&#39;: [&#39;feature_A&#39;,
-  &#39;feature_B&#39;,
-  &#39;feature_C&#39;,
-  &#39;feature_D&#39;,
-  &#39;feature_E&#39;,
-  &#39;feature_F&#39;,
-  &#39;feature_G&#39;,
-  &#39;feature_H&#39;,
-  &#39;feature_I&#39;,
-  &#39;feature_K&#39;],
- &#39;target_cols&#39;: [&#39;target&#39;, &#39;target_1&#39;, &#39;target_2&#39;],
+ &#39;all_cols&#39;: [&#39;id&#39;,
+  &#39;era&#39;,
+  &#39;data_type&#39;,
+  &#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;,
+  &#39;target&#39;],
+ &#39;feature_cols&#39;: [&#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;],
+ &#39;target_cols&#39;: [&#39;target&#39;],
  &#39;prediction_cols&#39;: [],
- &#39;not_aux_cols&#39;: [&#39;feature_A&#39;,
-  &#39;feature_B&#39;,
-  &#39;feature_C&#39;,
-  &#39;feature_D&#39;,
-  &#39;feature_E&#39;,
-  &#39;feature_F&#39;,
-  &#39;feature_G&#39;,
-  &#39;feature_H&#39;,
-  &#39;feature_I&#39;,
-  &#39;feature_K&#39;,
-  &#39;target&#39;,
-  &#39;target_1&#39;,
-  &#39;target_2&#39;],
- &#39;aux_cols&#39;: [&#39;id&#39;, &#39;era&#39;]}</pre>
+ &#39;not_aux_cols&#39;: [&#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;,
+  &#39;target&#39;],
+ &#39;aux_cols&#39;: [&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;]}</pre>
 </div>
 
 </div>
@@ -1039,13 +2267,13 @@ var element = $('#e93484db-af05-4643-aa8d-5ad00d918e97');
 
 
 
-<div id="f7fb65e7-f4e4-49f0-a3c9-fd3748bedfe2"></div>
+<div id="872af312-5490-454d-911c-7c1b00329170"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f7fb65e7-f4e4-49f0-a3c9-fd3748bedfe2');
+var element = $('#872af312-5490-454d-911c-7c1b00329170');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 18;
                 var nbb_unformatted_code = "dataset.__dict__";
                 var nbb_formatted_code = "dataset.__dict__";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1093,13 +2321,13 @@ var element = $('#f7fb65e7-f4e4-49f0-a3c9-fd3748bedfe2');
 
 
 
-<div id="92f9c856-5848-4aa5-826e-ee15e74d031d"></div>
+<div id="3cb6d1a2-85a9-4013-9163-b5384dd7baad"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#92f9c856-5848-4aa5-826e-ee15e74d031d');
+var element = $('#3cb6d1a2-85a9-4013-9163-b5384dd7baad');
 
             setTimeout(function() {
-                var nbb_cell_id = 16;
+                var nbb_cell_id = 19;
                 var nbb_unformatted_code = "dataf2 = dataset.copy_dataframe()\nassert dataf2.equals(dataset.dataf)";
                 var nbb_formatted_code = "dataf2 = dataset.copy_dataframe()\nassert dataf2.equals(dataset.dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1164,22 +2392,16 @@ var element = $('#92f9c856-5848-4aa5-826e-ee15e74d031d');
     <tr style="text-align: right;">
       <th></th>
       <th>target</th>
-      <th>target_1</th>
-      <th>target_2</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.086451</td>
-      <td>-0.967327</td>
-      <td>2.649563</td>
+      <td>0.50</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>-0.358312</td>
-      <td>0.208280</td>
-      <td>-0.731115</td>
+      <td>0.25</td>
     </tr>
   </tbody>
 </table>
@@ -1193,13 +2415,13 @@ var element = $('#92f9c856-5848-4aa5-826e-ee15e74d031d');
 
 
 
-<div id="6fb9b3ca-4e6d-48a3-9e74-475c7747b627"></div>
+<div id="87fd96a4-48ba-4ac3-84bc-fc5d274b20b9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6fb9b3ca-4e6d-48a3-9e74-475c7747b627');
+var element = $('#87fd96a4-48ba-4ac3-84bc-fc5d274b20b9');
 
             setTimeout(function() {
-                var nbb_cell_id = 17;
+                var nbb_cell_id = 20;
                 var nbb_unformatted_code = "dataset.get_target_data.head(2)";
                 var nbb_formatted_code = "dataset.get_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1269,11 +2491,11 @@ var element = $('#6fb9b3ca-4e6d-48a3-9e74-475c7747b627');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.086451</td>
+      <td>0.50</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>-0.358312</td>
+      <td>0.25</td>
     </tr>
   </tbody>
 </table>
@@ -1287,13 +2509,13 @@ var element = $('#6fb9b3ca-4e6d-48a3-9e74-475c7747b627');
 
 
 
-<div id="e93c82c5-c9fa-4ada-bcb8-238c638a5008"></div>
+<div id="e91b3999-a4e2-4174-ab77-141d1a1b2f4c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e93c82c5-c9fa-4ada-bcb8-238c638a5008');
+var element = $('#e91b3999-a4e2-4174-ab77-141d1a1b2f4c');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
+                var nbb_cell_id = 21;
                 var nbb_unformatted_code = "dataset.get_single_target_data.head(2)";
                 var nbb_formatted_code = "dataset.get_single_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1328,7 +2550,7 @@ var element = $('#e93c82c5-c9fa-4ada-bcb8-238c638a5008');
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">))</span>
 <span class="n">new_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">prediction_cols</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span>
-<span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
 </pre></div>
 
     </div>
@@ -1343,15 +2565,15 @@ var element = $('#e93c82c5-c9fa-4ada-bcb8-238c638a5008');
 
 
 
-<div id="7072b3cb-5e48-4d4e-ae61-a526c73ecb60"></div>
+<div id="a8298fe1-e01a-48c8-a52d-2296cb7f67c0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7072b3cb-5e48-4d4e-ae61-a526c73ecb60');
+var element = $('#a8298fe1-e01a-48c8-a52d-2296cb7f67c0');
 
             setTimeout(function() {
-                var nbb_cell_id = 19;
-                var nbb_unformatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 2";
-                var nbb_formatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 2";
+                var nbb_cell_id = 23;
+                var nbb_unformatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 1";
+                var nbb_formatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 1";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1419,11 +2641,11 @@ var element = $('#7072b3cb-5e48-4d4e-ae61-a526c73ecb60');
   <tbody>
     <tr>
       <th>0</th>
-      <td>a5eb28feb3f146c49150f697c1cce379</td>
+      <td>n000315175b67977</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>778f6c04a85c452b937061f1c43bf101</td>
+      <td>n0014af834a96cdd</td>
     </tr>
   </tbody>
 </table>
@@ -1437,13 +2659,13 @@ var element = $('#7072b3cb-5e48-4d4e-ae61-a526c73ecb60');
 
 
 
-<div id="bd91d634-304b-49fd-b2e1-3c7459beaa51"></div>
+<div id="05cc89fa-3dc4-4b86-9cd7-4a5eb8c7de4d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#bd91d634-304b-49fd-b2e1-3c7459beaa51');
+var element = $('#05cc89fa-3dc4-4b86-9cd7-4a5eb8c7de4d');
 
             setTimeout(function() {
-                var nbb_cell_id = 20;
+                var nbb_cell_id = 24;
                 var nbb_unformatted_code = "new_dataset.get_column_selection(\"id\").head(2)";
                 var nbb_formatted_code = "new_dataset.get_column_selection(\"id\").head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1514,13 +2736,13 @@ var element = $('#bd91d634-304b-49fd-b2e1-3c7459beaa51');
   <tbody>
     <tr>
       <th>0</th>
-      <td>a5eb28feb3f146c49150f697c1cce379</td>
-      <td>0.817813</td>
+      <td>n000315175b67977</td>
+      <td>0.697065</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>778f6c04a85c452b937061f1c43bf101</td>
-      <td>0.505252</td>
+      <td>n0014af834a96cdd</td>
+      <td>0.257719</td>
     </tr>
   </tbody>
 </table>
@@ -1534,13 +2756,13 @@ var element = $('#bd91d634-304b-49fd-b2e1-3c7459beaa51');
 
 
 
-<div id="d6e8ff59-69f1-429f-9be4-ed2568438a6f"></div>
+<div id="fffc832e-cf37-48d1-92dd-dd8f5c5af194"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d6e8ff59-69f1-429f-9be4-ed2568438a6f');
+var element = $('#fffc832e-cf37-48d1-92dd-dd8f5c5af194');
 
             setTimeout(function() {
-                var nbb_cell_id = 21;
+                var nbb_cell_id = 25;
                 var nbb_unformatted_code = "new_dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
                 var nbb_formatted_code = "new_dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1587,13 +2809,13 @@ var element = $('#d6e8ff59-69f1-429f-9be4-ed2568438a6f');
 
 
 
-<div id="ad48a696-891c-4a7e-9638-937d578b4c4d"></div>
+<div id="5934795e-1c9d-461b-a3c6-5c2d8b34b0a5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ad48a696-891c-4a7e-9638-937d578b4c4d');
+var element = $('#5934795e-1c9d-461b-a3c6-5c2d8b34b0a5');
 
             setTimeout(function() {
-                var nbb_cell_id = 22;
+                var nbb_cell_id = 26;
                 var nbb_unformatted_code = "X, y = new_dataset.get_feature_target_pair(multi_target=False)";
                 var nbb_formatted_code = "X, y = new_dataset.get_feature_target_pair(multi_target=False)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1657,47 +2879,81 @@ var element = $('#ad48a696-891c-4a7e-9638-937d578b4c4d');
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>feature_A</th>
-      <th>feature_B</th>
-      <th>feature_C</th>
-      <th>feature_D</th>
-      <th>feature_E</th>
-      <th>feature_F</th>
-      <th>feature_G</th>
-      <th>feature_H</th>
-      <th>feature_I</th>
-      <th>feature_K</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>feature_intelligence8</th>
+      <th>feature_intelligence9</th>
+      <th>feature_intelligence10</th>
+      <th>...</th>
+      <th>feature_wisdom37</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.578753</td>
-      <td>0.405128</td>
-      <td>0.047234</td>
-      <td>0.205910</td>
-      <td>0.637374</td>
-      <td>0.581116</td>
-      <td>0.860202</td>
-      <td>0.446304</td>
-      <td>0.172437</td>
-      <td>0.338446</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.75</td>
+      <td>...</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.039875</td>
-      <td>0.506594</td>
-      <td>0.361053</td>
-      <td>0.999113</td>
-      <td>0.391599</td>
-      <td>0.839359</td>
-      <td>0.207021</td>
-      <td>0.728092</td>
-      <td>0.471376</td>
-      <td>0.244788</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td>...</td>
+      <td>0.75</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
     </tr>
   </tbody>
 </table>
+<p>2 rows × 310 columns</p>
 </div>
 </div>
 
@@ -1708,13 +2964,13 @@ var element = $('#ad48a696-891c-4a7e-9638-937d578b4c4d');
 
 
 
-<div id="d539f1aa-b343-41a7-953d-48c8a02c7011"></div>
+<div id="b61b4ca2-b370-44b4-99b7-54237ba13e77"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d539f1aa-b343-41a7-953d-48c8a02c7011');
+var element = $('#b61b4ca2-b370-44b4-99b7-54237ba13e77');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
+                var nbb_cell_id = 27;
                 var nbb_unformatted_code = "X.head(2)";
                 var nbb_formatted_code = "X.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1784,11 +3040,11 @@ var element = $('#d539f1aa-b343-41a7-953d-48c8a02c7011');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.086451</td>
+      <td>0.50</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>-0.358312</td>
+      <td>0.25</td>
     </tr>
   </tbody>
 </table>
@@ -1802,13 +3058,13 @@ var element = $('#d539f1aa-b343-41a7-953d-48c8a02c7011');
 
 
 
-<div id="973e5960-833b-426d-8161-9db71b052836"></div>
+<div id="261fc494-0295-4997-8594-5c5538104314"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#973e5960-833b-426d-8161-9db71b052836');
+var element = $('#261fc494-0295-4997-8594-5c5538104314');
 
             setTimeout(function() {
-                var nbb_cell_id = 24;
+                var nbb_cell_id = 28;
                 var nbb_unformatted_code = "y.head(2)";
                 var nbb_formatted_code = "y.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1855,7 +3111,7 @@ var element = $('#973e5960-833b-426d-8161-9db71b052836');
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&#34;Dataset of shape (100, 16). Columns: [&#39;feature_A&#39;, &#39;feature_B&#39;, &#39;feature_C&#39;, &#39;feature_D&#39;, &#39;feature_E&#39;, &#39;feature_F&#39;, &#39;feature_G&#39;, &#39;feature_H&#39;, &#39;feature_I&#39;, &#39;feature_K&#39;, &#39;id&#39;, &#39;target&#39;, &#39;target_1&#39;, &#39;target_2&#39;, &#39;era&#39;]&#34;</pre>
+<pre>&#34;Dataset of shape (10, 315). Columns: [&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;, &#39;feature_intelligence1&#39;, &#39;feature_intelligence2&#39;, &#39;feature_intelligence3&#39;, &#39;feature_intelligence4&#39;, &#39;feature_intelligence5&#39;, &#39;feature_intelligence6&#39;, &#39;feature_intelligence7&#39;, &#39;feature_intelligence8&#39;, &#39;feature_intelligence9&#39;, &#39;feature_intelligence10&#39;, &#39;feature_intelligence11&#39;, &#39;feature_intelligence12&#39;, &#39;feature_charisma1&#39;, &#39;feature_charisma2&#39;, &#39;feature_charisma3&#39;, &#39;feature_charisma4&#39;, &#39;feature_charisma5&#39;, &#39;feature_charisma6&#39;, &#39;feature_charisma7&#39;, &#39;feature_charisma8&#39;, &#39;feature_charisma9&#39;, &#39;feature_charisma10&#39;, &#39;feature_charisma11&#39;, &#39;feature_charisma12&#39;, &#39;feature_charisma13&#39;, &#39;feature_charisma14&#39;, &#39;feature_charisma15&#39;, &#39;feature_charisma16&#39;, &#39;feature_charisma17&#39;, &#39;feature_charisma18&#39;, &#39;feature_charisma19&#39;, &#39;feature_charisma20&#39;, &#39;feature_charisma21&#39;, &#39;feature_charisma22&#39;, &#39;feature_charisma23&#39;, &#39;feature_charisma24&#39;, &#39;feature_charisma25&#39;, &#39;feature_charisma26&#39;, &#39;feature_charisma27&#39;, &#39;feature_charisma28&#39;, &#39;feature_charisma29&#39;, &#39;feature_charisma30&#39;, &#39;feature_charisma31&#39;, &#39;feature_charisma32&#39;, &#39;feature_charisma33&#39;, &#39;feature_charisma34&#39;, &#39;feature_charisma35&#39;, &#39;feature_charisma36&#39;, &#39;feature_charisma37&#39;, &#39;feature_charisma38&#39;, &#39;feature_charisma39&#39;, &#39;feature_charisma40&#39;, &#39;feature_charisma41&#39;, &#39;feature_charisma42&#39;, &#39;feature_charisma43&#39;, &#39;feature_charisma44&#39;, &#39;feature_charisma45&#39;, &#39;feature_charisma46&#39;, &#39;feature_charisma47&#39;, &#39;feature_charisma48&#39;, &#39;feature_charisma49&#39;, &#39;feature_charisma50&#39;, &#39;feature_charisma51&#39;, &#39;feature_charisma52&#39;, &#39;feature_charisma53&#39;, &#39;feature_charisma54&#39;, &#39;feature_charisma55&#39;, &#39;feature_charisma56&#39;, &#39;feature_charisma57&#39;, &#39;feature_charisma58&#39;, &#39;feature_charisma59&#39;, &#39;feature_charisma60&#39;, &#39;feature_charisma61&#39;, &#39;feature_charisma62&#39;, &#39;feature_charisma63&#39;, &#39;feature_charisma64&#39;, &#39;feature_charisma65&#39;, &#39;feature_charisma66&#39;, &#39;feature_charisma67&#39;, &#39;feature_charisma68&#39;, &#39;feature_charisma69&#39;, &#39;feature_charisma70&#39;, &#39;feature_charisma71&#39;, &#39;feature_charisma72&#39;, &#39;feature_charisma73&#39;, &#39;feature_charisma74&#39;, &#39;feature_charisma75&#39;, &#39;feature_charisma76&#39;, &#39;feature_charisma77&#39;, &#39;feature_charisma78&#39;, &#39;feature_charisma79&#39;, &#39;feature_charisma80&#39;, &#39;feature_charisma81&#39;, &#39;feature_charisma82&#39;, &#39;feature_charisma83&#39;, &#39;feature_charisma84&#39;, &#39;feature_charisma85&#39;, &#39;feature_charisma86&#39;, &#39;feature_strength1&#39;, &#39;feature_strength2&#39;, &#39;feature_strength3&#39;, &#39;feature_strength4&#39;, &#39;feature_strength5&#39;, &#39;feature_strength6&#39;, &#39;feature_strength7&#39;, &#39;feature_strength8&#39;, &#39;feature_strength9&#39;, &#39;feature_strength10&#39;, &#39;feature_strength11&#39;, &#39;feature_strength12&#39;, &#39;feature_strength13&#39;, &#39;feature_strength14&#39;, &#39;feature_strength15&#39;, &#39;feature_strength16&#39;, &#39;feature_strength17&#39;, &#39;feature_strength18&#39;, &#39;feature_strength19&#39;, &#39;feature_strength20&#39;, &#39;feature_strength21&#39;, &#39;feature_strength22&#39;, &#39;feature_strength23&#39;, &#39;feature_strength24&#39;, &#39;feature_strength25&#39;, &#39;feature_strength26&#39;, &#39;feature_strength27&#39;, &#39;feature_strength28&#39;, &#39;feature_strength29&#39;, &#39;feature_strength30&#39;, &#39;feature_strength31&#39;, &#39;feature_strength32&#39;, &#39;feature_strength33&#39;, &#39;feature_strength34&#39;, &#39;feature_strength35&#39;, &#39;feature_strength36&#39;, &#39;feature_strength37&#39;, &#39;feature_strength38&#39;, &#39;feature_dexterity1&#39;, &#39;feature_dexterity2&#39;, &#39;feature_dexterity3&#39;, &#39;feature_dexterity4&#39;, &#39;feature_dexterity5&#39;, &#39;feature_dexterity6&#39;, &#39;feature_dexterity7&#39;, &#39;feature_dexterity8&#39;, &#39;feature_dexterity9&#39;, &#39;feature_dexterity10&#39;, &#39;feature_dexterity11&#39;, &#39;feature_dexterity12&#39;, &#39;feature_dexterity13&#39;, &#39;feature_dexterity14&#39;, &#39;feature_constitution1&#39;, &#39;feature_constitution2&#39;, &#39;feature_constitution3&#39;, &#39;feature_constitution4&#39;, &#39;feature_constitution5&#39;, &#39;feature_constitution6&#39;, &#39;feature_constitution7&#39;, &#39;feature_constitution8&#39;, &#39;feature_constitution9&#39;, &#39;feature_constitution10&#39;, &#39;feature_constitution11&#39;, &#39;feature_constitution12&#39;, &#39;feature_constitution13&#39;, &#39;feature_constitution14&#39;, &#39;feature_constitution15&#39;, &#39;feature_constitution16&#39;, &#39;feature_constitution17&#39;, &#39;feature_constitution18&#39;, &#39;feature_constitution19&#39;, &#39;feature_constitution20&#39;, &#39;feature_constitution21&#39;, &#39;feature_constitution22&#39;, &#39;feature_constitution23&#39;, &#39;feature_constitution24&#39;, &#39;feature_constitution25&#39;, &#39;feature_constitution26&#39;, &#39;feature_constitution27&#39;, &#39;feature_constitution28&#39;, &#39;feature_constitution29&#39;, &#39;feature_constitution30&#39;, &#39;feature_constitution31&#39;, &#39;feature_constitution32&#39;, &#39;feature_constitution33&#39;, &#39;feature_constitution34&#39;, &#39;feature_constitution35&#39;, &#39;feature_constitution36&#39;, &#39;feature_constitution37&#39;, &#39;feature_constitution38&#39;, &#39;feature_constitution39&#39;, &#39;feature_constitution40&#39;, &#39;feature_constitution41&#39;, &#39;feature_constitution42&#39;, &#39;feature_constitution43&#39;, &#39;feature_constitution44&#39;, &#39;feature_constitution45&#39;, &#39;feature_constitution46&#39;, &#39;feature_constitution47&#39;, &#39;feature_constitution48&#39;, &#39;feature_constitution49&#39;, &#39;feature_constitution50&#39;, &#39;feature_constitution51&#39;, &#39;feature_constitution52&#39;, &#39;feature_constitution53&#39;, &#39;feature_constitution54&#39;, &#39;feature_constitution55&#39;, &#39;feature_constitution56&#39;, &#39;feature_constitution57&#39;, &#39;feature_constitution58&#39;, &#39;feature_constitution59&#39;, &#39;feature_constitution60&#39;, &#39;feature_constitution61&#39;, &#39;feature_constitution62&#39;, &#39;feature_constitution63&#39;, &#39;feature_constitution64&#39;, &#39;feature_constitution65&#39;, &#39;feature_constitution66&#39;, &#39;feature_constitution67&#39;, &#39;feature_constitution68&#39;, &#39;feature_constitution69&#39;, &#39;feature_constitution70&#39;, &#39;feature_constitution71&#39;, &#39;feature_constitution72&#39;, &#39;feature_constitution73&#39;, &#39;feature_constitution74&#39;, &#39;feature_constitution75&#39;, &#39;feature_constitution76&#39;, &#39;feature_constitution77&#39;, &#39;feature_constitution78&#39;, &#39;feature_constitution79&#39;, &#39;feature_constitution80&#39;, &#39;feature_constitution81&#39;, &#39;feature_constitution82&#39;, &#39;feature_constitution83&#39;, &#39;feature_constitution84&#39;, &#39;feature_constitution85&#39;, &#39;feature_constitution86&#39;, &#39;feature_constitution87&#39;, &#39;feature_constitution88&#39;, &#39;feature_constitution89&#39;, &#39;feature_constitution90&#39;, &#39;feature_constitution91&#39;, &#39;feature_constitution92&#39;, &#39;feature_constitution93&#39;, &#39;feature_constitution94&#39;, &#39;feature_constitution95&#39;, &#39;feature_constitution96&#39;, &#39;feature_constitution97&#39;, &#39;feature_constitution98&#39;, &#39;feature_constitution99&#39;, &#39;feature_constitution100&#39;, &#39;feature_constitution101&#39;, &#39;feature_constitution102&#39;, &#39;feature_constitution103&#39;, &#39;feature_constitution104&#39;, &#39;feature_constitution105&#39;, &#39;feature_constitution106&#39;, &#39;feature_constitution107&#39;, &#39;feature_constitution108&#39;, &#39;feature_constitution109&#39;, &#39;feature_constitution110&#39;, &#39;feature_constitution111&#39;, &#39;feature_constitution112&#39;, &#39;feature_constitution113&#39;, &#39;feature_constitution114&#39;, &#39;feature_wisdom1&#39;, &#39;feature_wisdom2&#39;, &#39;feature_wisdom3&#39;, &#39;feature_wisdom4&#39;, &#39;feature_wisdom5&#39;, &#39;feature_wisdom6&#39;, &#39;feature_wisdom7&#39;, &#39;feature_wisdom8&#39;, &#39;feature_wisdom9&#39;, &#39;feature_wisdom10&#39;, &#39;feature_wisdom11&#39;, &#39;feature_wisdom12&#39;, &#39;feature_wisdom13&#39;, &#39;feature_wisdom14&#39;, &#39;feature_wisdom15&#39;, &#39;feature_wisdom16&#39;, &#39;feature_wisdom17&#39;, &#39;feature_wisdom18&#39;, &#39;feature_wisdom19&#39;, &#39;feature_wisdom20&#39;, &#39;feature_wisdom21&#39;, &#39;feature_wisdom22&#39;, &#39;feature_wisdom23&#39;, &#39;feature_wisdom24&#39;, &#39;feature_wisdom25&#39;, &#39;feature_wisdom26&#39;, &#39;feature_wisdom27&#39;, &#39;feature_wisdom28&#39;, &#39;feature_wisdom29&#39;, &#39;feature_wisdom30&#39;, &#39;feature_wisdom31&#39;, &#39;feature_wisdom32&#39;, &#39;feature_wisdom33&#39;, &#39;feature_wisdom34&#39;, &#39;feature_wisdom35&#39;, &#39;feature_wisdom36&#39;, &#39;feature_wisdom37&#39;, &#39;feature_wisdom38&#39;, &#39;feature_wisdom39&#39;, &#39;feature_wisdom40&#39;, &#39;feature_wisdom41&#39;, &#39;feature_wisdom42&#39;, &#39;feature_wisdom43&#39;, &#39;feature_wisdom44&#39;, &#39;feature_wisdom45&#39;, &#39;feature_wisdom46&#39;, &#39;target&#39;]&#34;</pre>
 </div>
 
 </div>
@@ -1865,13 +3121,13 @@ var element = $('#973e5960-833b-426d-8161-9db71b052836');
 
 
 
-<div id="6fa5b2d1-3dd6-422c-8ff5-38ee519b6b3a"></div>
+<div id="558fd4a5-8785-4e2d-8838-a5b685d5c06a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6fa5b2d1-3dd6-422c-8ff5-38ee519b6b3a');
+var element = $('#558fd4a5-8785-4e2d-8838-a5b685d5c06a');
 
             setTimeout(function() {
-                var nbb_cell_id = 25;
+                var nbb_cell_id = 29;
                 var nbb_unformatted_code = "str(dataset)";
                 var nbb_formatted_code = "str(dataset)";
                 var nbb_cells = Jupyter.notebook.get_cells();

@@ -22,6 +22,13 @@ from .preprocessing import display_processor_info
 # Cell
 @typechecked
 class BaseModel(ABC):
+    """
+    Setup for model prediction on a Dataset.
+
+    :param model_directory: Main directory from which to read in models.
+    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)
+    :param model_name: Name that will be used to create column names and for display purposes.
+    """
     def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):
         self.model_directory = Path(model_directory)
         self.__dict__.update(*args, **kwargs)
@@ -31,9 +38,9 @@ class BaseModel(ABC):
 
         self.file_suffix = file_suffix
         self.model_paths = self.model_directory.glob(f'*.{self.file_suffix}')
-        self.total_models = len(self.model_paths)
         if self.file_suffix:
             assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
+        self.total_models = len(self.model_paths)
 
     @abstractmethod
     def predict(self, dataset: Dataset) -> Dataset:
@@ -47,9 +54,9 @@ class BaseModel(ABC):
 # Cell
 @typechecked
 class JoblibModel(BaseModel):
-    """ Load in arbitrary models saved as .joblib. """
+    """ Load and predict for arbitrary models saved as .joblib. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = "joblib"
+        file_suffix = 'joblib'
         super(JoblibModel, self).__init__(model_directory=model_directory,
                                           file_suffix=file_suffix,
                                           model_name=model_name,
@@ -72,9 +79,9 @@ class JoblibModel(BaseModel):
 # Cell
 @typechecked
 class CatboostModel(BaseModel):
-    """ Predict using .cbm models (CatBoostRegressor) with all models in directory. """
+    """ Load and predict with all .cbm models (CatBoostRegressor) in directory. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = "cbm"
+        file_suffix = 'cbm'
         super(CatboostModel, self).__init__(model_directory=model_directory,
                                             file_suffix=file_suffix,
                                             model_name=model_name, *args, **kwargs)
@@ -96,9 +103,9 @@ class CatboostModel(BaseModel):
 # Cell
 @typechecked
 class LGBMModel(BaseModel):
-    """ Parse predict .cbm models (CatBoostRegressor) from directory. """
+    """ Load and predict with all .lgb models (LightGBM) in directory. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = "lgb"
+        file_suffix = 'lgb'
         super(LGBMModel, self).__init__(model_directory=model_directory,
                                         file_suffix=file_suffix,
                                         model_name=model_name, *args, **kwargs)
@@ -125,7 +132,7 @@ class AwesomeModel(BaseModel):
     Predict with arbitrary model formats.
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = "anything"
+        file_suffix = 'anything'
         super(AwesomeModel, self).__init__(model_directory=model_directory,
                                            file_suffix=file_suffix,
                                            model_name=model_name, *args, **kwargs)

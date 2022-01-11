@@ -3,6 +3,7 @@
 __all__ = ['ModelPipeline', 'ModelPipelineCollection']
 
 # Cell
+import uuid
 from typing import List
 from tqdm.auto import tqdm
 from typeguard import typechecked
@@ -15,13 +16,23 @@ from .model import BaseModel
 # Cell
 @typechecked
 class ModelPipeline:
+    """
+    Execute all preprocessing, prediction and postprocessing for a given setup.
+
+    :param model: A numerai-blocks Model that add prediction columns to a given input Dataset
+    :param preprocessors: List of initialized (!) PreProcessors.
+    :param postprocessors: List of initialized (!) PostProcessors.
+    :param copy_first: Whether to copy the Dataset as a first preprocessing step.
+    Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.
+    :param pipeline_name: Name for display purposes
+    """
     def __init__(self,
-                 pipeline_name: str,
                  model: BaseModel,
                  preprocessors: List[BaseProcessor] = None,
                  postprocessors: List[BaseProcessor] = None,
-                 copy_first = True):
-        self.pipeline_name = pipeline_name
+                 copy_first = True,
+                 pipeline_name: str = None):
+        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex
         self.model = model
         self.preprocessors = preprocessors
         if copy_first:
@@ -57,6 +68,10 @@ class ModelPipeline:
 # Cell
 @typechecked
 class ModelPipelineCollection:
+    """
+    Execute multiple initialized ModelPipelines in a sequence.
+    :param pipelines: List of initialized ModelPipelines.
+    """
     def __init__(self, pipelines: List[ModelPipeline]):
         self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}
         self.pipeline_names = list(self.pipelines.keys())
