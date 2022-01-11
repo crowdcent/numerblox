@@ -4,21 +4,15 @@ __all__ = ['Key', 'load_key_from_json']
 
 # Cell
 import json
-import base64
-from dataclasses import dataclass, FrozenInstanceError
 from rich import print as rich_print
+from dataclasses import dataclass, FrozenInstanceError
 
 # Cell
 @dataclass(frozen=True)
 class Key:
     """Immutable and validated Numerai credentials."""
-
-    # TODO Instruction for encoding or option to pass encoded?
-    pub_id: str = ""
-    secret_key: str = ""
-    # Decode credentials
-    pub_id = pub_id
-    secret_key = secret_key
+    pub_id: str
+    secret_key: str
 
     def __post_init__(self):
         rich_print(
