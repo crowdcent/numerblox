@@ -45,7 +45,7 @@ class ModelPipeline:
         return dataset
 
     @display_processor_info
-    def pipeline(self, dataset: Dataset):
+    def pipeline(self, dataset: Dataset) -> Dataset:
         preprocessed_dataset = self.preprocess(dataset)
         prediction_dataset = self.model(preprocessed_dataset)
         processed_prediction_dataset = self.postprocess(prediction_dataset)
@@ -61,20 +61,22 @@ class ModelPipelineCollection:
         self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}
         self.pipeline_names = list(self.pipelines.keys())
 
-    def process_all_pipelines(self, dataset: Dataset):
+    def process_all_pipelines(self, dataset: Dataset) -> Dataset:
         for name, pipeline in tqdm(self.pipelines.items(),
                                    desc="Processing Pipeline Collection"):
-            self.process_single_pipeline(dataset, name)
+            dataset = self.process_single_pipeline(dataset, name)
+        return dataset
 
-    def process_single_pipeline(self, dataset: Dataset, pipeline_name: str):
+    def process_single_pipeline(self, dataset: Dataset, pipeline_name: str) -> Dataset:
         rich_print(f":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:")
         pipeline = self.get_pipeline(pipeline_name)
-        pipeline(dataset)
+        dataset = pipeline(dataset)
+        return dataset
 
     def get_pipeline(self, pipeline_name: str) -> ModelPipeline:
         available_pipelines = self.pipeline_names
         assert pipeline_name in available_pipelines, f"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'."
         return self.pipelines[pipeline_name]
 
-    def __call__(self, dataset: Dataset):
-        self.process_all_pipelines(dataset=dataset)
+    def __call__(self, dataset: Dataset) -> Dataset:
+        return self.process_all_pipelines(dataset=dataset)

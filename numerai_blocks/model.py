@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 from rich import print as rich_print
 import lightgbm as lgb
 from catboost import CatBoostRegressor
+from sklearn.dummy import DummyRegressor
 
 from .dataset import Dataset
 from .preprocessing import display_processor_info
@@ -31,7 +32,8 @@ class BaseModel(ABC):
         self.file_suffix = file_suffix
         self.model_paths = self.model_directory.glob(f'*.{self.file_suffix}')
         self.total_models = len(self.model_paths)
-        assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
+        if self.file_suffix:
+            assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
 
     @abstractmethod
     def predict(self, dataset: Dataset) -> Dataset:
