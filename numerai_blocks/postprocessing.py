@@ -6,6 +6,7 @@ __all__ = ['MeanEnsembler', 'FeatureNeutralizer', 'AwesomePostProcessor']
 import numpy as np
 import pandas as pd
 import scipy.stats as sp
+from typeguard import typechecked
 from rich import print as rich_print
 from sklearn.preprocessing import MinMaxScaler
 
@@ -13,31 +14,41 @@ from .preprocessing import BaseProcessor, display_processor_info
 from .dataset import Dataset
 
 # Cell
+@typechecked
 class MeanEnsembler(BaseProcessor):
-    def __init__(self):
+    """ Take simple mean of multiple cols and store in new col. """
+    def __init__(self, cols: list, final_col_name: str):
         super(MeanEnsembler, self).__init__()
+        self.cols = cols
+        self.final_col_name = final_col_name
+        assert final_col_name.startswith("prediction"), f"final_col name should start with 'prediction'. Got {final_col_name}"
 
     @display_processor_info
-    def transform(self, dataset: Dataset, cols: list, final_col: str, *args, **kwargs) -> Dataset:
-        assert final_col.startswith("prediction"), f"final_col name should start with 'prediction'. Got {final_col}"
-        dataset.dataf.loc[:, [cols]][final_col] = dataset.dataf.loc[:, cols].mean(axis=1)
-        rich_print(f":stew: Ensembled '{cols}' with simple mean and saved in '{final_col}' :stew:")
+    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        dataset.dataf.loc[:, [self.cols]][self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)
+        rich_print(f":stew: Ensembled '{self.cols}' with simple mean and saved in '{self.final_col_name}' :stew:")
         return Dataset(**dataset.__dict__)
 
 # Cell
+@typechecked
 class FeatureNeutralizer(BaseProcessor):
-    def __init__(self, proportion=0.5):
+    """ Feature """
+    def __init__(self, feature_names: list,
+                 pred_name: str = "prediction",
+                 proportion=0.5):
         super(FeatureNeutralizer, self).__init__()
         self.proportion = proportion
+        self.feature_names = feature_names
+        self.pred_name = pred_name
+        self.new_col_name = f"{self.pred_name}_neutralized_{self.proportion}"
 
     @display_processor_info
-    def transform(self, dataset: Dataset, feature_names: list, pred_name: str = "prediction"):
-        new_col_name = f"{pred_name}_neutralized_{self.proportion}"
-        neutralized_preds = dataset.dataf.groupby("era").apply(lambda x: self.normalize_and_neutralize(x, [pred_name], feature_names))
+    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        neutralized_preds = dataset.dataf.groupby("era").apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
         min_max_scaled_preds = MinMaxScaler().fit_transform(neutralized_preds)
-        dataset.dataf.loc[:, new_col_name] = min_max_scaled_preds
-        rich_print(f":robot: Neutralized [bold]'{pred_name}'[bold] with proportion [bold]'{self.proportion}'[/bold] :robot:")
-        rich_print(f"New neutralized column is named: [bold green]'{new_col_name}'[/bold green]")
+        dataset.dataf.loc[:, self.new_col_name] = min_max_scaled_preds
+        rich_print(f":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold]'{self.proportion}'[/bold] :robot:")
+        rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]")
         return Dataset(**dataset.__dict__)
 
     def _neutralize(self, scores, exposures):
@@ -57,6 +68,7 @@ class FeatureNeutralizer(BaseProcessor):
         return preds
 
 # Cell
+@typechecked
 class AwesomePostProcessor(BaseProcessor):
     """
     - TEMPLATE -
@@ -72,4 +84,6 @@ class AwesomePostProcessor(BaseProcessor):
         # Add new column for manipulated data (optional)
         new_column_name = "NEW_COLUMN_NAME"
         dataset.dataf.loc[:, f"prediction_{new_column_name}"] = ...
+        ...
+        # Parse all contents of Dataset to the next pipeline step
         return Dataset(**dataset.__dict__)

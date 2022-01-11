@@ -46,13 +46,54 @@ nb_path: "nbs/05_postprocessing.ipynb"
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="a2f0c282-2eb5-4034-b81d-d2c494823d86"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#a2f0c282-2eb5-4034-b81d-d2c494823d86');
+
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>The postprocessing procedure is very similar to preprocessing.</p>
 <p>The only difference between a postprocessing step and a preprocessing step is that preprocessing works on <code>feature_</code> columns while postprocessing manipulates <code>prediction_</code> columns.</p>
-<p>Therefore, we also inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> for postprocessing.</p>
+<p>Therefore, we also inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> for postprocessing. The PostProcessor should take a <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> as input and output a <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> where either:</p>
+<ol>
+<li><code>prediction_</code> columns are manipulated or</li>
+<li>A new prediction column is added with prefix <code>prediction_</code>.</li>
+</ol>
 
 </div>
 </div>
@@ -70,6 +111,13 @@ nb_path: "nbs/05_postprocessing.ipynb"
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Multiple prediction results can be ensembled in multiple ways, but we provide the most common use cases here.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -81,10 +129,9 @@ nb_path: "nbs/05_postprocessing.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="MeanEnsembler" class="doc_header"><code>class</code> <code>MeanEnsembler</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L16" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>MeanEnsembler</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="MeanEnsembler" class="doc_header"><code>class</code> <code>MeanEnsembler</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L17" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>MeanEnsembler</code>(<strong><code>cols</code></strong>:<code>list</code>, <strong><code>final_col_name</code></strong>:<code>str</code>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
-<p>New Preprocessors and Postprocessors should inherit from this object
-and implement the transform method.</p>
+<p>Take simple mean of multiple cols and store in new col.</p>
 
 </div>
 
@@ -99,6 +146,42 @@ and implement the transform method.</p>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="182dc21d-e5ee-4b44-8553-f4523ce9b055"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#182dc21d-e5ee-4b44-8553-f4523ce9b055');
+
+            setTimeout(function() {
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass MeanEnsembler(BaseProcessor):\n    \"\"\" Take simple mean of multiple cols and store in new col. \"\"\"\n    def __init__(self, cols: list, final_col_name: str):\n        super(MeanEnsembler, self).__init__()\n        self.cols = cols\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\"prediction\"), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataset.dataf.loc[:, [self.cols]][self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)\n        rich_print(f\":stew: Ensembled '{self.cols}' with simple mean and saved in '{self.final_col_name}' :stew:\")\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass MeanEnsembler(BaseProcessor):\n    \"\"\"Take simple mean of multiple cols and store in new col.\"\"\"\n\n    def __init__(self, cols: list, final_col_name: str):\n        super(MeanEnsembler, self).__init__()\n        self.cols = cols\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\n            \"prediction\"\n        ), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataset.dataf.loc[:, [self.cols]][self.final_col_name] = dataset.dataf.loc[\n            :, self.cols\n        ].mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled '{self.cols}' with simple mean and saved in '{self.final_col_name}' :stew:\"\n        )\n        return Dataset(**dataset.__dict__)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}
@@ -120,10 +203,9 @@ and implement the transform method.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L28" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>proportion</code></strong>=<em><code>0.5</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L33" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>feature_names</code></strong>:<code>list</code>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>proportion</code></strong>=<em><code>0.5</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
-<p>New Preprocessors and Postprocessors should inherit from this object
-and implement the transform method.</p>
+<p>Feature</p>
 
 </div>
 
@@ -139,12 +221,59 @@ and implement the transform method.</p>
     
 <div class="cell border-box-sizing code_cell rendered">
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="592c870b-f9c4-4794-865a-9e656f99a74e"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#592c870b-f9c4-4794-865a-9e656f99a74e');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass FeatureNeutralizer(BaseProcessor):\n    \"\"\" Feature \"\"\"\n    def __init__(self, feature_names: list,\n                 pred_name: str = \"prediction\",\n                 proportion=0.5):\n        super(FeatureNeutralizer, self).__init__()\n        self.proportion = proportion\n        self.feature_names = feature_names\n        self.pred_name = pred_name\n        self.new_col_name = f\"{self.pred_name}_neutralized_{self.proportion}\"\n\n    @display_processor_info\n    def transform(self, dataset: Dataset):\n        neutralized_preds = dataset.dataf.groupby(\"era\").apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))\n        min_max_scaled_preds = MinMaxScaler().fit_transform(neutralized_preds)\n        dataset.dataf.loc[:, self.new_col_name] = min_max_scaled_preds\n        rich_print(f\":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold]'{self.proportion}'[/bold] :robot:\")\n        rich_print(f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]\")\n        return Dataset(**dataset.__dict__)\n\n    def _neutralize(self, scores, exposures):\n        neutral_scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))\n        return neutral_scores / scores.std()\n\n    @staticmethod\n    def _normalize(dataf: pd.DataFrame):\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(self, dataf: pd.DataFrame, pred_cols, by):\n        # Convert the scores to a normal distribution\n        preds, by_matrix = dataf[pred_cols], dataf[by].values\n        preds = self._normalize(preds)\n        preds = self._neutralize(preds, by_matrix)\n        return preds";
+                var nbb_formatted_code = "# export\n@typechecked\nclass FeatureNeutralizer(BaseProcessor):\n    \"\"\"Feature\"\"\"\n\n    def __init__(\n        self, feature_names: list, pred_name: str = \"prediction\", proportion=0.5\n    ):\n        super(FeatureNeutralizer, self).__init__()\n        self.proportion = proportion\n        self.feature_names = feature_names\n        self.pred_name = pred_name\n        self.new_col_name = f\"{self.pred_name}_neutralized_{self.proportion}\"\n\n    @display_processor_info\n    def transform(self, dataset: Dataset):\n        neutralized_preds = dataset.dataf.groupby(\"era\").apply(\n            lambda x: self.normalize_and_neutralize(\n                x, [self.pred_name], self.feature_names\n            )\n        )\n        min_max_scaled_preds = MinMaxScaler().fit_transform(neutralized_preds)\n        dataset.dataf.loc[:, self.new_col_name] = min_max_scaled_preds\n        rich_print(\n            f\":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold]'{self.proportion}'[/bold] :robot:\"\n        )\n        rich_print(\n            f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]\"\n        )\n        return Dataset(**dataset.__dict__)\n\n    def _neutralize(self, scores, exposures):\n        neutral_scores = scores - self.proportion * exposures.dot(\n            np.linalg.pinv(exposures).dot(scores)\n        )\n        return neutral_scores / scores.std()\n\n    @staticmethod\n    def _normalize(dataf: pd.DataFrame):\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(self, dataf: pd.DataFrame, pred_cols, by):\n        # Convert the scores to a normal distribution\n        preds, by_matrix = dataf[pred_cols], dataf[by].values\n        preds = self._normalize(preds)\n        preds = self._neutralize(preds, by_matrix)\n        return preds";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="3.-Custom">3. Custom<a class="anchor-link" href="#3.-Custom"> </a></h2>
+<h2 id="3.-Custom-PostProcessors">3. Custom PostProcessors<a class="anchor-link" href="#3.-Custom-PostProcessors"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are an almost unlimited number of ways to postprocess data. We invite the Numerai community to develop Numerai Classic and Signals preprocessors for <code>numerai-blocks</code>.</p>
+<p>A new PostProcessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement a <code>transform</code> method. The <code>transform</code> method should take a <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> as input and return a <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> object as output. An example is given below.</p>
+<p>We recommend adding <code>@typechecked</code> at the top of a new PostProcessor class to enforce types and provide useful debugging stacktraces.</p>
+<p>To enable fancy logging output. Add the <code>@display_processor_info</code> decorator to the <code>transform</code> method.</p>
+<p>Note that arbitrary metadata can be added or changed in the <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> class during a postprocessing step.</p>
+
 </div>
 </div>
 </div>
@@ -159,7 +288,7 @@ and implement the transform method.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L60" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L71" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -179,6 +308,42 @@ Do some awesome postprocessing.</li>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="b4d190ac-599f-4280-b97f-a5ea429a3e05"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#b4d190ac-599f-4280-b97f-a5ea429a3e05');
+
+            setTimeout(function() {
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomePostProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome postprocessing.\n    \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AwesomePostProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Add new column for manipulated data (optional)\n        new_column_name = \"NEW_COLUMN_NAME\"\n        dataset.dataf.loc[:, f\"prediction_{new_column_name}\"] = ...\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome postprocessing.\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AwesomePostProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Add new column for manipulated data (optional)\n        new_column_name = \"NEW_COLUMN_NAME\"\n        dataset.dataf.loc[:, f\"prediction_{new_column_name}\"] = ...\n        return Dataset(**dataset.__dict__)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}

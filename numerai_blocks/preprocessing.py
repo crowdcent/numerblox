@@ -107,7 +107,6 @@ class GroupStatsPreProcessor(BaseProcessor):
             dataf[f"feature_{group}_skew"] = dataf[cols].skew(axis=1)
         return dataf
 
-
     def _check_data_validity(self, dataset: Dataset):
         assert hasattr(dataset, 'version'), f"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data."
         assert getattr(dataset, 'version') == 1, f"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataset, 'version')}'."

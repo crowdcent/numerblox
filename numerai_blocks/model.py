@@ -132,8 +132,10 @@ class AwesomeModel(BaseModel):
 
     @display_processor_info
     def predict(self, dataset: Dataset) -> Dataset:
-        """ Return Dataset with column added for prediction. """
+        """ Return Dataset with column(s) added for prediction(s). """
+        ...
         dataset.dataf.loc[:, f"prediction_{self.model_name}"] = 0
         feature_df = dataset.get_feature_data
         ...
+        # Parse all contents of Dataset to the next pipeline step
         return Dataset(**dataset.__dict__)
