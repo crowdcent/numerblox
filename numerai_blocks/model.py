@@ -40,7 +40,7 @@ class BaseModel(ABC):
         self.model_paths = self.model_directory.glob(f'*.{self.file_suffix}')
         if self.file_suffix:
             assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
-        self.total_models = len(self.model_paths)
+        self.total_models = len(list(self.model_paths))
 
     @abstractmethod
     def predict(self, dataset: Dataset) -> Dataset:
