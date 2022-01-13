@@ -37,10 +37,10 @@ class BaseModel(ABC):
         self.description = f"{self.__class__.__name__}: '{self.model_name}' prediction"
 
         self.file_suffix = file_suffix
-        self.model_paths = self.model_directory.glob(f'*.{self.file_suffix}')
+        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))
         if self.file_suffix:
             assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
-        self.total_models = len(list(self.model_paths))
+        self.total_models = len(self.model_paths)
 
     @abstractmethod
     def predict(self, dataset: Dataset) -> Dataset:
@@ -69,7 +69,7 @@ class JoblibModel(BaseModel):
         models = self._load_models()
         for model in tqdm(models, desc=self.description):
             predictions = model.predict(feature_df, *args, **kwargs)
-            dataset.dataf.loc[:, self.prediction_col_name] += predictions
+            dataset.dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
         del models; gc.collect()
         return Dataset(**dataset.__dict__)
 
@@ -93,7 +93,7 @@ class CatboostModel(BaseModel):
         models = self._load_models()
         for model in tqdm(models, desc=self.description):
             predictions = model.predict(feature_df)
-            dataset.dataf.loc[:, self.model_name] += predictions
+            dataset.dataf.loc[:, self.model_name] += predictions / self.total_models
         del models; gc.collect()
         return Dataset(**dataset.__dict__)
 
@@ -117,7 +117,7 @@ class LGBMModel(BaseModel):
         models = self._load_models()
         for model in tqdm(models, desc=self.description):
             predictions = model.predict(feature_df)
-            dataset.dataf.loc[:, self.model_name] += predictions
+            dataset.dataf.loc[:, self.model_name] += predictions / self.total_models
         del models; gc.collect()
         return Dataset(**dataset.__dict__)
 

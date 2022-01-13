@@ -102,7 +102,7 @@ class GroupStatsPreProcessor(BaseProcessor):
     def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """ Mean, standard deviation and skew for each group. """
         for group in self.group_names:
-            cols = [col for col in df.columns if group in col]
+            cols = [col for col in dataf.columns if group in col]
             dataf[f"feature_{group}_mean"] = dataf[cols].mean(axis=1)
             dataf[f"feature_{group}_std"] = dataf[cols].std(axis=1)
             dataf[f"feature_{group}_skew"] = dataf[cols].skew(axis=1)

@@ -44,28 +44,29 @@ class FeatureNeutralizer(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
-        neutralized_preds = dataset.dataf.groupby("era").apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
-        min_max_scaled_preds = MinMaxScaler().fit_transform(neutralized_preds)
-        dataset.dataf.loc[:, self.new_col_name] = min_max_scaled_preds
-        rich_print(f":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold]'{self.proportion}'[/bold] :robot:")
-        rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]")
+        neutralized_preds = dataset.dataf.groupby("era")\
+            .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
+        dataset.dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
+        rich_print(f":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold].'{self.proportion}'[/bold] :robot:")
+        rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
         return Dataset(**dataset.__dict__)
 
-    def _neutralize(self, scores, exposures):
-        neutral_scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))
-        return neutral_scores / scores.std()
+    def _neutralize(self, df, columns, by):
+        scores = df[columns]
+        exposures = df[by].values
+        scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))
+        return scores / scores.std()
 
     @staticmethod
     def _normalize(dataf: pd.DataFrame):
         normalized_ranks = (dataf.rank(method="first") - 0.5) / len(dataf)
         return sp.norm.ppf(normalized_ranks)
 
-    def normalize_and_neutralize(self, dataf: pd.DataFrame, pred_cols, by):
+    def normalize_and_neutralize(self, df, columns, by):
         # Convert the scores to a normal distribution
-        preds, by_matrix = dataf[pred_cols], dataf[by].values
-        preds = self._normalize(preds)
-        preds = self._neutralize(preds, by_matrix)
-        return preds
+        df[columns] = self._normalize(df[columns])
+        df[columns] = self._neutralize(df, columns, by)
+        return df[columns]
 
 # Cell
 @typechecked

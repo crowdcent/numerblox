@@ -28,18 +28,19 @@ class ModelPipeline:
     """
     def __init__(self,
                  model: BaseModel,
-                 preprocessors: List[BaseProcessor] = None,
-                 postprocessors: List[BaseProcessor] = None,
+                 preprocessors: List[BaseProcessor] = [],
+                 postprocessors: List[BaseProcessor] = [],
                  copy_first = True,
                  pipeline_name: str = None):
         self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex
         self.model = model
+        self.copy_first = copy_first
         self.preprocessors = preprocessors
-        if copy_first:
-            self.preprocessors.insert(0, CopyPreProcessor())
         self.postprocessors = postprocessors
 
     def preprocess(self, dataset: Dataset) -> Dataset:
+        if self.copy_first:
+            dataset = CopyPreProcessor()(dataset)
         for preprocessor in tqdm(self.preprocessors,
                                  desc=f"{self.pipeline_name} Preprocessing:",
                                  position=0):
@@ -51,15 +52,15 @@ class ModelPipeline:
         for postprocessor in tqdm(self.postprocessors,
                                   desc=f"{self.pipeline_name} Postprocessing: ",
                                   position=0):
-            rich_print(f":car: Applying postprocessing {postprocessor.__class__.__name} :car:")
+            rich_print(f":car: Applying postprocessing {postprocessor.__class__.__name__} :car:")
             dataset = postprocessor(dataset)
         return dataset
 
-    @display_processor_info
     def pipeline(self, dataset: Dataset) -> Dataset:
         preprocessed_dataset = self.preprocess(dataset)
         prediction_dataset = self.model(preprocessed_dataset)
         processed_prediction_dataset = self.postprocess(prediction_dataset)
+        rich_print(f":check_mark: Finished pipeline: {self.pipeline_name}")
         return processed_prediction_dataset
 
     def __call__(self, dataset: Dataset):
