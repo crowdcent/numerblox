@@ -67,7 +67,7 @@ def display_processor_info(func):
         result = func(*args, **kwargs)
         time_taken = str(dt.datetime.now() - tic)
         class_name = func.__qualname__.split('.')[0]
-        rich_print(f":white_check_mark: Finished step [bold]{class_name}[/bold]. Output shape={result.dataf.shape}. Time taken for step: {time_taken}. :white_check_mark:")
+        rich_print(f":white_check_mark: Finished step [bold]{class_name}[/bold]. Output shape={result.dataf.shape}. Time taken for step: [blue]{time_taken}[/blue]. :white_check_mark:")
         return result
     return wrapper
 

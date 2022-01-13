@@ -44,7 +44,7 @@ class ModelPipeline:
         for preprocessor in tqdm(self.preprocessors,
                                  desc=f"{self.pipeline_name} Preprocessing:",
                                  position=0):
-            rich_print(f":car: Applying preprocessing {preprocessor.__class__.__name__} :car:")
+            rich_print(f":car: Applying preprocessing: [bold]{preprocessor.__class__.__name__}[/bold] :car:")
             dataset = preprocessor(dataset)
         return dataset
 
@@ -52,7 +52,7 @@ class ModelPipeline:
         for postprocessor in tqdm(self.postprocessors,
                                   desc=f"{self.pipeline_name} Postprocessing: ",
                                   position=0):
-            rich_print(f":car: Applying postprocessing {postprocessor.__class__.__name__} :car:")
+            rich_print(f":car: Applying postprocessing: [bold]{postprocessor.__class__.__name__}[/bold] :car:")
             dataset = postprocessor(dataset)
         return dataset
 
