@@ -21,25 +21,7 @@ Development notebooks are in the `nbs` directory. Example and educational notebo
 - Evaluators
 - Key (containing authentication info)
 - Submittors
-
-```
-1+1
-```
-
-
-
-
-    2
-
-
-
-```
-import uuid
-print(uuid.uuid4())
-```
-
-    44ef9b6c-43b1-4c3c-8678-04e9a8e38e15
-
+- Staker
 
 ## Contributing
 

@@ -46,9 +46,3127 @@ nb_path: "nbs/02_dataset.ipynb"
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="c827a2c2-9209-45f3-9781-7f1ed1ed238b"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#c827a2c2-9209-45f3-9781-7f1ed1ed238b');
+
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Considerations">Considerations<a class="anchor-link" href="#Considerations"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Goals:</p>
+<ol>
+<li>Create dynamic Numerai dataset where we can add metadata.</li>
+<li>Numerai specific functionality while keeping the flexibility of Pandas DataFrames.</li>
+<li>Dynamically update which columns are in data after each processing step.</li>
+<li>Dynamically update generated metadata after data processing step.</li>
+</ol>
+<p><strong>Options:</strong>
+<strong>1.</strong> Subclass from DataFrame and add functionality. Add metadata to DataFrame through <code>df.attrs['some_metadata'] = "some_metadata"</code>
+1.1. Can be confusing because it is still a DataFrame under the hood and, <code>pd.read_csv</code> and <code>pd.read_parquet</code> returns the normal DataFrame, etc.
+More info on subclassing DataFrames: <a href="https://stackoverflow.com/questions/22155951/how-can-i-subclass-a-pandas-dataframe">StackOverflow</a>, <a href="https://pandas.pydata.org/pandas-docs/stable/development/extending.html#extending-subclassing-pandas">Pandas Docs</a>.
+1.2. <a href="https://stackoverflow.com/questions/14688306/adding-meta-information-metadata-to-pandas-dataframe">Metadata not persistent with parquet</a>.</p>
+<p><strong>2.</strong> Develop dedicated <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a> class on which DataFrame is an attribute (<code>.dataf</code>)
+2.1. Easy to add functionality and typecheck.
+2.2. Does not work out of the box with sklearn Transformers, but can be easily made compatible with a single decorator.
+2.3. Easy to export and import metadata.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We adopt the convention:</p>
+<ol>
+<li>All feature column names should start with "feature".</li>
+<li>All target column names should start with "target".</li>
+<li>All prediction column names should start with "prediction".</li>
+<li>Every column for which this does not hold will be classified as an "aux column".</li>
+</ol>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="Dataset" class="doc_header"><code>class</code> <code>Dataset</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/dataset.py#L19" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Dataset</code>(<strong><code>dataf</code></strong>:<code>DataFrame</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+</blockquote>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="d0175322-afc0-473a-b43f-64244cfca67c"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#d0175322-afc0-473a-b43f-64244cfca67c');
+
+            setTimeout(function() {
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "#export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.all_cols if col not in self.not_aux_cols\n        ]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of features and targets\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
+                var nbb_formatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.all_cols if col not in self.not_aux_cols]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(\n        self, multi_target=False\n    ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of features and targets\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="create_dataset" class="doc_header"><code>create_dataset</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/dataset.py#L105" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>create_dataset</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+</blockquote>
+<p>Convenience function to initialize Dataset object with arbitrary metadata.
+Supports file formats for which Pandas has a 'read_' function.
+For example, .csv, .parquet, .json, .pickle, .html and .xml.
+For more details check <a href="https://pandas.pydata.org/docs/reference/io.html">https://pandas.pydata.org/docs/reference/io.html</a></p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="20b4a78b-1855-42e2-b7dd-a0301ea87fb7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#20b4a78b-1855-42e2-b7dd-a0301ea87fb7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "#export\ndef create_dataset(file_path: str, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize Dataset object with arbitrary metadata.\n    Supports file formats for which Pandas has a 'read_' function.\n    For example, .csv, .parquet, .json, .pickle, .html and .xml.\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix[1:]\n    # Suffix without dot\n    dataf = getattr(pd, f\"read_{suffix}\")(file_path)\n    return Dataset(dataf, *args, **kwargs)";
+                var nbb_formatted_code = "# export\ndef create_dataset(file_path: str, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize Dataset object with arbitrary metadata.\n    Supports file formats for which Pandas has a 'read_' function.\n    For example, .csv, .parquet, .json, .pickle, .html and .xml.\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix[1:]\n    # Suffix without dot\n    dataf = getattr(pd, f\"read_{suffix}\")(file_path)\n    return Dataset(dataf, *args, **kwargs)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Tests">Tests<a class="anchor-link" href="#Tests"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Initialize-from-memory">Initialize from memory<a class="anchor-link" href="#Initialize-from-memory"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_features</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="s2">&quot;ABCDEFGHIK&quot;</span><span class="p">]</span>
+<span class="n">id_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">test_features</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_col</span>
+<span class="n">df</span><span class="p">[[</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;target_1&quot;</span><span class="p">,</span> <span class="s2">&quot;target_2&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;era&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="807755d7-6d9b-459a-8df2-392b0458fc7c"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#807755d7-6d9b-459a-8df2-392b0458fc7c');
+
+            setTimeout(function() {
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
+                var nbb_formatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="s2">&quot;additional_info&quot;</span><span class="p">:</span> <span class="s2">&quot;test_model&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">tournament_type</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="e19389b9-993a-494f-9a09-ae69c999636e"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#e19389b9-993a-494f-9a09-ae69c999636e');
+
+            setTimeout(function() {
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\ndataset = Dataset(df, **metadata)\nassert dataset.version == 42\nassert dataset.tournament_type == \"random\"";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\ndataset = Dataset(df, **metadata)\nassert dataset.version == 42\nassert dataset.tournament_type == \"random\"";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Initialize-from-file">Initialize from file<a class="anchor-link" href="#Initialize-from-file"> </a></h4>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;additional_info&quot;</span><span class="p">:</span> <span class="s2">&quot;mini_numerai_data_version_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;classic&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>era</th>
+      <th>data_type</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>...</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 314 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="cafa486e-03c1-4a88-b9e5-e5e2f70e9da8"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#cafa486e-03c1-4a88-b9e5-e5e2f70e9da8');
+
+            setTimeout(function() {
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 1,\n    \"additional_info\": \"mini_numerai_data_version_1\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", **metadata)\nassert dataset.version == 1\nassert not dataset.multi_target\ndataset.dataf.head(2)";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 1,\n    \"additional_info\": \"mini_numerai_data_version_1\",\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", **metadata)\nassert dataset.version == 1\nassert not dataset.multi_target\ndataset.dataf.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>era</th>
+      <th>data_type</th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>...</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 314 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="dc6e9634-e8cf-472b-b27e-1786f084e037"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#dc6e9634-e8cf-472b-b27e-1786f084e037');
+
+            setTimeout(function() {
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "dataset.dataf.head(2)";
+                var nbb_formatted_code = "dataset.dataf.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_feature_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>feature_intelligence8</th>
+      <th>feature_intelligence9</th>
+      <th>feature_intelligence10</th>
+      <th>...</th>
+      <th>feature_wisdom37</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.75</td>
+      <td>...</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td>...</td>
+      <td>0.75</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 310 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="0f7db231-f626-4427-b01c-30ee9e4ce9b2"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#0f7db231-f626-4427-b01c-30ee9e4ce9b2');
+
+            setTimeout(function() {
+                var nbb_cell_id = 11;
+                var nbb_unformatted_code = "dataset.get_feature_data.head(2)";
+                var nbb_formatted_code = "dataset.get_feature_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">aux_cols</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;]</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="ad436d68-6078-42c6-8357-2466e0d944d1"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#ad436d68-6078-42c6-8357-2466e0d944d1');
+
+            setTimeout(function() {
+                var nbb_cell_id = 12;
+                var nbb_unformatted_code = "dataset.aux_cols";
+                var nbb_formatted_code = "dataset.aux_cols";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_aux_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>era</th>
+      <th>data_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+      <td>era1</td>
+      <td>train</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+      <td>era1</td>
+      <td>train</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="68f60dc6-1aaf-49f7-a6ea-96a750634adc"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#68f60dc6-1aaf-49f7-a6ea-96a750634adc');
+
+            setTimeout(function() {
+                var nbb_cell_id = 13;
+                var nbb_unformatted_code = "dataset.get_aux_data.head(2)";
+                var nbb_formatted_code = "dataset.get_aux_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span> <span class="o">==</span> <span class="kc">False</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="26e433a2-9702-4f6e-91f5-16a57d0ab7e9"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#26e433a2-9702-4f6e-91f5-16a57d0ab7e9');
+
+            setTimeout(function() {
+                var nbb_cell_id = 14;
+                var nbb_unformatted_code = "assert dataset.version == 1\nassert dataset.multi_target == False";
+                var nbb_formatted_code = "assert dataset.version == 1\nassert dataset.multi_target == False";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">export_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 Exporting metadata to config.json 📁
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="48499df3-8397-4082-b8dd-987936d663ae"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#48499df3-8397-4082-b8dd-987936d663ae');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "dataset.export_json_metadata(\"config.json\")";
+                var nbb_formatted_code = "dataset.export_json_metadata(\"config.json\")";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">import_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 Importing metadata from config.json 📁
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="e27249c1-ede6-411b-b95b-558c21df85e8"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#e27249c1-ede6-411b-b95b-558c21df85e8');
+
+            setTimeout(function() {
+                var nbb_cell_id = 16;
+                var nbb_unformatted_code = "dataset.import_json_metadata(\"config.json\")";
+                var nbb_formatted_code = "dataset.import_json_metadata(\"config.json\")";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{&#39;dataf&#39;:                  id   era data_type  feature_intelligence1  \
+ 0  n000315175b67977  era1     train                   0.00   
+ 1  n0014af834a96cdd  era1     train                   0.00   
+ 2  n001c93979ac41d4  era1     train                   0.25   
+ 3  n0034e4143f22a13  era1     train                   1.00   
+ 4  n00679d1a636062f  era1     train                   0.25   
+ 5  n009aa2d32389eca  era1     train                   0.50   
+ 6  n009ef1a5fe009b6  era1     train                   0.50   
+ 7  n00ae5d51f55fb0f  era1     train                   0.25   
+ 8  n00b0ac86d77aed7  era1     train                   0.50   
+ 9  n00c63366aeaf76a  era1     train                   0.50   
+ 
+    feature_intelligence2  feature_intelligence3  feature_intelligence4  \
+ 0                   0.50                   0.25                   0.00   
+ 1                   0.00                   0.00                   0.25   
+ 2                   0.50                   0.25                   0.25   
+ 3                   0.00                   0.00                   0.50   
+ 4                   0.25                   0.25                   0.25   
+ 5                   0.50                   0.25                   0.25   
+ 6                   0.25                   0.25                   0.75   
+ 7                   1.00                   1.00                   0.75   
+ 8                   0.50                   0.50                   1.00   
+ 9                   1.00                   1.00                   0.25   
+ 
+    feature_intelligence5  feature_intelligence6  feature_intelligence7  ...  \
+ 0                   0.50                   0.25                   0.25  ...   
+ 1                   0.50                   0.00                   0.00  ...   
+ 2                   1.00                   0.75                   0.75  ...   
+ 3                   0.50                   0.25                   0.25  ...   
+ 4                   0.00                   0.25                   0.50  ...   
+ 5                   0.75                   0.75                   0.75  ...   
+ 6                   1.00                   1.00                   1.00  ...   
+ 7                   1.00                   0.75                   0.75  ...   
+ 8                   1.00                   0.25                   0.50  ...   
+ 9                   0.75                   0.25                   0.25  ...   
+ 
+    feature_wisdom38  feature_wisdom39  feature_wisdom40  feature_wisdom41  \
+ 0              1.00              1.00              0.75              0.50   
+ 1              1.00              1.00              0.00              0.00   
+ 2              0.25              0.50              0.00              0.00   
+ 3              1.00              1.00              0.75              0.75   
+ 4              0.75              0.75              0.25              0.50   
+ 5              0.75              0.75              0.00              0.00   
+ 6              1.00              1.00              0.50              0.50   
+ 7              0.50              0.25              0.75              0.75   
+ 8              0.00              0.00              0.00              0.00   
+ 9              0.00              0.00              1.00              1.00   
+ 
+    feature_wisdom42  feature_wisdom43  feature_wisdom44  feature_wisdom45  \
+ 0              0.75              0.50              1.00              0.50   
+ 1              0.75              0.25              0.00              0.25   
+ 2              0.50              1.00              0.00              0.25   
+ 3              1.00              1.00              0.75              1.00   
+ 4              0.75              0.00              0.50              0.25   
+ 5              0.75              0.50              0.00              0.25   
+ 6              0.75              0.50              0.50              0.50   
+ 7              0.00              0.25              0.75              0.50   
+ 8              0.00              1.00              0.00              0.00   
+ 9              0.75              0.50              1.00              1.00   
+ 
+    feature_wisdom46  target  
+ 0              0.75    0.50  
+ 1              1.00    0.25  
+ 2              0.75    0.25  
+ 3              1.00    0.25  
+ 4              0.75    0.75  
+ 5              0.00    0.50  
+ 6              1.00    0.25  
+ 7              0.25    0.25  
+ 8              0.00    0.50  
+ 9              0.75    0.75  
+ 
+ [10 rows x 314 columns],
+ &#39;version&#39;: 1,
+ &#39;additional_info&#39;: &#39;mini_numerai_data_version_1&#39;,
+ &#39;multi_target&#39;: False,
+ &#39;tournament_type&#39;: &#39;classic&#39;,
+ &#39;all_cols&#39;: [&#39;id&#39;,
+  &#39;era&#39;,
+  &#39;data_type&#39;,
+  &#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;,
+  &#39;target&#39;],
+ &#39;feature_cols&#39;: [&#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;],
+ &#39;target_cols&#39;: [&#39;target&#39;],
+ &#39;prediction_cols&#39;: [],
+ &#39;not_aux_cols&#39;: [&#39;feature_intelligence1&#39;,
+  &#39;feature_intelligence2&#39;,
+  &#39;feature_intelligence3&#39;,
+  &#39;feature_intelligence4&#39;,
+  &#39;feature_intelligence5&#39;,
+  &#39;feature_intelligence6&#39;,
+  &#39;feature_intelligence7&#39;,
+  &#39;feature_intelligence8&#39;,
+  &#39;feature_intelligence9&#39;,
+  &#39;feature_intelligence10&#39;,
+  &#39;feature_intelligence11&#39;,
+  &#39;feature_intelligence12&#39;,
+  &#39;feature_charisma1&#39;,
+  &#39;feature_charisma2&#39;,
+  &#39;feature_charisma3&#39;,
+  &#39;feature_charisma4&#39;,
+  &#39;feature_charisma5&#39;,
+  &#39;feature_charisma6&#39;,
+  &#39;feature_charisma7&#39;,
+  &#39;feature_charisma8&#39;,
+  &#39;feature_charisma9&#39;,
+  &#39;feature_charisma10&#39;,
+  &#39;feature_charisma11&#39;,
+  &#39;feature_charisma12&#39;,
+  &#39;feature_charisma13&#39;,
+  &#39;feature_charisma14&#39;,
+  &#39;feature_charisma15&#39;,
+  &#39;feature_charisma16&#39;,
+  &#39;feature_charisma17&#39;,
+  &#39;feature_charisma18&#39;,
+  &#39;feature_charisma19&#39;,
+  &#39;feature_charisma20&#39;,
+  &#39;feature_charisma21&#39;,
+  &#39;feature_charisma22&#39;,
+  &#39;feature_charisma23&#39;,
+  &#39;feature_charisma24&#39;,
+  &#39;feature_charisma25&#39;,
+  &#39;feature_charisma26&#39;,
+  &#39;feature_charisma27&#39;,
+  &#39;feature_charisma28&#39;,
+  &#39;feature_charisma29&#39;,
+  &#39;feature_charisma30&#39;,
+  &#39;feature_charisma31&#39;,
+  &#39;feature_charisma32&#39;,
+  &#39;feature_charisma33&#39;,
+  &#39;feature_charisma34&#39;,
+  &#39;feature_charisma35&#39;,
+  &#39;feature_charisma36&#39;,
+  &#39;feature_charisma37&#39;,
+  &#39;feature_charisma38&#39;,
+  &#39;feature_charisma39&#39;,
+  &#39;feature_charisma40&#39;,
+  &#39;feature_charisma41&#39;,
+  &#39;feature_charisma42&#39;,
+  &#39;feature_charisma43&#39;,
+  &#39;feature_charisma44&#39;,
+  &#39;feature_charisma45&#39;,
+  &#39;feature_charisma46&#39;,
+  &#39;feature_charisma47&#39;,
+  &#39;feature_charisma48&#39;,
+  &#39;feature_charisma49&#39;,
+  &#39;feature_charisma50&#39;,
+  &#39;feature_charisma51&#39;,
+  &#39;feature_charisma52&#39;,
+  &#39;feature_charisma53&#39;,
+  &#39;feature_charisma54&#39;,
+  &#39;feature_charisma55&#39;,
+  &#39;feature_charisma56&#39;,
+  &#39;feature_charisma57&#39;,
+  &#39;feature_charisma58&#39;,
+  &#39;feature_charisma59&#39;,
+  &#39;feature_charisma60&#39;,
+  &#39;feature_charisma61&#39;,
+  &#39;feature_charisma62&#39;,
+  &#39;feature_charisma63&#39;,
+  &#39;feature_charisma64&#39;,
+  &#39;feature_charisma65&#39;,
+  &#39;feature_charisma66&#39;,
+  &#39;feature_charisma67&#39;,
+  &#39;feature_charisma68&#39;,
+  &#39;feature_charisma69&#39;,
+  &#39;feature_charisma70&#39;,
+  &#39;feature_charisma71&#39;,
+  &#39;feature_charisma72&#39;,
+  &#39;feature_charisma73&#39;,
+  &#39;feature_charisma74&#39;,
+  &#39;feature_charisma75&#39;,
+  &#39;feature_charisma76&#39;,
+  &#39;feature_charisma77&#39;,
+  &#39;feature_charisma78&#39;,
+  &#39;feature_charisma79&#39;,
+  &#39;feature_charisma80&#39;,
+  &#39;feature_charisma81&#39;,
+  &#39;feature_charisma82&#39;,
+  &#39;feature_charisma83&#39;,
+  &#39;feature_charisma84&#39;,
+  &#39;feature_charisma85&#39;,
+  &#39;feature_charisma86&#39;,
+  &#39;feature_strength1&#39;,
+  &#39;feature_strength2&#39;,
+  &#39;feature_strength3&#39;,
+  &#39;feature_strength4&#39;,
+  &#39;feature_strength5&#39;,
+  &#39;feature_strength6&#39;,
+  &#39;feature_strength7&#39;,
+  &#39;feature_strength8&#39;,
+  &#39;feature_strength9&#39;,
+  &#39;feature_strength10&#39;,
+  &#39;feature_strength11&#39;,
+  &#39;feature_strength12&#39;,
+  &#39;feature_strength13&#39;,
+  &#39;feature_strength14&#39;,
+  &#39;feature_strength15&#39;,
+  &#39;feature_strength16&#39;,
+  &#39;feature_strength17&#39;,
+  &#39;feature_strength18&#39;,
+  &#39;feature_strength19&#39;,
+  &#39;feature_strength20&#39;,
+  &#39;feature_strength21&#39;,
+  &#39;feature_strength22&#39;,
+  &#39;feature_strength23&#39;,
+  &#39;feature_strength24&#39;,
+  &#39;feature_strength25&#39;,
+  &#39;feature_strength26&#39;,
+  &#39;feature_strength27&#39;,
+  &#39;feature_strength28&#39;,
+  &#39;feature_strength29&#39;,
+  &#39;feature_strength30&#39;,
+  &#39;feature_strength31&#39;,
+  &#39;feature_strength32&#39;,
+  &#39;feature_strength33&#39;,
+  &#39;feature_strength34&#39;,
+  &#39;feature_strength35&#39;,
+  &#39;feature_strength36&#39;,
+  &#39;feature_strength37&#39;,
+  &#39;feature_strength38&#39;,
+  &#39;feature_dexterity1&#39;,
+  &#39;feature_dexterity2&#39;,
+  &#39;feature_dexterity3&#39;,
+  &#39;feature_dexterity4&#39;,
+  &#39;feature_dexterity5&#39;,
+  &#39;feature_dexterity6&#39;,
+  &#39;feature_dexterity7&#39;,
+  &#39;feature_dexterity8&#39;,
+  &#39;feature_dexterity9&#39;,
+  &#39;feature_dexterity10&#39;,
+  &#39;feature_dexterity11&#39;,
+  &#39;feature_dexterity12&#39;,
+  &#39;feature_dexterity13&#39;,
+  &#39;feature_dexterity14&#39;,
+  &#39;feature_constitution1&#39;,
+  &#39;feature_constitution2&#39;,
+  &#39;feature_constitution3&#39;,
+  &#39;feature_constitution4&#39;,
+  &#39;feature_constitution5&#39;,
+  &#39;feature_constitution6&#39;,
+  &#39;feature_constitution7&#39;,
+  &#39;feature_constitution8&#39;,
+  &#39;feature_constitution9&#39;,
+  &#39;feature_constitution10&#39;,
+  &#39;feature_constitution11&#39;,
+  &#39;feature_constitution12&#39;,
+  &#39;feature_constitution13&#39;,
+  &#39;feature_constitution14&#39;,
+  &#39;feature_constitution15&#39;,
+  &#39;feature_constitution16&#39;,
+  &#39;feature_constitution17&#39;,
+  &#39;feature_constitution18&#39;,
+  &#39;feature_constitution19&#39;,
+  &#39;feature_constitution20&#39;,
+  &#39;feature_constitution21&#39;,
+  &#39;feature_constitution22&#39;,
+  &#39;feature_constitution23&#39;,
+  &#39;feature_constitution24&#39;,
+  &#39;feature_constitution25&#39;,
+  &#39;feature_constitution26&#39;,
+  &#39;feature_constitution27&#39;,
+  &#39;feature_constitution28&#39;,
+  &#39;feature_constitution29&#39;,
+  &#39;feature_constitution30&#39;,
+  &#39;feature_constitution31&#39;,
+  &#39;feature_constitution32&#39;,
+  &#39;feature_constitution33&#39;,
+  &#39;feature_constitution34&#39;,
+  &#39;feature_constitution35&#39;,
+  &#39;feature_constitution36&#39;,
+  &#39;feature_constitution37&#39;,
+  &#39;feature_constitution38&#39;,
+  &#39;feature_constitution39&#39;,
+  &#39;feature_constitution40&#39;,
+  &#39;feature_constitution41&#39;,
+  &#39;feature_constitution42&#39;,
+  &#39;feature_constitution43&#39;,
+  &#39;feature_constitution44&#39;,
+  &#39;feature_constitution45&#39;,
+  &#39;feature_constitution46&#39;,
+  &#39;feature_constitution47&#39;,
+  &#39;feature_constitution48&#39;,
+  &#39;feature_constitution49&#39;,
+  &#39;feature_constitution50&#39;,
+  &#39;feature_constitution51&#39;,
+  &#39;feature_constitution52&#39;,
+  &#39;feature_constitution53&#39;,
+  &#39;feature_constitution54&#39;,
+  &#39;feature_constitution55&#39;,
+  &#39;feature_constitution56&#39;,
+  &#39;feature_constitution57&#39;,
+  &#39;feature_constitution58&#39;,
+  &#39;feature_constitution59&#39;,
+  &#39;feature_constitution60&#39;,
+  &#39;feature_constitution61&#39;,
+  &#39;feature_constitution62&#39;,
+  &#39;feature_constitution63&#39;,
+  &#39;feature_constitution64&#39;,
+  &#39;feature_constitution65&#39;,
+  &#39;feature_constitution66&#39;,
+  &#39;feature_constitution67&#39;,
+  &#39;feature_constitution68&#39;,
+  &#39;feature_constitution69&#39;,
+  &#39;feature_constitution70&#39;,
+  &#39;feature_constitution71&#39;,
+  &#39;feature_constitution72&#39;,
+  &#39;feature_constitution73&#39;,
+  &#39;feature_constitution74&#39;,
+  &#39;feature_constitution75&#39;,
+  &#39;feature_constitution76&#39;,
+  &#39;feature_constitution77&#39;,
+  &#39;feature_constitution78&#39;,
+  &#39;feature_constitution79&#39;,
+  &#39;feature_constitution80&#39;,
+  &#39;feature_constitution81&#39;,
+  &#39;feature_constitution82&#39;,
+  &#39;feature_constitution83&#39;,
+  &#39;feature_constitution84&#39;,
+  &#39;feature_constitution85&#39;,
+  &#39;feature_constitution86&#39;,
+  &#39;feature_constitution87&#39;,
+  &#39;feature_constitution88&#39;,
+  &#39;feature_constitution89&#39;,
+  &#39;feature_constitution90&#39;,
+  &#39;feature_constitution91&#39;,
+  &#39;feature_constitution92&#39;,
+  &#39;feature_constitution93&#39;,
+  &#39;feature_constitution94&#39;,
+  &#39;feature_constitution95&#39;,
+  &#39;feature_constitution96&#39;,
+  &#39;feature_constitution97&#39;,
+  &#39;feature_constitution98&#39;,
+  &#39;feature_constitution99&#39;,
+  &#39;feature_constitution100&#39;,
+  &#39;feature_constitution101&#39;,
+  &#39;feature_constitution102&#39;,
+  &#39;feature_constitution103&#39;,
+  &#39;feature_constitution104&#39;,
+  &#39;feature_constitution105&#39;,
+  &#39;feature_constitution106&#39;,
+  &#39;feature_constitution107&#39;,
+  &#39;feature_constitution108&#39;,
+  &#39;feature_constitution109&#39;,
+  &#39;feature_constitution110&#39;,
+  &#39;feature_constitution111&#39;,
+  &#39;feature_constitution112&#39;,
+  &#39;feature_constitution113&#39;,
+  &#39;feature_constitution114&#39;,
+  &#39;feature_wisdom1&#39;,
+  &#39;feature_wisdom2&#39;,
+  &#39;feature_wisdom3&#39;,
+  &#39;feature_wisdom4&#39;,
+  &#39;feature_wisdom5&#39;,
+  &#39;feature_wisdom6&#39;,
+  &#39;feature_wisdom7&#39;,
+  &#39;feature_wisdom8&#39;,
+  &#39;feature_wisdom9&#39;,
+  &#39;feature_wisdom10&#39;,
+  &#39;feature_wisdom11&#39;,
+  &#39;feature_wisdom12&#39;,
+  &#39;feature_wisdom13&#39;,
+  &#39;feature_wisdom14&#39;,
+  &#39;feature_wisdom15&#39;,
+  &#39;feature_wisdom16&#39;,
+  &#39;feature_wisdom17&#39;,
+  &#39;feature_wisdom18&#39;,
+  &#39;feature_wisdom19&#39;,
+  &#39;feature_wisdom20&#39;,
+  &#39;feature_wisdom21&#39;,
+  &#39;feature_wisdom22&#39;,
+  &#39;feature_wisdom23&#39;,
+  &#39;feature_wisdom24&#39;,
+  &#39;feature_wisdom25&#39;,
+  &#39;feature_wisdom26&#39;,
+  &#39;feature_wisdom27&#39;,
+  &#39;feature_wisdom28&#39;,
+  &#39;feature_wisdom29&#39;,
+  &#39;feature_wisdom30&#39;,
+  &#39;feature_wisdom31&#39;,
+  &#39;feature_wisdom32&#39;,
+  &#39;feature_wisdom33&#39;,
+  &#39;feature_wisdom34&#39;,
+  &#39;feature_wisdom35&#39;,
+  &#39;feature_wisdom36&#39;,
+  &#39;feature_wisdom37&#39;,
+  &#39;feature_wisdom38&#39;,
+  &#39;feature_wisdom39&#39;,
+  &#39;feature_wisdom40&#39;,
+  &#39;feature_wisdom41&#39;,
+  &#39;feature_wisdom42&#39;,
+  &#39;feature_wisdom43&#39;,
+  &#39;feature_wisdom44&#39;,
+  &#39;feature_wisdom45&#39;,
+  &#39;feature_wisdom46&#39;,
+  &#39;target&#39;],
+ &#39;aux_cols&#39;: [&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;]}</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="b23e4454-6ab0-44d7-b8a7-dd986e0e5d0a"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#b23e4454-6ab0-44d7-b8a7-dd986e0e5d0a');
+
+            setTimeout(function() {
+                var nbb_cell_id = 17;
+                var nbb_unformatted_code = "dataset.__dict__";
+                var nbb_formatted_code = "dataset.__dict__";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf2</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy_dataframe</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">dataf2</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="91f2a041-4236-46be-aa56-dabe6c6c6dd8"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#91f2a041-4236-46be-aa56-dabe6c6c6dd8');
+
+            setTimeout(function() {
+                var nbb_cell_id = 18;
+                var nbb_unformatted_code = "dataf2 = dataset.copy_dataframe()\nassert dataf2.equals(dataset.dataf)";
+                var nbb_formatted_code = "dataf2 = dataset.copy_dataframe()\nassert dataf2.equals(dataset.dataf)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="79f8926d-bdde-450f-a5a8-09239ec7fc63"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#79f8926d-bdde-450f-a5a8-09239ec7fc63');
+
+            setTimeout(function() {
+                var nbb_cell_id = 19;
+                var nbb_unformatted_code = "dataset.get_target_data.head(2)";
+                var nbb_formatted_code = "dataset.get_target_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_single_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="158d98a6-a9fa-4555-bff3-7a2f16bb9c29"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#158d98a6-a9fa-4555-bff3-7a2f16bb9c29');
+
+            setTimeout(function() {
+                var nbb_cell_id = 20;
+                var nbb_unformatted_code = "dataset.get_single_target_data.head(2)";
+                var nbb_formatted_code = "dataset.get_single_target_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">))</span>
+<span class="n">new_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">prediction_cols</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="084eb607-7259-45d4-b671-26bb0c65c800"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#084eb607-7259-45d4-b671-26bb0c65c800');
+
+            setTimeout(function() {
+                var nbb_cell_id = 21;
+                var nbb_unformatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 1";
+                var nbb_formatted_code = "dataset.dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset.dataf))\nnew_dataset = Dataset(dataset.dataf, dataset.__dict__)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.version == 1";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_dataset</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="bfe8e71c-6fde-41bb-8b81-24bc4e8f02c1"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#bfe8e71c-6fde-41bb-8b81-24bc4e8f02c1');
+
+            setTimeout(function() {
+                var nbb_cell_id = 22;
+                var nbb_unformatted_code = "new_dataset.get_column_selection(\"id\").head(2)";
+                var nbb_formatted_code = "new_dataset.get_column_selection(\"id\").head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_dataset</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">([</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>prediction_test_1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n000315175b67977</td>
+      <td>0.581591</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n0014af834a96cdd</td>
+      <td>0.932134</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="1a3f55fd-c910-4d58-8f20-d6e63d2352c9"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#1a3f55fd-c910-4d58-8f20-d6e63d2352c9');
+
+            setTimeout(function() {
+                var nbb_cell_id = 23;
+                var nbb_unformatted_code = "new_dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
+                var nbb_formatted_code = "new_dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">get_feature_target_pair</span><span class="p">(</span><span class="n">multi_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="20527121-ba14-444e-b4bc-d9b196bfedfa"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#20527121-ba14-444e-b4bc-d9b196bfedfa');
+
+            setTimeout(function() {
+                var nbb_cell_id = 24;
+                var nbb_unformatted_code = "X, y = new_dataset.get_feature_target_pair(multi_target=False)";
+                var nbb_formatted_code = "X, y = new_dataset.get_feature_target_pair(multi_target=False)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>feature_intelligence1</th>
+      <th>feature_intelligence2</th>
+      <th>feature_intelligence3</th>
+      <th>feature_intelligence4</th>
+      <th>feature_intelligence5</th>
+      <th>feature_intelligence6</th>
+      <th>feature_intelligence7</th>
+      <th>feature_intelligence8</th>
+      <th>feature_intelligence9</th>
+      <th>feature_intelligence10</th>
+      <th>...</th>
+      <th>feature_wisdom37</th>
+      <th>feature_wisdom38</th>
+      <th>feature_wisdom39</th>
+      <th>feature_wisdom40</th>
+      <th>feature_wisdom41</th>
+      <th>feature_wisdom42</th>
+      <th>feature_wisdom43</th>
+      <th>feature_wisdom44</th>
+      <th>feature_wisdom45</th>
+      <th>feature_wisdom46</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.5</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.75</td>
+      <td>...</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>0.5</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>0.50</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td>...</td>
+      <td>0.75</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>1.00</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 310 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="999dec6f-7e99-47cc-b0b1-80abc3325644"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#999dec6f-7e99-47cc-b0b1-80abc3325644');
+
+            setTimeout(function() {
+                var nbb_cell_id = 25;
+                var nbb_unformatted_code = "X.head(2)";
+                var nbb_formatted_code = "X.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.25</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="23d99f20-998c-4d03-9c54-d2d65d850a95"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#23d99f20-998c-4d03-9c54-d2d65d850a95');
+
+            setTimeout(function() {
+                var nbb_cell_id = 26;
+                var nbb_unformatted_code = "y.head(2)";
+                var nbb_formatted_code = "y.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">str</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#34;Dataset of shape (10, 315). Columns: [&#39;id&#39;, &#39;era&#39;, &#39;data_type&#39;, &#39;feature_intelligence1&#39;, &#39;feature_intelligence2&#39;, &#39;feature_intelligence3&#39;, &#39;feature_intelligence4&#39;, &#39;feature_intelligence5&#39;, &#39;feature_intelligence6&#39;, &#39;feature_intelligence7&#39;, &#39;feature_intelligence8&#39;, &#39;feature_intelligence9&#39;, &#39;feature_intelligence10&#39;, &#39;feature_intelligence11&#39;, &#39;feature_intelligence12&#39;, &#39;feature_charisma1&#39;, &#39;feature_charisma2&#39;, &#39;feature_charisma3&#39;, &#39;feature_charisma4&#39;, &#39;feature_charisma5&#39;, &#39;feature_charisma6&#39;, &#39;feature_charisma7&#39;, &#39;feature_charisma8&#39;, &#39;feature_charisma9&#39;, &#39;feature_charisma10&#39;, &#39;feature_charisma11&#39;, &#39;feature_charisma12&#39;, &#39;feature_charisma13&#39;, &#39;feature_charisma14&#39;, &#39;feature_charisma15&#39;, &#39;feature_charisma16&#39;, &#39;feature_charisma17&#39;, &#39;feature_charisma18&#39;, &#39;feature_charisma19&#39;, &#39;feature_charisma20&#39;, &#39;feature_charisma21&#39;, &#39;feature_charisma22&#39;, &#39;feature_charisma23&#39;, &#39;feature_charisma24&#39;, &#39;feature_charisma25&#39;, &#39;feature_charisma26&#39;, &#39;feature_charisma27&#39;, &#39;feature_charisma28&#39;, &#39;feature_charisma29&#39;, &#39;feature_charisma30&#39;, &#39;feature_charisma31&#39;, &#39;feature_charisma32&#39;, &#39;feature_charisma33&#39;, &#39;feature_charisma34&#39;, &#39;feature_charisma35&#39;, &#39;feature_charisma36&#39;, &#39;feature_charisma37&#39;, &#39;feature_charisma38&#39;, &#39;feature_charisma39&#39;, &#39;feature_charisma40&#39;, &#39;feature_charisma41&#39;, &#39;feature_charisma42&#39;, &#39;feature_charisma43&#39;, &#39;feature_charisma44&#39;, &#39;feature_charisma45&#39;, &#39;feature_charisma46&#39;, &#39;feature_charisma47&#39;, &#39;feature_charisma48&#39;, &#39;feature_charisma49&#39;, &#39;feature_charisma50&#39;, &#39;feature_charisma51&#39;, &#39;feature_charisma52&#39;, &#39;feature_charisma53&#39;, &#39;feature_charisma54&#39;, &#39;feature_charisma55&#39;, &#39;feature_charisma56&#39;, &#39;feature_charisma57&#39;, &#39;feature_charisma58&#39;, &#39;feature_charisma59&#39;, &#39;feature_charisma60&#39;, &#39;feature_charisma61&#39;, &#39;feature_charisma62&#39;, &#39;feature_charisma63&#39;, &#39;feature_charisma64&#39;, &#39;feature_charisma65&#39;, &#39;feature_charisma66&#39;, &#39;feature_charisma67&#39;, &#39;feature_charisma68&#39;, &#39;feature_charisma69&#39;, &#39;feature_charisma70&#39;, &#39;feature_charisma71&#39;, &#39;feature_charisma72&#39;, &#39;feature_charisma73&#39;, &#39;feature_charisma74&#39;, &#39;feature_charisma75&#39;, &#39;feature_charisma76&#39;, &#39;feature_charisma77&#39;, &#39;feature_charisma78&#39;, &#39;feature_charisma79&#39;, &#39;feature_charisma80&#39;, &#39;feature_charisma81&#39;, &#39;feature_charisma82&#39;, &#39;feature_charisma83&#39;, &#39;feature_charisma84&#39;, &#39;feature_charisma85&#39;, &#39;feature_charisma86&#39;, &#39;feature_strength1&#39;, &#39;feature_strength2&#39;, &#39;feature_strength3&#39;, &#39;feature_strength4&#39;, &#39;feature_strength5&#39;, &#39;feature_strength6&#39;, &#39;feature_strength7&#39;, &#39;feature_strength8&#39;, &#39;feature_strength9&#39;, &#39;feature_strength10&#39;, &#39;feature_strength11&#39;, &#39;feature_strength12&#39;, &#39;feature_strength13&#39;, &#39;feature_strength14&#39;, &#39;feature_strength15&#39;, &#39;feature_strength16&#39;, &#39;feature_strength17&#39;, &#39;feature_strength18&#39;, &#39;feature_strength19&#39;, &#39;feature_strength20&#39;, &#39;feature_strength21&#39;, &#39;feature_strength22&#39;, &#39;feature_strength23&#39;, &#39;feature_strength24&#39;, &#39;feature_strength25&#39;, &#39;feature_strength26&#39;, &#39;feature_strength27&#39;, &#39;feature_strength28&#39;, &#39;feature_strength29&#39;, &#39;feature_strength30&#39;, &#39;feature_strength31&#39;, &#39;feature_strength32&#39;, &#39;feature_strength33&#39;, &#39;feature_strength34&#39;, &#39;feature_strength35&#39;, &#39;feature_strength36&#39;, &#39;feature_strength37&#39;, &#39;feature_strength38&#39;, &#39;feature_dexterity1&#39;, &#39;feature_dexterity2&#39;, &#39;feature_dexterity3&#39;, &#39;feature_dexterity4&#39;, &#39;feature_dexterity5&#39;, &#39;feature_dexterity6&#39;, &#39;feature_dexterity7&#39;, &#39;feature_dexterity8&#39;, &#39;feature_dexterity9&#39;, &#39;feature_dexterity10&#39;, &#39;feature_dexterity11&#39;, &#39;feature_dexterity12&#39;, &#39;feature_dexterity13&#39;, &#39;feature_dexterity14&#39;, &#39;feature_constitution1&#39;, &#39;feature_constitution2&#39;, &#39;feature_constitution3&#39;, &#39;feature_constitution4&#39;, &#39;feature_constitution5&#39;, &#39;feature_constitution6&#39;, &#39;feature_constitution7&#39;, &#39;feature_constitution8&#39;, &#39;feature_constitution9&#39;, &#39;feature_constitution10&#39;, &#39;feature_constitution11&#39;, &#39;feature_constitution12&#39;, &#39;feature_constitution13&#39;, &#39;feature_constitution14&#39;, &#39;feature_constitution15&#39;, &#39;feature_constitution16&#39;, &#39;feature_constitution17&#39;, &#39;feature_constitution18&#39;, &#39;feature_constitution19&#39;, &#39;feature_constitution20&#39;, &#39;feature_constitution21&#39;, &#39;feature_constitution22&#39;, &#39;feature_constitution23&#39;, &#39;feature_constitution24&#39;, &#39;feature_constitution25&#39;, &#39;feature_constitution26&#39;, &#39;feature_constitution27&#39;, &#39;feature_constitution28&#39;, &#39;feature_constitution29&#39;, &#39;feature_constitution30&#39;, &#39;feature_constitution31&#39;, &#39;feature_constitution32&#39;, &#39;feature_constitution33&#39;, &#39;feature_constitution34&#39;, &#39;feature_constitution35&#39;, &#39;feature_constitution36&#39;, &#39;feature_constitution37&#39;, &#39;feature_constitution38&#39;, &#39;feature_constitution39&#39;, &#39;feature_constitution40&#39;, &#39;feature_constitution41&#39;, &#39;feature_constitution42&#39;, &#39;feature_constitution43&#39;, &#39;feature_constitution44&#39;, &#39;feature_constitution45&#39;, &#39;feature_constitution46&#39;, &#39;feature_constitution47&#39;, &#39;feature_constitution48&#39;, &#39;feature_constitution49&#39;, &#39;feature_constitution50&#39;, &#39;feature_constitution51&#39;, &#39;feature_constitution52&#39;, &#39;feature_constitution53&#39;, &#39;feature_constitution54&#39;, &#39;feature_constitution55&#39;, &#39;feature_constitution56&#39;, &#39;feature_constitution57&#39;, &#39;feature_constitution58&#39;, &#39;feature_constitution59&#39;, &#39;feature_constitution60&#39;, &#39;feature_constitution61&#39;, &#39;feature_constitution62&#39;, &#39;feature_constitution63&#39;, &#39;feature_constitution64&#39;, &#39;feature_constitution65&#39;, &#39;feature_constitution66&#39;, &#39;feature_constitution67&#39;, &#39;feature_constitution68&#39;, &#39;feature_constitution69&#39;, &#39;feature_constitution70&#39;, &#39;feature_constitution71&#39;, &#39;feature_constitution72&#39;, &#39;feature_constitution73&#39;, &#39;feature_constitution74&#39;, &#39;feature_constitution75&#39;, &#39;feature_constitution76&#39;, &#39;feature_constitution77&#39;, &#39;feature_constitution78&#39;, &#39;feature_constitution79&#39;, &#39;feature_constitution80&#39;, &#39;feature_constitution81&#39;, &#39;feature_constitution82&#39;, &#39;feature_constitution83&#39;, &#39;feature_constitution84&#39;, &#39;feature_constitution85&#39;, &#39;feature_constitution86&#39;, &#39;feature_constitution87&#39;, &#39;feature_constitution88&#39;, &#39;feature_constitution89&#39;, &#39;feature_constitution90&#39;, &#39;feature_constitution91&#39;, &#39;feature_constitution92&#39;, &#39;feature_constitution93&#39;, &#39;feature_constitution94&#39;, &#39;feature_constitution95&#39;, &#39;feature_constitution96&#39;, &#39;feature_constitution97&#39;, &#39;feature_constitution98&#39;, &#39;feature_constitution99&#39;, &#39;feature_constitution100&#39;, &#39;feature_constitution101&#39;, &#39;feature_constitution102&#39;, &#39;feature_constitution103&#39;, &#39;feature_constitution104&#39;, &#39;feature_constitution105&#39;, &#39;feature_constitution106&#39;, &#39;feature_constitution107&#39;, &#39;feature_constitution108&#39;, &#39;feature_constitution109&#39;, &#39;feature_constitution110&#39;, &#39;feature_constitution111&#39;, &#39;feature_constitution112&#39;, &#39;feature_constitution113&#39;, &#39;feature_constitution114&#39;, &#39;feature_wisdom1&#39;, &#39;feature_wisdom2&#39;, &#39;feature_wisdom3&#39;, &#39;feature_wisdom4&#39;, &#39;feature_wisdom5&#39;, &#39;feature_wisdom6&#39;, &#39;feature_wisdom7&#39;, &#39;feature_wisdom8&#39;, &#39;feature_wisdom9&#39;, &#39;feature_wisdom10&#39;, &#39;feature_wisdom11&#39;, &#39;feature_wisdom12&#39;, &#39;feature_wisdom13&#39;, &#39;feature_wisdom14&#39;, &#39;feature_wisdom15&#39;, &#39;feature_wisdom16&#39;, &#39;feature_wisdom17&#39;, &#39;feature_wisdom18&#39;, &#39;feature_wisdom19&#39;, &#39;feature_wisdom20&#39;, &#39;feature_wisdom21&#39;, &#39;feature_wisdom22&#39;, &#39;feature_wisdom23&#39;, &#39;feature_wisdom24&#39;, &#39;feature_wisdom25&#39;, &#39;feature_wisdom26&#39;, &#39;feature_wisdom27&#39;, &#39;feature_wisdom28&#39;, &#39;feature_wisdom29&#39;, &#39;feature_wisdom30&#39;, &#39;feature_wisdom31&#39;, &#39;feature_wisdom32&#39;, &#39;feature_wisdom33&#39;, &#39;feature_wisdom34&#39;, &#39;feature_wisdom35&#39;, &#39;feature_wisdom36&#39;, &#39;feature_wisdom37&#39;, &#39;feature_wisdom38&#39;, &#39;feature_wisdom39&#39;, &#39;feature_wisdom40&#39;, &#39;feature_wisdom41&#39;, &#39;feature_wisdom42&#39;, &#39;feature_wisdom43&#39;, &#39;feature_wisdom44&#39;, &#39;feature_wisdom45&#39;, &#39;feature_wisdom46&#39;, &#39;target&#39;]&#34;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="a238509b-a4a3-4404-bc92-84eb7b98762d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#a238509b-a4a3-4404-bc92-84eb7b98762d');
+
+            setTimeout(function() {
+                var nbb_cell_id = 27;
+                var nbb_unformatted_code = "str(dataset)";
+                var nbb_formatted_code = "str(dataset)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+
+</div>
+</div>
+</div>
 </div>
  
 
