@@ -163,7 +163,8 @@ class BaseDownloader(BaseIO):
 # Cell
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    Downloading from NumerAPI for Numerai Classic data
+    -WARNING- Version 1 (legacy) is deprecated. Only supporting version 2+.
+    Downloading from NumerAPI for Numerai Classic data.
 
     :param directory_path: Base folder to download files to.
     All *args, **kwargs will be passed to NumerAPI initialization.
@@ -175,40 +176,24 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
         self.version_mapping = {
-            1: {
-                "train": {
-                    "int8": [
-                        "numerai_training_data_int8.csv",
-                        "numerai_validation_data_int8.csv",
-                    ],
-                    "float": [
-                        "numerai_training_data.csv",
-                        "numerai_validation_data.csv",
-                    ],
-                },
-                "inference": {
-                    "int8": ["numerai_tournament_data_int8.csv"],
-                    "float": ["numerai_tournament_data.csv"],
-                },
-                "example": [
-                    "example_predictions.csv",
-                    "example_validation_predictions.csv",
-                ],
-            },
             2: {
                 "train": {
                     "int8": [
                         "numerai_training_data_int8.parquet",
-                        "numerai_validation_data_int8.parquet",
+                        "numerai_validation_data_int8.parquet"
                     ],
                     "float": [
                         "numerai_training_data.parquet",
-                        "numerai_validation_data.parquet",
+                        "numerai_validation_data.parquet"
                     ],
                 },
                 "inference": {
                     "int8": ["numerai_tournament_data_int8.parquet"],
-                    "float": ["numerai_tournament_data.parquet"],
+                    "float": ["numerai_tournament_data.parquet"]
+                },
+                "live": {
+                    "int8": ['numerai_live_data_int8.parquet'],
+                    "float": ['numerai_live_data.parquet']
                 },
                 "example": [
                     "example_predictions.parquet",
@@ -223,7 +208,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         Get Numerai classic training and validation data.
         :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
-        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
+        :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param int8: Integer version of data
         """
         dir = self._append_folder(subfolder)
@@ -244,7 +229,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         Get Numerai classic inference data.
         :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
-        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
+        :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
@@ -286,7 +271,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         Download all example prediction data in specified folder for given version.
 
         :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
-        :param version: Numerai version (1=classic, 2=super massive dataset (parquet)
+        :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         dir = self._append_folder(subfolder)
@@ -315,6 +300,6 @@ class NumeraiClassicDownloader(BaseDownloader):
             mapping_dictionary = self.version_mapping[version]
         except KeyError:
             raise NotImplementedError(
-                f"Version '{version}' is not implemented. Available versions are {list(self.version_mapping.keys())}"
+                f"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}"
             )
         return mapping_dictionary
