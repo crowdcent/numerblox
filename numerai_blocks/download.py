@@ -236,9 +236,6 @@ class NumeraiClassicDownloader(BaseDownloader):
         dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         inference_files = self._get_version_mapping(version)["inference"][data_type]
-        rich_print(
-            f":file_folder: [green]Downloading inference data for round[/green] '{round_num if round_num else self.current_round}'."
-        )
         for file in inference_files:
             self.download_single_dataset(
                 filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
@@ -263,6 +260,29 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi.download_dataset(
             filename=filename, dest_path=dest_path, round_num=round_num
         )
+
+    def download_live_data(
+            self,
+            subfolder: str = "",
+            version: int = 2,
+            int8: bool = False,
+            round_num: int = None
+    ):
+        """
+        Download all live data in specified folder for given version.
+
+        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param version: Numerai dataset version (2=super massive dataset (parquet))
+        :param int8: Integer version of data
+        :param round_num: Numerai tournament round number. Downloads latest round by default.
+        """
+        dir = self._append_folder(subfolder)
+        data_type = "int8" if int8 else "float"
+        live_files = self._get_version_mapping(version)["live"][data_type]
+        for file in live_files:
+            self.download_single_dataset(
+                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
+            )
 
     def download_example_data(
         self, subfolder: str = "", version: int = 2, round_num: int = None
