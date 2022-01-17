@@ -9,9 +9,10 @@ from tqdm.auto import tqdm
 from typeguard import typechecked
 from rich import print as rich_print
 
-from .dataset import Dataset
-from .preprocessing import BaseProcessor, CopyPreProcessor, display_processor_info
-from .model import BaseModel
+from .dataset import Dataset, create_dataset
+from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
+from .model import BaseModel, ConstantModel
+from .postprocessing import FeatureNeutralizer, MeanEnsembler
 
 # Cell
 @typechecked
@@ -19,21 +20,21 @@ class ModelPipeline:
     """
     Execute all preprocessing, prediction and postprocessing for a given setup.
 
-    :param model: A numerai-blocks Model that add prediction columns to a given input Dataset
+    :param models: Initiliazed (!) numerai-blocks Models that add prediction columns to a given input Dataset
     :param preprocessors: List of initialized (!) PreProcessors.
     :param postprocessors: List of initialized (!) PostProcessors.
     :param copy_first: Whether to copy the Dataset as a first preprocessing step.
     Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.
-    :param pipeline_name: Name for display purposes
+    :param pipeline_name: Unique name for pipeline.
     """
     def __init__(self,
-                 model: BaseModel,
+                 models: List[BaseModel],
                  preprocessors: List[BaseProcessor] = [],
                  postprocessors: List[BaseProcessor] = [],
                  copy_first = True,
                  pipeline_name: str = None):
         self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex
-        self.model = model
+        self.models = models
         self.copy_first = copy_first
         self.preprocessors = preprocessors
         self.postprocessors = postprocessors
@@ -44,7 +45,7 @@ class ModelPipeline:
         for preprocessor in tqdm(self.preprocessors,
                                  desc=f"{self.pipeline_name} Preprocessing:",
                                  position=0):
-            rich_print(f":car: Applying preprocessing: [bold]{preprocessor.__class__.__name__}[/bold] :car:")
+            rich_print(f":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:")
             dataset = preprocessor(dataset)
         return dataset
 
@@ -52,15 +53,24 @@ class ModelPipeline:
         for postprocessor in tqdm(self.postprocessors,
                                   desc=f"{self.pipeline_name} Postprocessing: ",
                                   position=0):
-            rich_print(f":car: Applying postprocessing: [bold]{postprocessor.__class__.__name__}[/bold] :car:")
+            rich_print(f":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:")
             dataset = postprocessor(dataset)
         return dataset
 
+    def process_models(self, dataset: Dataset) -> Dataset:
+        for model in tqdm(self.models,
+                                  desc=f"{self.pipeline_name} Model prediction: ",
+                                  position=0):
+            rich_print(f":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:")
+            dataset = model(dataset)
+        return dataset
+
     def pipeline(self, dataset: Dataset) -> Dataset:
+        """ Process full pipeline and return resulting Dataset. """
         preprocessed_dataset = self.preprocess(dataset)
-        prediction_dataset = self.model(preprocessed_dataset)
+        prediction_dataset = self.process_models(preprocessed_dataset)
         processed_prediction_dataset = self.postprocess(prediction_dataset)
-        rich_print(f":check_mark: Finished pipeline: {self.pipeline_name}")
+        rich_print(f":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:")
         return processed_prediction_dataset
 
     def __call__(self, dataset: Dataset):
@@ -77,11 +87,13 @@ class ModelPipelineCollection:
         self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}
         self.pipeline_names = list(self.pipelines.keys())
 
-    def process_all_pipelines(self, dataset: Dataset) -> Dataset:
+    def process_all_pipelines(self, dataset: Dataset) -> List[Dataset]:
+        """ Process all pipelines and return list of resulting Datasets. """
+        result_datasets = []
         for name, pipeline in tqdm(self.pipelines.items(),
                                    desc="Processing Pipeline Collection"):
-            dataset = self.process_single_pipeline(dataset, name)
-        return dataset
+            result_datasets.append(self.process_single_pipeline(dataset, name))
+        return result_datasets
 
     def process_single_pipeline(self, dataset: Dataset, pipeline_name: str) -> Dataset:
         rich_print(f":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:")
@@ -94,5 +106,5 @@ class ModelPipelineCollection:
         assert pipeline_name in available_pipelines, f"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'."
         return self.pipelines[pipeline_name]
 
-    def __call__(self, dataset: Dataset) -> Dataset:
+    def __call__(self, dataset: Dataset) -> List[Dataset]:
         return self.process_all_pipelines(dataset=dataset)

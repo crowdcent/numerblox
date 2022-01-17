@@ -25,8 +25,8 @@ class MeanEnsembler(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
-        dataset.dataf.loc[:, [self.cols]][self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)
-        rich_print(f":stew: Ensembled '{self.cols}' with simple mean and saved in '{self.final_col_name}' :stew:")
+        dataset.dataf.loc[:, self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)
+        rich_print(f":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
         return Dataset(**dataset.__dict__)
 
 # Cell
@@ -47,7 +47,7 @@ class FeatureNeutralizer(BaseProcessor):
         neutralized_preds = dataset.dataf.groupby("era")\
             .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
         dataset.dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
-        rich_print(f":robot: Neutralized [bold]'{self.pred_name}'[bold] with proportion [bold].'{self.proportion}'[/bold] :robot:")
+        rich_print(f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:")
         rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
         return Dataset(**dataset.__dict__)
 

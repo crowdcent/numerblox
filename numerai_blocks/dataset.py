@@ -50,7 +50,7 @@ class Dataset:
         Path(file).write_text(json_txt)
 
     def import_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Load arbitrary data into Dataset object from json file"""
+        """Load arbitrary data into Dataset object from json file."""
         rich_print(f":file_folder: Importing metadata from {file} :file_folder:")
         with open(file) as json_file:
             json_data = json.load(json_file, **kwargs)
@@ -82,18 +82,35 @@ class Dataset:
 
     @property
     def get_aux_data(self) -> pd.DataFrame:
-        """All columns that are not features, targets or predictions."""
+        """All columns that are not features, targets nor predictions."""
         return self.get_column_selection(cols=self.aux_cols)
 
     def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Get split of features and targets
+        Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
         Returns all target columns when set to True.
         """
         X = self.get_feature_data
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
+
+    def merge_datasets(self, other, *args, **kwargs):
+        """
+        Merge Dataset with other Dataset.
+        :param other: Another Dataset.
+        WARNING: Metadata of original Dataset will be kept in case of duplicates.
+        *args, **kwargs will be passed to DataFrame merge operation.
+        :return: Dataset with dataf and metadata merged.
+        Metadata of original has priority in case of duplicate keys
+        """
+        # Merge DataFrames
+        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()
+        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)
+        # Merge metadata
+        other_copy.__dict__.pop('dataf', None)
+        new_dataset.__dict__.update(**other_copy.__dict__)
+        return Dataset(**new_dataset.__dict__)
 
     def __repr__(self) -> str:
         return f"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}"
