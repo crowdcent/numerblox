@@ -95,6 +95,23 @@ class Dataset:
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
 
+    def merge_datasets(self, other, *args, **kwargs):
+        """
+        Merge Dataset with other Dataset.
+        :param other: Another Dataset.
+        WARNING: Metadata of original Dataset will be kept in case of duplicates.
+        *args, **kwargs will be passed to DataFrame merge operation.
+        :return: Dataset with dataf and metadata merged.
+        Metadata of original has priority in case of duplicate keys
+        """
+        # Merge DataFrames
+        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()
+        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)
+        # Merge metadata
+        other_copy.__dict__.pop('dataf', None)
+        new_dataset.__dict__.update(**other_copy.__dict__)
+        return Dataset(**new_dataset.__dict__)
+
     def __repr__(self) -> str:
         return f"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}"
 
