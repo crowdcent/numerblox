@@ -50,7 +50,7 @@ class Dataset:
         Path(file).write_text(json_txt)
 
     def import_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Load arbitrary data into Dataset object from json file"""
+        """Load arbitrary data into Dataset object from json file."""
         rich_print(f":file_folder: Importing metadata from {file} :file_folder:")
         with open(file) as json_file:
             json_data = json.load(json_file, **kwargs)
@@ -82,12 +82,12 @@ class Dataset:
 
     @property
     def get_aux_data(self) -> pd.DataFrame:
-        """All columns that are not features, targets or predictions."""
+        """All columns that are not features, targets nor predictions."""
         return self.get_column_selection(cols=self.aux_cols)
 
     def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Get split of features and targets
+        Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
         Returns all target columns when set to True.
         """
