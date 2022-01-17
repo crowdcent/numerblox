@@ -16,7 +16,7 @@ import lightgbm as lgb
 from catboost import CatBoostRegressor
 from sklearn.dummy import DummyRegressor
 
-from .dataset import Dataset
+from .dataset import Dataset, create_dataset
 from .preprocessing import display_processor_info
 
 # Cell
