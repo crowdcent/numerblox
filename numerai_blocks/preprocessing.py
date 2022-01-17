@@ -68,7 +68,7 @@ class FeatureSelectionPreProcessor(BaseProcessor):
         super(FeatureSelectionPreProcessor, self).__init__()
 
     @display_processor_info
-    def transform(self, dataset: Dataset, feature_cols: Union[str, list], *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset, feature_cols: Union[str, list]) -> Dataset:
         keep_cols = feature_cols + dataset.target_cols + dataset.prediction_cols + dataset.aux_cols
         dataset.dataf = dataset.dataf.loc[:, keep_cols]
         return Dataset(**dataset.__dict__)
