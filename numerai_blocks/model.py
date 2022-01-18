@@ -67,7 +67,7 @@ class JoblibModel(BaseModel):
         dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))
         feature_df = dataset.get_feature_data
         models = self._load_models()
-        for model in tqdm(models, desc=self.description):
+        for model in tqdm(models, desc=self.description, position=1):
             predictions = model.predict(feature_df, *args, **kwargs)
             dataset.dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
         del models; gc.collect()
@@ -91,7 +91,7 @@ class CatboostModel(BaseModel):
         dataset.dataf.loc[:, f"prediction_{self.model_name}"] = 0
         feature_df = dataset.get_feature_data
         models = self._load_models()
-        for model in tqdm(models, desc=self.description):
+        for model in tqdm(models, desc=self.description, position=1):
             predictions = model.predict(feature_df)
             dataset.dataf.loc[:, self.model_name] += predictions / self.total_models
         del models; gc.collect()
@@ -115,7 +115,7 @@ class LGBMModel(BaseModel):
         dataset.dataf.loc[:, f"prediction_{self.model_name}"] = 0
         feature_df = dataset.get_feature_data
         models = self._load_models()
-        for model in tqdm(models, desc=self.description):
+        for model in tqdm(models, desc=self.description, position=1):
             predictions = model.predict(feature_df)
             dataset.dataf.loc[:, self.model_name] += predictions / self.total_models
         del models; gc.collect()
