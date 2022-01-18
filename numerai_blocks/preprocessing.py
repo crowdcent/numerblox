@@ -6,7 +6,6 @@ __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'Featu
 # Cell
 import uuid
 import time
-import talib
 import numpy as np
 import pandas as pd
 import datetime as dt
