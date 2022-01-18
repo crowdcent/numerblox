@@ -122,7 +122,7 @@ class LGBMModel(BaseModel):
         return Dataset(**dataset.__dict__)
 
     def _load_models(self) -> list:
-        return [lgb.Booster(path) for path in self.model_paths]
+        return [lgb.Booster(str(path)) for path in self.model_paths]
 
 # Cell
 class ConstantModel(BaseModel):
