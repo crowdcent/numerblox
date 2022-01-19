@@ -31,7 +31,9 @@ index = {"BaseIO": "00_download.ipynb",
          "BaseSubmittor": "09_submission.ipynb",
          "NumeraiClassicSubmittor": "09_submission.ipynb",
          "NumeraiSignalsSubmittor": "09_submission.ipynb",
-         "BaseStaker": "10_staker.ipynb"}
+         "BaseStaker": "10_staking.ipynb",
+         "NumeraiClassicStaker": "10_staking.ipynb",
+         "NumeraiSignalsStaker": "10_staking.ipynb"}
 
 modules = ["download.py",
            "dataset.py",
