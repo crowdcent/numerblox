@@ -11,9 +11,10 @@ jobs:
         architecture: 'x64'
     - name: Install the library
       run: |
-        cwd=$(pwd)
         pip install nbdev jupyter
         pip install wheel
+        pip install -r requirements.txt
+        pip install -e .
         wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
           && sudo tar -xzf ta-lib-0.4.0-src.tar.gz \
           && sudo rm ta-lib-0.4.0-src.tar.gz \
@@ -24,9 +25,7 @@ jobs:
           && cd ~ \
           && sudo rm -rf ta-lib/ \
           && pip install ta-lib
-        cd cwd
-        pip install -r requirements.txt
-        pip install -e .
+        pip install TA-Lib
     - name: Read all notebooks
       run: |
         nbdev_read_nbs
