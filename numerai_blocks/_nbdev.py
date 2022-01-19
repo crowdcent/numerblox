@@ -30,7 +30,8 @@ index = {"BaseIO": "00_download.ipynb",
          "load_key_from_json": "08_key.ipynb",
          "BaseSubmittor": "09_submission.ipynb",
          "NumeraiClassicSubmittor": "09_submission.ipynb",
-         "NumeraiSignalsSubmittor": "09_submission.ipynb"}
+         "NumeraiSignalsSubmittor": "09_submission.ipynb",
+         "BaseStaker": "10_staker.ipynb"}
 
 modules = ["download.py",
            "dataset.py",
@@ -39,7 +40,8 @@ modules = ["download.py",
            "postprocessing.py",
            "model_pipeline.py",
            "key.py",
-           "submission.py"]
+           "submission.py",
+           "staking.py"]
 
 doc_url = "https://crowdcent.github.io/numerai_blocks/"
 

@@ -54,10 +54,10 @@ nb_path: "nbs/10_staker.ipynb"
 
 
 
-<div id="83b9ba7f-c2e4-4e9d-8784-a50d3a540baa"></div>
+<div id="35fb9a28-5b7f-4068-b34d-77baa64b2da5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#83b9ba7f-c2e4-4e9d-8784-a50d3a540baa');
+var element = $('#35fb9a28-5b7f-4068-b34d-77baa64b2da5');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -85,8 +85,22 @@ var element = $('#83b9ba7f-c2e4-4e9d-8784-a50d3a540baa');
 </div>
     {% endraw %}
 
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="0.-BaseStaker">0. BaseStaker<a class="anchor-link" href="#0.-BaseStaker"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This object implements functionality that is the same for both Numerai classic and Numerai Signals.</p>
 <p>Automatic stake increase/removal, Portfolio management, etc.</p>
 
 </div>
@@ -95,12 +109,146 @@ var element = $('#83b9ba7f-c2e4-4e9d-8784-a50d3a540baa');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="BaseStaker" class="doc_header"><code>class</code> <code>BaseStaker</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/staking.py#L17" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseStaker</code>(<strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong><code>tournament_number</code></strong>:<code>int</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+</blockquote>
+<p>Base class for staking functionality which holds for both Numerai Classic and Signals.
+:param key: a numerai-blocks Key object
+:param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="479d80a1-87a8-40e4-acea-c18d13cb4b43"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#479d80a1-87a8-40e4-acea-c18d13cb4b43');
+
+            setTimeout(function() {
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseStaker:\n    \"\"\"\n    Base class for staking functionality which holds for both Numerai Classic and Signals.\n    :param key: a numerai-blocks Key object\n    :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).\n    \"\"\"\n    def __init__(self, key: Key, tournament_number: int, *args, **kwargs):\n        self.tournament_number = tournament_number\n        self.api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n\n    def stake_change(self, model_name: str, amount: Union[float, str]):\n        \"\"\"\n        Change arbitrary stake amount.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        :param amount: NMR amount to increase or decrease.\n        negative number = Stake decrease.\n        positive number = Stake increase.\n        \"\"\"\n        action = 'decrease' if amount < 0 else 'increase'\n        color = 'red' if amount < 0 else 'green'\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(f\"[bold {color}]{action[:-1]}ing[/bold {color}] stake by amount '[bold {color}]{amount}[/bold {color}]' for model: [bold blue]'{model_name}'[/bold blue] (id='{model_id}')!\")\n        self.api.stake_change(nmr=amount, action=action,\n                              model_id=model_id, tournament=self.tournament_number)\n\n    def stake_drain_all(self):\n        \"\"\" WARNING!!! This function will remove all stakes for all models in your account!!! \"\"\"\n        prompt = input(f\"WARNING: You are about to remove all stakes for all your models! Are you sure? [Y/n]\")\n        if prompt == \"Y\":\n            model_names = list(self.get_model_mapping.keys())\n            for name in tqdm(model_names, desc=\"Full stake drain!\"):\n                self.stake_drain_single(model_name=name)\n        else:\n            rich_print(\"Aborting full stake draining.\")\n\n    def stake_drain_single(self, model_name: str):\n        \"\"\"\n        WARNING!!! This function removes your full stake for a given model name!!!\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(f\":warning: Draining stake for model: '{model_name}' (id: '{model_id}' :warning:\")\n        self.api.stake_drain(model_id=model_id, tournament=self.tournament_number)\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"Get ID needed for staking.\"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    @property\n    def available_nmr(self):\n        \"\"\" Check how much NMR is available in your wallet. \"\"\"\n        return np.float64(self.api.get_account()['availableNmr'])";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseStaker:\n    \"\"\"\n    Base class for staking functionality which holds for both Numerai Classic and Signals.\n    :param key: a numerai-blocks Key object\n    :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).\n    \"\"\"\n\n    def __init__(self, key: Key, tournament_number: int, *args, **kwargs):\n        self.tournament_number = tournament_number\n        self.api = NumerAPI(\n            public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs\n        )\n\n    def stake_change(self, model_name: str, amount: Union[float, str]):\n        \"\"\"\n        Change arbitrary stake amount.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        :param amount: NMR amount to increase or decrease.\n        negative number = Stake decrease.\n        positive number = Stake increase.\n        \"\"\"\n        action = \"decrease\" if amount < 0 else \"increase\"\n        color = \"red\" if amount < 0 else \"green\"\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(\n            f\"[bold {color}]{action[:-1]}ing[/bold {color}] stake by amount '[bold {color}]{amount}[/bold {color}]' for model: [bold blue]'{model_name}'[/bold blue] (id='{model_id}')!\"\n        )\n        self.api.stake_change(\n            nmr=amount,\n            action=action,\n            model_id=model_id,\n            tournament=self.tournament_number,\n        )\n\n    def stake_drain_all(self):\n        \"\"\"WARNING!!! This function will remove all stakes for all models in your account!!!\"\"\"\n        prompt = input(\n            f\"WARNING: You are about to remove all stakes for all your models! Are you sure? [Y/n]\"\n        )\n        if prompt == \"Y\":\n            model_names = list(self.get_model_mapping.keys())\n            for name in tqdm(model_names, desc=\"Full stake drain!\"):\n                self.stake_drain_single(model_name=name)\n        else:\n            rich_print(\"Aborting full stake draining.\")\n\n    def stake_drain_single(self, model_name: str):\n        \"\"\"\n        WARNING!!! This function removes your full stake for a given model name!!!\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        model_id = self._get_model_id(model_name=model_name)\n        rich_print(\n            f\":warning: Draining stake for model: '{model_name}' (id: '{model_id}' :warning:\"\n        )\n        self.api.stake_drain(model_id=model_id, tournament=self.tournament_number)\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"Get ID needed for staking.\"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    @property\n    def available_nmr(self):\n        \"\"\"Check how much NMR is available in your wallet.\"\"\"\n        return np.float64(self.api.get_account()[\"availableNmr\"])";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Staker</span><span class="p">:</span>
-    <span class="o">...</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">key</span> <span class="o">=</span> <span class="n">load_key_from_json</span><span class="p">(</span><span class="s2">&quot;test_assets/test_credentials.json&quot;</span><span class="p">)</span>
+<span class="n">base_staker</span> <span class="o">=</span> <span class="n">BaseStaker</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">tournament_number</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Numerai Auth key initialized with pub_id = <span style="color: #008000; text-decoration-color: #008000">'UFVCTElDX0lE'</span> 🔑
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="9be8bc76-ce82-42b6-8624-2c4926c0d458"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#9be8bc76-ce82-42b6-8624-2c4926c0d458');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "key = load_key_from_json(\"test_assets/test_credentials.json\")\nbase_staker = BaseStaker(key=key, tournament_number=8)";
+                var nbb_formatted_code = "key = load_key_from_json(\"test_assets/test_credentials.json\")\nbase_staker = BaseStaker(key=key, tournament_number=8)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
     </div>
@@ -115,15 +263,492 @@ var element = $('#83b9ba7f-c2e4-4e9d-8784-a50d3a540baa');
 
 
 
-<div id="974258c7-0ed4-49dd-aca3-83048072ea24"></div>
+<div id="a96e8ffc-fd12-46ca-8715-2bea704fde0a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#974258c7-0ed4-49dd-aca3-83048072ea24');
+var element = $('#a96e8ffc-fd12-46ca-8715-2bea704fde0a');
 
             setTimeout(function() {
-                var nbb_cell_id = 4;
-                var nbb_unformatted_code = "class Staker:\n    ...";
-                var nbb_formatted_code = "class Staker:\n    ...";
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "# base_staker.get_model_mapping";
+                var nbb_formatted_code = "# base_staker.get_model_mapping";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="0f2f992f-43b8-45db-98ef-2cc42562e5d4"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#0f2f992f-43b8-45db-98ef-2cc42562e5d4');
+
+            setTimeout(function() {
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "# base_staker.available_nmr";
+                var nbb_formatted_code = "# base_staker.available_nmr";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># base_staker.stake_change(&quot;test&quot;, 0.01)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="5d408592-588a-4a99-9eec-65727589350b"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#5d408592-588a-4a99-9eec-65727589350b');
+
+            setTimeout(function() {
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "# base_staker.stake_change(\"test\", -0.01)\n# base_staker.stake_change(\"test\", 0.01)";
+                var nbb_formatted_code = "# base_staker.stake_change(\"test\", -0.01)\n# base_staker.stake_change(\"test\", 0.01)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># base_staker.stake_drain_single(model_name=&quot;test&quot;)</span>
+
+<span class="c1"># WARNING!!! This function removes all stakes for all your models!!!</span>
+<span class="c1"># base_staker.stake_drain_all()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="23fa013d-1987-4f06-b871-ed31dc8a7d90"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#23fa013d-1987-4f06-b871-ed31dc8a7d90');
+
+            setTimeout(function() {
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "# WARNING!!! This function removes the full stake for a given model name!!!\n# base_staker.stake_drain_single(model_name=\"test\")\n\n# WARNING!!! This function removes all stakes for all your models!!!\n# base_staker.stake_drain_all()";
+                var nbb_formatted_code = "# WARNING!!! This function removes the full stake for a given model name!!!\n# base_staker.stake_drain_single(model_name=\"test\")\n\n# WARNING!!! This function removes all stakes for all your models!!!\n# base_staker.stake_drain_all()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="1.-Numerai-Classic">1. Numerai Classic<a class="anchor-link" href="#1.-Numerai-Classic"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">NumeraiClassicStaker</span><span class="p">(</span><span class="n">BaseStaker</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Staking functionality specific to Numerai Classic (tournament number 8). &quot;&quot;&quot;</span>
+    <span class="n">CLASSIC_TOURNAMENT_NUMBER</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NumeraiClassicStaker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">tournament_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CLASSIC_TOURNAMENT_NUMBER</span><span class="p">,</span>
+                                                   <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                                                   <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_stakes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get mapping of stakes for all models.</span>
+<span class="sd">        Example output:</span>
+<span class="sd">            {</span>
+<span class="sd">            &quot;my_model_1&quot;: 20,</span>
+<span class="sd">            &quot;my_model_2&quot;: 100,</span>
+<span class="sd">            &quot;my_model_3: 0</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stakes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_single_stake</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">stake</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">stake</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_model_mapping</span><span class="p">,</span> <span class="n">stakes</span><span class="p">)}</span>
+
+    <span class="k">def</span> <span class="nf">_get_single_stake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">stake_get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">model_name</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="309de932-f312-4ec9-8136-95aba7751722"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#309de932-f312-4ec9-8136-95aba7751722');
+
+            setTimeout(function() {
+                var nbb_cell_id = 11;
+                var nbb_unformatted_code = "class NumeraiClassicStaker(BaseStaker):\n    \"\"\" Staking functionality specific to Numerai Classic (tournament number 8). \"\"\"\n    CLASSIC_TOURNAMENT_NUMBER = 8\n    def __init__(self, key: Key, *args, **kwargs):\n        super(NumeraiClassicStaker, self).__init__(key=key, tournament_number=self.CLASSIC_TOURNAMENT_NUMBER,\n                                                   *args, **kwargs\n                                                   )\n\n    @property\n    def get_stakes(self) -> dict:\n        \"\"\"\n        Get mapping of stakes for all models.\n        Example output:\n            {\n            \"my_model_1\": 20,\n            \"my_model_2\": 100,\n            \"my_model_3: 0\n            }\n        \"\"\"\n        stakes = [self._get_single_stake(model_name=model_name) for model_name in self.get_model_mapping.keys()]\n        return {name: stake for name, stake in zip(self.get_model_mapping, stakes)}\n\n    def _get_single_stake(self, model_name: str):\n        return np.float64(self.api.stake_get(username=model_name))";
+                var nbb_formatted_code = "class NumeraiClassicStaker(BaseStaker):\n    \"\"\"Staking functionality specific to Numerai Classic (tournament number 8).\"\"\"\n\n    CLASSIC_TOURNAMENT_NUMBER = 8\n\n    def __init__(self, key: Key, *args, **kwargs):\n        super(NumeraiClassicStaker, self).__init__(\n            key=key, tournament_number=self.CLASSIC_TOURNAMENT_NUMBER, *args, **kwargs\n        )\n\n    @property\n    def get_stakes(self) -> dict:\n        \"\"\"\n        Get mapping of stakes for all models.\n        Example output:\n            {\n            \"my_model_1\": 20,\n            \"my_model_2\": 100,\n            \"my_model_3: 0\n            }\n        \"\"\"\n        stakes = [\n            self._get_single_stake(model_name=model_name)\n            for model_name in self.get_model_mapping.keys()\n        ]\n        return {name: stake for name, stake in zip(self.get_model_mapping, stakes)}\n\n    def _get_single_stake(self, model_name: str):\n        return np.float64(self.api.stake_get(username=model_name))";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">classic_staker</span> <span class="o">=</span> <span class="n">NumeraiClassicStaker</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">classic_staker</span><span class="o">.</span><span class="n">CLASSIC_TOURNAMENT_NUMBER</span> <span class="o">==</span> <span class="mi">8</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="29c9c5c1-653c-4583-9a74-f1fb132f1c63"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#29c9c5c1-653c-4583-9a74-f1fb132f1c63');
+
+            setTimeout(function() {
+                var nbb_cell_id = 12;
+                var nbb_unformatted_code = "classic_staker = NumeraiClassicStaker(key=key)\nassert classic_staker.CLASSIC_TOURNAMENT_NUMBER == 8";
+                var nbb_formatted_code = "classic_staker = NumeraiClassicStaker(key=key)\nassert classic_staker.CLASSIC_TOURNAMENT_NUMBER == 8";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="afb81fdc-5583-49af-a886-24e6c8c8497d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#afb81fdc-5583-49af-a886-24e6c8c8497d');
+
+            setTimeout(function() {
+                var nbb_cell_id = 13;
+                var nbb_unformatted_code = "# classic_staker.get_stakes";
+                var nbb_formatted_code = "# classic_staker.get_stakes";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="2.-Numerai-Signals">2. Numerai Signals<a class="anchor-link" href="#2.-Numerai-Signals"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>NOTE: Unfortunately, NumerAPI does not support <code>NumerAPI().stake_get</code> for Numerai Signals models. If this is fixed in the future we will add stake retrieval functionality for Numerai Signals.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">NumeraiSignalsStaker</span><span class="p">(</span><span class="n">BaseStaker</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Staking functionality specific to Numerai Signals (tournament number 11). &quot;&quot;&quot;</span>
+    <span class="n">SIGNALS_TOURNAMENT_NUMBER</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NumeraiSignalsStaker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">tournament_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SIGNALS_TOURNAMENT_NUMBER</span><span class="p">,</span>
+                                                   <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                                                   <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="cbdce8ff-7c97-4bb7-8401-e0bbcaad12c7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#cbdce8ff-7c97-4bb7-8401-e0bbcaad12c7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 14;
+                var nbb_unformatted_code = "class NumeraiSignalsStaker(BaseStaker):\n    \"\"\" Staking functionality specific to Numerai Signals (tournament number 11). \"\"\"\n    SIGNALS_TOURNAMENT_NUMBER = 11\n    def __init__(self, key: Key, *args, **kwargs):\n        super(NumeraiSignalsStaker, self).__init__(key=key, tournament_number=self.SIGNALS_TOURNAMENT_NUMBER,\n                                                   *args, **kwargs\n                                                   )";
+                var nbb_formatted_code = "class NumeraiSignalsStaker(BaseStaker):\n    \"\"\"Staking functionality specific to Numerai Signals (tournament number 11).\"\"\"\n\n    SIGNALS_TOURNAMENT_NUMBER = 11\n\n    def __init__(self, key: Key, *args, **kwargs):\n        super(NumeraiSignalsStaker, self).__init__(\n            key=key, tournament_number=self.SIGNALS_TOURNAMENT_NUMBER, *args, **kwargs\n        )";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">signals_staker</span> <span class="o">=</span> <span class="n">NumeraiSignalsStaker</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">signals_staker</span><span class="o">.</span><span class="n">SIGNALS_TOURNAMENT_NUMBER</span> <span class="o">==</span> <span class="mi">11</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="5a9422a8-3431-43c4-bbd0-f77ffb73324d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#5a9422a8-3431-43c4-bbd0-f77ffb73324d');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "signals_staker = NumeraiSignalsStaker(key=key)\nassert signals_staker.SIGNALS_TOURNAMENT_NUMBER == 11";
+                var nbb_formatted_code = "signals_staker = NumeraiSignalsStaker(key=key)\nassert signals_staker.SIGNALS_TOURNAMENT_NUMBER == 11";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
