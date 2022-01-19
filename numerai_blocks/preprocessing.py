@@ -6,7 +6,7 @@ __all__ = ['BaseProcessor', 'support_dataset_processing', 'display_processor_inf
 # Cell
 import uuid
 import time
-import talib
+# import talib
 import numpy as np
 import pandas as pd
 import datetime as dt
