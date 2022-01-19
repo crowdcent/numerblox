@@ -2,9 +2,11 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"BaseIO": "00_download.ipynb",
-         "BaseDownloader": "00_download.ipynb",
-         "NumeraiClassicDownloader": "00_download.ipynb",
+index = {"BaseIO": "01_download.ipynb",
+         "BaseDownloader": "01_download.ipynb",
+         "NumeraiClassicDownloader": "01_download.ipynb",
+         "YahooFinanceDownloader": "01_download.ipynb",
+         "AwesomeCustomDownloader": "01_download.ipynb",
          "Dataset": "02_dataset.ipynb",
          "create_dataset": "02_dataset.ipynb",
          "BaseProcessor": "03_preprocessing.ipynb",
@@ -12,6 +14,8 @@ index = {"BaseIO": "00_download.ipynb",
          "CopyPreProcessor": "03_preprocessing.ipynb",
          "FeatureSelectionPreProcessor": "03_preprocessing.ipynb",
          "GroupStatsPreProcessor": "03_preprocessing.ipynb",
+         "TalibVolumeFeatures": "03_preprocessing.ipynb",
+         "AwesomePreProcessor": "03_preprocessing.ipynb",
          "BaseModel": "04_model.ipynb",
          "DirectoryModel": "04_model.ipynb",
          "JoblibModel": "04_model.ipynb",
