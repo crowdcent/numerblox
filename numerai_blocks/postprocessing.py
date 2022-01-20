@@ -76,23 +76,24 @@ class FeatureNeutralizer(BaseProcessor):
 @typechecked
 class FeaturePenalizer(BaseProcessor):
     """ Feature penalization with Tensorflow. """
-    def __init__(self, model_list: list, max_exposure: float, risky_feature_names: list = None, pred_name: str = "prediction"):
+    def __init__(self, model_list: list, max_exposure: float,
+                 risky_feature_names: list = None, pred_name: str = "prediction", era_col: str = 'era'):
         super(FeaturePenalizer, self).__init__()
         self.model_list = model_list
         assert 0. <= max_exposure <= 1., f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
         self.max_exposure = max_exposure
         self.risky_feature_names = risky_feature_names
         self.pred_name = pred_name
+        self.era_col = era_col
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
         risky_feature_names = dataset.feature_cols if not self.risky_feature_names else self.risky_feature_names
         for model_name in self.model_list:
             penalized_data = self.reduce_all_exposures(
-                            dataset.dataf,
-                            self.pred_name,
+                            df=dataset.dataf,
+                            column=self.pred_name,
                             neutralizers=risky_feature_names,
-                            max_exp=self.max_exposure,
                         )
             new_pred_col = f"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}"
             dataset.dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
@@ -103,16 +104,14 @@ class FeaturePenalizer(BaseProcessor):
                              neutralizers: list = None,
                              normalize=True,
                              gaussianize=True,
-                             era_col: str = "era",
-                             max_exp: float = 0.1
                              ):
         if neutralizers is None:
             neutralizers = [x for x in df.columns if x.startswith("feature")]
         neutralized = []
 
-        for era in tqdm(df[era_col].unique()):
-            df_era = df[df[era_col] == era]
-            scores = df_era.loc[:, column].values
+        for era in tqdm(df[self.era_col].unique()):
+            df_era = df[df[self.era_col] == era]
+            scores = df_era[[column]].values
             exposure_values = df_era[neutralizers].values
 
             if normalize:
@@ -124,8 +123,8 @@ class FeaturePenalizer(BaseProcessor):
                     scores2.append(x)
                 scores = np.array(scores2)[0]
 
-            scores, weights = self.reduce_exposure(scores, exposure_values,
-                                              max_exp, len(neutralizers), None)
+            scores, weights = self._reduce_exposure(scores, exposure_values,
+                                                    len(neutralizers), None)
 
             scores /= tf.math.reduce_std(scores)
             scores -= tf.reduce_min(scores)
@@ -136,7 +135,7 @@ class FeaturePenalizer(BaseProcessor):
                                    columns=[column], index=df.index)
         return predictions
 
-    def reduce_exposure(self, prediction, features, max_exp, input_size=50, weights=None):
+    def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
         model = tf.keras.models.Sequential([
             tf.keras.layers.Input(input_size),
             tf.keras.experimental.LinearModel(use_bias=False),
@@ -146,7 +145,7 @@ class FeaturePenalizer(BaseProcessor):
         if weights is None:
             optimizer = tf.keras.optimizers.Adamax()
             start_exp = self.__exposures(feats, pred[:, None])
-            target_exps = tf.clip_by_value(start_exp, -max_exp, max_exp)
+            target_exps = tf.clip_by_value(start_exp, -self.max_exposure, self.max_exposure)
             self._train_loop(model, optimizer, feats, pred, target_exps)
         else:
             model.set_weights(weights)
