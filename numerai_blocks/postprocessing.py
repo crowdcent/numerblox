@@ -36,7 +36,8 @@ class MeanEnsembler(BaseProcessor):
 @typechecked
 class FeatureNeutralizer(BaseProcessor):
     """ Feature """
-    def __init__(self, feature_names: list,
+    def __init__(self,
+                 feature_names: list = None,
                  pred_name: str = "prediction",
                  era_col: str = "era",
                  proportion: float = 0.5):
@@ -50,8 +51,9 @@ class FeatureNeutralizer(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        feature_names = self.feature_names if self.feature_names else dataset.feature_cols
         neutralized_preds = dataset.dataf.groupby(self.era_col)\
-            .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
+            .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names))
         dataset.dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
         rich_print(f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:")
         rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
