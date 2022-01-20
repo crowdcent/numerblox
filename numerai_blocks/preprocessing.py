@@ -2,7 +2,7 @@
 
 __all__ = ['BaseProcessor', 'support_dataset_processing', 'display_processor_info', 'CopyPreProcessor',
            'FeatureSelectionPreProcessor', 'GroupStatsPreProcessor', 'TalibPatternFeatures', 'TalibVolumeFeatures',
-           'AwesomePreProcessor']
+           'RealizedVolFeatures', 'QuarticityFeatures', 'AwesomePreProcessor']
 
 # Cell
 import uuid
@@ -13,6 +13,7 @@ import pandas as pd
 import datetime as dt
 from typing import Union
 from functools import wraps
+from scipy.special import gamma
 from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
@@ -175,9 +176,101 @@ class TalibVolumeFeatures(BaseProcessor):
             close, volume = sub_df['Close'].to_numpy(), sub_df['Volume'].to_numpy()
 
             dataset.dataf.loc[index_mask, "feature_AD"] = talib.AD(high, low, close, volume)
-            dataset.dataf.loc[index_mask, "feature_ADOSC"] = talib.ADOSC(high, low, close, volume, fastperiod=self.fastperiod, slowperiod=self.slowperiod)
+            adosc = talib.ADOSC(high, low, close, volume, fastperiod=self.fastperiod, slowperiod=self.slowperiod)
+            dataset.dataf.loc[index_mask, "feature_ADOSC"] = np.nan_to_num(adosc, nan=0.0)
             dataset.dataf.loc[index_mask, "feature_OBV"] = talib.OBV(close, volume)
         return Dataset(**dataset.__dict__)
+
+# Cell
+@typechecked
+class RealizedVolFeatures(BaseProcessor):
+    """
+    Features based on realized volatility features.
+    Dataset DataFrame should have a column named "Close".
+    Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/
+    """
+    def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):
+        super(RealizedVolFeatures, self).__init__()
+        self.ticker_col = ticker_col
+        self.price_col = price_col
+
+    @display_processor_info
+    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        """ Get all realized volatility features. """
+        series = dataset.dataf.loc[:, self.price_col]
+        tickers = dataset.dataf.loc[:, self.ticker_col]
+        dataset.dataf.loc[:, "feature_vol2"] = series.groupby(tickers).agg(self.realized_2)
+        dataset.dataf.loc[:, "feature_vol3"] = series.groupby(tickers).agg(self.realized_3)
+        dataset.dataf.loc[:, "feature_vol4"] = series.groupby(tickers).agg(self.realized_4)
+        # Parse all contents of Dataset to the next pipeline step
+        return Dataset(**dataset.__dict__)
+
+    @staticmethod
+    def simple_realized_vol(series: pd.Series) -> np.float64:
+        """ Most simple way to calculate realized volatility. """
+        return np.sqrt(np.sum(series**2))
+
+    @staticmethod
+    def realized_2(series: pd.Series) -> np.float64:
+        return np.sqrt(np.sum(series**4)/(6*np.sum(series**2)))
+
+    @staticmethod
+    def realized_3(series: pd.Series) -> np.float64:
+        return np.sqrt(((np.pi**2)*np.sum(abs(series.rolling(window=4).apply(np.product,
+                                                                             raw=True))))/(8*np.sum(series**2)))
+
+    @staticmethod
+    def realized_4(series: pd.Series) -> np.float64:
+        numerator = (gamma(1/2)**3)*np.sum((abs(series)**(4/3)).rolling(window=3).apply(np.prod))
+        denominator = 8 * (gamma(7/6)**3)*np.sum(series**2)
+        return np.sqrt(numerator/denominator)
+
+# Cell
+@typechecked
+class QuarticityFeatures(BaseProcessor):
+    """
+    Quarticity (Vol of vol) features.
+    Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/
+    """
+    def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):
+        super(QuarticityFeatures, self).__init__()
+        self.ticker_col = ticker_col
+        self.price_col = price_col
+
+    @display_processor_info
+    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+        """ Get most powerful quarticity features for every stock. """
+        series = dataset.dataf.loc[:, self.price_col]
+        tickers = dataset.dataf.loc[:, self.ticker_col]
+        quad_quarticity = series.groupby(tickers).agg(self.realized_quadpower_quarticity)
+        tripower_quarticity = series.groupby(tickers).agg(self.realized_tripower_quarticity)
+        dataset.dataf.loc[:, "feature_quadpower_quarticity"] = quad_quarticity
+        dataset.dataf.loc[:, "feature_tripower_quarticity"] = tripower_quarticity
+        return Dataset(**dataset.__dict__)
+
+    @staticmethod
+    def realized_quarticity(series: pd.Series) -> np.float64:
+        """
+        The realized fourth-power variation or realized quarticity
+        is a consistent estimator of the integrated quarticity.
+        """
+        return np.sum(series**4) * series.shape[0] / 3
+
+    @staticmethod
+    def realized_quadpower_quarticity(series: pd.Series) -> np.float64:
+        """
+        A more robust estimator compared to realized quarticity,
+        particularly in the presence of jumps, is the realized quad-power quarticity.
+        """
+        series = abs(series.rolling(window=4).apply(np.product, raw=True))
+        return (np.sum(series) * series.shape[0] * (np.pi**2)) / 4
+
+    @staticmethod
+    def realized_tripower_quarticity(series: pd.Series) -> np.float64:
+        """ Similarly robust estimator to quad power quarticity. """
+        series = series ** (4/3)
+        series = abs(series).rolling(window=3).apply(np.prod, raw=True)
+        return series.shape[0]*0.25*((gamma(1/2)**3)/(gamma(7/6)**3))*np.sum(series)
 
 # Cell
 class AwesomePreProcessor(BaseProcessor):
