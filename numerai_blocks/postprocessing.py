@@ -38,17 +38,19 @@ class FeatureNeutralizer(BaseProcessor):
     """ Feature """
     def __init__(self, feature_names: list,
                  pred_name: str = "prediction",
+                 era_col: str = "era",
                  proportion=0.5):
         super(FeatureNeutralizer, self).__init__()
         assert 0. <= proportion <= 1., f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
         self.proportion = proportion
         self.feature_names = feature_names
         self.pred_name = pred_name
+        self.era_col = era_col
         self.new_col_name = f"{self.pred_name}_neutralized_{self.proportion}"
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
-        neutralized_preds = dataset.dataf.groupby("era")\
+        neutralized_preds = dataset.dataf.groupby(self.era_col)\
             .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names))
         dataset.dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
         rich_print(f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:")
