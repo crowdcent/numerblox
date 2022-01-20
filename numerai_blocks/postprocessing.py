@@ -39,7 +39,7 @@ class FeatureNeutralizer(BaseProcessor):
     def __init__(self, feature_names: list,
                  pred_name: str = "prediction",
                  era_col: str = "era",
-                 proportion=0.5):
+                 proportion: float = 0.5):
         super(FeatureNeutralizer, self).__init__()
         assert 0. <= proportion <= 1., f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
         self.proportion = proportion
