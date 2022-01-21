@@ -54,10 +54,10 @@ nb_path: "nbs/05_postprocessing.ipynb"
 
 
 
-<div id="03c41eb4-48ea-4a68-b88e-9b9f903a2982"></div>
+<div id="52263096-90e5-41e4-ad17-3a70b3c5a796"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#03c41eb4-48ea-4a68-b88e-9b9f903a2982');
+var element = $('#52263096-90e5-41e4-ad17-3a70b3c5a796');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -130,6 +130,12 @@ var element = $('#03c41eb4-48ea-4a68-b88e-9b9f903a2982');
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="Simple-Mean">Simple Mean<a class="anchor-link" href="#Simple-Mean"> </a></h5>
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -167,10 +173,10 @@ var element = $('#03c41eb4-48ea-4a68-b88e-9b9f903a2982');
 
 
 
-<div id="27bc4c02-cefd-4ba9-a385-857244668267"></div>
+<div id="3329861a-2efa-4cfb-b765-31efcd9f3b52"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#27bc4c02-cefd-4ba9-a385-857244668267');
+var element = $('#3329861a-2efa-4cfb-b765-31efcd9f3b52');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -188,6 +194,175 @@ var element = $('#27bc4c02-cefd-4ba9-a385-857244668267');
             }, 500);
             
 </script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="Donate's-formula">Donate's formula<a class="anchor-link" href="#Donate's-formula"> </a></h5>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="DonateWeightedEnsembler" class="doc_header"><code>class</code> <code>DonateWeightedEnsembler</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L37" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DonateWeightedEnsembler</code>(<strong><code>cols</code></strong>:<code>list</code>, <strong><code>final_col_name</code></strong>:<code>str</code>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+</blockquote>
+<p>weighted average as per Donate et al.'s formula
+<a href="https://doi.org/10.1016/j.neucom.2012.02.053">https://doi.org/10.1016/j.neucom.2012.02.053</a>
+[0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold
+Source: <a href="https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp">https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp</a></p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_features</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;prediction_</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="s2">&quot;ABCDE&quot;</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">test_features</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;era&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">w_5_fold</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0625</span><span class="p">,</span> <span class="mf">0.0625</span><span class="p">,</span> <span class="mf">0.125</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
+<span class="n">donate</span> <span class="o">=</span> <span class="n">DonateWeightedEnsembler</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">prediction_cols</span><span class="p">,</span> <span class="n">final_col_name</span><span class="o">=</span><span class="s1">&#39;prediction&#39;</span><span class="p">)</span>
+<span class="n">ensembled</span> <span class="o">=</span> <span class="n">donate</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">get_prediction_data</span>
+<span class="k">assert</span> <span class="n">ensembled</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">w</span> <span class="o">*</span> <span class="n">elem</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">w_5_fold</span><span class="p">,</span> <span class="n">ensembled</span><span class="p">[</span><span class="n">test_features</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+<span class="n">ensembled</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🍲 Ensembled <span style="color: #000080; text-decoration-color: #000080">'['</span><span style="color: #000080; text-decoration-color: #000080">prediction_A', </span><span style="color: #000080; text-decoration-color: #000080">'prediction_B'</span><span style="color: #000080; text-decoration-color: #000080">, </span><span style="color: #000080; text-decoration-color: #000080">'prediction_C'</span><span style="color: #000080; text-decoration-color: #000080">, </span><span style="color: #000080; text-decoration-color: #000080">'prediction_D'</span><span style="color: #000080; text-decoration-color: #000080">, </span>
+<span style="color: #000080; text-decoration-color: #000080">'prediction_E'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">]</span><span style="color: #000080; text-decoration-color: #000080">'</span><span style="color: #008000; text-decoration-color: #008000"> with </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">DonateWeightedEnsembler</span><span style="color: #008000; text-decoration-color: #008000"> and saved in </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">'</span><span style="font-weight: bold">prediction' 🍲</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DonateWeightedEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003895</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>prediction_A</th>
+      <th>prediction_B</th>
+      <th>prediction_C</th>
+      <th>prediction_D</th>
+      <th>prediction_E</th>
+      <th>prediction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.427880</td>
+      <td>0.711636</td>
+      <td>0.985088</td>
+      <td>0.263601</td>
+      <td>0.531591</td>
+      <td>0.526052</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.303335</td>
+      <td>0.062876</td>
+      <td>0.179345</td>
+      <td>0.127032</td>
+      <td>0.029239</td>
+      <td>0.091684</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
 </div>
@@ -222,7 +397,7 @@ var element = $('#27bc4c02-cefd-4ba9-a385-857244668267');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L37" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>, <strong><code>proportion</code></strong>:<code>float</code>=<em><code>0.5</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L68" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>, <strong><code>proportion</code></strong>:<code>float</code>=<em><code>0.5</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Feature</p>
 
@@ -248,10 +423,10 @@ var element = $('#27bc4c02-cefd-4ba9-a385-857244668267');
 
 
 
-<div id="15f78145-9a10-47d5-842b-b3916b623749"></div>
+<div id="d4b05b37-1934-4854-84a8-41447633916f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#15f78145-9a10-47d5-842b-b3916b623749');
+var element = $('#d4b05b37-1934-4854-84a8-41447633916f');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -302,10 +477,10 @@ var element = $('#15f78145-9a10-47d5-842b-b3916b623749');
 
 
 
-<div id="82f049ec-6be0-4181-8a6f-23302d420f20"></div>
+<div id="067906e9-f5bc-444f-9a3c-a76a9eb705fd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#82f049ec-6be0-4181-8a6f-23302d420f20');
+var element = $('#067906e9-f5bc-444f-9a3c-a76a9eb705fd');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -390,10 +565,10 @@ var element = $('#82f049ec-6be0-4181-8a6f-23302d420f20');
 
 
 
-<div id="c678c575-71b2-4bda-9015-fb4c9b99bbf1"></div>
+<div id="70fe72f0-8892-41fe-a287-e781eda2b849"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c678c575-71b2-4bda-9015-fb4c9b99bbf1');
+var element = $('#70fe72f0-8892-41fe-a287-e781eda2b849');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -445,10 +620,10 @@ var element = $('#c678c575-71b2-4bda-9015-fb4c9b99bbf1');
 
 
 
-<div id="144484a5-9c2a-4ffd-9c64-be0af653319d"></div>
+<div id="cbd510c9-278f-41b6-94bb-5ed149fb9372"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#144484a5-9c2a-4ffd-9c64-be0af653319d');
+var element = $('#cbd510c9-278f-41b6-94bb-5ed149fb9372');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -508,10 +683,10 @@ var element = $('#144484a5-9c2a-4ffd-9c64-be0af653319d');
 
 
 
-<div id="cbbc5633-02c2-4743-a766-7bc2f6a3bd33"></div>
+<div id="66aa44e2-b7e2-40fc-9917-db773cbbd45c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cbbc5633-02c2-4743-a766-7bc2f6a3bd33');
+var element = $('#66aa44e2-b7e2-40fc-9917-db773cbbd45c');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -645,10 +820,10 @@ var element = $('#cbbc5633-02c2-4743-a766-7bc2f6a3bd33');
 
 
 
-<div id="b266056e-6486-4dc4-adda-b6a2432a5c9f"></div>
+<div id="3486ba4b-4469-4180-b331-050b99cf9be2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b266056e-6486-4dc4-adda-b6a2432a5c9f');
+var element = $('#3486ba4b-4469-4180-b331-050b99cf9be2');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -693,7 +868,7 @@ var element = $('#b266056e-6486-4dc4-adda-b6a2432a5c9f');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeaturePenalizer" class="doc_header"><code>class</code> <code>FeaturePenalizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L81" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeaturePenalizer</code>(<strong><code>model_list</code></strong>:<code>list</code>, <strong><code>max_exposure</code></strong>:<code>float</code>, <strong><code>risky_feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="FeaturePenalizer" class="doc_header"><code>class</code> <code>FeaturePenalizer</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L112" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeaturePenalizer</code>(<strong><code>model_list</code></strong>:<code>list</code>, <strong><code>max_exposure</code></strong>:<code>float</code>, <strong><code>risky_feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Feature penalization with Tensorflow.</p>
 
@@ -719,10 +894,10 @@ var element = $('#b266056e-6486-4dc4-adda-b6a2432a5c9f');
 
 
 
-<div id="4beb2970-f942-45e7-9ee6-49bcb8265661"></div>
+<div id="b68feebb-4f4e-4abd-8ee6-10e95eaf4a9d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4beb2970-f942-45e7-9ee6-49bcb8265661');
+var element = $('#b68feebb-4f4e-4abd-8ee6-10e95eaf4a9d');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -772,10 +947,10 @@ var element = $('#4beb2970-f942-45e7-9ee6-49bcb8265661');
 
 
 
-<div id="90555c15-ecff-48cb-9b7a-289c45918da6"></div>
+<div id="ba6d58da-b30d-42a9-94ae-3ff5adb975d5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#90555c15-ecff-48cb-9b7a-289c45918da6');
+var element = $('#ba6d58da-b30d-42a9-94ae-3ff5adb975d5');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -849,7 +1024,7 @@ var element = $('#90555c15-ecff-48cb-9b7a-289c45918da6');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L185" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/postprocessing.py#L216" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -878,10 +1053,10 @@ Do some awesome postprocessing.</li>
 
 
 
-<div id="6c6d0f76-88c7-4392-8cde-35a3fc30e8d5"></div>
+<div id="58fc9cfd-283d-4eae-8db7-5fbfdf61bf7e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6c6d0f76-88c7-4392-8cde-35a3fc30e8d5');
+var element = $('#58fc9cfd-283d-4eae-8db7-5fbfdf61bf7e');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
