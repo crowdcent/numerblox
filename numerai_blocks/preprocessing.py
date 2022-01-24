@@ -113,11 +113,13 @@ class GroupStatsPreProcessor(BaseProcessor):
     """
     WARNING: Only supported for Version 1 (legacy) data.
     Calculate group statistics for all data groups.
+    :param groups: Groups to create features for. All groups by default.
     """
-    def __init__(self):
+    def __init__(self, groups: list = None):
         super(GroupStatsPreProcessor, self).__init__()
-        self.group_names = ["intelligence", "wisdom", "charisma",
-                            "dexterity", "strength", "constitution"]
+        self.all_groups = ["intelligence", "wisdom", "charisma",
+                           "dexterity", "strength", "constitution"]
+        self.group_names = groups if groups else self.all_groups
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
