@@ -36,7 +36,7 @@ class MeanEnsembler(BaseProcessor):
 @typechecked
 class DonateWeightedEnsembler(BaseProcessor):
     """
-    weighted average as per Donate et al.'s formula
+    Weighted average as per Donate et al.'s formula
     https://doi.org/10.1016/j.neucom.2012.02.053
     [0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold
     Source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp
@@ -66,7 +66,14 @@ class DonateWeightedEnsembler(BaseProcessor):
 # Cell
 @typechecked
 class FeatureNeutralizer(BaseProcessor):
-    """ Feature """
+    """
+    Classic feature neutralization
+    Subtracting Linear model.
+    :param feature_names: List of column names to neutralize against.
+    :param pred_name: Prediction column to neutralize.
+    :param era_col: Numerai era column
+    :param proportion: Number in range [0...1] indication how much to neutralize.
+    """
     def __init__(self,
                  feature_names: list = None,
                  pred_name: str = "prediction",
