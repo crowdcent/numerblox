@@ -14,7 +14,8 @@ from rich import print as rich_print
 
 # Cell
 class Dataset:
-    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):
+    def __init__(self, dataf: pd.DataFrame,
+                 *args, **kwargs):
         self.dataf = dataf
         self.__dict__.update(*args, **kwargs)
         self.all_cols = list(self.dataf.columns)
@@ -124,7 +125,7 @@ def create_dataset(file_path: str, *args, **kwargs):
     For more details check https://pandas.pydata.org/docs/reference/io.html
     """
     assert Path(file_path).is_file(), f"{file_path} does not point to file."
-    suffix = Path(file_path).suffix[1:]
     # Suffix without dot
+    suffix = Path(file_path).suffix[1:]
     dataf = getattr(pd, f"read_{suffix}")(file_path)
     return Dataset(dataf, *args, **kwargs)
