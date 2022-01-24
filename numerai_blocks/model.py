@@ -26,21 +26,14 @@ class BaseModel(ABC):
     Setup for model prediction on a Dataset.
 
     :param model_directory: Main directory from which to read in models.
-    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)
     :param model_name: Name that will be used to create column names and for display purposes.
     """
-    def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):
+    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         self.model_directory = Path(model_directory)
         self.__dict__.update(*args, **kwargs)
         self.model_name = model_name if model_name else uuid.uuid4().hex
         self.prediction_col_name = f"prediction_{self.model_name}"
         self.description = f"{self.__class__.__name__}: '{self.model_name}' prediction"
-
-        self.file_suffix = file_suffix
-        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))
-        if self.file_suffix:
-            assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
-        self.total_models = len(self.model_paths)
 
     @abstractmethod
     def predict(self, dataset: Dataset) -> Dataset:
@@ -56,13 +49,20 @@ class DirectoryModel(BaseModel):
     """
     Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.
     Walks through every file with given file_suffix in a directory.
+    :param model_directory: Main directory from which to read in models.
+    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)
+    :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):
         super(DirectoryModel, self).__init__(model_directory=model_directory,
-                                             file_suffix=file_suffix,
                                              model_name=model_name,
                                              *args, **kwargs
                                              )
+        self.file_suffix = file_suffix
+        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))
+        if self.file_suffix:
+            assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
+        self.total_models = len(self.model_paths)
 
     @display_processor_info
     def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:
@@ -95,7 +95,6 @@ class SingleModel(BaseModel):
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
         super(SingleModel, self).__init__(model_directory=str(self.model_file_path.parent),
-                                          file_suffix="",
                                           model_name=model_name,
                                           *args, **kwargs
                                           )
@@ -192,10 +191,8 @@ class ConstantModel(BaseModel):
     """
     def __init__(self, constant: float = 0.5, model_name: str = None):
         self.constant = constant
-        file_suffix = ''
         model_name = model_name if model_name else f"constant_{self.constant}"
         super(ConstantModel, self).__init__(model_directory="",
-                                            file_suffix=file_suffix,
                                             model_name=model_name
                                             )
         self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])
@@ -211,10 +208,8 @@ class RandomModel(BaseModel):
     Create uniformly distributed predictions.
     """
     def __init__(self, model_name: str = None):
-        file_suffix = ''
         model_name = model_name if model_name else "random"
         super(RandomModel, self).__init__(model_directory="",
-                                          file_suffix=file_suffix,
                                           model_name=model_name
                                           )
 
@@ -230,9 +225,7 @@ class AwesomeModel(BaseModel):
     Predict with arbitrary model formats.
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = 'anything'
         super(AwesomeModel, self).__init__(model_directory=model_directory,
-                                           file_suffix=file_suffix,
                                            model_name=model_name,
                                            *args, **kwargs
                                            )
