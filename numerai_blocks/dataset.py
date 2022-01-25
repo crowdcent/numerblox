@@ -14,9 +14,11 @@ from rich import print as rich_print
 
 # Cell
 class Dataset:
-    def __init__(self, dataf: pd.DataFrame,
-                 *args, **kwargs):
+    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):
         self.dataf = dataf
+        if not 'era' in self.dataf.columns:
+            rich_print(":warning: [bold red]Warning[/bold red]: No 'era' column found in DataFrame. \
+'era' column is mandatory for certain numerai-blocks functionality. :warning:")
         self.__dict__.update(*args, **kwargs)
         self.all_cols = list(self.dataf.columns)
         self.feature_cols = [col for col in self.all_cols if col.startswith("feature")]
