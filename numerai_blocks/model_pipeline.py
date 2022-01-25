@@ -12,7 +12,7 @@ from rich import print as rich_print
 from .dataset import Dataset, create_dataset
 from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
 from .model import BaseModel, ConstantModel, RandomModel
-from .postprocessing import FeatureNeutralizer, MeanEnsembler
+from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
 
 # Cell
 @typechecked
@@ -32,10 +32,12 @@ class ModelPipeline:
                  preprocessors: List[BaseProcessor] = [],
                  postprocessors: List[BaseProcessor] = [],
                  copy_first = True,
+                 standardize = True,
                  pipeline_name: str = None):
         self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex
         self.models = models
         self.copy_first = copy_first
+        self.standardize = standardize
         self.preprocessors = preprocessors
         self.postprocessors = postprocessors
 
@@ -50,6 +52,8 @@ class ModelPipeline:
         return dataset
 
     def postprocess(self, dataset: Dataset) -> Dataset:
+        if self.standardize:
+            dataset = Standardizer()(dataset)
         for postprocessor in tqdm(self.postprocessors,
                                   desc=f"{self.pipeline_name} Postprocessing: ",
                                   position=0):
