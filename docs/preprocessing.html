@@ -54,10 +54,10 @@ nb_path: "nbs/03_preprocessing.ipynb"
 
 
 
-<div id="39bdb2ff-6457-4a91-b663-ee9940f42ce8"></div>
+<div id="50953272-695b-4636-933d-62405ab375da"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#39bdb2ff-6457-4a91-b663-ee9940f42ce8');
+var element = $('#50953272-695b-4636-933d-62405ab375da');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -115,7 +115,7 @@ var element = $('#39bdb2ff-6457-4a91-b663-ee9940f42ce8');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseProcessor" class="doc_header"><code>class</code> <code>BaseProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L22" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseProcessor</code>() :: <code>ABC</code></p>
+<h2 id="BaseProcessor" class="doc_header"><code>class</code> <code>BaseProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L24" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseProcessor</code>() :: <code>ABC</code></p>
 </blockquote>
 <p>New Preprocessors and Postprocessors should inherit from this object
 and implement the transform method.</p>
@@ -142,15 +142,15 @@ and implement the transform method.</p>
 
 
 
-<div id="1f510ec6-14e8-4266-9936-152c63a30b10"></div>
+<div id="d17b472f-b095-4ac0-8c72-9c5a5176da3e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1f510ec6-14e8-4266-9936-152c63a30b10');
+var element = $('#d17b472f-b095-4ac0-8c72-9c5a5176da3e');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        ...\n\n    def __call__(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return self.transform(dataset=dataset, *args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        ...\n\n    def __call__(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return self.transform(dataset=dataset, *args, **kwargs)";
+                var nbb_unformatted_code = "#export\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        ...\n\n    def __call__(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return self.transform(dataset=dataset, *args, **kwargs)";
+                var nbb_formatted_code = "# export\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        ...\n\n    def __call__(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return self.transform(dataset=dataset, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -181,7 +181,7 @@ var element = $('#1f510ec6-14e8-4266-9936-152c63a30b10');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>You might have preprocessing functions that work with Pandas DataFrames and want to make them compatible with <code>numerai-blocks</code> <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a>s. This can be done by adding a single decorator (<code>support_dataset_processing</code>) to a method where you call a DataFrame function.</p>
+<p>You might have preprocessing functions that work with Pandas DataFrames and want to make them compatible with <code>numerai-blocks</code> <a href="/numerai_blocks/dataset.html#Dataset"><code>Dataset</code></a>s. This can be done by adding a single decorator (<a href="/numerai_blocks/preprocessing.html#support_dataset_processing"><code>support_dataset_processing</code></a>) to a method where you call a DataFrame function.</p>
 
 </div>
 </div>
@@ -189,28 +189,33 @@ var element = $('#1f510ec6-14e8-4266-9936-152c63a30b10');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">support_dataset_processing</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Make existing DataFrame transformer compatible with Dataset input.</span>
-<span class="sd">    :param func: Some function/method that takes Pandas DataFrame as input</span>
-<span class="sd">    and return Pandas DataFrame.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-        <span class="n">dataf_transform</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span>
-        <span class="n">metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;dataf&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">dataf_transform</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</pre></div>
+<div class="output_wrapper">
+<div class="output">
 
-    </div>
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="support_dataset_processing" class="doc_header"><code>support_dataset_processing</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L40" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>support_dataset_processing</code>(<strong><code>func</code></strong>)</p>
+</blockquote>
+<p>Make existing DataFrame transformer compatible with Dataset input.
+:param func: Some function/method that takes Pandas DataFrame as input
+and return Pandas DataFrame.</p>
+
+</div>
+
+</div>
+
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -220,15 +225,15 @@ var element = $('#1f510ec6-14e8-4266-9936-152c63a30b10');
 
 
 
-<div id="b74582ae-dbdf-4b3a-b310-89257887efa3"></div>
+<div id="f24d1621-f2a7-428f-9574-8b8aff0b09c2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b74582ae-dbdf-4b3a-b310-89257887efa3');
+var element = $('#f24d1621-f2a7-428f-9574-8b8aff0b09c2');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "def support_dataset_processing(func):\n    \"\"\"\n    Make existing DataFrame transformer compatible with Dataset input.\n    :param func: Some function/method that takes Pandas DataFrame as input\n    and return Pandas DataFrame.\n    \"\"\"\n    @wraps(func)\n    def wrapper(dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataf_transform = func(dataset.dataf, *args, **kwargs)\n        metadata = dataset.__dict__\n        metadata.pop(\"dataf\", None)\n        return Dataset(dataf_transform, metadata)\n    return wrapper";
-                var nbb_formatted_code = "def support_dataset_processing(func):\n    \"\"\"\n    Make existing DataFrame transformer compatible with Dataset input.\n    :param func: Some function/method that takes Pandas DataFrame as input\n    and return Pandas DataFrame.\n    \"\"\"\n\n    @wraps(func)\n    def wrapper(dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataf_transform = func(dataset.dataf, *args, **kwargs)\n        metadata = dataset.__dict__\n        metadata.pop(\"dataf\", None)\n        return Dataset(dataf_transform, metadata)\n\n    return wrapper";
+                var nbb_unformatted_code = "#export\ndef support_dataset_processing(func):\n    \"\"\"\n    Make existing DataFrame transformer compatible with Dataset input.\n    :param func: Some function/method that takes Pandas DataFrame as input\n    and return Pandas DataFrame.\n    \"\"\"\n    @wraps(func)\n    def wrapper(dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataf_transform = func(dataset.dataf, *args, **kwargs)\n        metadata = dataset.__dict__\n        metadata.pop(\"dataf\", None)\n        return Dataset(dataf_transform, metadata)\n    return wrapper";
+                var nbb_formatted_code = "# export\ndef support_dataset_processing(func):\n    \"\"\"\n    Make existing DataFrame transformer compatible with Dataset input.\n    :param func: Some function/method that takes Pandas DataFrame as input\n    and return Pandas DataFrame.\n    \"\"\"\n\n    @wraps(func)\n    def wrapper(dataset: Dataset, *args, **kwargs) -> Dataset:\n        dataf_transform = func(dataset.dataf, *args, **kwargs)\n        metadata = dataset.__dict__\n        metadata.pop(\"dataf\", None)\n        return Dataset(dataf_transform, metadata)\n\n    return wrapper";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -292,10 +297,10 @@ var element = $('#b74582ae-dbdf-4b3a-b310-89257887efa3');
 
 
 
-<div id="abb2dd05-1b44-43b8-ae16-90894d132fc0"></div>
+<div id="ddc8ef74-bf2d-48ff-8e49-9b78ad38054c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#abb2dd05-1b44-43b8-ae16-90894d132fc0');
+var element = $('#ddc8ef74-bf2d-48ff-8e49-9b78ad38054c');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -357,10 +362,10 @@ var element = $('#abb2dd05-1b44-43b8-ae16-90894d132fc0');
 
 
 
-<div id="0febbfd0-18ae-45b0-8ac9-986de915f5b7"></div>
+<div id="a8c94729-dabf-4098-8d39-721f91cb3932"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0febbfd0-18ae-45b0-8ac9-986de915f5b7');
+var element = $('#a8c94729-dabf-4098-8d39-721f91cb3932');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -420,7 +425,7 @@ The decorator below will display:</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="display_processor_info" class="doc_header"><code>display_processor_info</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L38" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>display_processor_info</code>(<strong><code>func</code></strong>)</p>
+<h4 id="display_processor_info" class="doc_header"><code>display_processor_info</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L55" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>display_processor_info</code>(<strong><code>func</code></strong>)</p>
 </blockquote>
 <p>Fancy console output for data processing.</p>
 
@@ -446,10 +451,10 @@ The decorator below will display:</p>
 
 
 
-<div id="3787447c-7a23-42d3-91e7-7748f38aa50d"></div>
+<div id="df4fbda1-eec6-4a5e-b5a4-ec1c7f057180"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3787447c-7a23-42d3-91e7-7748f38aa50d');
+var element = $('#df4fbda1-eec6-4a5e-b5a4-ec1c7f057180');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -507,7 +512,7 @@ var element = $('#3787447c-7a23-42d3-91e7-7748f38aa50d');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002548</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001349</span>. ✅
 </pre>
 
 </div>
@@ -519,10 +524,10 @@ var element = $('#3787447c-7a23-42d3-91e7-7748f38aa50d');
 
 
 
-<div id="ce84acb2-d90f-43b8-ac91-ee68ed6a59bb"></div>
+<div id="8ec5c6a3-7a70-4e7c-ace5-b9d19e18e740"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ce84acb2-d90f-43b8-ac91-ee68ed6a59bb');
+var element = $('#8ec5c6a3-7a70-4e7c-ace5-b9d19e18e740');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -556,431 +561,6 @@ var element = $('#ce84acb2-d90f-43b8-ac91-ee68ed6a59bb');
 </div>
 </div>
 </div>
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="f1477268-619a-460b-bc06-ed8cd9daccc1"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#f1477268-619a-460b-bc06-ed8cd9daccc1');
-
-            setTimeout(function() {
-                var nbb_cell_id = 11;
-                var nbb_unformatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", version=1)";
-                var nbb_formatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", version=1)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">feature_cols</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>[&#39;feature_intelligence1&#39;,
- &#39;feature_intelligence2&#39;,
- &#39;feature_intelligence3&#39;,
- &#39;feature_intelligence4&#39;,
- &#39;feature_intelligence5&#39;,
- &#39;feature_intelligence6&#39;,
- &#39;feature_intelligence7&#39;,
- &#39;feature_intelligence8&#39;,
- &#39;feature_intelligence9&#39;,
- &#39;feature_intelligence10&#39;,
- &#39;feature_intelligence11&#39;,
- &#39;feature_intelligence12&#39;,
- &#39;feature_charisma1&#39;,
- &#39;feature_charisma2&#39;,
- &#39;feature_charisma3&#39;,
- &#39;feature_charisma4&#39;,
- &#39;feature_charisma5&#39;,
- &#39;feature_charisma6&#39;,
- &#39;feature_charisma7&#39;,
- &#39;feature_charisma8&#39;,
- &#39;feature_charisma9&#39;,
- &#39;feature_charisma10&#39;,
- &#39;feature_charisma11&#39;,
- &#39;feature_charisma12&#39;,
- &#39;feature_charisma13&#39;,
- &#39;feature_charisma14&#39;,
- &#39;feature_charisma15&#39;,
- &#39;feature_charisma16&#39;,
- &#39;feature_charisma17&#39;,
- &#39;feature_charisma18&#39;,
- &#39;feature_charisma19&#39;,
- &#39;feature_charisma20&#39;,
- &#39;feature_charisma21&#39;,
- &#39;feature_charisma22&#39;,
- &#39;feature_charisma23&#39;,
- &#39;feature_charisma24&#39;,
- &#39;feature_charisma25&#39;,
- &#39;feature_charisma26&#39;,
- &#39;feature_charisma27&#39;,
- &#39;feature_charisma28&#39;,
- &#39;feature_charisma29&#39;,
- &#39;feature_charisma30&#39;,
- &#39;feature_charisma31&#39;,
- &#39;feature_charisma32&#39;,
- &#39;feature_charisma33&#39;,
- &#39;feature_charisma34&#39;,
- &#39;feature_charisma35&#39;,
- &#39;feature_charisma36&#39;,
- &#39;feature_charisma37&#39;,
- &#39;feature_charisma38&#39;,
- &#39;feature_charisma39&#39;,
- &#39;feature_charisma40&#39;,
- &#39;feature_charisma41&#39;,
- &#39;feature_charisma42&#39;,
- &#39;feature_charisma43&#39;,
- &#39;feature_charisma44&#39;,
- &#39;feature_charisma45&#39;,
- &#39;feature_charisma46&#39;,
- &#39;feature_charisma47&#39;,
- &#39;feature_charisma48&#39;,
- &#39;feature_charisma49&#39;,
- &#39;feature_charisma50&#39;,
- &#39;feature_charisma51&#39;,
- &#39;feature_charisma52&#39;,
- &#39;feature_charisma53&#39;,
- &#39;feature_charisma54&#39;,
- &#39;feature_charisma55&#39;,
- &#39;feature_charisma56&#39;,
- &#39;feature_charisma57&#39;,
- &#39;feature_charisma58&#39;,
- &#39;feature_charisma59&#39;,
- &#39;feature_charisma60&#39;,
- &#39;feature_charisma61&#39;,
- &#39;feature_charisma62&#39;,
- &#39;feature_charisma63&#39;,
- &#39;feature_charisma64&#39;,
- &#39;feature_charisma65&#39;,
- &#39;feature_charisma66&#39;,
- &#39;feature_charisma67&#39;,
- &#39;feature_charisma68&#39;,
- &#39;feature_charisma69&#39;,
- &#39;feature_charisma70&#39;,
- &#39;feature_charisma71&#39;,
- &#39;feature_charisma72&#39;,
- &#39;feature_charisma73&#39;,
- &#39;feature_charisma74&#39;,
- &#39;feature_charisma75&#39;,
- &#39;feature_charisma76&#39;,
- &#39;feature_charisma77&#39;,
- &#39;feature_charisma78&#39;,
- &#39;feature_charisma79&#39;,
- &#39;feature_charisma80&#39;,
- &#39;feature_charisma81&#39;,
- &#39;feature_charisma82&#39;,
- &#39;feature_charisma83&#39;,
- &#39;feature_charisma84&#39;,
- &#39;feature_charisma85&#39;,
- &#39;feature_charisma86&#39;,
- &#39;feature_strength1&#39;,
- &#39;feature_strength2&#39;,
- &#39;feature_strength3&#39;,
- &#39;feature_strength4&#39;,
- &#39;feature_strength5&#39;,
- &#39;feature_strength6&#39;,
- &#39;feature_strength7&#39;,
- &#39;feature_strength8&#39;,
- &#39;feature_strength9&#39;,
- &#39;feature_strength10&#39;,
- &#39;feature_strength11&#39;,
- &#39;feature_strength12&#39;,
- &#39;feature_strength13&#39;,
- &#39;feature_strength14&#39;,
- &#39;feature_strength15&#39;,
- &#39;feature_strength16&#39;,
- &#39;feature_strength17&#39;,
- &#39;feature_strength18&#39;,
- &#39;feature_strength19&#39;,
- &#39;feature_strength20&#39;,
- &#39;feature_strength21&#39;,
- &#39;feature_strength22&#39;,
- &#39;feature_strength23&#39;,
- &#39;feature_strength24&#39;,
- &#39;feature_strength25&#39;,
- &#39;feature_strength26&#39;,
- &#39;feature_strength27&#39;,
- &#39;feature_strength28&#39;,
- &#39;feature_strength29&#39;,
- &#39;feature_strength30&#39;,
- &#39;feature_strength31&#39;,
- &#39;feature_strength32&#39;,
- &#39;feature_strength33&#39;,
- &#39;feature_strength34&#39;,
- &#39;feature_strength35&#39;,
- &#39;feature_strength36&#39;,
- &#39;feature_strength37&#39;,
- &#39;feature_strength38&#39;,
- &#39;feature_dexterity1&#39;,
- &#39;feature_dexterity2&#39;,
- &#39;feature_dexterity3&#39;,
- &#39;feature_dexterity4&#39;,
- &#39;feature_dexterity5&#39;,
- &#39;feature_dexterity6&#39;,
- &#39;feature_dexterity7&#39;,
- &#39;feature_dexterity8&#39;,
- &#39;feature_dexterity9&#39;,
- &#39;feature_dexterity10&#39;,
- &#39;feature_dexterity11&#39;,
- &#39;feature_dexterity12&#39;,
- &#39;feature_dexterity13&#39;,
- &#39;feature_dexterity14&#39;,
- &#39;feature_constitution1&#39;,
- &#39;feature_constitution2&#39;,
- &#39;feature_constitution3&#39;,
- &#39;feature_constitution4&#39;,
- &#39;feature_constitution5&#39;,
- &#39;feature_constitution6&#39;,
- &#39;feature_constitution7&#39;,
- &#39;feature_constitution8&#39;,
- &#39;feature_constitution9&#39;,
- &#39;feature_constitution10&#39;,
- &#39;feature_constitution11&#39;,
- &#39;feature_constitution12&#39;,
- &#39;feature_constitution13&#39;,
- &#39;feature_constitution14&#39;,
- &#39;feature_constitution15&#39;,
- &#39;feature_constitution16&#39;,
- &#39;feature_constitution17&#39;,
- &#39;feature_constitution18&#39;,
- &#39;feature_constitution19&#39;,
- &#39;feature_constitution20&#39;,
- &#39;feature_constitution21&#39;,
- &#39;feature_constitution22&#39;,
- &#39;feature_constitution23&#39;,
- &#39;feature_constitution24&#39;,
- &#39;feature_constitution25&#39;,
- &#39;feature_constitution26&#39;,
- &#39;feature_constitution27&#39;,
- &#39;feature_constitution28&#39;,
- &#39;feature_constitution29&#39;,
- &#39;feature_constitution30&#39;,
- &#39;feature_constitution31&#39;,
- &#39;feature_constitution32&#39;,
- &#39;feature_constitution33&#39;,
- &#39;feature_constitution34&#39;,
- &#39;feature_constitution35&#39;,
- &#39;feature_constitution36&#39;,
- &#39;feature_constitution37&#39;,
- &#39;feature_constitution38&#39;,
- &#39;feature_constitution39&#39;,
- &#39;feature_constitution40&#39;,
- &#39;feature_constitution41&#39;,
- &#39;feature_constitution42&#39;,
- &#39;feature_constitution43&#39;,
- &#39;feature_constitution44&#39;,
- &#39;feature_constitution45&#39;,
- &#39;feature_constitution46&#39;,
- &#39;feature_constitution47&#39;,
- &#39;feature_constitution48&#39;,
- &#39;feature_constitution49&#39;,
- &#39;feature_constitution50&#39;,
- &#39;feature_constitution51&#39;,
- &#39;feature_constitution52&#39;,
- &#39;feature_constitution53&#39;,
- &#39;feature_constitution54&#39;,
- &#39;feature_constitution55&#39;,
- &#39;feature_constitution56&#39;,
- &#39;feature_constitution57&#39;,
- &#39;feature_constitution58&#39;,
- &#39;feature_constitution59&#39;,
- &#39;feature_constitution60&#39;,
- &#39;feature_constitution61&#39;,
- &#39;feature_constitution62&#39;,
- &#39;feature_constitution63&#39;,
- &#39;feature_constitution64&#39;,
- &#39;feature_constitution65&#39;,
- &#39;feature_constitution66&#39;,
- &#39;feature_constitution67&#39;,
- &#39;feature_constitution68&#39;,
- &#39;feature_constitution69&#39;,
- &#39;feature_constitution70&#39;,
- &#39;feature_constitution71&#39;,
- &#39;feature_constitution72&#39;,
- &#39;feature_constitution73&#39;,
- &#39;feature_constitution74&#39;,
- &#39;feature_constitution75&#39;,
- &#39;feature_constitution76&#39;,
- &#39;feature_constitution77&#39;,
- &#39;feature_constitution78&#39;,
- &#39;feature_constitution79&#39;,
- &#39;feature_constitution80&#39;,
- &#39;feature_constitution81&#39;,
- &#39;feature_constitution82&#39;,
- &#39;feature_constitution83&#39;,
- &#39;feature_constitution84&#39;,
- &#39;feature_constitution85&#39;,
- &#39;feature_constitution86&#39;,
- &#39;feature_constitution87&#39;,
- &#39;feature_constitution88&#39;,
- &#39;feature_constitution89&#39;,
- &#39;feature_constitution90&#39;,
- &#39;feature_constitution91&#39;,
- &#39;feature_constitution92&#39;,
- &#39;feature_constitution93&#39;,
- &#39;feature_constitution94&#39;,
- &#39;feature_constitution95&#39;,
- &#39;feature_constitution96&#39;,
- &#39;feature_constitution97&#39;,
- &#39;feature_constitution98&#39;,
- &#39;feature_constitution99&#39;,
- &#39;feature_constitution100&#39;,
- &#39;feature_constitution101&#39;,
- &#39;feature_constitution102&#39;,
- &#39;feature_constitution103&#39;,
- &#39;feature_constitution104&#39;,
- &#39;feature_constitution105&#39;,
- &#39;feature_constitution106&#39;,
- &#39;feature_constitution107&#39;,
- &#39;feature_constitution108&#39;,
- &#39;feature_constitution109&#39;,
- &#39;feature_constitution110&#39;,
- &#39;feature_constitution111&#39;,
- &#39;feature_constitution112&#39;,
- &#39;feature_constitution113&#39;,
- &#39;feature_constitution114&#39;,
- &#39;feature_wisdom1&#39;,
- &#39;feature_wisdom2&#39;,
- &#39;feature_wisdom3&#39;,
- &#39;feature_wisdom4&#39;,
- &#39;feature_wisdom5&#39;,
- &#39;feature_wisdom6&#39;,
- &#39;feature_wisdom7&#39;,
- &#39;feature_wisdom8&#39;,
- &#39;feature_wisdom9&#39;,
- &#39;feature_wisdom10&#39;,
- &#39;feature_wisdom11&#39;,
- &#39;feature_wisdom12&#39;,
- &#39;feature_wisdom13&#39;,
- &#39;feature_wisdom14&#39;,
- &#39;feature_wisdom15&#39;,
- &#39;feature_wisdom16&#39;,
- &#39;feature_wisdom17&#39;,
- &#39;feature_wisdom18&#39;,
- &#39;feature_wisdom19&#39;,
- &#39;feature_wisdom20&#39;,
- &#39;feature_wisdom21&#39;,
- &#39;feature_wisdom22&#39;,
- &#39;feature_wisdom23&#39;,
- &#39;feature_wisdom24&#39;,
- &#39;feature_wisdom25&#39;,
- &#39;feature_wisdom26&#39;,
- &#39;feature_wisdom27&#39;,
- &#39;feature_wisdom28&#39;,
- &#39;feature_wisdom29&#39;,
- &#39;feature_wisdom30&#39;,
- &#39;feature_wisdom31&#39;,
- &#39;feature_wisdom32&#39;,
- &#39;feature_wisdom33&#39;,
- &#39;feature_wisdom34&#39;,
- &#39;feature_wisdom35&#39;,
- &#39;feature_wisdom36&#39;,
- &#39;feature_wisdom37&#39;,
- &#39;feature_wisdom38&#39;,
- &#39;feature_wisdom39&#39;,
- &#39;feature_wisdom40&#39;,
- &#39;feature_wisdom41&#39;,
- &#39;feature_wisdom42&#39;,
- &#39;feature_wisdom43&#39;,
- &#39;feature_wisdom44&#39;,
- &#39;feature_wisdom45&#39;,
- &#39;feature_wisdom46&#39;]</pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="2b33d8ce-7a39-444b-a450-5361fad9f70e"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#2b33d8ce-7a39-444b-a450-5361fad9f70e');
-
-            setTimeout(function() {
-                var nbb_cell_id = 12;
-                var nbb_unformatted_code = "dataset.feature_cols";
-                var nbb_formatted_code = "dataset.feature_cols";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="1.1.-Version-agnostic">1.1. Version agnostic<a class="anchor-link" href="#1.1.-Version-agnostic"> </a></h3>
@@ -998,7 +578,7 @@ var element = $('#2b33d8ce-7a39-444b-a450-5361fad9f70e');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="CopyPreProcessor" class="doc_header"><code>class</code> <code>CopyPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L52" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CopyPreProcessor</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="CopyPreProcessor" class="doc_header"><code>class</code> <code>CopyPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L69" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CopyPreProcessor</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Copy DataFrame to avoid manipulation of original DataFrame.</p>
 
@@ -1024,13 +604,13 @@ var element = $('#2b33d8ce-7a39-444b-a450-5361fad9f70e');
 
 
 
-<div id="27481407-2aa1-40a2-8db7-79de2008de30"></div>
+<div id="8758e65e-79cb-4b3a-8fe9-d30daffea587"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#27481407-2aa1-40a2-8db7-79de2008de30');
+var element = $('#8758e65e-79cb-4b3a-8fe9-d30daffea587');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame. \"\"\"\n    def __init__(self):\n        super(CopyPreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return dataset.copy_dataset()";
                 var nbb_formatted_code = "# export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame.\"\"\"\n\n    def __init__(self):\n        super(CopyPreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        return dataset.copy_dataset()";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1062,7 +642,8 @@ var element = $('#27481407-2aa1-40a2-8db7-79de2008de30');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">copied_dataset</span> <span class="o">=</span> <span class="n">CopyPreProcessor</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">copied_dataset</span> <span class="o">=</span> <span class="n">CopyPreProcessor</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">copied_dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">multi_target</span> <span class="o">==</span> <span class="p">(</span><span class="n">copied_dataset</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">copied_dataset</span><span class="o">.</span><span class="n">multi_target</span><span class="p">)</span>
 </pre></div>
@@ -1079,7 +660,7 @@ var element = $('#27481407-2aa1-40a2-8db7-79de2008de30');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000674</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000594</span>. ✅
 </pre>
 
 </div>
@@ -1091,15 +672,15 @@ var element = $('#27481407-2aa1-40a2-8db7-79de2008de30');
 
 
 
-<div id="c851db10-36ec-436c-bfc9-f7318c783b33"></div>
+<div id="ac6f5189-2b65-4553-8191-fb57cfbf3935"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c851db10-36ec-436c-bfc9-f7318c783b33');
+var element = $('#ac6f5189-2b65-4553-8191-fb57cfbf3935');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
-                var nbb_unformatted_code = "copied_dataset = CopyPreProcessor().transform(dataset)\nassert copied_dataset.dataf.equals(dataset.dataf)\nassert dataset.version, dataset.multi_target == (copied_dataset.version, copied_dataset.multi_target)";
-                var nbb_formatted_code = "copied_dataset = CopyPreProcessor().transform(dataset)\nassert copied_dataset.dataf.equals(dataset.dataf)\nassert dataset.version, dataset.multi_target == (\n    copied_dataset.version,\n    copied_dataset.multi_target,\n)";
+                var nbb_cell_id = 12;
+                var nbb_unformatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", version=1)\ncopied_dataset = CopyPreProcessor().transform(dataset)\nassert copied_dataset.dataf.equals(dataset.dataf)\nassert dataset.version, dataset.multi_target == (copied_dataset.version, copied_dataset.multi_target)";
+                var nbb_formatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_1_data.csv\", version=1)\ncopied_dataset = CopyPreProcessor().transform(dataset)\nassert copied_dataset.dataf.equals(dataset.dataf)\nassert dataset.version, dataset.multi_target == (\n    copied_dataset.version,\n    copied_dataset.multi_target,\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1133,7 +714,7 @@ var element = $('#c851db10-36ec-436c-bfc9-f7318c783b33');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeatureSelectionPreProcessor" class="doc_header"><code>class</code> <code>FeatureSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L63" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureSelectionPreProcessor</code>(<strong><code>feature_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="FeatureSelectionPreProcessor" class="doc_header"><code>class</code> <code>FeatureSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L80" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureSelectionPreProcessor</code>(<strong><code>feature_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Keep only features given + all target, predictions and aux columns.</p>
 
@@ -1159,13 +740,13 @@ var element = $('#c851db10-36ec-436c-bfc9-f7318c783b33');
 
 
 
-<div id="274fc792-8f71-49f1-b746-06d69b8adf59"></div>
+<div id="497ba62d-6095-441d-9b5e-95943035a683"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#274fc792-8f71-49f1-b746-06d69b8adf59');
+var element = $('#497ba62d-6095-441d-9b5e-95943035a683');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 13;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, feature_cols: Union[str, list]):\n        super(FeatureSelectionPreProcessor, self).__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataset: Dataset) -> Dataset:\n        keep_cols = self.feature_cols + dataset.target_cols + dataset.prediction_cols + dataset.aux_cols\n        dataset.dataf = dataset.dataf.loc[:, keep_cols]\n        return Dataset(**dataset.__dict__)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, feature_cols: Union[str, list]):\n        super(FeatureSelectionPreProcessor, self).__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataset: Dataset) -> Dataset:\n        keep_cols = (\n            self.feature_cols\n            + dataset.target_cols\n            + dataset.prediction_cols\n            + dataset.aux_cols\n        )\n        dataset.dataf = dataset.dataf.loc[:, keep_cols]\n        return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1214,7 +795,7 @@ var element = $('#274fc792-8f71-49f1-b746-06d69b8adf59');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000665</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000670</span>. ✅
 </pre>
 
 </div>
@@ -1226,13 +807,13 @@ var element = $('#274fc792-8f71-49f1-b746-06d69b8adf59');
 
 
 
-<div id="b40a1b9e-9fdf-45dc-b810-fc0ab257fee6"></div>
+<div id="7d806ffb-022b-4a02-9114-2303816b6aa5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b40a1b9e-9fdf-45dc-b810-fc0ab257fee6');
+var element = $('#7d806ffb-022b-4a02-9114-2303816b6aa5');
 
             setTimeout(function() {
-                var nbb_cell_id = 16;
+                var nbb_cell_id = 14;
                 var nbb_unformatted_code = "selected_dataset = FeatureSelectionPreProcessor(feature_cols=['feature_wisdom1']).transform(dataset)\nassert selected_dataset.get_feature_data.shape[1] == 1\nassert dataset.version, dataset.multi_target == (selected_dataset.version, selected_dataset.multi_target)";
                 var nbb_formatted_code = "selected_dataset = FeatureSelectionPreProcessor(\n    feature_cols=[\"feature_wisdom1\"]\n).transform(dataset)\nassert selected_dataset.get_feature_data.shape[1] == 1\nassert dataset.version, dataset.multi_target == (\n    selected_dataset.version,\n    selected_dataset.multi_target,\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1332,15 +913,278 @@ var element = $('#b40a1b9e-9fdf-45dc-b810-fc0ab257fee6');
 
 
 
-<div id="ce7d3cd9-ccaf-4059-904b-762181dc396e"></div>
+<div id="acb960b5-e56b-4b05-ad48-6dcdf7fe081b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ce7d3cd9-ccaf-4059-904b-762181dc396e');
+var element = $('#acb960b5-e56b-4b05-ad48-6dcdf7fe081b');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "selected_dataset.dataf.head(2)";
+                var nbb_formatted_code = "selected_dataset.dataf.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="TargetSelectionPreProcessor" class="doc_header"><code>class</code> <code>TargetSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L96" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>TargetSelectionPreProcessor</code>(<strong><code>target_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+</blockquote>
+<p>Keep only features given + all target, predictions and aux columns.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="679e9a60-681e-4350-b073-10dfe343b5de"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#679e9a60-681e-4350-b073-10dfe343b5de');
+
+            setTimeout(function() {
+                var nbb_cell_id = 16;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, target_cols: Union[str, list]):\n        super(TargetSelectionPreProcessor, self).__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataset: Dataset) -> Dataset:\n        keep_cols = self.target_cols + dataset.feature_cols + dataset.prediction_cols + dataset.aux_cols\n        dataset.dataf = dataset.dataf.loc[:, keep_cols]\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, target_cols: Union[str, list]):\n        super(TargetSelectionPreProcessor, self).__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataset: Dataset) -> Dataset:\n        keep_cols = (\n            self.target_cols\n            + dataset.feature_cols\n            + dataset.prediction_cols\n            + dataset.aux_cols\n        )\n        dataset.dataf = dataset.dataf.loc[:, keep_cols]\n        return Dataset(**dataset.__dict__)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_2_data.parquet&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">target_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;target_nomi_20&#39;</span><span class="p">,</span> <span class="s1">&#39;target_nomi_60&#39;</span><span class="p">]</span>
+<span class="n">selected_dataset</span> <span class="o">=</span> <span class="n">TargetSelectionPreProcessor</span><span class="p">(</span><span class="n">target_cols</span><span class="o">=</span><span class="n">target_cols</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">selected_dataset</span><span class="o">.</span><span class="n">get_target_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_cols</span><span class="p">)</span>
+<span class="n">selected_dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TargetSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1055</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">008141</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>target_nomi_20</th>
+      <th>target_nomi_60</th>
+      <th>feature_dichasial_hammier_spawner</th>
+      <th>feature_rheumy_epistemic_prancer</th>
+      <th>feature_pert_performative_hormuz</th>
+      <th>feature_hillier_unpitied_theobromine</th>
+      <th>feature_perigean_bewitching_thruster</th>
+      <th>feature_renegade_undomestic_milord</th>
+      <th>feature_koranic_rude_corf</th>
+      <th>...</th>
+      <th>feature_drawable_exhortative_dispersant</th>
+      <th>feature_metabolic_minded_armorist</th>
+      <th>feature_investigatory_inerasable_circumvallation</th>
+      <th>feature_centroclinal_incentive_lancelet</th>
+      <th>feature_unemotional_quietistic_chirper</th>
+      <th>feature_behaviorist_microbiological_farina</th>
+      <th>feature_lofty_acceptable_challenge</th>
+      <th>feature_coactive_prefatorial_lucy</th>
+      <th>era</th>
+      <th>data_type</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n559bd06a8861222</th>
+      <td>0.25</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>0.25</td>
+      <td>0.50</td>
+      <td>1.0</td>
+      <td>...</td>
+      <td>1.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>1.00</td>
+      <td>0.25</td>
+      <td>0297</td>
+      <td>train</td>
+    </tr>
+    <tr>
+      <th>n9d39dea58c9e3cf</th>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>0.75</td>
+      <td>0.50</td>
+      <td>0.75</td>
+      <td>1.00</td>
+      <td>0.50</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>...</td>
+      <td>0.25</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>0.75</td>
+      <td>1.0</td>
+      <td>0.75</td>
+      <td>1.00</td>
+      <td>0003</td>
+      <td>train</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 1055 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="d23deede-f112-489f-9ab1-debf60f5293d"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#d23deede-f112-489f-9ab1-debf60f5293d');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
-                var nbb_unformatted_code = "selected_dataset.dataf.head(2)";
-                var nbb_formatted_code = "selected_dataset.dataf.head(2)";
+                var nbb_unformatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_2_data.parquet\", version=2)\ntarget_cols = ['target', 'target_nomi_20', 'target_nomi_60']\nselected_dataset = TargetSelectionPreProcessor(target_cols=target_cols).transform(dataset)\nassert selected_dataset.get_target_data.shape[1] == len(target_cols)\nselected_dataset.dataf.head(2)";
+                var nbb_formatted_code = "dataset = create_dataset(\"test_assets/mini_numerai_version_2_data.parquet\", version=2)\ntarget_cols = [\"target\", \"target_nomi_20\", \"target_nomi_60\"]\nselected_dataset = TargetSelectionPreProcessor(target_cols=target_cols).transform(\n    dataset\n)\nassert selected_dataset.get_target_data.shape[1] == len(target_cols)\nselected_dataset.dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1380,10 +1224,11 @@ var element = $('#ce7d3cd9-ccaf-4059-904b-762181dc396e');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="GroupStatsPreProcessor" class="doc_header"><code>class</code> <code>GroupStatsPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L79" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GroupStatsPreProcessor</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="GroupStatsPreProcessor" class="doc_header"><code>class</code> <code>GroupStatsPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L112" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GroupStatsPreProcessor</code>(<strong><code>groups</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>WARNING: Only supported for Version 1 (legacy) data.
-Calculate group statistics for all data groups.</p>
+Calculate group statistics for all data groups.
+:param groups: Groups to create features for. All groups by default.</p>
 
 </div>
 
@@ -1407,15 +1252,15 @@ Calculate group statistics for all data groups.</p>
 
 
 
-<div id="c6e1701f-d12c-49aa-806b-6bd4e9acfbd2"></div>
+<div id="2e0fb090-0678-4091-ad6e-a43f50e4bb5c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c6e1701f-d12c-49aa-806b-6bd4e9acfbd2');
+var element = $('#2e0fb090-0678-4091-ad6e-a43f50e4bb5c');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    \"\"\"\n    def __init__(self):\n        super(GroupStatsPreProcessor, self).__init__()\n        self.group_names = [\"intelligence\", \"wisdom\", \"charisma\",\n                            \"dexterity\", \"strength\", \"constitution\"]\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        self._check_data_validity(dataset=dataset)\n        dataset.dataf = dataset.dataf.pipe(self._add_group_features)\n        return Dataset(**dataset.__dict__)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataset: Dataset):\n        assert hasattr(dataset, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataset, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataset, 'version')}'.\"";
-                var nbb_formatted_code = "# export\n@typechecked\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    \"\"\"\n\n    def __init__(self):\n        super(GroupStatsPreProcessor, self).__init__()\n        self.group_names = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        self._check_data_validity(dataset=dataset)\n        dataset.dataf = dataset.dataf.pipe(self._add_group_features)\n        return Dataset(**dataset.__dict__)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataset: Dataset):\n        assert hasattr(\n            dataset, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataset, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataset, 'version')}'.\"";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n    def __init__(self, groups: list = None):\n        super(GroupStatsPreProcessor, self).__init__()\n        self.all_groups = [\"intelligence\", \"wisdom\", \"charisma\",\n                           \"dexterity\", \"strength\", \"constitution\"]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        self._check_data_validity(dataset=dataset)\n        dataset.dataf = dataset.dataf.pipe(self._add_group_features)\n        return Dataset(**dataset.__dict__)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataset: Dataset):\n        assert hasattr(dataset, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataset, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataset, 'version')}'.\"";
+                var nbb_formatted_code = "# export\n@typechecked\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n\n    def __init__(self, groups: list = None):\n        super(GroupStatsPreProcessor, self).__init__()\n        self.all_groups = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        self._check_data_validity(dataset=dataset)\n        dataset.dataf = dataset.dataf.pipe(self._add_group_features)\n        return Dataset(**dataset.__dict__)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataset: Dataset):\n        assert hasattr(\n            dataset, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataset, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataset, 'version')}'.\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1462,7 +1307,7 @@ var element = $('#c6e1701f-d12c-49aa-806b-6bd4e9acfbd2');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">021537</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">022085</span>. ✅
 </pre>
 
 </div>
@@ -1474,10 +1319,10 @@ var element = $('#c6e1701f-d12c-49aa-806b-6bd4e9acfbd2');
 
 
 
-<div id="06975e3c-24c1-40ec-831b-eb6340851cb6"></div>
+<div id="73b45830-e908-4550-a09b-38a9f5836f33"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#06975e3c-24c1-40ec-831b-eb6340851cb6');
+var element = $('#73b45830-e908-4550-a09b-38a9f5836f33');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1626,10 +1471,10 @@ var element = $('#06975e3c-24c1-40ec-831b-eb6340851cb6');
 
 
 
-<div id="1a02c819-fd4d-46de-9e6c-f0c9ce332e54"></div>
+<div id="3191c2f7-ebe6-4013-bfa3-8fd1c942723d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1a02c819-fd4d-46de-9e6c-f0c9ce332e54');
+var element = $('#3191c2f7-ebe6-4013-bfa3-8fd1c942723d');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1695,10 +1540,10 @@ var element = $('#1a02c819-fd4d-46de-9e6c-f0c9ce332e54');
 
 
 
-<div id="ab35df74-9a20-4e8e-a757-efd3fa87c8f1"></div>
+<div id="712f1026-41a1-4273-9af5-ea4849cd1162"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ab35df74-9a20-4e8e-a757-efd3fa87c8f1');
+var element = $('#712f1026-41a1-4273-9af5-ea4849cd1162');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
@@ -1738,6 +1583,12 @@ var element = $('#ab35df74-9a20-4e8e-a757-efd3fa87c8f1');
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.4.1.-Pattern-Features">1.4.1. Pattern Features<a class="anchor-link" href="#1.4.1.-Pattern-Features"> </a></h4>
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1745,7 +1596,7 @@ var element = $('#ab35df74-9a20-4e8e-a757-efd3fa87c8f1');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># @typechecked</span>
 <span class="c1"># class TalibPatternFeatures(BaseProcessor):</span>
 <span class="c1">#     &quot;&quot;&quot;</span>
 <span class="c1">#     Get all pattern recognition features available in TA-Lib</span>
@@ -1759,16 +1610,14 @@ var element = $('#ab35df74-9a20-4e8e-a757-efd3fa87c8f1');
 <span class="c1">#</span>
 <span class="c1">#     @display_processor_info</span>
 <span class="c1">#     def transform(self, dataset: Dataset, *args, **kwargs) -&gt; Dataset:</span>
-<span class="c1">#         open_price, high_price = dataset.dataf[&#39;open&#39;], dataset.dataf[&#39;high&#39;]</span>
-<span class="c1">#         low_price, close_price = dataset.dataf[&#39;low&#39;], dataset.dataf[&#39;close&#39;]</span>
+<span class="c1">#         all_tickers = list(dataset.dataf[self.ticker_col].unique())</span>
 <span class="c1">#         for func in self.funcs:</span>
-<span class="c1">#             dataset.dataf.loc[:, func.__qualname__] = dataset.dataf.groupby(self.ticker_col).apply(func,</span>
-<span class="c1">#                                                                                                    args=(open_price,</span>
-<span class="c1">#                                                                                                          high_price,</span>
-<span class="c1">#                                                                                                          low_price,</span>
-<span class="c1">#                                                                                                          close_price</span>
-<span class="c1">#                                                                                                          )</span>
-<span class="c1">#                                                                                                    )</span>
+<span class="c1">#             for ticker in all_tickers:</span>
+<span class="c1">#                 index_mask = dataset.dataf[self.ticker_col] == ticker</span>
+<span class="c1">#                 sub_df = dataset.dataf.loc[index_mask, :]</span>
+<span class="c1">#                 open, high = sub_df[&#39;Open&#39;], sub_df[&#39;High&#39;]</span>
+<span class="c1">#                 low, close = sub_df[&#39;Low&#39;], sub_df[&#39;Close&#39;]</span>
+<span class="c1">#                 dataset.dataf.loc[index_mask, f&quot;feature_{func.__qualname__}&quot;] = func(open, high, low, close)</span>
 <span class="c1">#         return Dataset(**dataset.__dict__)</span>
 </pre></div>
 
@@ -1784,15 +1633,15 @@ var element = $('#ab35df74-9a20-4e8e-a757-efd3fa87c8f1');
 
 
 
-<div id="a6ac7848-2ab0-40d8-9394-4dc56020ada9"></div>
+<div id="3fe710b0-b7de-478b-92cc-20328b86609a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a6ac7848-2ab0-40d8-9394-4dc56020ada9');
+var element = $('#3fe710b0-b7de-478b-92cc-20328b86609a');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
-                var nbb_unformatted_code = "class TalibPatternFeatures(BaseProcessor):\n    \"\"\"\n    Get all pattern recognition features available in TA-Lib\n    More information: https://mrjbq7.github.io/ta-lib/func_groups/pattern_recognition.html\n    \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(TalibPatternFeatures, self).__init__()\n        # All pattern recognition features start with \"CDL\" in TA-Lib\n        self.funcs = [getattr(talib, name) for name in dir(talib) if name.startswith(\"CDL\")]\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        for func in self.funcs:\n            print(func.__qualname__)\n            break\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
-                var nbb_formatted_code = "class TalibPatternFeatures(BaseProcessor):\n    \"\"\"\n    Get all pattern recognition features available in TA-Lib\n    More information: https://mrjbq7.github.io/ta-lib/func_groups/pattern_recognition.html\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(TalibPatternFeatures, self).__init__()\n        # All pattern recognition features start with \"CDL\" in TA-Lib\n        self.funcs = [\n            getattr(talib, name) for name in dir(talib) if name.startswith(\"CDL\")\n        ]\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        for func in self.funcs:\n            print(func.__qualname__)\n            break\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
+                var nbb_cell_id = 22;
+                var nbb_unformatted_code = "# # export\n# @typechecked\n# class TalibPatternFeatures(BaseProcessor):\n#     \"\"\"\n#     Get all pattern recognition features available in TA-Lib\n#     More information: https://mrjbq7.github.io/ta-lib/func_groups/pattern_recognition.html\n#     \"\"\"\n#     def __init__(self, ticker_col: str = \"ticker\"):\n#         super(TalibPatternFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         # All pattern recognition features start with \"CDL\" in TA-Lib\n#         self.funcs = [getattr(talib, name) for name in dir(talib) if name.startswith(\"CDL\")]\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         all_tickers = list(dataset.dataf[self.ticker_col].unique())\n#         for func in self.funcs:\n#             for ticker in all_tickers:\n#                 index_mask = dataset.dataf[self.ticker_col] == ticker\n#                 sub_df = dataset.dataf.loc[index_mask, :]\n#                 open, high = sub_df['Open'], sub_df['High']\n#                 low, close = sub_df['Low'], sub_df['Close']\n#                 dataset.dataf.loc[index_mask, f\"feature_{func.__qualname__}\"] = func(open, high, low, close)\n#         return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# # export\n# @typechecked\n# class TalibPatternFeatures(BaseProcessor):\n#     \"\"\"\n#     Get all pattern recognition features available in TA-Lib\n#     More information: https://mrjbq7.github.io/ta-lib/func_groups/pattern_recognition.html\n#     \"\"\"\n#     def __init__(self, ticker_col: str = \"ticker\"):\n#         super(TalibPatternFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         # All pattern recognition features start with \"CDL\" in TA-Lib\n#         self.funcs = [getattr(talib, name) for name in dir(talib) if name.startswith(\"CDL\")]\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         all_tickers = list(dataset.dataf[self.ticker_col].unique())\n#         for func in self.funcs:\n#             for ticker in all_tickers:\n#                 index_mask = dataset.dataf[self.ticker_col] == ticker\n#                 sub_df = dataset.dataf.loc[index_mask, :]\n#                 open, high = sub_df['Open'], sub_df['High']\n#                 low, close = sub_df['Low'], sub_df['Close']\n#                 dataset.dataf.loc[index_mask, f\"feature_{func.__qualname__}\"] = func(open, high, low, close)\n#         return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1822,7 +1671,12 @@ var element = $('#a6ac7848-2ab0-40d8-9394-4dc56020ada9');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ticker_col = &quot;Symbol&quot;</span>
+<span class="c1"># ta_patterns = TalibPatternFeatures(ticker_col=ticker_col)</span>
+<span class="c1"># transformed_dataset = ta_patterns.transform(signals_test_data)</span>
+<span class="c1"># assert len(transformed_dataset.feature_cols) == 61</span>
+<span class="c1"># assert not (transformed_dataset.get_feature_data == 0).all().all()</span>
+<span class="c1"># transformed_dataset.get_feature_data.head(2)</span>
 </pre></div>
 
     </div>
@@ -1837,15 +1691,391 @@ var element = $('#a6ac7848-2ab0-40d8-9394-4dc56020ada9');
 
 
 
-<div id="5cc7ddc5-d8dc-4f0c-99b2-eab8e9a0c987"></div>
+<div id="2128f3a0-31c5-4a11-abbf-bd71d64e0a64"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5cc7ddc5-d8dc-4f0c-99b2-eab8e9a0c987');
+var element = $('#2128f3a0-31c5-4a11-abbf-bd71d64e0a64');
+
+            setTimeout(function() {
+                var nbb_cell_id = 23;
+                var nbb_unformatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# ta_patterns = TalibPatternFeatures(ticker_col=ticker_col)\n# transformed_dataset = ta_patterns.transform(signals_test_data)\n# assert len(transformed_dataset.feature_cols) == 61\n# assert not (transformed_dataset.get_feature_data == 0).all().all()\n# transformed_dataset.get_feature_data.head(2)";
+                var nbb_formatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# ta_patterns = TalibPatternFeatures(ticker_col=ticker_col)\n# transformed_dataset = ta_patterns.transform(signals_test_data)\n# assert len(transformed_dataset.feature_cols) == 61\n# assert not (transformed_dataset.get_feature_data == 0).all().all()\n# transformed_dataset.get_feature_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.4.2.-Volume-indicators">1.4.2. Volume indicators<a class="anchor-link" href="#1.4.2.-Volume-indicators"> </a></h4>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># @typechecked</span>
+<span class="c1"># class TalibVolumeFeatures(BaseProcessor):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Get all volume features using TA-Lib</span>
+<span class="c1">#     More information: https://mrjbq7.github.io/ta-lib/func_groups/volume_indicators.html</span>
+<span class="c1">#</span>
+<span class="c1">#     :param ticker_col: Column name that points to ticker names</span>
+<span class="c1">#     :param fastperiod, slowperiod: Periodic arguments for ADOSC (Chaikin A/D Oscillator).</span>
+<span class="c1">#     See http://www.tadoc.org/indicator/ADOSC.htm for more information on how these arguments are used.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     def __init__(self, ticker_col: str = &quot;ticker&quot;, fastperiod: int = 3, slowperiod: int = 10):</span>
+<span class="c1">#         super(TalibVolumeFeatures, self).__init__()</span>
+<span class="c1">#         self.ticker_col = ticker_col</span>
+<span class="c1">#         self.volume_features = [&#39;AD&#39;, &#39;ADOSC&#39;, &#39;OBV&#39;]</span>
+<span class="c1">#         self.fastperiod = fastperiod</span>
+<span class="c1">#         self.slowperiod = slowperiod</span>
+<span class="c1">#</span>
+<span class="c1">#     @display_processor_info</span>
+<span class="c1">#     def transform(self, dataset: Dataset) -&gt; Dataset:</span>
+<span class="c1">#         all_tickers = list(dataset.dataf[self.ticker_col].unique())</span>
+<span class="c1">#         for ticker in all_tickers:</span>
+<span class="c1">#             index_mask = dataset.dataf[self.ticker_col] == ticker</span>
+<span class="c1">#             sub_df = dataset.dataf.loc[index_mask, :]</span>
+<span class="c1">#</span>
+<span class="c1">#             high, low = sub_df[&#39;High&#39;].to_numpy(), sub_df[&#39;Low&#39;].to_numpy()</span>
+<span class="c1">#             close, volume = sub_df[&#39;Close&#39;].to_numpy(), sub_df[&#39;Volume&#39;].to_numpy()</span>
+<span class="c1">#</span>
+<span class="c1">#             dataset.dataf.loc[index_mask, &quot;feature_AD&quot;] = talib.AD(high, low, close, volume)</span>
+<span class="c1">#             adosc = talib.ADOSC(high, low, close, volume, fastperiod=self.fastperiod, slowperiod=self.slowperiod)</span>
+<span class="c1">#             dataset.dataf.loc[index_mask, &quot;feature_ADOSC&quot;] = np.nan_to_num(adosc, nan=0.0)</span>
+<span class="c1">#             dataset.dataf.loc[index_mask, &quot;feature_OBV&quot;] = talib.OBV(close, volume)</span>
+<span class="c1">#         return Dataset(**dataset.__dict__)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="828871bc-2743-4770-8d28-27c8a264edf5"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#828871bc-2743-4770-8d28-27c8a264edf5');
+
+            setTimeout(function() {
+                var nbb_cell_id = 24;
+                var nbb_unformatted_code = "# # export\n# @typechecked\n# class TalibVolumeFeatures(BaseProcessor):\n#     \"\"\"\n#     Get all volume features using TA-Lib\n#     More information: https://mrjbq7.github.io/ta-lib/func_groups/volume_indicators.html\n#\n#     :param ticker_col: Column name that points to ticker names\n#     :param fastperiod, slowperiod: Periodic arguments for ADOSC (Chaikin A/D Oscillator).\n#     See http://www.tadoc.org/indicator/ADOSC.htm for more information on how these arguments are used.\n#     \"\"\"\n#     def __init__(self, ticker_col: str = \"ticker\", fastperiod: int = 3, slowperiod: int = 10):\n#         super(TalibVolumeFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.volume_features = ['AD', 'ADOSC', 'OBV']\n#         self.fastperiod = fastperiod\n#         self.slowperiod = slowperiod\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset) -> Dataset:\n#         all_tickers = list(dataset.dataf[self.ticker_col].unique())\n#         for ticker in all_tickers:\n#             index_mask = dataset.dataf[self.ticker_col] == ticker\n#             sub_df = dataset.dataf.loc[index_mask, :]\n#\n#             high, low = sub_df['High'].to_numpy(), sub_df['Low'].to_numpy()\n#             close, volume = sub_df['Close'].to_numpy(), sub_df['Volume'].to_numpy()\n#\n#             dataset.dataf.loc[index_mask, \"feature_AD\"] = talib.AD(high, low, close, volume)\n#             adosc = talib.ADOSC(high, low, close, volume, fastperiod=self.fastperiod, slowperiod=self.slowperiod)\n#             dataset.dataf.loc[index_mask, \"feature_ADOSC\"] = np.nan_to_num(adosc, nan=0.0)\n#             dataset.dataf.loc[index_mask, \"feature_OBV\"] = talib.OBV(close, volume)\n#         return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# # export\n# @typechecked\n# class TalibVolumeFeatures(BaseProcessor):\n#     \"\"\"\n#     Get all volume features using TA-Lib\n#     More information: https://mrjbq7.github.io/ta-lib/func_groups/volume_indicators.html\n#\n#     :param ticker_col: Column name that points to ticker names\n#     :param fastperiod, slowperiod: Periodic arguments for ADOSC (Chaikin A/D Oscillator).\n#     See http://www.tadoc.org/indicator/ADOSC.htm for more information on how these arguments are used.\n#     \"\"\"\n#     def __init__(self, ticker_col: str = \"ticker\", fastperiod: int = 3, slowperiod: int = 10):\n#         super(TalibVolumeFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.volume_features = ['AD', 'ADOSC', 'OBV']\n#         self.fastperiod = fastperiod\n#         self.slowperiod = slowperiod\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset) -> Dataset:\n#         all_tickers = list(dataset.dataf[self.ticker_col].unique())\n#         for ticker in all_tickers:\n#             index_mask = dataset.dataf[self.ticker_col] == ticker\n#             sub_df = dataset.dataf.loc[index_mask, :]\n#\n#             high, low = sub_df['High'].to_numpy(), sub_df['Low'].to_numpy()\n#             close, volume = sub_df['Close'].to_numpy(), sub_df['Volume'].to_numpy()\n#\n#             dataset.dataf.loc[index_mask, \"feature_AD\"] = talib.AD(high, low, close, volume)\n#             adosc = talib.ADOSC(high, low, close, volume, fastperiod=self.fastperiod, slowperiod=self.slowperiod)\n#             dataset.dataf.loc[index_mask, \"feature_ADOSC\"] = np.nan_to_num(adosc, nan=0.0)\n#             dataset.dataf.loc[index_mask, \"feature_OBV\"] = talib.OBV(close, volume)\n#         return Dataset(**dataset.__dict__)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ticker_col = &quot;Symbol&quot;</span>
+<span class="c1"># fastperiod, slowperiod = 4, 11</span>
+<span class="c1"># ta_volume_features = TalibVolumeFeatures(ticker_col=ticker_col, fastperiod=fastperiod, slowperiod=slowperiod)</span>
+<span class="c1"># dataset_with_volume_features = ta_volume_features.transform(dataset=signals_test_data)</span>
+<span class="c1"># assert fastperiod == ta_volume_features.fastperiod</span>
+<span class="c1"># assert slowperiod == ta_volume_features.slowperiod</span>
+<span class="c1"># assert list(dataset_with_volume_features.get_feature_data.columns) == [f&quot;feature_{name}&quot; for name in ta_volume_features.volume_features]</span>
+<span class="c1"># dataset_with_volume_features.get_feature_data.head(2)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="aee1ec30-f26e-46f4-9365-c858aba4d73a"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#aee1ec30-f26e-46f4-9365-c858aba4d73a');
+
+            setTimeout(function() {
+                var nbb_cell_id = 25;
+                var nbb_unformatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# fastperiod, slowperiod = 4, 11\n# ta_volume_features = TalibVolumeFeatures(ticker_col=ticker_col, fastperiod=fastperiod, slowperiod=slowperiod)\n# dataset_with_volume_features = ta_volume_features.transform(dataset=signals_test_data)\n# assert fastperiod == ta_volume_features.fastperiod\n# assert slowperiod == ta_volume_features.slowperiod\n# assert list(dataset_with_volume_features.get_feature_data.columns) == [f\"feature_{name}\" for name in ta_volume_features.volume_features]\n# dataset_with_volume_features.get_feature_data.head(2)";
+                var nbb_formatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# fastperiod, slowperiod = 4, 11\n# ta_volume_features = TalibVolumeFeatures(ticker_col=ticker_col, fastperiod=fastperiod, slowperiod=slowperiod)\n# dataset_with_volume_features = ta_volume_features.transform(dataset=signals_test_data)\n# assert fastperiod == ta_volume_features.fastperiod\n# assert slowperiod == ta_volume_features.slowperiod\n# assert list(dataset_with_volume_features.get_feature_data.columns) == [f\"feature_{name}\" for name in ta_volume_features.volume_features]\n# dataset_with_volume_features.get_feature_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="1.4.3.-Realized-volatility">1.4.3. Realized volatility<a class="anchor-link" href="#1.4.3.-Realized-volatility"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Implement 30day and 90 days, 180 days and 360 days vol?</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="8d953ffe-a0c6-40a7-93cd-af5f4c6a6741"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#8d953ffe-a0c6-40a7-93cd-af5f4c6a6741');
+
+            setTimeout(function() {
+                var nbb_cell_id = 26;
+                var nbb_unformatted_code = "# export\n# @typechecked\n# class RealizedVolFeatures(BaseProcessor):\n#     \"\"\"\n#     Features based on realized volatility features.\n#     Dataset DataFrame should have a column named \"Close\".\n#     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/\n#     \"\"\"\n#     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):\n#         super(RealizedVolFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.price_col = price_col\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         \"\"\" Get all realized volatility features. \"\"\"\n#         series = dataset.dataf.loc[:, self.price_col]\n#         tickers = dataset.dataf.loc[:, self.ticker_col]\n#         dataset.dataf.loc[:, \"feature_vol2\"] = series.groupby(tickers).agg(self.realized_2)\n#         dataset.dataf.loc[:, \"feature_vol3\"] = series.groupby(tickers).agg(self.realized_3)\n#         dataset.dataf.loc[:, \"feature_vol4\"] = series.groupby(tickers).agg(self.realized_4)\n#         # Parse all contents of Dataset to the next pipeline step\n#         return Dataset(**dataset.__dict__)\n#\n#     @staticmethod\n#     def simple_realized_vol(series: pd.Series) -> np.float64:\n#         \"\"\" Most simple way to calculate realized volatility. \"\"\"\n#         return np.sqrt(np.sum(series**2))\n#\n#     @staticmethod\n#     def realized_2(series: pd.Series) -> np.float64:\n#         return np.sqrt(np.sum(series**4)/(6*np.sum(series**2)))\n#\n#     @staticmethod\n#     def realized_3(series: pd.Series) -> np.float64:\n#         return np.sqrt(((np.pi**2)*np.sum(abs(series.rolling(window=4).apply(np.product,\n#                                                                              raw=True))))/(8*np.sum(series**2)))\n#\n#     @staticmethod\n#     def realized_4(series: pd.Series) -> np.float64:\n#         numerator = (gamma(1/2)**3)*np.sum((abs(series)**(4/3)).rolling(window=3).apply(np.prod))\n#         denominator = 8 * (gamma(7/6)**3)*np.sum(series**2)\n#         return np.sqrt(numerator/denominator)";
+                var nbb_formatted_code = "# export\n# @typechecked\n# class RealizedVolFeatures(BaseProcessor):\n#     \"\"\"\n#     Features based on realized volatility features.\n#     Dataset DataFrame should have a column named \"Close\".\n#     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/\n#     \"\"\"\n#     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):\n#         super(RealizedVolFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.price_col = price_col\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         \"\"\" Get all realized volatility features. \"\"\"\n#         series = dataset.dataf.loc[:, self.price_col]\n#         tickers = dataset.dataf.loc[:, self.ticker_col]\n#         dataset.dataf.loc[:, \"feature_vol2\"] = series.groupby(tickers).agg(self.realized_2)\n#         dataset.dataf.loc[:, \"feature_vol3\"] = series.groupby(tickers).agg(self.realized_3)\n#         dataset.dataf.loc[:, \"feature_vol4\"] = series.groupby(tickers).agg(self.realized_4)\n#         # Parse all contents of Dataset to the next pipeline step\n#         return Dataset(**dataset.__dict__)\n#\n#     @staticmethod\n#     def simple_realized_vol(series: pd.Series) -> np.float64:\n#         \"\"\" Most simple way to calculate realized volatility. \"\"\"\n#         return np.sqrt(np.sum(series**2))\n#\n#     @staticmethod\n#     def realized_2(series: pd.Series) -> np.float64:\n#         return np.sqrt(np.sum(series**4)/(6*np.sum(series**2)))\n#\n#     @staticmethod\n#     def realized_3(series: pd.Series) -> np.float64:\n#         return np.sqrt(((np.pi**2)*np.sum(abs(series.rolling(window=4).apply(np.product,\n#                                                                              raw=True))))/(8*np.sum(series**2)))\n#\n#     @staticmethod\n#     def realized_4(series: pd.Series) -> np.float64:\n#         numerator = (gamma(1/2)**3)*np.sum((abs(series)**(4/3)).rolling(window=3).apply(np.prod))\n#         denominator = 8 * (gamma(7/6)**3)*np.sum(series**2)\n#         return np.sqrt(numerator/denominator)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ticker_col = &quot;Symbol&quot;</span>
+<span class="c1"># vol_features = RealizedVolFeatures(ticker_col=ticker_col)</span>
+<span class="c1"># dataset_with_vol_features = vol_features.transform(dataset=signals_test_data)</span>
+<span class="c1"># all_vol_cols = [&#39;feature_vol2&#39;, &#39;feature_vol3&#39;, &#39;feature_vol4&#39;]</span>
+<span class="c1"># assert dataset_with_vol_features.feature_cols == all_vol_cols</span>
+<span class="c1"># for col in all_vol_cols:</span>
+<span class="c1">#     assert dataset_with_vol_features.dataf[col].value_counts().nunique() != 1</span>
+<span class="c1"># # assert not dataset_with_vol_features.get_feature_data.isna().all().all()</span>
+<span class="c1"># dataset_with_vol_features.get_feature_data.head(3)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="25f79e8d-5ef1-4ca8-a0ac-9bee828720cf"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#25f79e8d-5ef1-4ca8-a0ac-9bee828720cf');
 
             setTimeout(function() {
                 var nbb_cell_id = 27;
-                var nbb_unformatted_code = "# TalibPatternFeatures().transform(Dataset(pd.DataFrame()))";
-                var nbb_formatted_code = "# TalibPatternFeatures().transform(Dataset(pd.DataFrame()))";
+                var nbb_unformatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# vol_features = RealizedVolFeatures(ticker_col=ticker_col)\n# dataset_with_vol_features = vol_features.transform(dataset=signals_test_data)\n# all_vol_cols = ['feature_vol2', 'feature_vol3', 'feature_vol4']\n# assert dataset_with_vol_features.feature_cols == all_vol_cols\n# for col in all_vol_cols:\n#     assert dataset_with_vol_features.dataf[col].value_counts().nunique() != 1\n# # assert not dataset_with_vol_features.get_feature_data.isna().all().all()\n# dataset_with_vol_features.get_feature_data.head(3)";
+                var nbb_formatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# vol_features = RealizedVolFeatures(ticker_col=ticker_col)\n# dataset_with_vol_features = vol_features.transform(dataset=signals_test_data)\n# all_vol_cols = ['feature_vol2', 'feature_vol3', 'feature_vol4']\n# assert dataset_with_vol_features.feature_cols == all_vol_cols\n# for col in all_vol_cols:\n#     assert dataset_with_vol_features.dataf[col].value_counts().nunique() != 1\n# # assert not dataset_with_vol_features.get_feature_data.isna().all().all()\n# dataset_with_vol_features.get_feature_data.head(3)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="1.4.4.-Quarticity">1.4.4. Quarticity<a class="anchor-link" href="#1.4.4.-Quarticity"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="492f35b7-8a59-4863-a202-a89a7ee508a9"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#492f35b7-8a59-4863-a202-a89a7ee508a9');
+
+            setTimeout(function() {
+                var nbb_cell_id = 28;
+                var nbb_unformatted_code = "# export\n# @typechecked\n# class QuarticityFeatures(BaseProcessor):\n#     \"\"\"\n#     Quarticity (Vol of vol) features.\n#     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/\n#     \"\"\"\n#     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):\n#         super(QuarticityFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.price_col = price_col\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         \"\"\" Get most powerful quarticity features for every stock. \"\"\"\n#         series = dataset.dataf.loc[:, self.price_col]\n#         tickers = dataset.dataf.loc[:, self.ticker_col]\n#         quad_quarticity = series.groupby(tickers).agg(self.realized_quadpower_quarticity)\n#         tripower_quarticity = series.groupby(tickers).agg(self.realized_tripower_quarticity)\n#         dataset.dataf.loc[:, \"feature_quadpower_quarticity\"] = quad_quarticity\n#         dataset.dataf.loc[:, \"feature_tripower_quarticity\"] = tripower_quarticity\n#         return Dataset(**dataset.__dict__)\n#\n#     @staticmethod\n#     def realized_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\"\n#         The realized fourth-power variation or realized quarticity\n#         is a consistent estimator of the integrated quarticity.\n#         \"\"\"\n#         return np.sum(series**4) * series.shape[0] / 3\n#\n#     @staticmethod\n#     def realized_quadpower_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\"\n#         A more robust estimator compared to realized quarticity,\n#         particularly in the presence of jumps, is the realized quad-power quarticity.\n#         \"\"\"\n#         series = abs(series.rolling(window=4).apply(np.product, raw=True))\n#         return (np.sum(series) * series.shape[0] * (np.pi**2)) / 4\n#\n#     @staticmethod\n#     def realized_tripower_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\" Similarly robust estimator to quad power quarticity. \"\"\"\n#         series = series ** (4/3)\n#         series = abs(series).rolling(window=3).apply(np.prod, raw=True)\n#         return series.shape[0]*0.25*((gamma(1/2)**3)/(gamma(7/6)**3))*np.sum(series)";
+                var nbb_formatted_code = "# export\n# @typechecked\n# class QuarticityFeatures(BaseProcessor):\n#     \"\"\"\n#     Quarticity (Vol of vol) features.\n#     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/\n#     \"\"\"\n#     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):\n#         super(QuarticityFeatures, self).__init__()\n#         self.ticker_col = ticker_col\n#         self.price_col = price_col\n#\n#     @display_processor_info\n#     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n#         \"\"\" Get most powerful quarticity features for every stock. \"\"\"\n#         series = dataset.dataf.loc[:, self.price_col]\n#         tickers = dataset.dataf.loc[:, self.ticker_col]\n#         quad_quarticity = series.groupby(tickers).agg(self.realized_quadpower_quarticity)\n#         tripower_quarticity = series.groupby(tickers).agg(self.realized_tripower_quarticity)\n#         dataset.dataf.loc[:, \"feature_quadpower_quarticity\"] = quad_quarticity\n#         dataset.dataf.loc[:, \"feature_tripower_quarticity\"] = tripower_quarticity\n#         return Dataset(**dataset.__dict__)\n#\n#     @staticmethod\n#     def realized_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\"\n#         The realized fourth-power variation or realized quarticity\n#         is a consistent estimator of the integrated quarticity.\n#         \"\"\"\n#         return np.sum(series**4) * series.shape[0] / 3\n#\n#     @staticmethod\n#     def realized_quadpower_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\"\n#         A more robust estimator compared to realized quarticity,\n#         particularly in the presence of jumps, is the realized quad-power quarticity.\n#         \"\"\"\n#         series = abs(series.rolling(window=4).apply(np.product, raw=True))\n#         return (np.sum(series) * series.shape[0] * (np.pi**2)) / 4\n#\n#     @staticmethod\n#     def realized_tripower_quarticity(series: pd.Series) -> np.float64:\n#         \"\"\" Similarly robust estimator to quad power quarticity. \"\"\"\n#         series = series ** (4/3)\n#         series = abs(series).rolling(window=3).apply(np.prod, raw=True)\n#         return series.shape[0]*0.25*((gamma(1/2)**3)/(gamma(7/6)**3))*np.sum(series)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ticker_col = &quot;Symbol&quot;</span>
+<span class="c1"># quart_features = QuarticityFeatures(ticker_col=ticker_col)</span>
+<span class="c1"># dataset_with_quart_features = quart_features.transform(dataset=signals_test_data)</span>
+<span class="c1"># assert dataset_with_quart_features.feature_cols == [&quot;feature_quadpower_quarticity&quot;, &quot;feature_tripower_quarticity&quot;]</span>
+<span class="c1"># assert dataset_with_quart_features.dataf[&quot;feature_quadpower_quarticity&quot;].value_counts().nunique() != 1</span>
+<span class="c1"># assert dataset_with_quart_features.dataf[&quot;feature_tripower_quarticity&quot;].value_counts().nunique() != 1</span>
+<span class="c1"># # assert not dataset_with_quart_features.get_feature_data.isna().all().all()</span>
+<span class="c1"># dataset_with_quart_features.get_feature_data.head(2)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="da03c89f-3128-492f-90b3-f06ff983c355"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#da03c89f-3128-492f-90b3-f06ff983c355');
+
+            setTimeout(function() {
+                var nbb_cell_id = 29;
+                var nbb_unformatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# quart_features = QuarticityFeatures(ticker_col=ticker_col)\n# dataset_with_quart_features = quart_features.transform(dataset=signals_test_data)\n# assert dataset_with_quart_features.feature_cols == [\"feature_quadpower_quarticity\", \"feature_tripower_quarticity\"]\n# assert dataset_with_quart_features.dataf[\"feature_quadpower_quarticity\"].value_counts().nunique() != 1\n# assert dataset_with_quart_features.dataf[\"feature_tripower_quarticity\"].value_counts().nunique() != 1\n# # assert not dataset_with_quart_features.get_feature_data.isna().all().all()\n# dataset_with_quart_features.get_feature_data.head(2)";
+                var nbb_formatted_code = "# signals_test_data = create_dataset(\"test_assets/bitcoin_time_series_test_data.csv\")\n# ticker_col = \"Symbol\"\n# quart_features = QuarticityFeatures(ticker_col=ticker_col)\n# dataset_with_quart_features = quart_features.transform(dataset=signals_test_data)\n# assert dataset_with_quart_features.feature_cols == [\"feature_quadpower_quarticity\", \"feature_tripower_quarticity\"]\n# assert dataset_with_quart_features.dataf[\"feature_quadpower_quarticity\"].value_counts().nunique() != 1\n# assert dataset_with_quart_features.dataf[\"feature_tripower_quarticity\"].value_counts().nunique() != 1\n# # assert not dataset_with_quart_features.get_feature_data.isna().all().all()\n# dataset_with_quart_features.get_feature_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1887,29 +2117,34 @@ var element = $('#5cc7ddc5-d8dc-4f0c-99b2-eab8e9a0c987');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">AwesomePreProcessor</span><span class="p">(</span><span class="n">BaseProcessor</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    - TEMPLATE -</span>
-<span class="sd">    Do some awesome preprocessing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AwesomePreProcessor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<div class="output_wrapper">
+<div class="output">
 
-    <span class="nd">@display_processor_info</span>
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-        <span class="c1"># Do processing</span>
-        <span class="o">...</span>
-        <span class="c1"># Parse all contents of Dataset to the next pipeline step</span>
-        <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span><span class="o">**</span><span class="n">dataset</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-</pre></div>
+<div class="output_area">
 
-    </div>
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="AwesomePreProcessor" class="doc_header"><code>class</code> <code>AwesomePreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L235" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePreProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+</blockquote>
+<ul>
+<li>TEMPLATE -
+Do some awesome preprocessing.</li>
+</ul>
+
+</div>
+
+</div>
+
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -1919,15 +2154,15 @@ var element = $('#5cc7ddc5-d8dc-4f0c-99b2-eab8e9a0c987');
 
 
 
-<div id="882043a7-5d5e-478f-88d2-ab15a40d261b"></div>
+<div id="d22dd398-1145-44bc-8e65-78f069373071"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#882043a7-5d5e-478f-88d2-ab15a40d261b');
+var element = $('#d22dd398-1145-44bc-8e65-78f069373071');
 
             setTimeout(function() {
-                var nbb_cell_id = 24;
-                var nbb_unformatted_code = "class AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AwesomePreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
-                var nbb_formatted_code = "class AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AwesomePreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
+                var nbb_cell_id = 30;
+                var nbb_unformatted_code = "# export\nclass AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AwesomePreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\nclass AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AwesomePreProcessor, self).__init__()\n\n    @display_processor_info\n    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        # Do processing\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {

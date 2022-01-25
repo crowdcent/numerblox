@@ -11,7 +11,7 @@ from rich import print as rich_print
 
 from .dataset import Dataset, create_dataset
 from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
-from .model import BaseModel, ConstantModel
+from .model import BaseModel, ConstantModel, RandomModel
 from .postprocessing import FeatureNeutralizer, MeanEnsembler
 
 # Cell

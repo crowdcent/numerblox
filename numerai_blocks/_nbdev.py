@@ -2,18 +2,24 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"BaseIO": "00_download.ipynb",
-         "BaseDownloader": "00_download.ipynb",
-         "NumeraiClassicDownloader": "00_download.ipynb",
+index = {"BaseIO": "01_download.ipynb",
+         "BaseDownloader": "01_download.ipynb",
+         "NumeraiClassicDownloader": "01_download.ipynb",
+         "YahooFinanceDownloader": "01_download.ipynb",
+         "AwesomeCustomDownloader": "01_download.ipynb",
          "Dataset": "02_dataset.ipynb",
          "create_dataset": "02_dataset.ipynb",
          "BaseProcessor": "03_preprocessing.ipynb",
+         "support_dataset_processing": "03_preprocessing.ipynb",
          "display_processor_info": "03_preprocessing.ipynb",
          "CopyPreProcessor": "03_preprocessing.ipynb",
          "FeatureSelectionPreProcessor": "03_preprocessing.ipynb",
+         "TargetSelectionPreProcessor": "03_preprocessing.ipynb",
          "GroupStatsPreProcessor": "03_preprocessing.ipynb",
+         "AwesomePreProcessor": "03_preprocessing.ipynb",
          "BaseModel": "04_model.ipynb",
          "DirectoryModel": "04_model.ipynb",
+         "SingleModel": "04_model.ipynb",
          "JoblibModel": "04_model.ipynb",
          "CatBoostModel": "04_model.ipynb",
          "LGBMModel": "04_model.ipynb",
@@ -22,7 +28,9 @@ index = {"BaseIO": "00_download.ipynb",
          "AwesomeModel": "04_model.ipynb",
          "AwesomeDirectoryModel": "04_model.ipynb",
          "MeanEnsembler": "05_postprocessing.ipynb",
+         "DonateWeightedEnsembler": "05_postprocessing.ipynb",
          "FeatureNeutralizer": "05_postprocessing.ipynb",
+         "FeaturePenalizer": "05_postprocessing.ipynb",
          "AwesomePostProcessor": "05_postprocessing.ipynb",
          "ModelPipeline": "06_modelpipeline.ipynb",
          "ModelPipelineCollection": "06_modelpipeline.ipynb",
@@ -30,7 +38,10 @@ index = {"BaseIO": "00_download.ipynb",
          "load_key_from_json": "08_key.ipynb",
          "BaseSubmittor": "09_submission.ipynb",
          "NumeraiClassicSubmittor": "09_submission.ipynb",
-         "NumeraiSignalsSubmittor": "09_submission.ipynb"}
+         "NumeraiSignalsSubmittor": "09_submission.ipynb",
+         "BaseStaker": "10_staking.ipynb",
+         "NumeraiClassicStaker": "10_staking.ipynb",
+         "NumeraiSignalsStaker": "10_staking.ipynb"}
 
 modules = ["download.py",
            "dataset.py",
@@ -39,7 +50,8 @@ modules = ["download.py",
            "postprocessing.py",
            "model_pipeline.py",
            "key.py",
-           "submission.py"]
+           "submission.py",
+           "staking.py"]
 
 doc_url = "https://crowdcent.github.io/numerai_blocks/"
 
