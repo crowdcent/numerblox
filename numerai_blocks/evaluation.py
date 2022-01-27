@@ -17,8 +17,8 @@ class BaseEvaluator(ABC):
         self.era_col = era_col
 
     def full_evaluation(self, dataset: Dataset) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        validation_stats = pd.DataFrame()
-        validations_by_era = pd.DataFrame()
+        validation_stats = {}
+        validations_by_era = {}
 
         for pred_col, target_col in zip(dataset.prediction_cols, dataset.target_cols):
             self.evaluation_one_col(dataset=dataset,
@@ -32,20 +32,46 @@ class BaseEvaluator(ABC):
                                         pred_col=pred_col,
                                         target_col=target_col)
 
+
+    def _per_era_corrs(self, dataf: pd.DataFrame, pred_col: str,
+                       target_col: str) -> pd.Series:
+        """ Correlation between prediction and target for each era. """
+        return dataf.groupby(dataf[self.era_col])\
+            .apply(lambda d: self._normalize_uniform(d[pred_col])
+                   .corr(self._normalize_uniform(d[target_col])))
+
     def _tb200(self, ):
         ...
 
-    def _mean_std_sharpe(self, ):
-        ...
+    def _mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:
+        mean = era_corrs.mean()
+        std = era_corrs.std(ddof=0)
+        sharpe = mean / std
+        return mean, std, sharpe
 
-    def _max_drawdown(self, ):
-        ...
+    def _max_drawdown(self, era_corrs: pd.Series) -> np.float64:
+        # arbitrarily large window
+        rolling_max = (era_corrs + 1).cumprod().rolling(window=9000,
+                                                        min_periods=1).max()
+        daily_value = (era_corrs + 1).cumprod()
+        max_drawdown = -((rolling_max - daily_value) / rolling_max).max()
+        return max_drawdown
 
     def _mmc(self, ):
         ...
 
-    def _apy(self, ):
-        ...
+    def _apy(self, era_corrs: pd.Series) -> np.float64:
+        payout_scores = era_corrs.clip(-0.25, 0.25)
+        payout_daily_value = (payout_scores + 1).cumprod()
+        apy = (
+                      (
+                              (payout_daily_value.dropna().iloc[-1])
+                              ** (1 / len(payout_scores))
+                      )
+                      ** 49  # 52 weeks of compounding minus 3 for stake compounding lag
+                      - 1
+              ) * 100
+        return apy
 
     def _max_feature_exposure(self):
         ...
@@ -57,13 +83,6 @@ class BaseEvaluator(ABC):
                                    pred_col=pred_col,
                                    target_col=example_col,
                                    ).mean()
-
-    def _per_era_corrs(self, dataf: pd.DataFrame, pred_col: str,
-                       target_col: str):
-        """ Correlation between prediction and target for each era. """
-        return dataf.groupby(dataf[self.era_col])\
-            .apply(lambda d: self._normalize_uniform(d[pred_col])
-                   .corr(self._normalize_uniform(d[target_col])))
 
     @staticmethod
     def feature_neutral_mean(dataset: Dataset, pred_col: str) -> np.float64:
