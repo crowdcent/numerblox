@@ -67,10 +67,10 @@ The lab_black extension is already loaded. To reload it, use:
 
 
 
-<div id="abb4f1b6-6b2e-45e5-aa54-d40034282035"></div>
+<div id="70d46861-5110-41e8-a7a8-84fde4bf6309"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#abb4f1b6-6b2e-45e5-aa54-d40034282035');
+var element = $('#70d46861-5110-41e8-a7a8-84fde4bf6309');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -112,9 +112,12 @@ var element = $('#abb4f1b6-6b2e-45e5-aa54-d40034282035');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
 <span class="kn">from</span> <span class="nn">numerai_blocks.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">create_dataset</span>
+<span class="kn">from</span> <span class="nn">numerai_blocks.postprocessing</span> <span class="kn">import</span> <span class="n">FeatureNeutralizer</span>
 </pre></div>
 
     </div>
@@ -129,10 +132,10 @@ var element = $('#abb4f1b6-6b2e-45e5-aa54-d40034282035');
 
 
 
-<div id="1f705737-6f62-4ddd-bac5-2aed55f4c4fe"></div>
+<div id="a5f3dc7f-4d46-4859-a213-1058d957129f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1f705737-6f62-4ddd-bac5-2aed55f4c4fe');
+var element = $('#a5f3dc7f-4d46-4859-a213-1058d957129f');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -174,12 +177,56 @@ var element = $('#1f705737-6f62-4ddd-bac5-2aed55f4c4fe');
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="o">...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="n">era_col</span>
+
+    <span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">validation_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">validations_by_era</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pred_col</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">prediction_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_one_col</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">)</span>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">val_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_era_corrs</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span>
+                                        <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
+                                        <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">)</span>
+
+
+
+    <span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
         <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_get_example_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+                                <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">example_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Check correlation with example predictions. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_era_corrs</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span>
+                                   <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
+                                   <span class="n">target_col</span><span class="o">=</span><span class="n">example_col</span><span class="p">,</span>
+                                   <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_mmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_per_era_corrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                       <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Correlation between prediction and targer for each era. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
+                   <span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">target_col</span><span class="p">])))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_normalize_uniform</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">feature_neutral_mean</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">FeatureNeutralizer</span><span class="p">()</span>
+        <span class="n">neutralized_dataset</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                                           <span class="n">pred_name</span><span class="o">=</span><span class="s2">&quot;Validation_FN1&quot;</span><span class="p">,</span>
+                                           <span class="n">proportion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">neutralized_dataset</span><span class="p">[</span><span class="n">fn</span><span class="o">.</span><span class="n">final_col_name</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -194,10 +241,10 @@ var element = $('#1f705737-6f62-4ddd-bac5-2aed55f4c4fe');
 
 
 
-<div id="270401e8-7143-4706-a655-1843771eecb6"></div>
+<div id="eb0e6c2d-bdf7-4006-8ee6-56de7522a23a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#270401e8-7143-4706-a655-1843771eecb6');
+var element = $('#eb0e6c2d-bdf7-4006-8ee6-56de7522a23a');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -255,10 +302,10 @@ var element = $('#270401e8-7143-4706-a655-1843771eecb6');
 
 
 
-<div id="34f3a9bd-1c3a-460a-900f-9fec1af12837"></div>
+<div id="e0fd205d-0c66-4f26-a625-ee62c508b494"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#34f3a9bd-1c3a-460a-900f-9fec1af12837');
+var element = $('#e0fd205d-0c66-4f26-a625-ee62c508b494');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -316,10 +363,10 @@ var element = $('#34f3a9bd-1c3a-460a-900f-9fec1af12837');
 
 
 
-<div id="7fa55005-9618-453d-bee2-20c7a0c280e5"></div>
+<div id="030d866e-969f-427b-b3db-676958c0247e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7fa55005-9618-453d-bee2-20c7a0c280e5');
+var element = $('#030d866e-969f-427b-b3db-676958c0247e');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;

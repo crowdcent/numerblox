@@ -45,7 +45,7 @@ class Standardizer(BaseProcessor):
         self.cols = cols
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset) -> Dataset:
         cols = dataset.prediction_cols if not self.cols else self.cols
         for col in cols:
             assert dataset.dataf[col].between(0, 1).all(), f"All values should only contain values between 0 and 1. Does not hold for '{col}'"
@@ -61,7 +61,7 @@ class MeanEnsembler(BasePostProcessor):
         self.cols = cols
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset) -> Dataset:
         dataset.dataf.loc[:, self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)
         rich_print(f":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
         return Dataset(**dataset.__dict__)
@@ -82,7 +82,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
         self.weights = self._get_weights()
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset) -> Dataset:
         dataset.dataf.loc[:, self.final_col_name] = np.average(dataset.dataf.loc[:, self.cols],
                                                                weights=self.weights, axis=1)
         rich_print(f":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:")
@@ -139,7 +139,7 @@ class FeatureNeutralizer(BasePostProcessor):
         self.era_col = era_col
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset) -> Dataset:
         feature_names = self.feature_names if self.feature_names else dataset.feature_cols
         neutralized_preds = dataset.dataf.groupby(self.era_col)\
             .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names))
@@ -182,7 +182,7 @@ class FeaturePenalizer(BasePostProcessor):
         self.era_col = era_col
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Dataset) -> Dataset:
         risky_feature_names = dataset.feature_cols if not self.risky_feature_names else self.risky_feature_names
         for model_name in self.model_list:
             penalized_data = self.reduce_all_exposures(
