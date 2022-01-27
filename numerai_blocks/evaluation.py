@@ -13,6 +13,14 @@ from .postprocessing import FeatureNeutralizer
 
 # Cell
 class BaseEvaluator:
+    """
+    Evaluation functionality that holds for both
+    Numerai Classic and Numerai Signals.
+    :param era_col: Column name pointing to eras.
+    Most commonly "era" for Classic and "friday_date" for Signals.
+    :param fast_mode: Will skip compute intensive metrics
+    max_exposure, feature neutral mean and TB200 if set to True.
+    """
     def __init__(self, era_col: str = "era", fast_mode = False):
         self.era_col = era_col
         self.fast_mode = fast_mode
@@ -20,6 +28,7 @@ class BaseEvaluator:
     def full_evaluation(self,
                         dataset: Dataset,
                         example_col: str,
+                        pred_cols: list = None,
                         target_col: str = "target"
                         ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -27,8 +36,9 @@ class BaseEvaluator:
         against give target and example prediction column.
         """
         val_stats = pd.DataFrame()
-        for pred_col in tqdm(dataset.prediction_cols, desc="Evaluation: "):
-            col_stats = self.evaluation_one_col(dataset=dataset,pred_col=pred_col,
+        pred_cols = dataset.prediction_cols if not pred_cols else pred_cols
+        for col in tqdm(pred_cols, desc="Evaluation: "):
+            col_stats = self.evaluation_one_col(dataset=dataset,pred_col=col,
                                                 target_col=target_col,
                                                 example_col=example_col)
             val_stats = pd.concat([val_stats, col_stats], axis=0)
@@ -58,7 +68,7 @@ class BaseEvaluator:
                                                  example_col=example_col
                                                  )
 
-        col_stats[pred_col, "target"] = target_col
+        col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
         col_stats.loc[pred_col, "std"] = std
         col_stats.loc[pred_col, "sharpe"] = sharpe
@@ -76,7 +86,8 @@ class BaseEvaluator:
             tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(dataf=dataset.dataf,
                                                                            pred_col=pred_col,
                                                                            target_col=target_col,
-                                                                           tb=200)
+                                                                           tb=200
+                                                                           )
             col_stats.loc[pred_col, "max_feature_exposure"] = max_feature_exposure
             col_stats.loc[pred_col, "feature_neutral_mean"] = fn_mean
             col_stats.loc[pred_col, "tb200_mean"] = tb200_mean
@@ -89,17 +100,23 @@ class BaseEvaluator:
         """ Correlation between prediction and target for each era. """
         return dataf.groupby(dataf[self.era_col])\
             .apply(lambda d: self._normalize_uniform(d[pred_col])
+                   .fillna(0.5)
                    .corr(self._normalize_uniform(d[target_col])))
 
     def mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:
+        """
+        Average, standard deviation and Sharpe ratio for
+        correlations per era.
+        """
         mean = era_corrs.mean()
         std = era_corrs.std(ddof=0)
         sharpe = mean / std
-        return mean, std, sharpe
+        return mean.item(), std.item(), sharpe.item()
 
     @staticmethod
     def max_drawdown(era_corrs: pd.Series) -> np.float64:
-        # arbitrarily large window
+        """ Maximum drawdown per era. """
+        # Arbitrarily large window
         rolling_max = (era_corrs + 1).cumprod().rolling(window=9000,
                                                         min_periods=1).max()
         daily_value = (era_corrs + 1).cumprod()
@@ -108,6 +125,7 @@ class BaseEvaluator:
 
     @staticmethod
     def apy(era_corrs: pd.Series) -> np.float64:
+        """ Annual percentage yield. """
         payout_scores = era_corrs.clip(-0.25, 0.25)
         payout_daily_value = (payout_scores + 1).cumprod()
         apy = (
@@ -122,30 +140,39 @@ class BaseEvaluator:
 
     def example_correlation(self, dataset: Dataset,
                             pred_col: str, example_col: str):
-        """ Get correlations with example predictions. """
+        """ Correlations with example predictions. """
         return self.per_era_corrs(dataf=dataset.dataf,
                                   pred_col=pred_col,
                                   target_col=example_col,
                                   ).mean()
 
     def max_feature_exposure(self, dataset: Dataset, pred_col: str) -> np.float64:
+        """ Maximum exposure over all features. """
         max_per_era = dataset.dataf.groupby(self.era_col).apply(
             lambda d: d[dataset.feature_cols].corrwith(d[pred_col]).abs().max())
         max_feature_exposure = max_per_era.mean()
         return max_feature_exposure
 
-    @staticmethod
-    def feature_neutral_mean(dataset: Dataset, pred_col: str) -> np.float64:
+    def feature_neutral_mean(self, dataset: Dataset, pred_col: str) -> np.float64:
+        """ Feature neutralized mean performance. """
         fn = FeatureNeutralizer(pred_name=pred_col,
+                                era_col=self.era_col,
                                 proportion=1.0)
         neutralized_dataset = fn.transform(dataset=dataset)
-        return neutralized_dataset[fn.final_col_name].mean()
+        return neutralized_dataset.dataf[fn.final_col_name].mean()
 
-    def tbx_mean_std_sharpe(self, dataf: pd.DataFrame,
-                             pred_col: str,
-                             target_col: str,
-                             tb = 200
-                             ) -> Tuple[np.float64, np.float64, np.float64]:
+    def tbx_mean_std_sharpe(self,
+                            dataf: pd.DataFrame,
+                            pred_col: str,
+                            target_col: str,
+                            tb: int = 200
+                            ) -> Tuple[np.float64, np.float64, np.float64]:
+        """
+        Calculate Mean, Standard deviation and Sharpe ratio
+        when we focus on the x top and x bottom predictions.
+        :param tb: How many of top and bottom predictions to focus on.
+        TB200 is the most common situation.
+        """
         tb_val_corrs = self._score_by_date(dataf, [pred_col], target_col, tb=tb)
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
@@ -154,12 +181,11 @@ class BaseEvaluator:
             target_col: str,
             example_col: str
             ) -> Tuple[np.float64, np.float64, np.float64]:
-        """ MMC over validation. """
+        """ MMC Mean, standard deviation and Sharpe ratio. """
         mmc_scores = []
         corr_scores = []
-        fn = FeatureNeutralizer()
         for _, x in dataf.groupby(self.era_col):
-            series = fn.neutralize(self._normalize_uniform(x[pred_col]), (x[example_col]))
+            series = self.neutralize_series(self._normalize_uniform(x[pred_col]), (x[example_col]))
             mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))
             corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))
 
@@ -169,7 +195,28 @@ class BaseEvaluator:
         corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)
         return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe
 
-    def _score_by_date(self, df: pd.DataFrame, columns: list, target: str, tb=None):
+    @staticmethod
+    def neutralize_series(series, by, proportion=1.0):
+        scores = series.values.reshape(-1, 1)
+        exposures = by.values.reshape(-1, 1)
+
+        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
+        exposures = np.hstack(
+            (exposures,
+             np.array([np.mean(series)] * len(exposures)).reshape(-1, 1)))
+
+        correction = proportion * (exposures.dot(
+            np.linalg.lstsq(exposures, scores, rcond=None)[0]))
+        corrected_scores = scores - correction
+        neutralized = pd.Series(corrected_scores.ravel(), index=series.index)
+        return neutralized
+
+    def _score_by_date(self, df: pd.DataFrame, columns: list, target: str, tb: int = None):
+        """
+        Get era correlation based on given tb (x top and bottom predictions).
+        :param tb: How many of top and bottom predictions to focus on.
+        TB200 is the most common situation.
+        """
         unique_eras = df[self.era_col].unique()
         computed = []
         for u in unique_eras:
@@ -189,16 +236,17 @@ class BaseEvaluator:
 
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame) -> pd.Series:
+        """ Normalize predictions uniformly using ranks. """
         x = (df.rank(method="first") - 0.5) / len(df)
         return pd.Series(x, index=df.index)
 
 
 # Cell
 class NumeraiClassicEvaluator(BaseEvaluator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, era_col: str = "era", fast_mode = False):
+        super().__init__(era_col=era_col, fast_mode=fast_mode)
 
 # Cell
 class NumeraiSignalsEvaluator(BaseEvaluator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, era_col: str = "era", fast_mode = False):
+        super().__init__(era_col=era_col, fast_mode=fast_mode)
