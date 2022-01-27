@@ -36,6 +36,7 @@ class BaseEvaluator:
         against give target and example prediction column.
         """
         val_stats = pd.DataFrame()
+        dataset.dataf = dataset.dataf.fillna(0.5)
         pred_cols = dataset.prediction_cols if not pred_cols else pred_cols
         for col in tqdm(pred_cols, desc="Evaluation: "):
             col_stats = self.evaluation_one_col(dataset=dataset,pred_col=col,
@@ -172,7 +173,10 @@ class BaseEvaluator:
         :param tb: How many of top and bottom predictions to focus on.
         TB200 is the most common situation.
         """
-        tb_val_corrs = self._score_by_date(dataf, [pred_col], target_col, tb=tb)
+        tb_val_corrs = self._score_by_date(dataf=dataf,
+                                           columns=[pred_col],
+                                           target=target_col,
+                                           tb=tb)
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
     def mmc(self, dataf: pd.DataFrame,
@@ -210,16 +214,16 @@ class BaseEvaluator:
         neutralized = pd.Series(corrected_scores.ravel(), index=series.index)
         return neutralized
 
-    def _score_by_date(self, df: pd.DataFrame, columns: list, target: str, tb: int = None):
+    def _score_by_date(self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None):
         """
         Get era correlation based on given tb (x top and bottom predictions).
         :param tb: How many of top and bottom predictions to focus on.
         TB200 is the most common situation.
         """
-        unique_eras = df[self.era_col].unique()
+        unique_eras = dataf[self.era_col].unique()
         computed = []
         for u in unique_eras:
-            df_era = df[df[self.era_col] == u]
+            df_era = dataf[dataf[self.era_col] == u]
             era_pred = np.float64(df_era[columns].values.T)
             era_target = np.float64(df_era[target].values.T)
 
@@ -231,7 +235,7 @@ class BaseEvaluator:
                 ccs = [np.corrcoef(era_target[idx], pred[idx])[0, 1] for idx, pred in zip(tbidx, era_pred)]
                 ccs = np.array(ccs)
             computed.append(ccs)
-        return pd.DataFrame(np.array(computed), columns=columns, index=df[self.era_col].unique())
+        return pd.DataFrame(np.array(computed), columns=columns, index=dataf[self.era_col].unique())
 
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame) -> pd.Series:
