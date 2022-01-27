@@ -67,10 +67,10 @@ The lab_black extension is already loaded. To reload it, use:
 
 
 
-<div id="70d46861-5110-41e8-a7a8-84fde4bf6309"></div>
+<div id="ed1eff09-ed3f-48f5-a3e6-da6846cfad9e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#70d46861-5110-41e8-a7a8-84fde4bf6309');
+var element = $('#ed1eff09-ed3f-48f5-a3e6-da6846cfad9e');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -108,57 +108,6 @@ var element = $('#70d46861-5110-41e8-a7a8-84fde4bf6309');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-
-<span class="kn">from</span> <span class="nn">numerai_blocks.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">create_dataset</span>
-<span class="kn">from</span> <span class="nn">numerai_blocks.postprocessing</span> <span class="kn">import</span> <span class="n">FeatureNeutralizer</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="a5f3dc7f-4d46-4859-a213-1058d957129f"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#a5f3dc7f-4d46-4859-a213-1058d957129f');
-
-            setTimeout(function() {
-                var nbb_cell_id = 8;
-                var nbb_unformatted_code = "from abc import ABC, abstractmethod\n\nfrom numerai_blocks.dataset import Dataset, create_dataset\nfrom numerai_blocks.model_pipeline import ModelPipeline";
-                var nbb_formatted_code = "from abc import ABC, abstractmethod\n\nfrom numerai_blocks.dataset import Dataset, create_dataset\nfrom numerai_blocks.model_pipeline import ModelPipeline";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -172,66 +121,32 @@ var element = $('#a5f3dc7f-4d46-4859-a213-1058d957129f');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="n">era_col</span>
+<div class="output_wrapper">
+<div class="output">
 
-    <span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="n">validation_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="n">validations_by_era</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">pred_col</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">prediction_cols</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_one_col</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">)</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">val_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_era_corrs</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span>
-                                        <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
-                                        <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">)</span>
+<div class="output_area">
 
 
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="BaseEvaluator" class="doc_header"><code>class</code> <code>BaseEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L15" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>) :: <code>ABC</code></p>
+</blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
 
-    <span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
-        <span class="o">...</span>
+</div>
 
-    <span class="k">def</span> <span class="nf">_get_example_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
-                                <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">example_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Check correlation with example predictions. &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_era_corrs</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span>
-                                   <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
-                                   <span class="n">target_col</span><span class="o">=</span><span class="n">example_col</span><span class="p">,</span>
-                                   <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</div>
 
-    <span class="k">def</span> <span class="nf">_get_mmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
-        <span class="o">...</span>
-
-    <span class="k">def</span> <span class="nf">_per_era_corrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                       <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Correlation between prediction and targer for each era. &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">])</span>\
-            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
-                   <span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">target_col</span><span class="p">])))</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_normalize_uniform</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">feature_neutral_mean</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-        <span class="n">fn</span> <span class="o">=</span> <span class="n">FeatureNeutralizer</span><span class="p">()</span>
-        <span class="n">neutralized_dataset</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-                                           <span class="n">pred_name</span><span class="o">=</span><span class="s2">&quot;Validation_FN1&quot;</span><span class="p">,</span>
-                                           <span class="n">proportion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">neutralized_dataset</span><span class="p">[</span><span class="n">fn</span><span class="o">.</span><span class="n">final_col_name</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-</pre></div>
-
-    </div>
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -241,10 +156,10 @@ var element = $('#a5f3dc7f-4d46-4859-a213-1058d957129f');
 
 
 
-<div id="eb0e6c2d-bdf7-4006-8ee6-56de7522a23a"></div>
+<div id="d491ca37-a5d2-4109-8f37-1118370f81d0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#eb0e6c2d-bdf7-4006-8ee6-56de7522a23a');
+var element = $('#d491ca37-a5d2-4109-8f37-1118370f81d0');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -281,18 +196,32 @@ var element = $('#eb0e6c2d-bdf7-4006-8ee6-56de7522a23a');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-</pre></div>
+<div class="output_wrapper">
+<div class="output">
 
-    </div>
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NumeraiClassicEvaluator" class="doc_header"><code>class</code> <code>NumeraiClassicEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L82" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicEvaluator</code>() :: <a href="/numerai_blocks/evaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+</blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+
+</div>
+
+</div>
+
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -302,10 +231,10 @@ var element = $('#eb0e6c2d-bdf7-4006-8ee6-56de7522a23a');
 
 
 
-<div id="e0fd205d-0c66-4f26-a625-ee62c508b494"></div>
+<div id="317d79e2-50b0-4ae8-acca-0b65f4396926"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e0fd205d-0c66-4f26-a625-ee62c508b494');
+var element = $('#317d79e2-50b0-4ae8-acca-0b65f4396926');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -342,18 +271,32 @@ var element = $('#e0fd205d-0c66-4f26-a625-ee62c508b494');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-</pre></div>
+<div class="output_wrapper">
+<div class="output">
 
-    </div>
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L87" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>() :: <a href="/numerai_blocks/evaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+</blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+
+</div>
+
+</div>
+
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -363,10 +306,10 @@ var element = $('#e0fd205d-0c66-4f26-a625-ee62c508b494');
 
 
 
-<div id="030d866e-969f-427b-b3db-676958c0247e"></div>
+<div id="64889bf1-2405-4bfd-b65c-d4d55a154994"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#030d866e-969f-427b-b3db-676958c0247e');
+var element = $('#64889bf1-2405-4bfd-b65c-d4d55a154994');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
