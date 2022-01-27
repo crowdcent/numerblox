@@ -6,6 +6,7 @@ __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator'
 import numpy as np
 import pandas as pd
 from typing import Tuple
+from tqdm.auto import tqdm
 from abc import ABC, abstractmethod
 
 from .dataset import Dataset, create_dataset
@@ -13,43 +14,73 @@ from .postprocessing import FeatureNeutralizer
 
 # Cell
 class BaseEvaluator(ABC):
-    def __init__(self, era_col: str = "era"):
+    def __init__(self, era_col: str = "era", fast_mode = False):
         self.era_col = era_col
+        self.fast_mode = fast_mode
 
-    def full_evaluation(self, dataset: Dataset) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        validation_stats = {}
-        validations_by_era = {}
-
-        for pred_col, target_col in zip(dataset.prediction_cols, dataset.target_cols):
-            self.evaluation_one_col(dataset=dataset,
-                                    pred_col=pred_col,
-                                    target_col=target_col)
-        return validation_stats, validations_by_era
+    def full_evaluation(self,
+                        dataset: Dataset,
+                        example_col: str,
+                        target_col: str = "target"
+                        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        val_stats = pd.DataFrame()
+        for pred_col in tqdm(dataset.prediction_cols, desc="Evaluation: "):
+            col_stats = self.evaluation_one_col(dataset=dataset,pred_col=pred_col,
+                                                target_col=target_col,
+                                                example_col=example_col)
+            val_stats = pd.concat([val_stats, col_stats], axis=0)
+        return val_stats
 
     @abstractmethod
-    def evaluation_one_col(self, dataset: Dataset, pred_col: str, target_col: str):
-        val_corrs = self._per_era_corrs(dataf=dataset.dataf,
+    def evaluation_one_col(self, dataset: Dataset, pred_col: str, target_col: str, example_col: str):
+        col_stats = pd.DataFrame()
+        # Compute stats
+        val_corrs = self.per_era_corrs(dataf=dataset.dataf,
                                         pred_col=pred_col,
                                         target_col=target_col)
+        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
+        max_drawdown = self.max_drawdown(era_corrs=val_corrs)
+        apy = self.apy(era_corrs=val_corrs)
+        example_corr = self.example_correlation(dataset=dataset, pred_col=pred_col, example_col=example_col)
 
+        # Compute intensive stats
+        if not self.fast_mode:
+            max_feature_exposure = self.max_feature_exposure(dataset=dataset, pred_col=pred_col)
+            fn_mean = self.feature_neutral_mean(dataset=dataset, pred_col=pred_col)
+            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(dataf=dataset.dataf,
+                                                                           pred_col=pred_col,
+                                                                           target_col=target_col,
+                                                                           tb=200)
 
-    def _per_era_corrs(self, dataf: pd.DataFrame, pred_col: str,
-                       target_col: str) -> pd.Series:
+            col_stats.loc[pred_col, "max_feature_exposure"] = max_feature_exposure
+            col_stats.loc[pred_col, "feature_neutral_mean"] = fn_mean
+            col_stats.loc[pred_col, "tb200_mean"] = tb200_mean
+            col_stats.loc[pred_col, "tb200_std"] = tb200_std
+            col_stats.loc[pred_col, "tb200_sharpe"] = tb200_sharpe
+
+        col_stats[pred_col, "target"] = target_col
+        col_stats.loc[pred_col, "mean"] = mean
+        col_stats.loc[pred_col, "std"] = std
+        col_stats.loc[pred_col, "sharpe"] = sharpe
+        col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
+        col_stats.loc[pred_col, "apy"] = apy
+        col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
+
+    def per_era_corrs(self, dataf: pd.DataFrame, pred_col: str,
+                      target_col: str) -> pd.Series:
         """ Correlation between prediction and target for each era. """
         return dataf.groupby(dataf[self.era_col])\
             .apply(lambda d: self._normalize_uniform(d[pred_col])
                    .corr(self._normalize_uniform(d[target_col])))
 
-    def _tb200(self, ):
-        ...
-
-    def _mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:
+    def mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:
         mean = era_corrs.mean()
         std = era_corrs.std(ddof=0)
         sharpe = mean / std
         return mean, std, sharpe
 
-    def _max_drawdown(self, era_corrs: pd.Series) -> np.float64:
+    @staticmethod
+    def max_drawdown(era_corrs: pd.Series) -> np.float64:
         # arbitrarily large window
         rolling_max = (era_corrs + 1).cumprod().rolling(window=9000,
                                                         min_periods=1).max()
@@ -57,10 +88,8 @@ class BaseEvaluator(ABC):
         max_drawdown = -((rolling_max - daily_value) / rolling_max).max()
         return max_drawdown
 
-    def _mmc(self, ):
-        ...
-
-    def _apy(self, era_corrs: pd.Series) -> np.float64:
+    @staticmethod
+    def apy(era_corrs: pd.Series) -> np.float64:
         payout_scores = era_corrs.clip(-0.25, 0.25)
         payout_daily_value = (payout_scores + 1).cumprod()
         apy = (
@@ -73,16 +102,19 @@ class BaseEvaluator(ABC):
               ) * 100
         return apy
 
-    def _max_feature_exposure(self):
-        ...
-
-    def _example_correlation(self, dataset: Dataset,
-                             pred_col: str, example_col: str):
+    def example_correlation(self, dataset: Dataset,
+                            pred_col: str, example_col: str):
         """ Get correlations with example predictions. """
-        return self._per_era_corrs(dataf=dataset.dataf,
-                                   pred_col=pred_col,
-                                   target_col=example_col,
-                                   ).mean()
+        return self.per_era_corrs(dataf=dataset.dataf,
+                                  pred_col=pred_col,
+                                  target_col=example_col,
+                                  ).mean()
+
+    def max_feature_exposure(self, dataset: Dataset, pred_col: str) -> np.float64:
+        max_per_era = dataset.dataf.groupby(self.era_col).apply(
+            lambda d: d[dataset.feature_cols].corrwith(d[pred_col]).abs().max())
+        max_feature_exposure = max_per_era.mean()
+        return max_feature_exposure
 
     @staticmethod
     def feature_neutral_mean(dataset: Dataset, pred_col: str) -> np.float64:
@@ -90,6 +122,50 @@ class BaseEvaluator(ABC):
                                 proportion=1.0)
         neutralized_dataset = fn.transform(dataset=dataset)
         return neutralized_dataset[fn.final_col_name].mean()
+
+    def tbx_mean_std_sharpe(self, dataf: pd.DataFrame,
+                             pred_col: str,
+                             target_col: str,
+                             tb = 200
+                             ) -> Tuple[np.float64, np.float64, np.float64]:
+        tb_val_corrs = self._score_by_date(dataf, [pred_col], target_col, tb=tb)
+        return self.mean_std_sharpe(era_corrs=tb_val_corrs)
+
+
+    def mmc(self, dataf: pd.DataFrame, pred_col: str, target_col: str, example_col: str):
+        """ MMC over validation. """
+        mmc_scores = []
+        corr_scores = []
+        fn = FeatureNeutralizer()
+        for _, x in dataf.groupby(self.era_col):
+            series = fn.neutralize(self._normalize_uniform(x[pred_col]), (x[example_col]))
+            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))
+            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))
+
+        val_mmc_mean = np.mean(mmc_scores)
+        val_mmc_std = np.std(mmc_scores)
+        corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]
+        corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)
+
+    def _score_by_date(self, df: pd.DataFrame, columns: list, target: str, tb=None):
+        unique_eras = df[self.era_col].unique()
+        computed = []
+        for u in unique_eras:
+            df_era = df[df[self.era_col] == u]
+            era_pred = np.float64(df_era[columns].values.T)
+            era_target = np.float64(df_era[target].values.T)
+
+            if tb is None:
+                ccs = np.corrcoef(era_target, era_pred)[0, 1:]
+            else:
+                tbidx = np.argsort(era_pred, axis=1)
+                tbidx = np.concatenate([tbidx[:, :tb], tbidx[:, -tb:]], axis=1)
+                ccs = [np.corrcoef(era_target[idx], pred[idx])[0, 1] for idx, pred in zip(tbidx, era_pred)]
+                ccs = np.array(ccs)
+
+            computed.append(ccs)
+
+        return pd.DataFrame(np.array(computed), columns=columns, index=df[self.era_col].unique())
 
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame) -> pd.Series:

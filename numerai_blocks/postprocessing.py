@@ -148,22 +148,22 @@ class FeatureNeutralizer(BasePostProcessor):
         rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
         return Dataset(**dataset.__dict__)
 
-    def _neutralize(self, df, columns, by):
-        scores = df[columns]
-        exposures = df[by].values
+    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
+        scores = dataf[columns]
+        exposures = dataf[by].values
         scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))
         return scores / scores.std()
 
     @staticmethod
-    def _normalize(dataf: pd.DataFrame):
+    def normalize(dataf: pd.DataFrame) -> np.ndarray:
         normalized_ranks = (dataf.rank(method="first") - 0.5) / len(dataf)
         return sp.norm.ppf(normalized_ranks)
 
-    def normalize_and_neutralize(self, df, columns, by):
+    def normalize_and_neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         # Convert the scores to a normal distribution
-        df[columns] = self._normalize(df[columns])
-        df[columns] = self._neutralize(df, columns, by)
-        return df[columns]
+        dataf[columns] = self.normalize(dataf[columns])
+        dataf[columns] = self.neutralize(dataf, columns, by)
+        return dataf[columns]
 
 # Cell
 @typechecked
