@@ -99,9 +99,8 @@ class BaseEvaluator:
                       target_col: str) -> pd.Series:
         """ Correlation between prediction and target for each era. """
         return dataf.groupby(dataf[self.era_col])\
-            .apply(lambda d: self._normalize_uniform(d[pred_col])
-                   .fillna(0.5)
-                   .corr(self._normalize_uniform(d[target_col])))
+            .apply(lambda d: self._normalize_uniform(d[pred_col].fillna(0.5))
+                   .corr(d[target_col]))
 
     def mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:
         """
