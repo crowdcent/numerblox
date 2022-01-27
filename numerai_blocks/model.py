@@ -54,10 +54,10 @@ class DirectoryModel(BaseModel):
     :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):
-        super(DirectoryModel, self).__init__(model_directory=model_directory,
-                                             model_name=model_name,
-                                             *args, **kwargs
-                                             )
+        super().__init__(model_directory=model_directory,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
         self.file_suffix = file_suffix
         self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))
         if self.file_suffix:
@@ -94,10 +94,10 @@ class SingleModel(BaseModel):
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
-        super(SingleModel, self).__init__(model_directory=str(self.model_file_path.parent),
-                                          model_name=model_name,
-                                          *args, **kwargs
-                                          )
+        super().__init__(model_directory=str(self.model_file_path.parent),
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
         self.model_suffix = self.model_file_path.suffix
         self.suffix_to_model_mapping = {".joblib": joblib.load,
                                         ".cbm": CatBoost().load_model,
@@ -144,11 +144,11 @@ class JoblibModel(DirectoryModel):
     """ Load and predict for arbitrary models saved as .joblib. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'joblib'
-        super(JoblibModel, self).__init__(model_directory=model_directory,
-                                          file_suffix=file_suffix,
-                                          model_name=model_name,
-                                          *args, **kwargs
-                                          )
+        super().__init__(model_directory=model_directory,
+                         file_suffix=file_suffix,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
 
     def load_models(self) -> list:
         return [joblib.load(path) for path in self.model_paths]
@@ -159,11 +159,11 @@ class CatBoostModel(DirectoryModel):
     """ Load and predict with all .cbm models (CatBoostRegressor) in directory. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'cbm'
-        super(CatBoostModel, self).__init__(model_directory=model_directory,
-                                            file_suffix=file_suffix,
-                                            model_name=model_name,
-                                            *args, **kwargs
-                                            )
+        super().__init__(model_directory=model_directory,
+                         file_suffix=file_suffix,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
 
     def load_models(self) -> list:
         return [CatBoost().load_model(path) for path in self.model_paths]
@@ -174,11 +174,11 @@ class LGBMModel(DirectoryModel):
     """ Load and predict with all .lgb models (LightGBM) in directory. """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'lgb'
-        super(LGBMModel, self).__init__(model_directory=model_directory,
-                                        file_suffix=file_suffix,
-                                        model_name=model_name,
-                                        *args, **kwargs
-                                        )
+        super().__init__(model_directory=model_directory,
+                         file_suffix=file_suffix,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
 
     def load_models(self) -> list:
         return [lgb.Booster(model_file=str(path)) for path in self.model_paths]
@@ -192,9 +192,9 @@ class ConstantModel(BaseModel):
     def __init__(self, constant: float = 0.5, model_name: str = None):
         self.constant = constant
         model_name = model_name if model_name else f"constant_{self.constant}"
-        super(ConstantModel, self).__init__(model_directory="",
-                                            model_name=model_name
-                                            )
+        super().__init__(model_directory="",
+                         model_name=model_name
+                         )
         self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])
 
     def predict(self, dataset: Dataset) -> Dataset:
@@ -209,9 +209,9 @@ class RandomModel(BaseModel):
     """
     def __init__(self, model_name: str = None):
         model_name = model_name if model_name else "random"
-        super(RandomModel, self).__init__(model_directory="",
-                                          model_name=model_name
-                                          )
+        super().__init__(model_directory="",
+                         model_name=model_name
+                         )
 
     def predict(self, dataset: Dataset) -> Dataset:
         dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataset.dataf))
@@ -225,10 +225,10 @@ class AwesomeModel(BaseModel):
     Predict with arbitrary model formats.
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        super(AwesomeModel, self).__init__(model_directory=model_directory,
-                                           model_name=model_name,
-                                           *args, **kwargs
-                                           )
+        super().__init__(model_directory=model_directory,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
 
     @display_processor_info
     def predict(self, dataset: Dataset) -> Dataset:
@@ -250,11 +250,11 @@ class AwesomeDirectoryModel(DirectoryModel):
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'anything'
-        super(AwesomeDirectoryModel, self).__init__(model_directory=model_directory,
-                                                    file_suffix=file_suffix,
-                                                    model_name=model_name,
-                                                    *args, **kwargs
-                                                    )
+        super().__init__(model_directory=model_directory,
+                         file_suffix=file_suffix,
+                         model_name=model_name,
+                         *args, **kwargs
+                         )
 
     def load_models(self) -> list:
         """ Instantiate all models and return as a list. (abstract method) """

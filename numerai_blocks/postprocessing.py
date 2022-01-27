@@ -26,7 +26,7 @@ class BasePostProcessor(BaseProcessor):
     and add them to a Dataset.
     """
     def __init__(self, final_col_name: str):
-        super(BasePostProcessor, self).__init__()
+        super().__init__()
         self.final_col_name = final_col_name
         assert final_col_name.startswith("prediction"), f"final_col name should start with 'prediction'. Got {final_col_name}"
 
@@ -41,7 +41,7 @@ class Standardizer(BaseProcessor):
     All values should only contain values in the range [0...1].
     """
     def __init__(self, cols: list = None):
-        super(Standardizer, self).__init__()
+        super().__init__()
         self.cols = cols
 
     @display_processor_info
@@ -57,7 +57,7 @@ class Standardizer(BaseProcessor):
 class MeanEnsembler(BasePostProcessor):
     """ Take simple mean of multiple cols and store in new col. """
     def __init__(self, cols: list, final_col_name: str):
-        super(MeanEnsembler, self).__init__(final_col_name=final_col_name)
+        super().__init__(final_col_name=final_col_name)
         self.cols = cols
 
     @display_processor_info
@@ -76,7 +76,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
     Source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp
     """
     def __init__(self, cols: list, final_col_name: str):
-        super(DonateWeightedEnsembler, self).__init__(final_col_name=final_col_name)
+        super().__init__(final_col_name=final_col_name)
         self.cols = cols
         self.n_cols = len(cols)
         self.weights = self._get_weights()
@@ -102,7 +102,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
     Calculate the weighted Geometric mean using inverse correlation.
     """
     def __init__(self, cols: list, final_col_name: str):
-        super(GeometricMeanEnsembler, self).__init__(final_col_name=final_col_name)
+        super().__init__(final_col_name=final_col_name)
         self.cols = cols
         self.n_cols = len(cols)
 
@@ -133,7 +133,7 @@ class FeatureNeutralizer(BasePostProcessor):
         self.proportion = proportion
         assert 0. <= proportion <= 1., f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
         self.new_col_name = f"{self.pred_name}_neutralized_{self.proportion}"
-        super(FeatureNeutralizer, self).__init__(final_col_name=self.new_col_name)
+        super().__init__(final_col_name=self.new_col_name)
 
         self.feature_names = feature_names
         self.era_col = era_col
@@ -175,7 +175,7 @@ class FeaturePenalizer(BasePostProcessor):
         self.max_exposure = max_exposure
         assert 0. <= max_exposure <= 1., f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
         self.new_col_name = f"{self.pred_name}_penalized_{self.max_exposure}"
-        super(FeaturePenalizer, self).__init__(final_col_name=self.new_col_name)
+        super().__init__(final_col_name=self.new_col_name)
 
         self.model_list = model_list
         self.risky_feature_names = risky_feature_names
@@ -280,7 +280,7 @@ class AwesomePostProcessor(BasePostProcessor):
     :param final_col_name: Column name to store manipulated or ensembled predictions in.
     """
     def __init__(self, final_col_name: str, *args, **kwargs):
-        super(AwesomePostProcessor, self).__init__(final_col_name=final_col_name)
+        super().__init__(final_col_name=final_col_name)
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:

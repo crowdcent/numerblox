@@ -77,9 +77,9 @@ class NumeraiClassicStaker(BaseStaker):
     """ Staking functionality specific to Numerai Classic (tournament number 8). """
     CLASSIC_TOURNAMENT_NUMBER = 8
     def __init__(self, key: Key, *args, **kwargs):
-        super(NumeraiClassicStaker, self).__init__(key=key, tournament_number=self.CLASSIC_TOURNAMENT_NUMBER,
-                                                   *args, **kwargs
-                                                   )
+        super().__init__(key=key, tournament_number=self.CLASSIC_TOURNAMENT_NUMBER,
+                         *args, **kwargs
+                         )
 
     @property
     def get_stakes(self) -> dict:
@@ -103,7 +103,7 @@ class NumeraiSignalsStaker(BaseStaker):
     """ Staking functionality specific to Numerai Signals (tournament number 11). """
     SIGNALS_TOURNAMENT_NUMBER = 11
     def __init__(self, key: Key, *args, **kwargs):
-        super(NumeraiSignalsStaker, self).__init__(key=key,
-                                                   tournament_number=self.SIGNALS_TOURNAMENT_NUMBER,
-                                                   *args, **kwargs
-                                                   )
+        super().__init__(key=key,
+                         tournament_number=self.SIGNALS_TOURNAMENT_NUMBER,
+                         *args, **kwargs
+                         )

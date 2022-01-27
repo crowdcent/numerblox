@@ -25,7 +25,7 @@ from .key import Key
 @typechecked
 class BaseSubmittor(BaseIO):
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
-        super(BaseSubmittor, self).__init__(directory_path)
+        super().__init__(directory_path)
         self.api = api
 
     @abstractmethod
@@ -123,7 +123,7 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
-        super(NumeraiClassicSubmittor, self).__init__(
+        super().__init__(
             directory_path=directory_path, api=api
         )
 
@@ -144,6 +144,7 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
+
         dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
 
 # Cell
@@ -160,7 +161,7 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         api = SignalsAPI(
             public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs
         )
-        super(NumeraiSignalsSubmittor, self).__init__(
+        super().__init__(
             directory_path=directory_path, api=api
         )
         self.supported_ticker_formats = [

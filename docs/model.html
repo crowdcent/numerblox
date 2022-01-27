@@ -54,10 +54,10 @@ nb_path: "nbs/04_model.ipynb"
 
 
 
-<div id="786e8850-eede-41b4-97f3-ee19be7a01e3"></div>
+<div id="83850fd4-4a74-4519-b71e-b5e0d4997450"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#786e8850-eede-41b4-97f3-ee19be7a01e3');
+var element = $('#83850fd4-4a74-4519-b71e-b5e0d4997450');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -151,10 +151,10 @@ var element = $('#786e8850-eede-41b4-97f3-ee19be7a01e3');
 
 
 
-<div id="528208d8-42a2-4702-8f04-9748b965e6b8"></div>
+<div id="20dcebd1-dce8-43a4-99a0-d5e8e464abcf"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#528208d8-42a2-4702-8f04-9748b965e6b8');
+var element = $('#20dcebd1-dce8-43a4-99a0-d5e8e464abcf');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -237,15 +237,15 @@ Walks through every file with given file_suffix in a directory.
 
 
 
-<div id="4cbd9ffb-bee3-4f95-90ca-e45860e62be6"></div>
+<div id="f2006ab9-53ed-4f5f-8c57-9246a04bbf1b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4cbd9ffb-bee3-4f95-90ca-e45860e62be6');
+var element = $('#f2006ab9-53ed-4f5f-8c57-9246a04bbf1b');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "#export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n    def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):\n        super(DirectoryModel, self).__init__(model_directory=model_directory,\n                                             model_name=model_name,\n                                             *args, **kwargs\n                                             )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))\n        if self.file_suffix:\n            assert self.model_paths, f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n\n    @display_processor_info\n    def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataset: A Preprocessed dataset where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))\n        feature_df = dataset.get_feature_data\n        models = self.load_models()\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(feature_df, *args, **kwargs)\n            dataset.dataf.loc[:, self.prediction_col_name] += predictions / self.total_models\n        del models; gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models detected in self.model_paths. \"\"\"\n        ...";
-                var nbb_formatted_code = "# export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n\n    def __init__(\n        self,\n        model_directory: str,\n        file_suffix: str,\n        model_name: str = None,\n        *args,\n        **kwargs,\n    ):\n        super(DirectoryModel, self).__init__(\n            model_directory=model_directory, model_name=model_name, *args, **kwargs\n        )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f\"*.{self.file_suffix}\"))\n        if self.file_suffix:\n            assert (\n                self.model_paths\n            ), f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n\n    @display_processor_info\n    def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataset: A Preprocessed dataset where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))\n        feature_df = dataset.get_feature_data\n        models = self.load_models()\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(feature_df, *args, **kwargs)\n            dataset.dataf.loc[:, self.prediction_col_name] += (\n                predictions / self.total_models\n            )\n        del models\n        gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models detected in self.model_paths.\"\"\"\n        ...";
+                var nbb_unformatted_code = "#export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n    def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):\n        super().__init__(model_directory=model_directory,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))\n        if self.file_suffix:\n            assert self.model_paths, f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n\n    @display_processor_info\n    def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataset: A Preprocessed dataset where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))\n        feature_df = dataset.get_feature_data\n        models = self.load_models()\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(feature_df, *args, **kwargs)\n            dataset.dataf.loc[:, self.prediction_col_name] += predictions / self.total_models\n        del models; gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models detected in self.model_paths. \"\"\"\n        ...";
+                var nbb_formatted_code = "# export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n\n    def __init__(\n        self,\n        model_directory: str,\n        file_suffix: str,\n        model_name: str = None,\n        *args,\n        **kwargs,\n    ):\n        super().__init__(\n            model_directory=model_directory, model_name=model_name, *args, **kwargs\n        )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f\"*.{self.file_suffix}\"))\n        if self.file_suffix:\n            assert (\n                self.model_paths\n            ), f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n\n    @display_processor_info\n    def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataset: A Preprocessed dataset where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))\n        feature_df = dataset.get_feature_data\n        models = self.load_models()\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(feature_df, *args, **kwargs)\n            dataset.dataf.loc[:, self.prediction_col_name] += (\n                predictions / self.total_models\n            )\n        del models\n        gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models detected in self.model_paths.\"\"\"\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -327,15 +327,15 @@ var element = $('#4cbd9ffb-bee3-4f95-90ca-e45860e62be6');
 
 
 
-<div id="6dbd95f0-746f-4929-afe7-d44d20462cb6"></div>
+<div id="f9a91d8d-63f3-43fa-a68a-30d1e154a481"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6dbd95f0-746f-4929-afe7-d44d20462cb6');
+var element = $('#f9a91d8d-63f3-43fa-a68a-30d1e154a481');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass SingleModel(BaseModel):\n    def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):\n        self.model_file_path = Path(model_file_path)\n        assert self.model_file_path.exists(), f\"File path '{self.model_file_path}' does not exist.\"\n        assert self.model_file_path.is_file(), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super(SingleModel, self).__init__(model_directory=str(self.model_file_path.parent),\n                                          model_name=model_name,\n                                          *args, **kwargs\n                                          )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\".joblib\": joblib.load,\n                                        \".cbm\": CatBoost().load_model,\n                                        \".pkl\": pickle.load,\n                                        \".pickle\": pickle.load}\n        self.__check_valid_suffix()\n\n    def predict(self, dataset: Dataset, *args, **kwargs):\n        model = self._load_model()\n        feature_df = dataset.get_feature_data\n        predictions = model.predict(feature_df, *args, **kwargs)\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataset.dataf.loc[:, prediction_cols] = predictions\n        del model; gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\" Load arbitrary model from path using suffix to model mapping. \"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\" Create multiple columns if predictions are multi-target. \"\"\"\n        if len(pred_shape) > 1:\n            # Multi target\n            prediction_cols = [f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])]\n        else:\n            # Single target\n            prediction_cols = [self.prediction_col_name]\n        return prediction_cols\n\n    def __check_valid_suffix(self):\n        \"\"\" Detailed message if model is not supported in this class. \"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
-                var nbb_formatted_code = "# export\n@typechecked\nclass SingleModel(BaseModel):\n    def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):\n        self.model_file_path = Path(model_file_path)\n        assert (\n            self.model_file_path.exists()\n        ), f\"File path '{self.model_file_path}' does not exist.\"\n        assert (\n            self.model_file_path.is_file()\n        ), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super(SingleModel, self).__init__(\n            model_directory=str(self.model_file_path.parent),\n            model_name=model_name,\n            *args,\n            **kwargs,\n        )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\n            \".joblib\": joblib.load,\n            \".cbm\": CatBoost().load_model,\n            \".pkl\": pickle.load,\n            \".pickle\": pickle.load,\n        }\n        self.__check_valid_suffix()\n\n    def predict(self, dataset: Dataset, *args, **kwargs):\n        model = self._load_model()\n        feature_df = dataset.get_feature_data\n        predictions = model.predict(feature_df, *args, **kwargs)\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataset.dataf.loc[:, prediction_cols] = predictions\n        del model\n        gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\"Load arbitrary model from path using suffix to model mapping.\"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](\n            str(self.model_file_path), *args, **kwargs\n        )\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\"Create multiple columns if predictions are multi-target.\"\"\"\n        if len(pred_shape) > 1:\n            # Multi target\n            prediction_cols = [\n                f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])\n            ]\n        else:\n            # Single target\n            prediction_cols = [self.prediction_col_name]\n        return prediction_cols\n\n    def __check_valid_suffix(self):\n        \"\"\"Detailed message if model is not supported in this class.\"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass SingleModel(BaseModel):\n    def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):\n        self.model_file_path = Path(model_file_path)\n        assert self.model_file_path.exists(), f\"File path '{self.model_file_path}' does not exist.\"\n        assert self.model_file_path.is_file(), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super().__init__(model_directory=str(self.model_file_path.parent),\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\".joblib\": joblib.load,\n                                        \".cbm\": CatBoost().load_model,\n                                        \".pkl\": pickle.load,\n                                        \".pickle\": pickle.load}\n        self.__check_valid_suffix()\n\n    def predict(self, dataset: Dataset, *args, **kwargs):\n        model = self._load_model()\n        feature_df = dataset.get_feature_data\n        predictions = model.predict(feature_df, *args, **kwargs)\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataset.dataf.loc[:, prediction_cols] = predictions\n        del model; gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\" Load arbitrary model from path using suffix to model mapping. \"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\" Create multiple columns if predictions are multi-target. \"\"\"\n        if len(pred_shape) > 1:\n            # Multi target\n            prediction_cols = [f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])]\n        else:\n            # Single target\n            prediction_cols = [self.prediction_col_name]\n        return prediction_cols\n\n    def __check_valid_suffix(self):\n        \"\"\" Detailed message if model is not supported in this class. \"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
+                var nbb_formatted_code = "# export\n@typechecked\nclass SingleModel(BaseModel):\n    def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):\n        self.model_file_path = Path(model_file_path)\n        assert (\n            self.model_file_path.exists()\n        ), f\"File path '{self.model_file_path}' does not exist.\"\n        assert (\n            self.model_file_path.is_file()\n        ), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super().__init__(\n            model_directory=str(self.model_file_path.parent),\n            model_name=model_name,\n            *args,\n            **kwargs,\n        )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\n            \".joblib\": joblib.load,\n            \".cbm\": CatBoost().load_model,\n            \".pkl\": pickle.load,\n            \".pickle\": pickle.load,\n        }\n        self.__check_valid_suffix()\n\n    def predict(self, dataset: Dataset, *args, **kwargs):\n        model = self._load_model()\n        feature_df = dataset.get_feature_data\n        predictions = model.predict(feature_df, *args, **kwargs)\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataset.dataf.loc[:, prediction_cols] = predictions\n        del model\n        gc.collect()\n        return Dataset(**dataset.__dict__)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\"Load arbitrary model from path using suffix to model mapping.\"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](\n            str(self.model_file_path), *args, **kwargs\n        )\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\"Create multiple columns if predictions are multi-target.\"\"\"\n        if len(pred_shape) > 1:\n            # Multi target\n            prediction_cols = [\n                f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])\n            ]\n        else:\n            # Single target\n            prediction_cols = [self.prediction_col_name]\n        return prediction_cols\n\n    def __check_valid_suffix(self):\n        \"\"\"Detailed message if model is not supported in this class.\"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -395,10 +395,10 @@ n9d39dea58c9e3cf         0.492578
 
 
 
-<div id="333882ba-fdef-4598-9cf3-6f02082348da"></div>
+<div id="786c0995-c01e-469b-9236-c86cd055dc03"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#333882ba-fdef-4598-9cf3-6f02082348da');
+var element = $('#786c0995-c01e-469b-9236-c86cd055dc03');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -450,7 +450,7 @@ var element = $('#333882ba-fdef-4598-9cf3-6f02082348da');
 
 <div class="output_text output_subarea output_execute_result">
 <pre>{&#39;.joblib&#39;: &lt;function joblib.numpy_pickle.load(filename, mmap_mode=None)&gt;,
- &#39;.cbm&#39;: &lt;bound method CatBoost.load_model of &lt;catboost.core.CatBoost object at 0x7f85f8519ed0&gt;&gt;,
+ &#39;.cbm&#39;: &lt;bound method CatBoost.load_model of &lt;catboost.core.CatBoost object at 0x7f92510ad790&gt;&gt;,
  &#39;.pkl&#39;: &lt;function _pickle.load(file, *, fix_imports=True, encoding=&#39;ASCII&#39;, errors=&#39;strict&#39;)&gt;,
  &#39;.pickle&#39;: &lt;function _pickle.load(file, *, fix_imports=True, encoding=&#39;ASCII&#39;, errors=&#39;strict&#39;)&gt;}</pre>
 </div>
@@ -462,10 +462,10 @@ var element = $('#333882ba-fdef-4598-9cf3-6f02082348da');
 
 
 
-<div id="ab71c687-a9d7-40f5-ac47-738661429ff7"></div>
+<div id="0a01b06f-a4d7-43d8-a133-08ba00809181"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ab71c687-a9d7-40f5-ac47-738661429ff7');
+var element = $('#0a01b06f-a4d7-43d8-a133-08ba00809181');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -543,15 +543,15 @@ var element = $('#ab71c687-a9d7-40f5-ac47-738661429ff7');
 
 
 
-<div id="9d00595a-7ac4-4399-b316-985b449c0053"></div>
+<div id="d6c7556d-470a-417c-aace-1b480a6aeada"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9d00595a-7ac4-4399-b316-985b449c0053');
+var element = $('#d6c7556d-470a-417c-aace-1b480a6aeada');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\" Load and predict for arbitrary models saved as .joblib. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'joblib'\n        super(JoblibModel, self).__init__(model_directory=model_directory,\n                                          file_suffix=file_suffix,\n                                          model_name=model_name,\n                                          *args, **kwargs\n                                          )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
-                var nbb_formatted_code = "# export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\"Load and predict for arbitrary models saved as .joblib.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"joblib\"\n        super(JoblibModel, self).__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\" Load and predict for arbitrary models saved as .joblib. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'joblib'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
+                var nbb_formatted_code = "# export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\"Load and predict for arbitrary models saved as .joblib.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"joblib\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -600,7 +600,7 @@ var element = $('#9d00595a-7ac4-4399-b316-985b449c0053');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1074</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">115176</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">125949</span>. ✅
 </pre>
 
 </div>
@@ -661,10 +661,10 @@ var element = $('#9d00595a-7ac4-4399-b316-985b449c0053');
 
 
 
-<div id="fc2ed574-5819-45e3-b58a-61f8aff0adc5"></div>
+<div id="76d7e26f-4c09-452f-ab2e-87bd0297dc61"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fc2ed574-5819-45e3-b58a-61f8aff0adc5');
+var element = $('#76d7e26f-4c09-452f-ab2e-87bd0297dc61');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -742,15 +742,15 @@ var element = $('#fc2ed574-5819-45e3-b58a-61f8aff0adc5');
 
 
 
-<div id="8dfce42f-3e22-47bb-bb53-53a5d21fba33"></div>
+<div id="51e2ab14-b36d-48b5-b050-1ebf65d4f803"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8dfce42f-3e22-47bb-bb53-53a5d21fba33');
+var element = $('#51e2ab14-b36d-48b5-b050-1ebf65d4f803');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\" Load and predict with all .cbm models (CatBoostRegressor) in directory. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'cbm'\n        super(CatBoostModel, self).__init__(model_directory=model_directory,\n                                            file_suffix=file_suffix,\n                                            model_name=model_name,\n                                            *args, **kwargs\n                                            )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
-                var nbb_formatted_code = "# export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\"Load and predict with all .cbm models (CatBoostRegressor) in directory.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"cbm\"\n        super(CatBoostModel, self).__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\" Load and predict with all .cbm models (CatBoostRegressor) in directory. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'cbm'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
+                var nbb_formatted_code = "# export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\"Load and predict with all .cbm models (CatBoostRegressor) in directory.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"cbm\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -798,7 +798,7 @@ var element = $('#8dfce42f-3e22-47bb-bb53-53a5d21fba33');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">023791</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">023037</span>. ✅
 </pre>
 
 </div>
@@ -810,10 +810,10 @@ var element = $('#8dfce42f-3e22-47bb-bb53-53a5d21fba33');
 
 
 
-<div id="98a842d0-0a80-4eff-9728-f61eecf2f5cb"></div>
+<div id="b5da844a-7829-4041-be1d-2723988c64b9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#98a842d0-0a80-4eff-9728-f61eecf2f5cb');
+var element = $('#b5da844a-7829-4041-be1d-2723988c64b9');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -864,7 +864,7 @@ var element = $('#98a842d0-0a80-4eff-9728-f61eecf2f5cb');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">333</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">095500</span>.
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">333</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">100068</span>.
 ✅
 </pre>
 
@@ -922,10 +922,10 @@ var element = $('#98a842d0-0a80-4eff-9728-f61eecf2f5cb');
 
 
 
-<div id="04c3ab4b-50cd-432c-82a9-5dd05c9318b4"></div>
+<div id="5a67911f-84e1-4adc-a6e4-aadf8ffc20a6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#04c3ab4b-50cd-432c-82a9-5dd05c9318b4');
+var element = $('#5a67911f-84e1-4adc-a6e4-aadf8ffc20a6');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1003,15 +1003,15 @@ var element = $('#04c3ab4b-50cd-432c-82a9-5dd05c9318b4');
 
 
 
-<div id="68225c94-f830-4d97-b328-1020d7b644cb"></div>
+<div id="08985a2e-27f2-422a-aa40-7909a1018322"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#68225c94-f830-4d97-b328-1020d7b644cb');
+var element = $('#08985a2e-27f2-422a-aa40-7909a1018322');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\" Load and predict with all .lgb models (LightGBM) in directory. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'lgb'\n        super(LGBMModel, self).__init__(model_directory=model_directory,\n                                        file_suffix=file_suffix,\n                                        model_name=model_name,\n                                        *args, **kwargs\n                                        )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
-                var nbb_formatted_code = "# export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\"Load and predict with all .lgb models (LightGBM) in directory.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"lgb\"\n        super(LGBMModel, self).__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\" Load and predict with all .lgb models (LightGBM) in directory. \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'lgb'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
+                var nbb_formatted_code = "# export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\"Load and predict with all .lgb models (LightGBM) in directory.\"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"lgb\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1060,7 +1060,7 @@ var element = $('#68225c94-f830-4d97-b328-1020d7b644cb');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1074</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">121281</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">125980</span>. ✅
 </pre>
 
 </div>
@@ -1121,10 +1121,10 @@ var element = $('#68225c94-f830-4d97-b328-1020d7b644cb');
 
 
 
-<div id="200369fd-3b4c-4d9e-9298-7d0287d96fce"></div>
+<div id="13cfab12-1736-49d7-9686-c0332d39565b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#200369fd-3b4c-4d9e-9298-7d0287d96fce');
+var element = $('#13cfab12-1736-49d7-9686-c0332d39565b');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1216,15 +1216,15 @@ Create constant prediction.</p>
 
 
 
-<div id="f5a51393-c611-45c3-af78-a9699b116f20"></div>
+<div id="c57c109a-db4d-4663-a5ba-4eaace603270"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f5a51393-c611-45c3-af78-a9699b116f20');
+var element = $('#c57c109a-db4d-4663-a5ba-4eaace603270');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
-                var nbb_unformatted_code = "#export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    \"\"\"\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super(ConstantModel, self).__init__(model_directory=\"\",\n                                            model_name=model_name\n                                            )\n        self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataset.get_feature_data)\n        return Dataset(**dataset.__dict__)";
-                var nbb_formatted_code = "# export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    \"\"\"\n\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super(ConstantModel, self).__init__(model_directory=\"\", model_name=model_name)\n        self.clf = DummyRegressor(strategy=\"constant\", constant=constant).fit(\n            [0.0], [0.0]\n        )\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = self.clf.predict(\n            dataset.get_feature_data\n        )\n        return Dataset(**dataset.__dict__)";
+                var nbb_unformatted_code = "#export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    \"\"\"\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super().__init__(model_directory=\"\",\n                         model_name=model_name\n                         )\n        self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataset.get_feature_data)\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    \"\"\"\n\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super().__init__(model_directory=\"\", model_name=model_name)\n        self.clf = DummyRegressor(strategy=\"constant\", constant=constant).fit(\n            [0.0], [0.0]\n        )\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = self.clf.predict(\n            dataset.get_feature_data\n        )\n        return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1319,10 +1319,10 @@ var element = $('#f5a51393-c611-45c3-af78-a9699b116f20');
 
 
 
-<div id="96621366-92d6-4d8e-acf8-129adffba527"></div>
+<div id="1603599a-ef0e-4088-8e1f-ccd42f4db870"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#96621366-92d6-4d8e-acf8-129adffba527');
+var element = $('#1603599a-ef0e-4088-8e1f-ccd42f4db870');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1401,15 +1401,15 @@ Create uniformly distributed predictions.</p>
 
 
 
-<div id="778f8d24-464f-4421-828b-491cb28def01"></div>
+<div id="39589cd2-b2ae-4026-b0ed-d6823377d108"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#778f8d24-464f-4421-828b-491cb28def01');
+var element = $('#39589cd2-b2ae-4026-b0ed-d6823377d108');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
-                var nbb_unformatted_code = "#export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    \"\"\"\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super(RandomModel, self).__init__(model_directory=\"\",\n                                          model_name=model_name\n                                          )\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataset.dataf))\n        return Dataset(**dataset.__dict__)";
-                var nbb_formatted_code = "# export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    \"\"\"\n\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super(RandomModel, self).__init__(model_directory=\"\", model_name=model_name)\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(\n            size=len(dataset.dataf)\n        )\n        return Dataset(**dataset.__dict__)";
+                var nbb_unformatted_code = "#export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    \"\"\"\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super().__init__(model_directory=\"\",\n                         model_name=model_name\n                         )\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataset.dataf))\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    \"\"\"\n\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super().__init__(model_directory=\"\", model_name=model_name)\n\n    def predict(self, dataset: Dataset) -> Dataset:\n        dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(\n            size=len(dataset.dataf)\n        )\n        return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1481,15 +1481,15 @@ var element = $('#778f8d24-464f-4421-828b-491cb28def01');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.629401</td>
+      <td>0.750901</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.152711</td>
+      <td>0.981389</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.748660</td>
+      <td>0.188712</td>
     </tr>
   </tbody>
 </table>
@@ -1503,10 +1503,10 @@ var element = $('#778f8d24-464f-4421-828b-491cb28def01');
 
 
 
-<div id="65a8a9d3-f9c8-4c93-80eb-fa37fc37daaf"></div>
+<div id="98a33f21-7c15-436f-a741-eaf0b97d4263"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#65a8a9d3-f9c8-4c93-80eb-fa37fc37daaf');
+var element = $('#98a33f21-7c15-436f-a741-eaf0b97d4263');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1594,15 +1594,15 @@ Predict with arbitrary model formats.</li>
 
 
 
-<div id="91d070d8-4cdc-4625-8ed4-ab4b58371d64"></div>
+<div id="56fae3f5-55d8-423d-8338-43841c6cadd4"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#91d070d8-4cdc-4625-8ed4-ab4b58371d64');
+var element = $('#56fae3f5-55d8-423d-8338-43841c6cadd4');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary model formats.\n    \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        super(AwesomeModel, self).__init__(model_directory=model_directory,\n                                           model_name=model_name,\n                                           *args, **kwargs\n                                           )\n\n    @display_processor_info\n    def predict(self, dataset: Dataset) -> Dataset:\n        \"\"\" Return Dataset with column(s) added for prediction(s). \"\"\"\n        ...\n        dataset.dataf.loc[:, self.prediction_col_name] = 0\n        feature_df = dataset.get_feature_data\n        # Predict and add to new column\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary model formats.\n    \"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        super(AwesomeModel, self).__init__(\n            model_directory=model_directory, model_name=model_name, *args, **kwargs\n        )\n\n    @display_processor_info\n    def predict(self, dataset: Dataset) -> Dataset:\n        \"\"\"Return Dataset with column(s) added for prediction(s).\"\"\"\n        ...\n        dataset.dataf.loc[:, self.prediction_col_name] = 0\n        feature_df = dataset.get_feature_data\n        # Predict and add to new column\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary model formats.\n    \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        super().__init__(model_directory=model_directory,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n\n    @display_processor_info\n    def predict(self, dataset: Dataset) -> Dataset:\n        \"\"\" Return Dataset with column(s) added for prediction(s). \"\"\"\n        ...\n        dataset.dataf.loc[:, self.prediction_col_name] = 0\n        feature_df = dataset.get_feature_data\n        # Predict and add to new column\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary model formats.\n    \"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        super().__init__(\n            model_directory=model_directory, model_name=model_name, *args, **kwargs\n        )\n\n    @display_processor_info\n    def predict(self, dataset: Dataset) -> Dataset:\n        \"\"\"Return Dataset with column(s) added for prediction(s).\"\"\"\n        ...\n        dataset.dataf.loc[:, self.prediction_col_name] = 0\n        feature_df = dataset.get_feature_data\n        # Predict and add to new column\n        ...\n        # Parse all contents of Dataset to the next pipeline step\n        return Dataset(**dataset.__dict__)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1680,15 +1680,15 @@ Load in all models of arbitrary file format where model has .predict method.</li
 
 
 
-<div id="956b22f9-e4fe-40e4-95f1-81f07c058f41"></div>
+<div id="7dc4bb0f-c1f4-4a70-92b5-7dc01b1b8770"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#956b22f9-e4fe-40e4-95f1-81f07c058f41');
+var element = $('#7dc4bb0f-c1f4-4a70-92b5-7dc01b1b8770');
 
             setTimeout(function() {
                 var nbb_cell_id = 22;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format where model has .predict method.\n    \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'anything'\n        super(AwesomeDirectoryModel, self).__init__(model_directory=model_directory,\n                                                    file_suffix=file_suffix,\n                                                    model_name=model_name,\n                                                    *args, **kwargs\n                                                    )\n\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models and return as a list. (abstract method) \"\"\"\n        ...";
-                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format where model has .predict method.\n    \"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"anything\"\n        super(AwesomeDirectoryModel, self).__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models and return as a list. (abstract method)\"\"\"\n        ...";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format where model has .predict method.\n    \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = 'anything'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         *args, **kwargs\n                         )\n\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models and return as a list. (abstract method) \"\"\"\n        ...";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format where model has .predict method.\n    \"\"\"\n\n    def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):\n        file_suffix = \"anything\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            *args,\n            **kwargs\n        )\n\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models and return as a list. (abstract method)\"\"\"\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
