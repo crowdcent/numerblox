@@ -66,17 +66,15 @@ nb_path: "nbs/index.ipynb"
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
 <li>Downloaders</li>
-<li>Dataloaders</li>
-<li>Dataset objects (with arbitrary metadata)</li>
+<li>Dataset</li>
 <li>Preprocessing</li>
 <li>Model</li>
 <li>ModelPipeline and ModelPipelineCollection</li>
 <li>Postprocessing</li>
-<li>Prediction dataset (with arbitrary metadata)</li>
 <li>Evaluators</li>
 <li>Key (containing authentication info)</li>
 <li>Submittors</li>
-<li>Staker</li>
+<li>Staking functionality</li>
 </ul>
 
 </div>
@@ -101,36 +99,36 @@ nb_path: "nbs/index.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># # Download version 2 data</span>
-<span class="c1"># downloader = NumeraiClassicDownloader(&quot;data&quot;)</span>
-<span class="c1"># downloader.download_inference_data(&quot;current_round&quot;)</span>
-<span class="c1">#</span>
-<span class="c1"># # Initialize Dataset</span>
-<span class="c1"># metadata = {&quot;version&quot;: 2, &quot;model_name&quot;: &quot;MY_MODEL&quot;}</span>
-<span class="c1"># dataset = create_dataset(file_path=&quot;data/current_round/numerai_tournament_data.parquet&quot;, **metadata)</span>
-<span class="c1">#</span>
-<span class="c1"># # Define and run pipeline</span>
-<span class="c1"># model1 = JoblibModel(model_directory=&quot;dir_with_joblib_models&quot;,</span>
-<span class="c1">#                      model_name=&quot;test_model&quot;)</span>
-<span class="c1"># pipeline = ModelPipeline(pipeline_name=dataset.base_model_name,</span>
-<span class="c1">#                              preprocessors=[],</span>
-<span class="c1">#                              models=[model1],</span>
-<span class="c1">#                              postprocessors=[FeatureNeutralizer(proportion=0.5)])</span>
-<span class="c1"># dataset = pipeline(dataset)</span>
-<span class="c1">#</span>
-<span class="c1"># # Submit</span>
-<span class="c1"># key = load_key_from_json(&quot;my_key.json&quot;)</span>
-<span class="c1"># submittor = NumeraiClassicSubmittor(directory_path=&quot;sub_current_round&quot;, key=key)</span>
-<span class="c1"># submittor.full_submission(dataf=dataset.dataf,</span>
-<span class="c1">#                           cols=&quot;prediction_test_model_neutralized_0.5&quot;,</span>
-<span class="c1">#                           file_name=f&quot;{dataset.model_name}.csv&quot;,</span>
-<span class="c1">#                           model_name=dataset.model_name,</span>
-<span class="c1">#                           version=dataset.version</span>
-<span class="c1">#                           )</span>
-<span class="c1">#</span>
-<span class="c1"># # Remove data and subs</span>
-<span class="c1"># downloader.remove_base_directory()</span>
-<span class="c1"># submittor.remove_base_directory()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Download version 2 data</span>
+<span class="n">downloader</span> <span class="o">=</span> <span class="n">NumeraiClassicDownloader</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">download_inference_data</span><span class="p">(</span><span class="s2">&quot;current_round&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize Dataset</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;MY_MODEL&quot;</span><span class="p">}</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;data/current_round/numerai_tournament_data.parquet&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span>
+
+<span class="c1"># Define and run pipeline</span>
+<span class="n">model1</span> <span class="o">=</span> <span class="n">JoblibModel</span><span class="p">(</span><span class="n">model_directory</span><span class="o">=</span><span class="s2">&quot;dir_with_joblib_models&quot;</span><span class="p">,</span>
+                     <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;test_model&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">ModelPipeline</span><span class="p">(</span><span class="n">pipeline_name</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">base_model_name</span><span class="p">,</span>
+                             <span class="n">preprocessors</span><span class="o">=</span><span class="p">[],</span>
+                             <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">model1</span><span class="p">],</span>
+                             <span class="n">postprocessors</span><span class="o">=</span><span class="p">[</span><span class="n">FeatureNeutralizer</span><span class="p">(</span><span class="n">proportion</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+<span class="c1"># Submit</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">load_key_from_json</span><span class="p">(</span><span class="s2">&quot;my_key.json&quot;</span><span class="p">)</span>
+<span class="n">submittor</span> <span class="o">=</span> <span class="n">NumeraiClassicSubmittor</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="s2">&quot;sub_current_round&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+<span class="n">submittor</span><span class="o">.</span><span class="n">full_submission</span><span class="p">(</span><span class="n">dataf</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="p">,</span>
+                          <span class="n">cols</span><span class="o">=</span><span class="s2">&quot;prediction_test_model_neutralized_0.5&quot;</span><span class="p">,</span>
+                          <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">,</span>
+                          <span class="n">model_name</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+                          <span class="n">version</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">version</span>
+                          <span class="p">)</span>
+
+<span class="c1"># Remove data and subs</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">remove_base_directory</span><span class="p">()</span>
+<span class="n">submittor</span><span class="o">.</span><span class="n">remove_base_directory</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -145,10 +143,10 @@ nb_path: "nbs/index.ipynb"
 
 
 
-<div id="a794fcba-e6eb-4fca-864a-8f550c0c3d01"></div>
+<div id="4e675d6c-c11c-4544-a430-00028ea1702a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a794fcba-e6eb-4fca-864a-8f550c0c3d01');
+var element = $('#4e675d6c-c11c-4544-a430-00028ea1702a');
 
             setTimeout(function() {
                 var nbb_cell_id = 3;
@@ -175,10 +173,10 @@ var element = $('#a794fcba-e6eb-4fca-864a-8f550c0c3d01');
 
 
 
-<div id="1ede73d7-0304-4e3c-8935-5173764a1b8c"></div>
+<div id="34e7d7e7-4694-479e-b424-c160629ba496"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1ede73d7-0304-4e3c-8935-5173764a1b8c');
+var element = $('#34e7d7e7-4694-479e-b424-c160629ba496');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -259,84 +257,13 @@ var element = $('#1ede73d7-0304-4e3c-8935-5173764a1b8c');
 
 
 
-<div id="93788114-962d-45a8-ba00-c8b6829c65ab"></div>
+<div id="de09c002-7309-42eb-ac50-cc4f61994938"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#93788114-962d-45a8-ba00-c8b6829c65ab');
+var element = $('#de09c002-7309-42eb-ac50-cc4f61994938');
 
             setTimeout(function() {
-                var nbb_cell_id = 4;
-                var nbb_unformatted_code = "# hide_input\nfrom rich.console import Console\nfrom rich.tree import Tree\n\nconsole = Console(record=True, width=100)\n\ntree = Tree(\":computer: Structure before starting\", guide_style=\"bold bright_black\")\ntree.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree)\n\ntree2 = Tree(\":computer: Structure after submitting\", guide_style=\"bold bright_black\")\ndata_tree = tree2.add(\":file_folder: data\")\ncurrent_tree = data_tree.add(\":file_folder: current_round\")\ncurrent_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\nsub_tree = tree2.add(\":file_folder: sub_current_round\")\nsub_tree.add(\":page_facing_up: MY_MODEL.csv\")\ntree2.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree2.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree2)";
-                var nbb_formatted_code = "# hide_input\nfrom rich.console import Console\nfrom rich.tree import Tree\n\nconsole = Console(record=True, width=100)\n\ntree = Tree(\":computer: Structure before starting\", guide_style=\"bold bright_black\")\ntree.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree)\n\ntree2 = Tree(\":computer: Structure after submitting\", guide_style=\"bold bright_black\")\ndata_tree = tree2.add(\":file_folder: data\")\ncurrent_tree = data_tree.add(\":file_folder: current_round\")\ncurrent_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\nsub_tree = tree2.add(\":file_folder: sub_current_round\")\nsub_tree.add(\":page_facing_up: MY_MODEL.csv\")\ntree2.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree2.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree2)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Structure before starting                                                                        
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📄 my_key.json                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 dir_with_joblib_models                                                                       
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model1.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model2.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model3.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model4.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 model5.joblib                                                                            
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Structure after submitting                                                                       
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data                                                                                         
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet                                                      
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 sub_current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 MY_MODEL.csv                                                                             
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📄 my_key.json                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 dir_with_joblib_models                                                                       
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model1.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model2.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model3.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model4.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 model5.joblib                                                                            
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="e9f5f93d-b523-49d1-a128-158ba4026051"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#e9f5f93d-b523-49d1-a128-158ba4026051');
-
-            setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 15;
                 var nbb_unformatted_code = "# hide_input\nfrom rich.console import Console\nfrom rich.tree import Tree\n\nconsole = Console(record=True, width=100)\n\ntree = Tree(\":computer: Structure before starting\", guide_style=\"bold bright_black\")\ntree.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree)\n\ntree2 = Tree(\":computer: Structure after submitting\", guide_style=\"bold bright_black\")\ndata_tree = tree2.add(\":file_folder: data\")\ncurrent_tree = data_tree.add(\":file_folder: current_round\")\ncurrent_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\nsub_tree = tree2.add(\":file_folder: sub_current_round\")\nsub_tree.add(\":page_facing_up: MY_MODEL.csv\")\ntree2.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree2.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree2)";
                 var nbb_formatted_code = "# hide_input\nfrom rich.console import Console\nfrom rich.tree import Tree\n\nconsole = Console(record=True, width=100)\n\ntree = Tree(\":computer: Structure before starting\", guide_style=\"bold bright_black\")\ntree.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree)\n\ntree2 = Tree(\":computer: Structure after submitting\", guide_style=\"bold bright_black\")\ndata_tree = tree2.add(\":file_folder: data\")\ncurrent_tree = data_tree.add(\":file_folder: current_round\")\ncurrent_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\nsub_tree = tree2.add(\":file_folder: sub_current_round\")\nsub_tree.add(\":page_facing_up: MY_MODEL.csv\")\ntree2.add(\":page_facing_up: my_key.json\")\nmodel_tree = tree2.add(\":file_folder: dir_with_joblib_models\")\nmodel_tree.add(\":page_facing_up: model1.joblib\")\nmodel_tree.add(\":page_facing_up: model2.joblib\")\nmodel_tree.add(\":page_facing_up: model3.joblib\")\nmodel_tree.add(\":page_facing_up: model4.joblib\")\nmodel_tree.add(\":page_facing_up: model5.joblib\")\n\nconsole.print(tree2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -389,10 +316,10 @@ var element = $('#e9f5f93d-b523-49d1-a128-158ba4026051');
 
 
 
-<div id="3aca4d8e-2067-44fc-a63a-142ffc6f1d73"></div>
+<div id="a19688d0-3f9d-461f-8aaa-e1bdd25b8c17"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3aca4d8e-2067-44fc-a63a-142ffc6f1d73');
+var element = $('#a19688d0-3f9d-461f-8aaa-e1bdd25b8c17');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -419,10 +346,10 @@ var element = $('#3aca4d8e-2067-44fc-a63a-142ffc6f1d73');
 
 
 
-<div id="662766d0-2c93-4d84-a549-08fafb0d0ce8"></div>
+<div id="dbb2066a-a506-4813-8634-82aa46be3563"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#662766d0-2c93-4d84-a549-08fafb0d0ce8');
+var element = $('#dbb2066a-a506-4813-8634-82aa46be3563');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -497,10 +424,10 @@ var element = $('#662766d0-2c93-4d84-a549-08fafb0d0ce8');
 
 
 
-<div id="8dd57dd5-17b0-4045-a0f0-e58151a2e3f9"></div>
+<div id="715e8a98-6a2d-43bd-a829-124336c272e7"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8dd57dd5-17b0-4045-a0f0-e58151a2e3f9');
+var element = $('#715e8a98-6a2d-43bd-a829-124336c272e7');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -543,10 +470,10 @@ var element = $('#8dd57dd5-17b0-4045-a0f0-e58151a2e3f9');
 
 
 
-<div id="1526d822-a787-42a8-873b-f03bcd41a699"></div>
+<div id="df5437b9-7438-48f8-8783-86fed2d9461e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1526d822-a787-42a8-873b-f03bcd41a699');
+var element = $('#df5437b9-7438-48f8-8783-86fed2d9461e');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
