@@ -46,9 +46,607 @@ nb_path: "nbs/07_evaluation.ipynb"
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="139792b6-67f9-4747-83d8-4328d0ea02b7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#139792b6-67f9-4747-83d8-4328d0ea02b7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Evaluators take <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects as input and can run several validation regimes on them.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="0.-Base">0. Base<a class="anchor-link" href="#0.-Base"> </a></h2>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="BaseEvaluator" class="doc_header"><code>class</code> <code>BaseEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L15" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>)</p>
+</blockquote>
+<p>Evaluation functionality that holds for both
+Numerai Classic and Numerai Signals.
+:param era_col: Column name pointing to eras.
+Most commonly "era" for Classic and "friday_date" for Signals.
+:param fast_mode: Will skip compute intensive metrics
+max_exposure, feature neutral mean and TB200 if set to True.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="ffebe0ea-070f-425d-92cd-0a884039e2c9"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#ffebe0ea-070f-425d-92cd-0a884039e2c9');
+
+            setTimeout(function() {
+                var nbb_cell_id = 4;
+                var nbb_unformatted_code = "# export\nclass BaseEvaluator:\n    \"\"\"\n    Evaluation functionality that holds for both\n    Numerai Classic and Numerai Signals.\n    :param era_col: Column name pointing to eras.\n    Most commonly \"era\" for Classic and \"friday_date\" for Signals.\n    :param fast_mode: Will skip compute intensive metrics\n    max_exposure, feature neutral mean and TB200 if set to True.\n    \"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode = False):\n        self.era_col = era_col\n        self.fast_mode = fast_mode\n\n    def full_evaluation(self,\n                        dataset: Dataset,\n                        example_col: str,\n                        pred_cols: list = None,\n                        target_col: str = \"target\"\n                        ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Perform evaluation for each prediction column in the Dataset\n        against give target and example prediction column.\n        \"\"\"\n        val_stats = pd.DataFrame()\n        dataset.dataf = dataset.dataf.fillna(0.5)\n        pred_cols = dataset.prediction_cols if not pred_cols else pred_cols\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            col_stats = self.evaluation_one_col(dataset=dataset,pred_col=col,\n                                                target_col=target_col,\n                                                example_col=example_col)\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def evaluation_one_col(self, dataset: Dataset, pred_col: str, target_col: str, example_col: str):\n        \"\"\"\n        Perform evaluation for one prediction column\n        against given target and example prediction column.\n        \"\"\"\n        col_stats = pd.DataFrame()\n        # Compute stats\n        val_corrs = self.per_era_corrs(dataf=dataset.dataf,\n                                        pred_col=pred_col,\n                                        target_col=target_col\n                                       )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)\n        max_drawdown = self.max_drawdown(era_corrs=val_corrs)\n        apy = self.apy(era_corrs=val_corrs)\n        example_corr = self.example_correlation(dataset=dataset,\n                                                pred_col=pred_col,\n                                                example_col=example_col\n                                                )\n        mmc_mean, mmc_std, mmc_sharpe = self.mmc(dataf=dataset.dataf,\n                                                 pred_col=pred_col,\n                                                 target_col=target_col,\n                                                 example_col=example_col\n                                                 )\n\n        col_stats.loc[pred_col, \"target\"] = target_col\n        col_stats.loc[pred_col, \"mean\"] = mean\n        col_stats.loc[pred_col, \"std\"] = std\n        col_stats.loc[pred_col, \"sharpe\"] = sharpe\n        col_stats.loc[pred_col, \"max_drawdown\"] = max_drawdown\n        col_stats.loc[pred_col, \"apy\"] = apy\n        col_stats.loc[pred_col, \"mmc_mean\"] = mmc_mean\n        col_stats.loc[pred_col, \"mmc_std\"] = mmc_std\n        col_stats.loc[pred_col, \"mmc_sharpe\"] = mmc_sharpe\n        col_stats.loc[pred_col, \"corr_with_example_preds\"] = example_corr\n\n        # Compute intensive stats\n        if not self.fast_mode:\n            max_feature_exposure = self.max_feature_exposure(dataset=dataset, pred_col=pred_col)\n            fn_mean = self.feature_neutral_mean(dataset=dataset, pred_col=pred_col)\n            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(dataf=dataset.dataf,\n                                                                           pred_col=pred_col,\n                                                                           target_col=target_col,\n                                                                           tb=200\n                                                                           )\n            col_stats.loc[pred_col, \"max_feature_exposure\"] = max_feature_exposure\n            col_stats.loc[pred_col, \"feature_neutral_mean\"] = fn_mean\n            col_stats.loc[pred_col, \"tb200_mean\"] = tb200_mean\n            col_stats.loc[pred_col, \"tb200_std\"] = tb200_std\n            col_stats.loc[pred_col, \"tb200_sharpe\"] = tb200_sharpe\n        return col_stats\n\n    def per_era_corrs(self, dataf: pd.DataFrame, pred_col: str,\n                      target_col: str) -> pd.Series:\n        \"\"\" Correlation between prediction and target for each era. \"\"\"\n        return dataf.groupby(dataf[self.era_col])\\\n            .apply(lambda d: self._normalize_uniform(d[pred_col].fillna(0.5))\n                   .corr(d[target_col]))\n\n    def mean_std_sharpe(self, era_corrs: pd.Series) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Average, standard deviation and Sharpe ratio for\n        correlations per era.\n        \"\"\"\n        mean = era_corrs.mean()\n        std = era_corrs.std(ddof=0)\n        sharpe = mean / std\n        return mean.item(), std.item(), sharpe.item()\n\n    @staticmethod\n    def max_drawdown(era_corrs: pd.Series) -> np.float64:\n        \"\"\" Maximum drawdown per era. \"\"\"\n        # Arbitrarily large window\n        rolling_max = (era_corrs + 1).cumprod().rolling(window=9000,\n                                                        min_periods=1).max()\n        daily_value = (era_corrs + 1).cumprod()\n        max_drawdown = -((rolling_max - daily_value) / rolling_max).max()\n        return max_drawdown\n\n    @staticmethod\n    def apy(era_corrs: pd.Series) -> np.float64:\n        \"\"\" Annual percentage yield. \"\"\"\n        payout_scores = era_corrs.clip(-0.25, 0.25)\n        payout_daily_value = (payout_scores + 1).cumprod()\n        apy = (\n                      (\n                              (payout_daily_value.dropna().iloc[-1])\n                              ** (1 / len(payout_scores))\n                      )\n                      ** 49  # 52 weeks of compounding minus 3 for stake compounding lag\n                      - 1\n              ) * 100\n        return apy\n\n    def example_correlation(self, dataset: Dataset,\n                            pred_col: str, example_col: str):\n        \"\"\" Correlations with example predictions. \"\"\"\n        return self.per_era_corrs(dataf=dataset.dataf,\n                                  pred_col=pred_col,\n                                  target_col=example_col,\n                                  ).mean()\n\n    def max_feature_exposure(self, dataset: Dataset, pred_col: str) -> np.float64:\n        \"\"\" Maximum exposure over all features. \"\"\"\n        max_per_era = dataset.dataf.groupby(self.era_col).apply(\n            lambda d: d[dataset.feature_cols].corrwith(d[pred_col]).abs().max())\n        max_feature_exposure = max_per_era.mean()\n        return max_feature_exposure\n\n    def feature_neutral_mean(self, dataset: Dataset, pred_col: str) -> np.float64:\n        \"\"\" Feature neutralized mean performance. \"\"\"\n        fn = FeatureNeutralizer(pred_name=pred_col,\n                                era_col=self.era_col,\n                                proportion=1.0)\n        neutralized_dataset = fn.transform(dataset=dataset)\n        return neutralized_dataset.dataf[fn.final_col_name].mean()\n\n    def tbx_mean_std_sharpe(self,\n                            dataf: pd.DataFrame,\n                            pred_col: str,\n                            target_col: str,\n                            tb: int = 200\n                            ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Calculate Mean, Standard deviation and Sharpe ratio\n        when we focus on the x top and x bottom predictions.\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        tb_val_corrs = self._score_by_date(dataf=dataf,\n                                           columns=[pred_col],\n                                           target=target_col,\n                                           tb=tb)\n        return self.mean_std_sharpe(era_corrs=tb_val_corrs)\n\n    def mmc(self, dataf: pd.DataFrame,\n            pred_col: str,\n            target_col: str,\n            example_col: str\n            ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\" MMC Mean, standard deviation and Sharpe ratio. \"\"\"\n        mmc_scores = []\n        corr_scores = []\n        for _, x in dataf.groupby(self.era_col):\n            series = self.neutralize_series(self._normalize_uniform(x[pred_col]), (x[example_col]))\n            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))\n            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))\n\n        val_mmc_mean = np.mean(mmc_scores)\n        val_mmc_std = np.std(mmc_scores)\n        corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]\n        corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)\n        return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe\n\n    @staticmethod\n    def neutralize_series(series, by, proportion=1.0):\n        scores = series.values.reshape(-1, 1)\n        exposures = by.values.reshape(-1, 1)\n\n        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures\n        exposures = np.hstack(\n            (exposures,\n             np.array([np.mean(series)] * len(exposures)).reshape(-1, 1)))\n\n        correction = proportion * (exposures.dot(\n            np.linalg.lstsq(exposures, scores, rcond=None)[0]))\n        corrected_scores = scores - correction\n        neutralized = pd.Series(corrected_scores.ravel(), index=series.index)\n        return neutralized\n\n    def _score_by_date(self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None):\n        \"\"\"\n        Get era correlation based on given tb (x top and bottom predictions).\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        unique_eras = dataf[self.era_col].unique()\n        computed = []\n        for u in unique_eras:\n            df_era = dataf[dataf[self.era_col] == u]\n            era_pred = np.float64(df_era[columns].values.T)\n            era_target = np.float64(df_era[target].values.T)\n\n            if tb is None:\n                ccs = np.corrcoef(era_target, era_pred)[0, 1:]\n            else:\n                tbidx = np.argsort(era_pred, axis=1)\n                tbidx = np.concatenate([tbidx[:, :tb], tbidx[:, -tb:]], axis=1)\n                ccs = [np.corrcoef(era_target[idx], pred[idx])[0, 1] for idx, pred in zip(tbidx, era_pred)]\n                ccs = np.array(ccs)\n            computed.append(ccs)\n        return pd.DataFrame(np.array(computed), columns=columns, index=dataf[self.era_col].unique())\n\n    @staticmethod\n    def _normalize_uniform(df: pd.DataFrame) -> pd.Series:\n        \"\"\" Normalize predictions uniformly using ranks. \"\"\"\n        x = (df.rank(method=\"first\") - 0.5) / len(df)\n        return pd.Series(x, index=df.index)";
+                var nbb_formatted_code = "# export\nclass BaseEvaluator:\n    \"\"\"\n    Evaluation functionality that holds for both\n    Numerai Classic and Numerai Signals.\n    :param era_col: Column name pointing to eras.\n    Most commonly \"era\" for Classic and \"friday_date\" for Signals.\n    :param fast_mode: Will skip compute intensive metrics\n    max_exposure, feature neutral mean and TB200 if set to True.\n    \"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        self.era_col = era_col\n        self.fast_mode = fast_mode\n\n    def full_evaluation(\n        self,\n        dataset: Dataset,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Perform evaluation for each prediction column in the Dataset\n        against give target and example prediction column.\n        \"\"\"\n        val_stats = pd.DataFrame()\n        dataset.dataf = dataset.dataf.fillna(0.5)\n        pred_cols = dataset.prediction_cols if not pred_cols else pred_cols\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            col_stats = self.evaluation_one_col(\n                dataset=dataset,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def evaluation_one_col(\n        self, dataset: Dataset, pred_col: str, target_col: str, example_col: str\n    ):\n        \"\"\"\n        Perform evaluation for one prediction column\n        against given target and example prediction column.\n        \"\"\"\n        col_stats = pd.DataFrame()\n        # Compute stats\n        val_corrs = self.per_era_corrs(\n            dataf=dataset.dataf, pred_col=pred_col, target_col=target_col\n        )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)\n        max_drawdown = self.max_drawdown(era_corrs=val_corrs)\n        apy = self.apy(era_corrs=val_corrs)\n        example_corr = self.example_correlation(\n            dataset=dataset, pred_col=pred_col, example_col=example_col\n        )\n        mmc_mean, mmc_std, mmc_sharpe = self.mmc(\n            dataf=dataset.dataf,\n            pred_col=pred_col,\n            target_col=target_col,\n            example_col=example_col,\n        )\n\n        col_stats.loc[pred_col, \"target\"] = target_col\n        col_stats.loc[pred_col, \"mean\"] = mean\n        col_stats.loc[pred_col, \"std\"] = std\n        col_stats.loc[pred_col, \"sharpe\"] = sharpe\n        col_stats.loc[pred_col, \"max_drawdown\"] = max_drawdown\n        col_stats.loc[pred_col, \"apy\"] = apy\n        col_stats.loc[pred_col, \"mmc_mean\"] = mmc_mean\n        col_stats.loc[pred_col, \"mmc_std\"] = mmc_std\n        col_stats.loc[pred_col, \"mmc_sharpe\"] = mmc_sharpe\n        col_stats.loc[pred_col, \"corr_with_example_preds\"] = example_corr\n\n        # Compute intensive stats\n        if not self.fast_mode:\n            max_feature_exposure = self.max_feature_exposure(\n                dataset=dataset, pred_col=pred_col\n            )\n            fn_mean = self.feature_neutral_mean(dataset=dataset, pred_col=pred_col)\n            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(\n                dataf=dataset.dataf, pred_col=pred_col, target_col=target_col, tb=200\n            )\n            col_stats.loc[pred_col, \"max_feature_exposure\"] = max_feature_exposure\n            col_stats.loc[pred_col, \"feature_neutral_mean\"] = fn_mean\n            col_stats.loc[pred_col, \"tb200_mean\"] = tb200_mean\n            col_stats.loc[pred_col, \"tb200_std\"] = tb200_std\n            col_stats.loc[pred_col, \"tb200_sharpe\"] = tb200_sharpe\n        return col_stats\n\n    def per_era_corrs(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str\n    ) -> pd.Series:\n        \"\"\"Correlation between prediction and target for each era.\"\"\"\n        return dataf.groupby(dataf[self.era_col]).apply(\n            lambda d: self._normalize_uniform(d[pred_col].fillna(0.5)).corr(\n                d[target_col]\n            )\n        )\n\n    def mean_std_sharpe(\n        self, era_corrs: pd.Series\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Average, standard deviation and Sharpe ratio for\n        correlations per era.\n        \"\"\"\n        mean = era_corrs.mean()\n        std = era_corrs.std(ddof=0)\n        sharpe = mean / std\n        return mean.item(), std.item(), sharpe.item()\n\n    @staticmethod\n    def max_drawdown(era_corrs: pd.Series) -> np.float64:\n        \"\"\"Maximum drawdown per era.\"\"\"\n        # Arbitrarily large window\n        rolling_max = (\n            (era_corrs + 1).cumprod().rolling(window=9000, min_periods=1).max()\n        )\n        daily_value = (era_corrs + 1).cumprod()\n        max_drawdown = -((rolling_max - daily_value) / rolling_max).max()\n        return max_drawdown\n\n    @staticmethod\n    def apy(era_corrs: pd.Series) -> np.float64:\n        \"\"\"Annual percentage yield.\"\"\"\n        payout_scores = era_corrs.clip(-0.25, 0.25)\n        payout_daily_value = (payout_scores + 1).cumprod()\n        apy = (\n            ((payout_daily_value.dropna().iloc[-1]) ** (1 / len(payout_scores)))\n            ** 49  # 52 weeks of compounding minus 3 for stake compounding lag\n            - 1\n        ) * 100\n        return apy\n\n    def example_correlation(self, dataset: Dataset, pred_col: str, example_col: str):\n        \"\"\"Correlations with example predictions.\"\"\"\n        return self.per_era_corrs(\n            dataf=dataset.dataf,\n            pred_col=pred_col,\n            target_col=example_col,\n        ).mean()\n\n    def max_feature_exposure(self, dataset: Dataset, pred_col: str) -> np.float64:\n        \"\"\"Maximum exposure over all features.\"\"\"\n        max_per_era = dataset.dataf.groupby(self.era_col).apply(\n            lambda d: d[dataset.feature_cols].corrwith(d[pred_col]).abs().max()\n        )\n        max_feature_exposure = max_per_era.mean()\n        return max_feature_exposure\n\n    def feature_neutral_mean(self, dataset: Dataset, pred_col: str) -> np.float64:\n        \"\"\"Feature neutralized mean performance.\"\"\"\n        fn = FeatureNeutralizer(\n            pred_name=pred_col, era_col=self.era_col, proportion=1.0\n        )\n        neutralized_dataset = fn.transform(dataset=dataset)\n        return neutralized_dataset.dataf[fn.final_col_name].mean()\n\n    def tbx_mean_std_sharpe(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, tb: int = 200\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Calculate Mean, Standard deviation and Sharpe ratio\n        when we focus on the x top and x bottom predictions.\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        tb_val_corrs = self._score_by_date(\n            dataf=dataf, columns=[pred_col], target=target_col, tb=tb\n        )\n        return self.mean_std_sharpe(era_corrs=tb_val_corrs)\n\n    def mmc(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, example_col: str\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"MMC Mean, standard deviation and Sharpe ratio.\"\"\"\n        mmc_scores = []\n        corr_scores = []\n        for _, x in dataf.groupby(self.era_col):\n            series = self.neutralize_series(\n                self._normalize_uniform(x[pred_col]), (x[example_col])\n            )\n            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))\n            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))\n\n        val_mmc_mean = np.mean(mmc_scores)\n        val_mmc_std = np.std(mmc_scores)\n        corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]\n        corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)\n        return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe\n\n    @staticmethod\n    def neutralize_series(series, by, proportion=1.0):\n        scores = series.values.reshape(-1, 1)\n        exposures = by.values.reshape(-1, 1)\n\n        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures\n        exposures = np.hstack(\n            (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))\n        )\n\n        correction = proportion * (\n            exposures.dot(np.linalg.lstsq(exposures, scores, rcond=None)[0])\n        )\n        corrected_scores = scores - correction\n        neutralized = pd.Series(corrected_scores.ravel(), index=series.index)\n        return neutralized\n\n    def _score_by_date(\n        self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None\n    ):\n        \"\"\"\n        Get era correlation based on given tb (x top and bottom predictions).\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        unique_eras = dataf[self.era_col].unique()\n        computed = []\n        for u in unique_eras:\n            df_era = dataf[dataf[self.era_col] == u]\n            era_pred = np.float64(df_era[columns].values.T)\n            era_target = np.float64(df_era[target].values.T)\n\n            if tb is None:\n                ccs = np.corrcoef(era_target, era_pred)[0, 1:]\n            else:\n                tbidx = np.argsort(era_pred, axis=1)\n                tbidx = np.concatenate([tbidx[:, :tb], tbidx[:, -tb:]], axis=1)\n                ccs = [\n                    np.corrcoef(era_target[idx], pred[idx])[0, 1]\n                    for idx, pred in zip(tbidx, era_pred)\n                ]\n                ccs = np.array(ccs)\n            computed.append(ccs)\n        return pd.DataFrame(\n            np.array(computed), columns=columns, index=dataf[self.era_col].unique()\n        )\n\n    @staticmethod\n    def _normalize_uniform(df: pd.DataFrame) -> pd.Series:\n        \"\"\"Normalize predictions uniformly using ranks.\"\"\"\n        x = (df.rank(method=\"first\") - 0.5) / len(df)\n        return pd.Series(x, index=df.index)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="1.-Numerai-Classic">1. Numerai Classic<a class="anchor-link" href="#1.-Numerai-Classic"> </a></h2>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NumeraiClassicEvaluator" class="doc_header"><code>class</code> <code>NumeraiClassicEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L248" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerai_blocks/evaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+</blockquote>
+<p>Evaluation functionality that holds for both
+Numerai Classic and Numerai Signals.
+:param era_col: Column name pointing to eras.
+Most commonly "era" for Classic and "friday_date" for Signals.
+:param fast_mode: Will skip compute intensive metrics
+max_exposure, feature neutral mean and TB200 if set to True.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="2e68e8f0-b518-46e4-baca-b57b6049ac56"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#2e68e8f0-b518-46e4-baca-b57b6049ac56');
+
+            setTimeout(function() {
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "#export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    def __init__(self, era_col: str = \"era\", fast_mode = False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
+                var nbb_formatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="2.-Numerai-Signals">2. Numerai Signals<a class="anchor-link" href="#2.-Numerai-Signals"> </a></h2>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/evaluation.py#L253" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'era'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerai_blocks/evaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+</blockquote>
+<p>Evaluation functionality that holds for both
+Numerai Classic and Numerai Signals.
+:param era_col: Column name pointing to eras.
+Most commonly "era" for Classic and "friday_date" for Signals.
+:param fast_mode: Will skip compute intensive metrics
+max_exposure, feature neutral mean and TB200 if set to True.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="a40ffc81-6523-446c-b36d-305498f562b6"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#a40ffc81-6523-446c-b36d-305498f562b6');
+
+            setTimeout(function() {
+                var nbb_cell_id = 6;
+                var nbb_unformatted_code = "# export\nclass NumeraiSignalsEvaluator(BaseEvaluator):\n    def __init__(self, era_col: str = \"era\", fast_mode = False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
+                var nbb_formatted_code = "# export\nclass NumeraiSignalsEvaluator(BaseEvaluator):\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;test_assets/example_signals_preds.parquet&quot;</span><span class="p">)</span>
+<span class="c1"># dataset = create_dataset(&quot;test_assets/example_signals_preds_with_features.csv&quot;)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ft&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span><span class="si">}</span><span class="s2">&quot;</span>\
+                         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dataf</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">era_col</span><span class="o">=</span><span class="s2">&quot;friday_date&quot;</span><span class="p">)</span>
+<span class="n">val_stats</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">full_evaluation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                                      <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;target_20d&quot;</span><span class="p">,</span>
+                                      <span class="n">pred_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;prediction&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_random&quot;</span><span class="p">],</span>
+                                      <span class="n">example_col</span><span class="o">=</span><span class="s2">&quot;prediction_random&quot;</span>
+                                      <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Warning</span>: No <span style="color: #008000; text-decoration-color: #008000">'era'</span> column found in DataFrame. <span style="color: #008000; text-decoration-color: #008000">'era'</span> column is mandatory for certain 
+numerai-blocks functionality. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🤖 Neutralized <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'prediction'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> with proportion </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'1.0'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> 🤖</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">New neutralized column = <span style="color: #008000; text-decoration-color: #008000; font-weight: bold">'prediction_neutralized_1.0'</span>.
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Warning</span>: No <span style="color: #008000; text-decoration-color: #008000">'era'</span> column found in DataFrame. <span style="color: #008000; text-decoration-color: #008000">'era'</span> column is mandatory for certain 
+numerai-blocks functionality. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1793953</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">6</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">034291</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🤖 Neutralized <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'prediction_random'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> with proportion </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'1.0'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> 🤖</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">New neutralized column = <span style="color: #008000; text-decoration-color: #008000; font-weight: bold">'prediction_random_neutralized_1.0'</span>.
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Warning</span>: No <span style="color: #008000; text-decoration-color: #008000">'era'</span> column found in DataFrame. <span style="color: #008000; text-decoration-color: #008000">'era'</span> column is mandatory for certain 
+numerai-blocks functionality. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1793953</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">007923</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="fbc1fbe3-396a-42a3-9fb9-11c8206127b9"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#fbc1fbe3-396a-42a3-9fb9-11c8206127b9');
+
+            setTimeout(function() {
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "# slow\ndataset = create_dataset(\"test_assets/example_signals_preds.parquet\")\n# dataset = create_dataset(\"test_assets/example_signals_preds_with_features.csv\")\ndataset.dataf = dataset.dataf.iloc[:-1]\ndataset.dataf.columns = [col if not col.startswith(\"ft\") else f\"feature_{' '.join(col.split('_')[1:])}\"\\\n                         for col in dataset.dataf.columns]\n\nevaluator = NumeraiSignalsEvaluator(era_col=\"friday_date\")\nval_stats = evaluator.full_evaluation(dataset=dataset,\n                                      target_col=\"target_20d\",\n                                      pred_cols=[\"prediction\", \"prediction_random\"],\n                                      example_col=\"prediction_random\"\n                                      )";
+                var nbb_formatted_code = "# slow\ndataset = create_dataset(\"test_assets/example_signals_preds.parquet\")\n# dataset = create_dataset(\"test_assets/example_signals_preds_with_features.csv\")\ndataset.dataf = dataset.dataf.iloc[:-1]\ndataset.dataf.columns = [\n    col if not col.startswith(\"ft\") else f\"feature_{' '.join(col.split('_')[1:])}\"\n    for col in dataset.dataf.columns\n]\n\nevaluator = NumeraiSignalsEvaluator(era_col=\"friday_date\")\nval_stats = evaluator.full_evaluation(\n    dataset=dataset,\n    target_col=\"target_20d\",\n    pred_cols=[\"prediction\", \"prediction_random\"],\n    example_col=\"prediction_random\",\n)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">val_stats</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>sharpe</th>
+      <th>max_drawdown</th>
+      <th>apy</th>
+      <th>mmc_mean</th>
+      <th>mmc_std</th>
+      <th>mmc_sharpe</th>
+      <th>corr_with_example_preds</th>
+      <th>max_feature_exposure</th>
+      <th>feature_neutral_mean</th>
+      <th>tb200_mean</th>
+      <th>tb200_std</th>
+      <th>tb200_sharpe</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>prediction</th>
+      <td>target_20d</td>
+      <td>0.011410</td>
+      <td>0.018157</td>
+      <td>0.628409</td>
+      <td>-0.099899</td>
+      <td>73.007442</td>
+      <td>0.008546</td>
+      <td>0.013305</td>
+      <td>0.63460</td>
+      <td>0.001621</td>
+      <td>NaN</td>
+      <td>0.5</td>
+      <td>0.030639</td>
+      <td>0.058256</td>
+      <td>0.525938</td>
+    </tr>
+    <tr>
+      <th>prediction_random</th>
+      <td>target_20d</td>
+      <td>0.000381</td>
+      <td>0.014507</td>
+      <td>0.026268</td>
+      <td>-0.209139</td>
+      <td>1.360748</td>
+      <td>-0.000002</td>
+      <td>0.000157</td>
+      <td>0.02614</td>
+      <td>0.999911</td>
+      <td>NaN</td>
+      <td>0.5</td>
+      <td>0.004668</td>
+      <td>0.049444</td>
+      <td>0.094403</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="f50a6e33-4c9f-4bec-9524-4329b488fd12"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#f50a6e33-4c9f-4bec-9524-4329b488fd12');
+
+            setTimeout(function() {
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "val_stats";
+                var nbb_formatted_code = "val_stats";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+
+</div>
+</div>
+</div>
 </div>
  
 

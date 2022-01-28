@@ -133,7 +133,7 @@ class BaseDownloader(BaseIO):
     """
 
     def __init__(self, directory_path: str):
-        super(BaseDownloader, self).__init__(directory_path=directory_path)
+        super().__init__(directory_path=directory_path)
 
     @abstractmethod
     def download_training_data(self, *args, **kwargs):
@@ -171,7 +171,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     """
 
     def __init__(self, directory_path: str, *args, **kwargs):
-        super(NumeraiClassicDownloader, self).__init__(directory_path=directory_path)
+        super().__init__(directory_path=directory_path)
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
@@ -334,7 +334,7 @@ class YahooFinanceDownloader(BaseDownloader):
     """
 
     def __init__(self, directory_path: str, *args, **kwargs):
-        super(YahooFinanceDownloader, self).__init__(directory_path=directory_path)
+        super().__init__(directory_path=directory_path)
         self.api = SignalsAPI()
         self.universe_url = self.api.TICKER_UNIVERSE_URL
 
@@ -361,7 +361,7 @@ class AwesomeCustomDownloader(BaseDownloader):
     """
 
     def __init__(self, directory_path: str, *args, **kwargs):
-        super(AwesomeCustomDownloader, self).__init__(directory_path=directory_path)
+        super().__init__(directory_path=directory_path)
 
     def download_inference_data(self, *args, **kwargs):
         """(minimal) weekly inference downloading here."""

@@ -69,7 +69,7 @@ def display_processor_info(func):
 class CopyPreProcessor(BaseProcessor):
     """Copy DataFrame to avoid manipulation of original DataFrame. """
     def __init__(self):
-        super(CopyPreProcessor, self).__init__()
+        super().__init__()
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
@@ -82,7 +82,7 @@ class FeatureSelectionPreProcessor(BaseProcessor):
     Keep only features given + all target, predictions and aux columns.
     """
     def __init__(self, feature_cols: Union[str, list]):
-        super(FeatureSelectionPreProcessor, self).__init__()
+        super().__init__()
         self.feature_cols = feature_cols
 
     @display_processor_info
@@ -98,7 +98,7 @@ class TargetSelectionPreProcessor(BaseProcessor):
     Keep only features given + all target, predictions and aux columns.
     """
     def __init__(self, target_cols: Union[str, list]):
-        super(TargetSelectionPreProcessor, self).__init__()
+        super().__init__()
         self.target_cols = target_cols
 
     @display_processor_info
@@ -116,7 +116,7 @@ class GroupStatsPreProcessor(BaseProcessor):
     :param groups: Groups to create features for. All groups by default.
     """
     def __init__(self, groups: list = None):
-        super(GroupStatsPreProcessor, self).__init__()
+        super().__init__()
         self.all_groups = ["intelligence", "wisdom", "charisma",
                            "dexterity", "strength", "constitution"]
         self.group_names = groups if groups else self.all_groups
@@ -149,7 +149,7 @@ class GroupStatsPreProcessor(BaseProcessor):
 #     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/
 #     """
 #     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):
-#         super(RealizedVolFeatures, self).__init__()
+#         super().__init__()
 #         self.ticker_col = ticker_col
 #         self.price_col = price_col
 #
@@ -192,7 +192,7 @@ class GroupStatsPreProcessor(BaseProcessor):
 #     Source and more information: https://dspyt.com/advanced-realized-volatility-and-quarticity/
 #     """
 #     def __init__(self, ticker_col: str = 'ticker', price_col: str = 'Close'):
-#         super(QuarticityFeatures, self).__init__()
+#         super().__init__()
 #         self.ticker_col = ticker_col
 #         self.price_col = price_col
 #
@@ -238,7 +238,7 @@ class AwesomePreProcessor(BaseProcessor):
     Do some awesome preprocessing.
     """
     def __init__(self, *args, **kwargs):
-        super(AwesomePreProcessor, self).__init__()
+        super().__init__()
 
     @display_processor_info
     def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
