@@ -16,11 +16,13 @@ from rich import print as rich_print
 class Dataset:
     def __init__(self, dataf: pd.DataFrame, *args, **kwargs):
         self.dataf = dataf
-        if not 'era' in self.dataf.columns and not 'friday_date' in self.dataf.columns:
+        if 'era' in self.dataf.columns:
+            self.eras = self.dataf['era']
+        elif 'friday_date' in self.dataf.columns:
+            self.eras = self.dataf['friday_date']
+        else:
             rich_print(":warning: [bold red]Warning[/bold red]: No 'era' or 'friday_date' column found in DataFrame. \
 Era columns are mandatory for certain numerai-blocks functionality. :warning:")
-        else:
-            self.eras = self.dataf['era']
         self.__dict__.update(*args, **kwargs)
         self.all_cols = list(self.dataf.columns)
         self.feature_cols = [col for col in self.all_cols if col.startswith("feature")]
