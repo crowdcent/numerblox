@@ -16,9 +16,9 @@ from rich import print as rich_print
 class Dataset:
     def __init__(self, dataf: pd.DataFrame, *args, **kwargs):
         self.dataf = dataf
-        if not 'era' in self.dataf.columns:
-            rich_print(":warning: [bold red]Warning[/bold red]: No 'era' column found in DataFrame. \
-'era' column is mandatory for certain numerai-blocks functionality. :warning:")
+        if not 'era' in self.dataf.columns and not 'friday_date' in self.dataf.columns:
+            rich_print(":warning: [bold red]Warning[/bold red]: No 'era' or 'friday_date' column found in DataFrame. \
+Era columns are mandatory for certain numerai-blocks functionality. :warning:")
         else:
             self.eras = self.dataf['era']
         self.__dict__.update(*args, **kwargs)

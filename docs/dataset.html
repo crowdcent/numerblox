@@ -54,10 +54,10 @@ nb_path: "nbs/02_dataset.ipynb"
 
 
 
-<div id="4b063bb3-6c0e-4ec6-9552-994a40dd63d1"></div>
+<div id="ea65ce0d-a911-4230-893a-6110a1cd8b4c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4b063bb3-6c0e-4ec6-9552-994a40dd63d1');
+var element = $('#ea65ce0d-a911-4230-893a-6110a1cd8b4c');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -160,15 +160,15 @@ var element = $('#4b063bb3-6c0e-4ec6-9552-994a40dd63d1');
 
 
 
-<div id="59d36e50-f650-4ab8-b22a-69771bf1b26a"></div>
+<div id="6a5c9e3b-dcb2-4991-af25-933db14bbba3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#59d36e50-f650-4ab8-b22a-69771bf1b26a');
+var element = $('#6a5c9e3b-dcb2-4991-af25-933db14bbba3');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        if not 'era' in self.dataf.columns:\n            rich_print(\":warning: [bold red]Warning[/bold red]: No 'era' column found in DataFrame. \\\n'era' column is mandatory for certain numerai-blocks functionality. :warning:\")\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.all_cols if col not in self.not_aux_cols\n        ]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def merge_datasets(self, other, *args, **kwargs):\n        \"\"\"\n        Merge Dataset with other Dataset.\n        :param other: Another Dataset.\n        WARNING: Metadata of original Dataset will be kept in case of duplicates.\n        *args, **kwargs will be passed to DataFrame merge operation.\n        :return: Dataset with dataf and metadata merged.\n        Metadata of original has priority in case of duplicate keys\n        \"\"\"\n        # Merge DataFrames\n        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()\n        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)\n        # Merge metadata\n        other_copy.__dict__.pop('dataf', None)\n        new_dataset.__dict__.update(**other_copy.__dict__)\n        return Dataset(**new_dataset.__dict__)\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
-                var nbb_formatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        if not \"era\" in self.dataf.columns:\n            rich_print(\n                \":warning: [bold red]Warning[/bold red]: No 'era' column found in DataFrame. \\\n'era' column is mandatory for certain numerai-blocks functionality. :warning:\"\n            )\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.all_cols if col not in self.not_aux_cols]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(\n        self, multi_target=False\n    ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def merge_datasets(self, other, *args, **kwargs):\n        \"\"\"\n        Merge Dataset with other Dataset.\n        :param other: Another Dataset.\n        WARNING: Metadata of original Dataset will be kept in case of duplicates.\n        *args, **kwargs will be passed to DataFrame merge operation.\n        :return: Dataset with dataf and metadata merged.\n        Metadata of original has priority in case of duplicate keys\n        \"\"\"\n        # Merge DataFrames\n        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()\n        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)\n        # Merge metadata\n        other_copy.__dict__.pop(\"dataf\", None)\n        new_dataset.__dict__.update(**other_copy.__dict__)\n        return Dataset(**new_dataset.__dict__)\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
+                var nbb_unformatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        if not 'era' in self.dataf.columns and not 'friday_date' in self.dataf.columns:\n            rich_print(\":warning: [bold red]Warning[/bold red]: No 'era' or 'friday_date' column found in DataFrame. \\\nEra columns are mandatory for certain numerai-blocks functionality. :warning:\")\n        else:\n            self.eras = self.dataf['era']\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.all_cols if col not in self.not_aux_cols\n        ]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def merge_datasets(self, other, *args, **kwargs):\n        \"\"\"\n        Merge Dataset with other Dataset.\n        :param other: Another Dataset.\n        WARNING: Metadata of original Dataset will be kept in case of duplicates.\n        *args, **kwargs will be passed to DataFrame merge operation.\n        :return: Dataset with dataf and metadata merged.\n        Metadata of original has priority in case of duplicate keys\n        \"\"\"\n        # Merge DataFrames\n        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()\n        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)\n        # Merge metadata\n        other_copy.__dict__.pop('dataf', None)\n        new_dataset.__dict__.update(**other_copy.__dict__)\n        return Dataset(**new_dataset.__dict__)\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
+                var nbb_formatted_code = "# export\nclass Dataset:\n    def __init__(self, dataf: pd.DataFrame, *args, **kwargs):\n        self.dataf = dataf\n        if not \"era\" in self.dataf.columns and not \"friday_date\" in self.dataf.columns:\n            rich_print(\n                \":warning: [bold red]Warning[/bold red]: No 'era' or 'friday_date' column found in DataFrame. \\\nEra columns are mandatory for certain numerai-blocks functionality. :warning:\"\n            )\n        else:\n            self.eras = self.dataf[\"era\"]\n        self.__dict__.update(*args, **kwargs)\n        self.all_cols = list(self.dataf.columns)\n        self.feature_cols = [col for col in self.all_cols if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.all_cols if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.all_cols if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.all_cols if col not in self.not_aux_cols]\n\n    def copy_dataset(self):\n        \"\"\"Copy Dataset object\"\"\"\n        return deepcopy(self)\n\n    def copy_dataframe(self) -> pd.DataFrame:\n        \"\"\"Copy DataFrame part of Dataset\"\"\"\n        return deepcopy(self.dataf)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.dataf.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(\n        self, multi_target=False\n    ) -> Tuple[pd.DataFrame, pd.DataFrame]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def merge_datasets(self, other, *args, **kwargs):\n        \"\"\"\n        Merge Dataset with other Dataset.\n        :param other: Another Dataset.\n        WARNING: Metadata of original Dataset will be kept in case of duplicates.\n        *args, **kwargs will be passed to DataFrame merge operation.\n        :return: Dataset with dataf and metadata merged.\n        Metadata of original has priority in case of duplicate keys\n        \"\"\"\n        # Merge DataFrames\n        new_dataset, other_copy = self.copy_dataset(), other.copy_dataset()\n        new_dataset.dataf = self.dataf.merge(other.dataf, *args, **kwargs)\n        # Merge metadata\n        other_copy.__dict__.pop(\"dataf\", None)\n        new_dataset.__dict__.update(**other_copy.__dict__)\n        return Dataset(**new_dataset.__dict__)\n\n    def __repr__(self) -> str:\n        return f\"Dataset of shape {self.dataf.shape}. Columns: {self.all_cols}\"\n\n    def __str__(self):\n        return self.__repr__()";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -231,10 +231,10 @@ For more details check <a href="https://pandas.pydata.org/docs/reference/io.html
 
 
 
-<div id="fd428b9c-ee32-4627-ac99-b1f03580238b"></div>
+<div id="04adb95e-8e25-4d53-a271-b4e441042943"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fd428b9c-ee32-4627-ac99-b1f03580238b');
+var element = $('#04adb95e-8e25-4d53-a271-b4e441042943');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -309,10 +309,10 @@ var element = $('#fd428b9c-ee32-4627-ac99-b1f03580238b');
 
 
 
-<div id="7095e7c7-3bc7-4408-9d93-dc2ec40cbe3a"></div>
+<div id="eaf65d3b-3c7e-4699-baa2-0bc3da30f1d3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7095e7c7-3bc7-4408-9d93-dc2ec40cbe3a');
+var element = $('#eaf65d3b-3c7e-4699-baa2-0bc3da30f1d3');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -370,10 +370,10 @@ var element = $('#7095e7c7-3bc7-4408-9d93-dc2ec40cbe3a');
 
 
 
-<div id="43d43073-2439-4148-8513-c9521d2b8713"></div>
+<div id="d0c82535-306f-44ab-8d0a-aff224cdbbc6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#43d43073-2439-4148-8513-c9521d2b8713');
+var element = $('#d0c82535-306f-44ab-8d0a-aff224cdbbc6');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -547,10 +547,10 @@ var element = $('#43d43073-2439-4148-8513-c9521d2b8713');
 
 
 
-<div id="243538e4-75fe-4e15-a1a7-1e36ccb26dee"></div>
+<div id="724ac159-fed0-4be6-a37d-9da3eba6800d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#243538e4-75fe-4e15-a1a7-1e36ccb26dee');
+var element = $('#724ac159-fed0-4be6-a37d-9da3eba6800d');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -709,10 +709,10 @@ var element = $('#243538e4-75fe-4e15-a1a7-1e36ccb26dee');
 
 
 
-<div id="11692e82-7032-4e0e-847f-86150f63f89f"></div>
+<div id="5625a977-80b6-4add-a697-b4269f7d7aa0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#11692e82-7032-4e0e-847f-86150f63f89f');
+var element = $('#5625a977-80b6-4add-a697-b4269f7d7aa0');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -779,10 +779,10 @@ var element = $('#11692e82-7032-4e0e-847f-86150f63f89f');
 
 
 
-<div id="7643a460-a450-491c-aa03-b1a8c522dbc0"></div>
+<div id="606c535f-e80c-42eb-b1a8-88dd2299689b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7643a460-a450-491c-aa03-b1a8c522dbc0');
+var element = $('#606c535f-e80c-42eb-b1a8-88dd2299689b');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -879,10 +879,10 @@ var element = $('#7643a460-a450-491c-aa03-b1a8c522dbc0');
 
 
 
-<div id="a01ee6fb-97ba-4fb3-adb2-f0e83a906819"></div>
+<div id="7681f9b6-717c-44ea-a759-8f2dfad7d11b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a01ee6fb-97ba-4fb3-adb2-f0e83a906819');
+var element = $('#7681f9b6-717c-44ea-a759-8f2dfad7d11b');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -950,10 +950,10 @@ var element = $('#a01ee6fb-97ba-4fb3-adb2-f0e83a906819');
 
 
 
-<div id="74fe4892-0382-4615-8ca3-be876d2164a6"></div>
+<div id="975e1422-3f40-46f9-82a8-a5fc0d675525"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#74fe4892-0382-4615-8ca3-be876d2164a6');
+var element = $('#975e1422-3f40-46f9-82a8-a5fc0d675525');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -1014,10 +1014,10 @@ var element = $('#74fe4892-0382-4615-8ca3-be876d2164a6');
 
 
 
-<div id="944fc872-e8a3-4803-9065-3b5aae5c075a"></div>
+<div id="d03d9cde-ca83-46a1-b2c3-9a2707a6b72f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#944fc872-e8a3-4803-9065-3b5aae5c075a');
+var element = $('#d03d9cde-ca83-46a1-b2c3-9a2707a6b72f');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1068,10 +1068,10 @@ var element = $('#944fc872-e8a3-4803-9065-3b5aae5c075a');
 
 
 
-<div id="83ca19f5-238c-4eab-bbe3-7389bc5a601b"></div>
+<div id="50bd9f08-2c91-44b0-aa6c-53262a2cde61"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#83ca19f5-238c-4eab-bbe3-7389bc5a601b');
+var element = $('#50bd9f08-2c91-44b0-aa6c-53262a2cde61');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -1122,10 +1122,10 @@ var element = $('#83ca19f5-238c-4eab-bbe3-7389bc5a601b');
 
 
 
-<div id="63ad20bd-01bc-48c5-b68b-257bd20408fe"></div>
+<div id="678653f3-8794-41a0-b1b0-10b5a761b847"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#63ad20bd-01bc-48c5-b68b-257bd20408fe');
+var element = $('#678653f3-8794-41a0-b1b0-10b5a761b847');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1223,10 +1223,10 @@ var element = $('#63ad20bd-01bc-48c5-b68b-257bd20408fe');
 
 
 
-<div id="c4ded43f-0d73-4951-b80f-18efc35b5fa3"></div>
+<div id="7123b430-085a-4683-8793-687e2ba3ec1f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c4ded43f-0d73-4951-b80f-18efc35b5fa3');
+var element = $('#7123b430-085a-4683-8793-687e2ba3ec1f');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1317,10 +1317,10 @@ var element = $('#c4ded43f-0d73-4951-b80f-18efc35b5fa3');
 
 
 
-<div id="c59c13c6-86ee-43f0-ab59-a32c01ac8f30"></div>
+<div id="64d28c31-cd8c-451c-a866-4588335d99bb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c59c13c6-86ee-43f0-ab59-a32c01ac8f30');
+var element = $('#64d28c31-cd8c-451c-a866-4588335d99bb');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1373,10 +1373,10 @@ var element = $('#c59c13c6-86ee-43f0-ab59-a32c01ac8f30');
 
 
 
-<div id="d87ca6ef-ee5a-4245-b068-689553ac9bdd"></div>
+<div id="11a75f3c-868a-4486-8082-a1f9afcebdb3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d87ca6ef-ee5a-4245-b068-689553ac9bdd');
+var element = $('#11a75f3c-868a-4486-8082-a1f9afcebdb3');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1474,10 +1474,10 @@ var element = $('#d87ca6ef-ee5a-4245-b068-689553ac9bdd');
 
 
 
-<div id="cee6893a-f81d-436f-8d27-a8d7851213fb"></div>
+<div id="83af83fc-ac08-4a92-a3c4-082510a6b955"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cee6893a-f81d-436f-8d27-a8d7851213fb');
+var element = $('#83af83fc-ac08-4a92-a3c4-082510a6b955');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1552,12 +1552,12 @@ var element = $('#cee6893a-f81d-436f-8d27-a8d7851213fb');
     <tr>
       <th>0</th>
       <td>n000315175b67977</td>
-      <td>0.922156</td>
+      <td>0.888275</td>
     </tr>
     <tr>
       <th>1</th>
       <td>n0014af834a96cdd</td>
-      <td>0.655724</td>
+      <td>0.109839</td>
     </tr>
   </tbody>
 </table>
@@ -1571,10 +1571,10 @@ var element = $('#cee6893a-f81d-436f-8d27-a8d7851213fb');
 
 
 
-<div id="dd185ff6-1646-4d98-8b1b-2c405922d316"></div>
+<div id="4c73a172-c22f-4acc-9246-1409ab2d50de"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#dd185ff6-1646-4d98-8b1b-2c405922d316');
+var element = $('#4c73a172-c22f-4acc-9246-1409ab2d50de');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
@@ -1761,10 +1761,10 @@ Returns all target columns when set to True.</p>
 
 
 
-<div id="53f9d241-8b2d-4031-9928-b02e5f006ca0"></div>
+<div id="bed5d26c-379e-48fc-87b6-c5be12c01562"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#53f9d241-8b2d-4031-9928-b02e5f006ca0');
+var element = $('#bed5d26c-379e-48fc-87b6-c5be12c01562');
 
             setTimeout(function() {
                 var nbb_cell_id = 23;
@@ -1855,10 +1855,10 @@ var element = $('#53f9d241-8b2d-4031-9928-b02e5f006ca0');
 
 
 
-<div id="ddcd9a74-6ba0-4681-82cd-d79c97793100"></div>
+<div id="2aa4ae2d-8a8d-4e55-829e-a85144e9caa6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ddcd9a74-6ba0-4681-82cd-d79c97793100');
+var element = $('#2aa4ae2d-8a8d-4e55-829e-a85144e9caa6');
 
             setTimeout(function() {
                 var nbb_cell_id = 24;
@@ -1909,8 +1909,8 @@ var element = $('#ddcd9a74-6ba0-4681-82cd-d79c97793100');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Warning</span>: No <span style="color: #008000; text-decoration-color: #008000">'era'</span> column found in DataFrame. <span style="color: #008000; text-decoration-color: #008000">'era'</span> column is mandatory for certain 
-numerai-blocks functionality. ⚠
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000; font-weight: bold">Warning</span>: No <span style="color: #008000; text-decoration-color: #008000">'era'</span> or <span style="color: #008000; text-decoration-color: #008000">'friday_date'</span> column found in DataFrame. Era columns are mandatory for
+certain numerai-blocks functionality. ⚠
 </pre>
 
 </div>
@@ -1922,10 +1922,10 @@ numerai-blocks functionality. ⚠
 
 
 
-<div id="2487c792-b015-4579-b15a-517472ff755c"></div>
+<div id="7ff98cf4-141a-4a2e-b94f-405a637cd2f7"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2487c792-b015-4579-b15a-517472ff755c');
+var element = $('#7ff98cf4-141a-4a2e-b94f-405a637cd2f7');
 
             setTimeout(function() {
                 var nbb_cell_id = 25;
@@ -2018,16 +2018,16 @@ var element = $('#2487c792-b015-4579-b15a-517472ff755c');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.687675</td>
-      <td>0.179687</td>
-      <td>0.742095</td>
-      <td>0.580776</td>
-      <td>0.909322</td>
-      <td>0.932122</td>
-      <td>0.876093</td>
-      <td>0.074179</td>
-      <td>0.168657</td>
-      <td>0.178403</td>
+      <td>0.731079</td>
+      <td>0.316178</td>
+      <td>0.965666</td>
+      <td>0.733315</td>
+      <td>0.142976</td>
+      <td>0.291829</td>
+      <td>0.089895</td>
+      <td>0.609463</td>
+      <td>0.048453</td>
+      <td>0.897340</td>
       <td>...</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -2042,16 +2042,16 @@ var element = $('#2487c792-b015-4579-b15a-517472ff755c');
     </tr>
     <tr>
       <th>1</th>
-      <td>0.943355</td>
-      <td>0.737912</td>
-      <td>0.157486</td>
-      <td>0.836629</td>
-      <td>0.644688</td>
-      <td>0.020207</td>
-      <td>0.366998</td>
-      <td>0.384462</td>
-      <td>0.602673</td>
-      <td>0.786345</td>
+      <td>0.146282</td>
+      <td>0.045829</td>
+      <td>0.559675</td>
+      <td>0.139409</td>
+      <td>0.460577</td>
+      <td>0.947483</td>
+      <td>0.177158</td>
+      <td>0.014662</td>
+      <td>0.975833</td>
+      <td>0.390592</td>
       <td>...</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -2077,10 +2077,10 @@ var element = $('#2487c792-b015-4579-b15a-517472ff755c');
 
 
 
-<div id="960bf45a-3f78-45b1-ba7f-2177faad965d"></div>
+<div id="5338e709-2aa5-40e6-ace3-743b56af458b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#960bf45a-3f78-45b1-ba7f-2177faad965d');
+var element = $('#5338e709-2aa5-40e6-ace3-743b56af458b');
 
             setTimeout(function() {
                 var nbb_cell_id = 26;
