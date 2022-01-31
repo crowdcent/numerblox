@@ -108,10 +108,10 @@ class BaseEvaluator:
         Average, standard deviation and Sharpe ratio for
         correlations per era.
         """
-        mean = era_corrs.mean()
-        std = era_corrs.std(ddof=0)
+        mean = pd.Series(era_corrs.mean()).item()
+        std = pd.Series(era_corrs.std(ddof=0)).item()
         sharpe = mean / std
-        return mean.item(), std.item(), sharpe.item()
+        return mean, std, sharpe
 
     @staticmethod
     def max_drawdown(era_corrs: pd.Series) -> np.float64:
