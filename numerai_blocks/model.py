@@ -9,15 +9,17 @@ import uuid
 import joblib
 import pickle
 import numpy as np
+import pandas as pd
 import lightgbm as lgb
 from pathlib import Path
+from typing import Union
 from tqdm.auto import tqdm
 from catboost import CatBoost
 from typeguard import typechecked
 from abc import ABC, abstractmethod
 from sklearn.dummy import DummyRegressor
 
-from .dataset import Dataset, create_dataset
+from .dataset import NumerFrame, create_numerframe
 from .preprocessing import display_processor_info
 
 # Cell
@@ -36,13 +38,13 @@ class BaseModel(ABC):
         self.description = f"{self.__class__.__name__}: '{self.model_name}' prediction"
 
     @abstractmethod
-    def predict(self, dataset: Dataset) -> Dataset:
-        """ Return Dataset with column added for prediction. """
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        """ Return NumerFrame with column added for prediction. """
         ...
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
-    def __call__(self, dataset: Dataset) -> Dataset:
-        return self.predict(dataset)
+    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        return self.predict(dataf=dataf)
 
 # Cell
 class DirectoryModel(BaseModel):
@@ -65,21 +67,20 @@ class DirectoryModel(BaseModel):
         self.total_models = len(self.model_paths)
 
     @display_processor_info
-    def predict(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         """
         Use all recognized models to make predictions and average them out.
-        :param dataset: A Preprocessed dataset where all its features can be passed to the model predict method.
+        :param dataf: A Preprocessed DataFrame where all its features can be passed to the model predict method.
         *args, **kwargs will be parsed into the model.predict method.
         :return: A new dataset with prediction column added.
         """
-        dataset.dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataset.dataf))
-        feature_df = dataset.get_feature_data
+        dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataf))
         models = self.load_models()
         for model in tqdm(models, desc=self.description, position=1):
-            predictions = model.predict(feature_df, *args, **kwargs)
-            dataset.dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
+            predictions = model.predict(dataf.get_feature_data, *args, **kwargs)
+            dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
         del models; gc.collect()
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
     @abstractmethod
     def load_models(self) -> list:
@@ -105,14 +106,13 @@ class SingleModel(BaseModel):
                                         ".pickle": pickle.load}
         self.__check_valid_suffix()
 
-    def predict(self, dataset: Dataset, *args, **kwargs):
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         model = self._load_model()
-        feature_df = dataset.get_feature_data
-        predictions = model.predict(feature_df, *args, **kwargs)
+        predictions = model.predict(dataf.get_feature_data, *args, **kwargs)
         prediction_cols = self.get_prediction_col_names(predictions.shape)
-        dataset.dataf.loc[:, prediction_cols] = predictions
+        dataf.loc[:, prediction_cols] = predictions
         del model; gc.collect()
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
     def _load_model(self, *args, **kwargs):
         """ Load arbitrary model from path using suffix to model mapping. """
@@ -197,9 +197,9 @@ class ConstantModel(BaseModel):
                          )
         self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])
 
-    def predict(self, dataset: Dataset) -> Dataset:
-        dataset.dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataset.get_feature_data)
-        return Dataset(**dataset.__dict__)
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataf.get_feature_data)
+        return NumerFrame(dataf)
 
 # Cell
 class RandomModel(BaseModel):
@@ -213,9 +213,9 @@ class RandomModel(BaseModel):
                          model_name=model_name
                          )
 
-    def predict(self, dataset: Dataset) -> Dataset:
-        dataset.dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataset.dataf))
-        return Dataset(**dataset.__dict__)
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataf))
+        return NumerFrame(dataf)
 
 # Cell
 @typechecked
@@ -231,15 +231,14 @@ class AwesomeModel(BaseModel):
                          )
 
     @display_processor_info
-    def predict(self, dataset: Dataset) -> Dataset:
+    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """ Return Dataset with column(s) added for prediction(s). """
-        ...
-        dataset.dataf.loc[:, self.prediction_col_name] = 0
-        feature_df = dataset.get_feature_data
+        # NumerFrame functionality to get all features
+        feature_df = dataf.get_feature_data
         # Predict and add to new column
         ...
         # Parse all contents of Dataset to the next pipeline step
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
 # Cell
 @typechecked

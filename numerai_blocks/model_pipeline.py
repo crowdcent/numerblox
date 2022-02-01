@@ -4,12 +4,13 @@ __all__ = ['ModelPipeline', 'ModelPipelineCollection']
 
 # Cell
 import uuid
-from typing import List
+import pandas as pd
 from tqdm.auto import tqdm
+from typing import List, Union
 from typeguard import typechecked
 from rich import print as rich_print
 
-from .dataset import Dataset, create_dataset
+from .dataset import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
 from .model import BaseModel, ConstantModel, RandomModel
 from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
@@ -41,44 +42,44 @@ class ModelPipeline:
         self.preprocessors = preprocessors
         self.postprocessors = postprocessors
 
-    def preprocess(self, dataset: Dataset) -> Dataset:
+    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         if self.copy_first:
-            dataset = CopyPreProcessor()(dataset)
+            dataf = CopyPreProcessor()(dataf)
         for preprocessor in tqdm(self.preprocessors,
                                  desc=f"{self.pipeline_name} Preprocessing:",
                                  position=0):
             rich_print(f":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:")
-            dataset = preprocessor(dataset)
-        return dataset
+            dataf = preprocessor(dataf)
+        return NumerFrame(dataf)
 
-    def postprocess(self, dataset: Dataset) -> Dataset:
+    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         if self.standardize:
-            dataset = Standardizer()(dataset)
+            dataf = Standardizer()(dataf)
         for postprocessor in tqdm(self.postprocessors,
                                   desc=f"{self.pipeline_name} Postprocessing: ",
                                   position=0):
             rich_print(f":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:")
-            dataset = postprocessor(dataset)
-        return dataset
+            dataf = postprocessor(dataf)
+        return NumerFrame(dataf)
 
-    def process_models(self, dataset: Dataset) -> Dataset:
+    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         for model in tqdm(self.models,
                                   desc=f"{self.pipeline_name} Model prediction: ",
                                   position=0):
             rich_print(f":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:")
-            dataset = model(dataset)
-        return dataset
+            dataf = model(dataf)
+        return NumerFrame(dataf)
 
-    def pipeline(self, dataset: Dataset) -> Dataset:
+    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """ Process full pipeline and return resulting Dataset. """
-        preprocessed_dataset = self.preprocess(dataset)
-        prediction_dataset = self.process_models(preprocessed_dataset)
-        processed_prediction_dataset = self.postprocess(prediction_dataset)
+        preprocessed_dataf = self.preprocess(dataf)
+        prediction_dataf = self.process_models(preprocessed_dataf)
+        processed_prediction_dataf = self.postprocess(prediction_dataf)
         rich_print(f":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:")
-        return processed_prediction_dataset
+        return processed_prediction_dataf
 
-    def __call__(self, dataset: Dataset):
-        return self.pipeline(dataset)
+    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        return self.pipeline(dataf)
 
 # Cell
 @typechecked
@@ -91,24 +92,24 @@ class ModelPipelineCollection:
         self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}
         self.pipeline_names = list(self.pipelines.keys())
 
-    def process_all_pipelines(self, dataset: Dataset) -> List[Dataset]:
-        """ Process all pipelines and return list of resulting Datasets. """
-        result_datasets = []
+    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:
+        """ Process all pipelines and return list of resulting NumerFrames. """
+        result_datafs = []
         for name, pipeline in tqdm(self.pipelines.items(),
                                    desc="Processing Pipeline Collection"):
-            result_datasets.append(self.process_single_pipeline(dataset, name))
-        return result_datasets
+            result_datafs.append(self.process_single_pipeline(dataf, name))
+        return result_datafs
 
-    def process_single_pipeline(self, dataset: Dataset, pipeline_name: str) -> Dataset:
+    def process_single_pipeline(self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str) -> NumerFrame:
         rich_print(f":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:")
         pipeline = self.get_pipeline(pipeline_name)
-        dataset = pipeline(dataset)
-        return dataset
+        dataf = pipeline(dataf)
+        return NumerFrame(dataf)
 
     def get_pipeline(self, pipeline_name: str) -> ModelPipeline:
         available_pipelines = self.pipeline_names
         assert pipeline_name in available_pipelines, f"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'."
         return self.pipelines[pipeline_name]
 
-    def __call__(self, dataset: Dataset) -> List[Dataset]:
-        return self.process_all_pipelines(dataset=dataset)
+    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:
+        return self.process_all_pipelines(dataf=dataf)

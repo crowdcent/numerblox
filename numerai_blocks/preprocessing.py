@@ -5,6 +5,7 @@ __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'Featu
 
 # Cell
 import time
+import numpy as np
 import pandas as pd
 import datetime as dt
 from typing import Union
@@ -13,7 +14,7 @@ from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 
-from .dataset import NumerFrame, create_dataset
+from .numerframe import NumerFrame, create_numerframe
 
 # Cell
 class BaseProcessor(ABC):
@@ -25,11 +26,11 @@ class BaseProcessor(ABC):
         ...
 
     @abstractmethod
-    def transform(self, dataset: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         ...
 
-    def __call__(self, dataset: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
-        return self.transform(dataset=dataset, *args, **kwargs)
+    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+        return self.transform(dataf=dataf, *args, **kwargs)
 
 # Cell
 def display_processor_info(func):
@@ -52,8 +53,8 @@ class CopyPreProcessor(BaseProcessor):
         super().__init__()
 
     @display_processor_info
-    def transform(self, dataset: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
-        return dataset.copy()
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Union[pd.DataFrame, NumerFrame]:
+        return dataf.copy()
 
 # Cell
 @typechecked
@@ -88,7 +89,6 @@ class TargetSelectionPreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 # Cell
-@typechecked
 class GroupStatsPreProcessor(BaseProcessor):
     """
     WARNING: Only supported for Version 1 (legacy) data.
@@ -102,7 +102,7 @@ class GroupStatsPreProcessor(BaseProcessor):
         self.group_names = groups if groups else self.all_groups
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         self._check_data_validity(dataf=dataf)
         dataf = dataf.pipe(self._add_group_features)
         return NumerFrame(dataf)
@@ -116,7 +116,7 @@ class GroupStatsPreProcessor(BaseProcessor):
             dataf[f"feature_{group}_skew"] = dataf[cols].skew(axis=1)
         return dataf
 
-    def _check_data_validity(self, dataf: Union[pd.DataFrame, NumerFrame]):
+    def _check_data_validity(self, dataf: NumerFrame):
         assert hasattr(dataf.meta, 'version'), f"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data."
         assert getattr(dataf.meta, 'version') == 1, f"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'."
 
