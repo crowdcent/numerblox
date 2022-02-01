@@ -15,7 +15,7 @@ Example and educational notebooks can be found in the `edu_nbs` directory. Devel
 The library features the following tools to build your Numerai pipelines:
 
 - Downloaders
-- Dataset
+- NumerFrame
 - Preprocessing
 - Model
 - ModelPipeline and ModelPipelineCollection
