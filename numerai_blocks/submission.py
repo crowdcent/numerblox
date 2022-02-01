@@ -18,7 +18,7 @@ from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
-from .dataset import NumerFrame
+from .numerframe import NumerFrame
 from .download import BaseIO
 from .key import Key
 

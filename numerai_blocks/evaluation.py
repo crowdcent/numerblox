@@ -8,7 +8,7 @@ import pandas as pd
 from tqdm.auto import tqdm
 from typing import Tuple, Union
 
-from .dataset import NumerFrame, create_numerframe
+from .numerframe import NumerFrame, create_numerframe
 from .postprocessing import FeatureNeutralizer
 
 # Cell

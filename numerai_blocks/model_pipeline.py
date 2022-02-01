@@ -10,7 +10,7 @@ from typing import List, Union
 from typeguard import typechecked
 from rich import print as rich_print
 
-from .dataset import NumerFrame, create_numerframe
+from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
 from .model import BaseModel, ConstantModel, RandomModel
 from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer

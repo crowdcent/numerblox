@@ -16,8 +16,8 @@ from rich import print as rich_print
 from scipy.stats.mstats import gmean
 from sklearn.preprocessing import MinMaxScaler
 
+from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, display_processor_info
-from .dataset import NumerFrame, create_numerframe
 
 # Cell
 class BasePostProcessor(BaseProcessor):

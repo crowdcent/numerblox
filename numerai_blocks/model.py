@@ -19,7 +19,7 @@ from typeguard import typechecked
 from abc import ABC, abstractmethod
 from sklearn.dummy import DummyRegressor
 
-from .dataset import NumerFrame, create_numerframe
+from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import display_processor_info
 
 # Cell
