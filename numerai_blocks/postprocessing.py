@@ -185,7 +185,7 @@ class FeaturePenalizer(BasePostProcessor):
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names
-        for model_name in self.model_list:
+        for model_name in tqdm(self.model_list, desc="Feature Penalization"):
             penalized_data = self.reduce_all_exposures(
                             df=dataf,
                             column=self.pred_name,
@@ -258,7 +258,7 @@ class FeaturePenalizer(BasePostProcessor):
     @tf.function(experimental_relax_shapes=True)
     def __train_loop_body(self, model, feats, pred, target_exps):
         with tf.GradientTape() as tape:
-            exps = self.exposures(feats, pred[:, None] - model(feats, training=True))
+            exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
             loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) +
                                  tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))
         return loss, tape.gradient(loss, model.trainable_variables)

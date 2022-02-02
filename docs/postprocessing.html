@@ -51,16 +51,29 @@ nb_path: "nbs/05_postprocessing.ipynb"
 
 <div class="output_area">
 
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+The nb_black extension is already loaded. To reload it, use:
+  %reload_ext nb_black
+The lab_black extension is already loaded. To reload it, use:
+  %reload_ext lab_black
+</pre>
+</div>
+</div>
+
+<div class="output_area">
 
 
 
-<div id="0c2453eb-afb7-4ac7-ba97-299106710a54"></div>
+
+<div id="7bfa600f-fe45-4d7f-8c02-263760a70cc0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0c2453eb-afb7-4ac7-ba97-299106710a54');
+var element = $('#7bfa600f-fe45-4d7f-8c02-263760a70cc0');
 
             setTimeout(function() {
-                var nbb_cell_id = 1;
+                var nbb_cell_id = 36;
                 var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
                 var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -154,13 +167,13 @@ and add them to a Dataset.</p>
 
 
 
-<div id="39fc28df-b2a7-4258-8091-ad3d75fb3e32"></div>
+<div id="41976e39-45ea-4ad0-810f-0f1ef75eade4"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#39fc28df-b2a7-4258-8091-ad3d75fb3e32');
+var element = $('#41976e39-45ea-4ad0-810f-0f1ef75eade4');
 
             setTimeout(function() {
-                var nbb_cell_id = 5;
+                var nbb_cell_id = 40;
                 var nbb_unformatted_code = "#export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n    Postprocessors manipulate or ensemble prediction column(s)\n    and add them to a Dataset.\n    \"\"\"\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\"prediction\"), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    def transform(self, dataset: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        ...";
                 var nbb_formatted_code = "# export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n    Postprocessors manipulate or ensemble prediction column(s)\n    and add them to a Dataset.\n    \"\"\"\n\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\n            \"prediction\"\n        ), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    def transform(\n        self, dataset: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -248,13 +261,13 @@ All values should only contain values in the range [0...1].</p>
 
 
 
-<div id="6e72a950-f19f-48d2-8157-92b67fea5776"></div>
+<div id="a3403e3e-c23a-4036-9b37-a224fb69091f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6e72a950-f19f-48d2-8157-92b67fea5776');
+var element = $('#a3403e3e-c23a-4036-9b37-a224fb69091f');
 
             setTimeout(function() {
-                var nbb_cell_id = 6;
+                var nbb_cell_id = 41;
                 var nbb_unformatted_code = "# export\n@typechecked\nclass Standardizer(BaseProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n    \"\"\"\n    def __init__(self, cols: list = None):\n        super().__init__()\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        for col in cols:\n            assert dataf[col].between(0, 1).all(), f\"All values should only contain values between 0 and 1. Does not hold for '{col}'\"\n        dataf.loc[:, cols] = dataf.groupby('era')[cols].rank(pct=True)\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass Standardizer(BaseProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n    \"\"\"\n\n    def __init__(self, cols: list = None):\n        super().__init__()\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        for col in cols:\n            assert (\n                dataf[col].between(0, 1).all()\n            ), f\"All values should only contain values between 0 and 1. Does not hold for '{col}'\"\n        dataf.loc[:, cols] = dataf.groupby(\"era\")[cols].rank(pct=True)\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -305,13 +318,13 @@ var element = $('#6e72a950-f19f-48d2-8157-92b67fea5776');
 
 
 
-<div id="2892c69d-3503-4885-9be7-584107298762"></div>
+<div id="5b82e54e-ee1e-47d7-8bdc-c4863a203693"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2892c69d-3503-4885-9be7-584107298762');
+var element = $('#5b82e54e-ee1e-47d7-8bdc-c4863a203693');
 
             setTimeout(function() {
-                var nbb_cell_id = 7;
+                var nbb_cell_id = 42;
                 var nbb_unformatted_code = "# Random DataFrame\ntest_features = [f\"prediction_{l}\" for l in \"ABCDE\"]\ndf = pd.DataFrame(np.random.uniform(size=(100, 5)), columns=test_features)\ndf[\"target\"] = np.random.normal(size=100)\ndf[\"era\"] = [0, 1, 2, 3] * 25\ntest_dataset = NumerFrame(df)";
                 var nbb_formatted_code = "# Random DataFrame\ntest_features = [f\"prediction_{l}\" for l in \"ABCDE\"]\ndf = pd.DataFrame(np.random.uniform(size=(100, 5)), columns=test_features)\ndf[\"target\"] = np.random.normal(size=100)\ndf[\"era\"] = [0, 1, 2, 3] * 25\ntest_dataset = NumerFrame(df)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -358,7 +371,7 @@ var element = $('#2892c69d-3503-4885-9be7-584107298762');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006255</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006198</span>. ✅
 </pre>
 
 </div>
@@ -397,19 +410,19 @@ var element = $('#2892c69d-3503-4885-9be7-584107298762');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.20</td>
-      <td>0.84</td>
-      <td>0.76</td>
-      <td>0.48</td>
+      <td>0.96</td>
+      <td>0.92</td>
+      <td>0.28</td>
       <td>0.64</td>
+      <td>0.84</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.28</td>
+      <td>1.00</td>
       <td>0.60</td>
-      <td>0.20</td>
-      <td>0.80</td>
-      <td>0.16</td>
+      <td>0.72</td>
+      <td>0.12</td>
+      <td>0.96</td>
     </tr>
   </tbody>
 </table>
@@ -423,13 +436,13 @@ var element = $('#2892c69d-3503-4885-9be7-584107298762');
 
 
 
-<div id="6c163ea3-73e0-4391-82af-8d34f2b4195b"></div>
+<div id="84b67885-8663-4b8e-9f7b-28a99bf5e213"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6c163ea3-73e0-4391-82af-8d34f2b4195b');
+var element = $('#84b67885-8663-4b8e-9f7b-28a99bf5e213');
 
             setTimeout(function() {
-                var nbb_cell_id = 8;
+                var nbb_cell_id = 43;
                 var nbb_unformatted_code = "std = Standardizer()\nstd.transform(test_dataset).get_prediction_data.head(2)";
                 var nbb_formatted_code = "std = Standardizer()\nstd.transform(test_dataset).get_prediction_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -510,13 +523,13 @@ var element = $('#6c163ea3-73e0-4391-82af-8d34f2b4195b');
 
 
 
-<div id="e034e41f-f24f-42d2-a4ee-756ec0b8cf08"></div>
+<div id="388242e6-2f0d-4641-aacf-16cb8aaabc17"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e034e41f-f24f-42d2-a4ee-756ec0b8cf08');
+var element = $('#388242e6-2f0d-4641-aacf-16cb8aaabc17');
 
             setTimeout(function() {
-                var nbb_cell_id = 9;
+                var nbb_cell_id = 44;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\" Take simple mean of multiple cols and store in new col. \"\"\"\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.final_col_name] = dataf.loc[:, self.cols].mean(axis=1)\n        rich_print(f\":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\")\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\"Take simple mean of multiple cols and store in new col.\"\"\"\n\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.final_col_name] = dataf.loc[:, self.cols].mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -587,13 +600,13 @@ Source: <a href="https://www.kaggle.com/gogo827jz/jane-street-supervised-autoenc
 
 
 
-<div id="3fb64b30-0d44-4c56-945e-e10478e54130"></div>
+<div id="fda251ee-c9e2-4f7e-8bb2-dfb30cb34d31"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3fb64b30-0d44-4c56-945e-e10478e54130');
+var element = $('#fda251ee-c9e2-4f7e-8bb2-dfb30cb34d31');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 45;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    https://doi.org/10.1016/j.neucom.2012.02.053\n    [0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold\n    Source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n    \"\"\"\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.final_col_name] = np.average(dataf.loc[:, self.cols],\n                                                       weights=self.weights, axis=1)\n        rich_print(f\":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\")\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        weights = []\n        for j in range(1, self.n_cols+1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2**(self.n_cols + 1 - j)))\n        return weights";
                 var nbb_formatted_code = "# export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    https://doi.org/10.1016/j.neucom.2012.02.053\n    [0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold\n    Source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n    \"\"\"\n\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.final_col_name] = np.average(\n            dataf.loc[:, self.cols], weights=self.weights, axis=1\n        )\n        rich_print(\n            f\":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        weights = []\n        for j in range(1, self.n_cols + 1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2 ** (self.n_cols + 1 - j)))\n        return weights";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -644,13 +657,13 @@ var element = $('#3fb64b30-0d44-4c56-945e-e10478e54130');
 
 
 
-<div id="c2fb75a3-3cb8-4181-a33f-68946b999ce3"></div>
+<div id="36f350eb-ad0a-4824-92d6-3de1a40a704c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c2fb75a3-3cb8-4181-a33f-68946b999ce3');
+var element = $('#36f350eb-ad0a-4824-92d6-3de1a40a704c');
 
             setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 46;
                 var nbb_unformatted_code = "# Random DataFrame\ntest_features = [f\"prediction_{l}\" for l in \"ABCDE\"]\ndf = pd.DataFrame(np.random.uniform(size=(100, 5)), columns=test_features)\ndf[\"target\"] = np.random.normal(size=100)\ndf[\"era\"] = range(100)\ntest_dataset = NumerFrame(df)";
                 var nbb_formatted_code = "# Random DataFrame\ntest_features = [f\"prediction_{l}\" for l in \"ABCDE\"]\ndf = pd.DataFrame(np.random.uniform(size=(100, 5)), columns=test_features)\ndf[\"target\"] = np.random.normal(size=100)\ndf[\"era\"] = range(100)\ntest_dataset = NumerFrame(df)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -713,7 +726,7 @@ var element = $('#c2fb75a3-3cb8-4181-a33f-68946b999ce3');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DonateWeightedEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003316</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004209</span>. ✅
 </pre>
 
 </div>
@@ -753,21 +766,21 @@ var element = $('#c2fb75a3-3cb8-4181-a33f-68946b999ce3');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.379546</td>
-      <td>0.915153</td>
-      <td>0.379110</td>
-      <td>0.083973</td>
-      <td>0.281164</td>
-      <td>0.289883</td>
+      <td>0.965094</td>
+      <td>0.400478</td>
+      <td>0.022906</td>
+      <td>0.560659</td>
+      <td>0.086063</td>
+      <td>0.271408</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.472333</td>
-      <td>0.614921</td>
-      <td>0.458537</td>
-      <td>0.900520</td>
-      <td>0.914098</td>
-      <td>0.807450</td>
+      <td>0.326810</td>
+      <td>0.271006</td>
+      <td>0.053055</td>
+      <td>0.046910</td>
+      <td>0.401494</td>
+      <td>0.256470</td>
     </tr>
   </tbody>
 </table>
@@ -781,13 +794,13 @@ var element = $('#c2fb75a3-3cb8-4181-a33f-68946b999ce3');
 
 
 
-<div id="209e90fd-1fc3-47ab-85a6-38898ccb26a7"></div>
+<div id="06089fac-8971-4edb-8202-fb8b290ae886"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#209e90fd-1fc3-47ab-85a6-38898ccb26a7');
+var element = $('#06089fac-8971-4edb-8202-fb8b290ae886');
 
             setTimeout(function() {
-                var nbb_cell_id = 12;
+                var nbb_cell_id = 47;
                 var nbb_unformatted_code = "# [0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold\nw_5_fold = [0.0625, 0.0625, 0.125, 0.25, 0.5]\ndonate = DonateWeightedEnsembler(cols=test_dataset.prediction_cols, final_col_name='prediction')\nensembled = donate(test_dataset).get_prediction_data\nassert ensembled['prediction'][0] == np.sum([w * elem for w, elem in zip(w_5_fold, ensembled[test_features].iloc[0])])\nensembled.head(2)";
                 var nbb_formatted_code = "# [0.0625, 0.0625, 0.125, 0.25, 0.5] for 5 fold\nw_5_fold = [0.0625, 0.0625, 0.125, 0.25, 0.5]\ndonate = DonateWeightedEnsembler(\n    cols=test_dataset.prediction_cols, final_col_name=\"prediction\"\n)\nensembled = donate(test_dataset).get_prediction_data\nassert ensembled[\"prediction\"][0] == np.sum(\n    [w * elem for w, elem in zip(w_5_fold, ensembled[test_features].iloc[0])]\n)\nensembled.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -855,13 +868,13 @@ var element = $('#209e90fd-1fc3-47ab-85a6-38898ccb26a7');
 
 
 
-<div id="acd661bd-5314-4558-98a0-b13af1605192"></div>
+<div id="8befb6cc-36ee-48b3-9d07-3568f91f908a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#acd661bd-5314-4558-98a0-b13af1605192');
+var element = $('#8befb6cc-36ee-48b3-9d07-3568f91f908a');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 48;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean using inverse correlation.\n    \"\"\"\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        new_col = dataf.loc[:, self.cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(f\":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\")\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean using inverse correlation.\n    \"\"\"\n\n    def __init__(self, cols: list, final_col_name: str):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n\n    @display_processor_info\n    def transform(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        new_col = dataf.loc[:, self.cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(\n            f\":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -922,7 +935,7 @@ var element = $('#acd661bd-5314-4558-98a0-b13af1605192');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GeometricMeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006547</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006623</span>. ✅
 </pre>
 
 </div>
@@ -962,21 +975,21 @@ var element = $('#acd661bd-5314-4558-98a0-b13af1605192');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.379546</td>
-      <td>0.915153</td>
-      <td>0.379110</td>
-      <td>0.083973</td>
-      <td>0.281164</td>
-      <td>0.315155</td>
+      <td>0.965094</td>
+      <td>0.400478</td>
+      <td>0.022906</td>
+      <td>0.560659</td>
+      <td>0.086063</td>
+      <td>0.211896</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.472333</td>
-      <td>0.614921</td>
-      <td>0.458537</td>
-      <td>0.900520</td>
-      <td>0.914098</td>
-      <td>0.642667</td>
+      <td>0.326810</td>
+      <td>0.271006</td>
+      <td>0.053055</td>
+      <td>0.046910</td>
+      <td>0.401494</td>
+      <td>0.154663</td>
     </tr>
   </tbody>
 </table>
@@ -990,13 +1003,13 @@ var element = $('#acd661bd-5314-4558-98a0-b13af1605192');
 
 
 
-<div id="bbdd3714-0be6-4f13-93f8-3c8f201c7652"></div>
+<div id="378edc7a-4dfc-476b-af49-b244135683b8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#bbdd3714-0be6-4f13-93f8-3c8f201c7652');
+var element = $('#378edc7a-4dfc-476b-af49-b244135683b8');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 49;
                 var nbb_unformatted_code = "geo_mean = GeometricMeanEnsembler(cols=test_dataset.prediction_cols, final_col_name='prediction')\nensembled = geo_mean(test_dataset).get_prediction_data\nensembled.head(2)";
                 var nbb_formatted_code = "geo_mean = GeometricMeanEnsembler(\n    cols=test_dataset.prediction_cols, final_col_name=\"prediction\"\n)\nensembled = geo_mean(test_dataset).get_prediction_data\nensembled.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1076,13 +1089,13 @@ Subtracting Linear model.
 
 
 
-<div id="e25bc3bd-68c1-4d8c-bc7e-57e76c5ff12b"></div>
+<div id="86dbecf7-6041-475e-a480-c74e62142301"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e25bc3bd-68c1-4d8c-bc7e-57e76c5ff12b');
+var element = $('#86dbecf7-6041-475e-a480-c74e62142301');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 50;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass FeatureNeutralizer(BasePostProcessor):\n    \"\"\"\n    Classic feature neutralization\n    Subtracting Linear model.\n    :param feature_names: List of column names to neutralize against.\n    :param pred_name: Prediction column to neutralize.\n    :param era_col: Numerai era column\n    :param proportion: Number in range [0...1] indication how much to neutralize.\n    \"\"\"\n    def __init__(self,\n                 feature_names: list = None,\n                 pred_name: str = \"prediction\",\n                 era_col: str = \"era\",\n                 proportion: float = 0.5):\n        self.pred_name = pred_name\n        self.proportion = proportion\n        assert 0. <= proportion <= 1., f\"'proportion' should be a float in range [0...1]. Got '{proportion}'.\"\n        self.new_col_name = f\"{self.pred_name}_neutralized_{self.proportion}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.feature_names = feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        feature_names = self.feature_names if self.feature_names else dataf.feature_cols\n        neutralized_preds = dataf.groupby(self.era_col)\\\n            .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names))\n        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)\n        rich_print(f\":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:\")\n        rich_print(f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].\")\n        return NumerFrame(dataf)\n\n    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        scores = dataf[columns]\n        exposures = dataf[by].values\n        scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))\n        return scores / scores.std()\n\n    @staticmethod\n    def normalize(dataf: pd.DataFrame) -> np.ndarray:\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        # Convert the scores to a normal distribution\n        dataf[columns] = self.normalize(dataf[columns])\n        dataf[columns] = self.neutralize(dataf, columns, by)\n        return dataf[columns]";
                 var nbb_formatted_code = "# export\n@typechecked\nclass FeatureNeutralizer(BasePostProcessor):\n    \"\"\"\n    Classic feature neutralization\n    Subtracting Linear model.\n    :param feature_names: List of column names to neutralize against.\n    :param pred_name: Prediction column to neutralize.\n    :param era_col: Numerai era column\n    :param proportion: Number in range [0...1] indication how much to neutralize.\n    \"\"\"\n\n    def __init__(\n        self,\n        feature_names: list = None,\n        pred_name: str = \"prediction\",\n        era_col: str = \"era\",\n        proportion: float = 0.5,\n    ):\n        self.pred_name = pred_name\n        self.proportion = proportion\n        assert (\n            0.0 <= proportion <= 1.0\n        ), f\"'proportion' should be a float in range [0...1]. Got '{proportion}'.\"\n        self.new_col_name = f\"{self.pred_name}_neutralized_{self.proportion}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.feature_names = feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        feature_names = self.feature_names if self.feature_names else dataf.feature_cols\n        neutralized_preds = dataf.groupby(self.era_col).apply(\n            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)\n        )\n        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(\n            neutralized_preds\n        )\n        rich_print(\n            f\":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:\"\n        )\n        rich_print(\n            f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].\"\n        )\n        return NumerFrame(dataf)\n\n    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        scores = dataf[columns]\n        exposures = dataf[by].values\n        scores = scores - self.proportion * exposures.dot(\n            np.linalg.pinv(exposures).dot(scores)\n        )\n        return scores / scores.std()\n\n    @staticmethod\n    def normalize(dataf: pd.DataFrame) -> np.ndarray:\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(\n        self, dataf: pd.DataFrame, columns: list, by: list\n    ) -> pd.DataFrame:\n        # Convert the scores to a normal distribution\n        dataf[columns] = self.normalize(dataf[columns])\n        dataf[columns] = self.neutralize(dataf, columns, by)\n        return dataf[columns]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1130,13 +1143,13 @@ var element = $('#e25bc3bd-68c1-4d8c-bc7e-57e76c5ff12b');
 
 
 
-<div id="1eaf6e06-15ab-49b8-b05f-5a4a3d595a82"></div>
+<div id="a471fcea-a462-462c-b25f-5f70ce13c75f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1eaf6e06-15ab-49b8-b05f-5a4a3d595a82');
+var element = $('#a471fcea-a462-462c-b25f-5f70ce13c75f');
 
             setTimeout(function() {
-                var nbb_cell_id = 16;
+                var nbb_cell_id = 51;
                 var nbb_unformatted_code = "test_dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\ntest_dataset.loc[:, 'prediction'] = np.random.uniform(size=len(test_dataset))";
                 var nbb_formatted_code = "test_dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\ntest_dataset.loc[:, \"prediction\"] = np.random.uniform(size=len(test_dataset))";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1206,7 +1219,7 @@ var element = $('#1eaf6e06-15ab-49b8-b05f-5a4a3d595a82');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">316</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">018950</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">019507</span>. ✅
 </pre>
 
 </div>
@@ -1218,13 +1231,13 @@ var element = $('#1eaf6e06-15ab-49b8-b05f-5a4a3d595a82');
 
 
 
-<div id="453aa695-d3e6-4dc8-bc0c-f558e0accc42"></div>
+<div id="18d429a2-018d-41ce-976a-5c49f8eba317"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#453aa695-d3e6-4dc8-bc0c-f558e0accc42');
+var element = $('#18d429a2-018d-41ce-976a-5c49f8eba317');
 
             setTimeout(function() {
-                var nbb_cell_id = 17;
+                var nbb_cell_id = 52;
                 var nbb_unformatted_code = "ft = FeatureNeutralizer(feature_names=test_dataset.feature_cols, pred_name='prediction', proportion=0.8)\nnew_dataset = ft.transform(test_dataset);";
                 var nbb_formatted_code = "ft = FeatureNeutralizer(\n    feature_names=test_dataset.feature_cols, pred_name=\"prediction\", proportion=0.8\n)\nnew_dataset = ft.transform(test_dataset)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1273,13 +1286,13 @@ var element = $('#453aa695-d3e6-4dc8-bc0c-f558e0accc42');
 
 
 
-<div id="2d5e3416-a373-452d-beb3-7a10d694a0a0"></div>
+<div id="664817a0-f365-4fa3-8563-4777732be4f9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2d5e3416-a373-452d-beb3-7a10d694a0a0');
+var element = $('#664817a0-f365-4fa3-8563-4777732be4f9');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
+                var nbb_cell_id = 53;
                 var nbb_unformatted_code = "assert \"prediction_neutralized_0.8\" in new_dataset.prediction_cols\nassert 0. in new_dataset.get_prediction_data['prediction_neutralized_0.8']\nassert 1. in new_dataset.get_prediction_data['prediction_neutralized_0.8']";
                 var nbb_formatted_code = "assert \"prediction_neutralized_0.8\" in new_dataset.prediction_cols\nassert 0.0 in new_dataset.get_prediction_data[\"prediction_neutralized_0.8\"]\nassert 1.0 in new_dataset.get_prediction_data[\"prediction_neutralized_0.8\"]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1336,13 +1349,13 @@ var element = $('#2d5e3416-a373-452d-beb3-7a10d694a0a0');
 
 
 
-<div id="00fe4cfe-6436-448b-90f3-70ba80fadeb5"></div>
+<div id="7281846a-ffb2-4d32-8fcf-281d4bb76538"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#00fe4cfe-6436-448b-90f3-70ba80fadeb5');
+var element = $('#7281846a-ffb2-4d32-8fcf-281d4bb76538');
 
             setTimeout(function() {
-                var nbb_cell_id = 19;
+                var nbb_cell_id = 54;
                 var nbb_unformatted_code = "new_dataset.prediction_cols";
                 var nbb_formatted_code = "new_dataset.prediction_cols";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1413,18 +1426,18 @@ var element = $('#00fe4cfe-6436-448b-90f3-70ba80fadeb5');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.908590</td>
-      <td>1.00000</td>
+      <td>0.694602</td>
+      <td>0.538198</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.104563</td>
-      <td>0.00000</td>
+      <td>0.681106</td>
+      <td>0.461802</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.594596</td>
-      <td>0.70503</td>
+      <td>0.309822</td>
+      <td>0.294970</td>
     </tr>
   </tbody>
 </table>
@@ -1438,13 +1451,13 @@ var element = $('#00fe4cfe-6436-448b-90f3-70ba80fadeb5');
 
 
 
-<div id="77e8f300-f91a-4323-bc7e-5685e8f9b69a"></div>
+<div id="5e2e5772-6934-4a68-9a52-f16fabf81522"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#77e8f300-f91a-4323-bc7e-5685e8f9b69a');
+var element = $('#5e2e5772-6934-4a68-9a52-f16fabf81522');
 
             setTimeout(function() {
-                var nbb_cell_id = 20;
+                var nbb_cell_id = 55;
                 var nbb_unformatted_code = "new_dataset.get_prediction_data.head(3)";
                 var nbb_formatted_code = "new_dataset.get_prediction_data.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1512,15 +1525,15 @@ var element = $('#77e8f300-f91a-4323-bc7e-5685e8f9b69a');
 
 
 
-<div id="ef9dcb66-9eae-4aeb-8db6-5a69ad99aaa2"></div>
+<div id="020e366e-af9b-40bf-aa56-e1b28f6470f2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ef9dcb66-9eae-4aeb-8db6-5a69ad99aaa2');
+var element = $('#020e366e-af9b-40bf-aa56-e1b28f6470f2');
 
             setTimeout(function() {
-                var nbb_cell_id = 21;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass FeaturePenalizer(BasePostProcessor):\n    \"\"\" Feature penalization with Tensorflow. \"\"\"\n    def __init__(self, model_list: list, max_exposure: float,\n                 risky_feature_names: list = None, pred_name: str = \"prediction\", era_col: str = 'era'):\n        self.pred_name = pred_name\n        self.max_exposure = max_exposure\n        assert 0. <= max_exposure <= 1., f\"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'.\"\n        self.new_col_name = f\"{self.pred_name}_penalized_{self.max_exposure}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.model_list = model_list\n        self.risky_feature_names = risky_feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names\n        for model_name in self.model_list:\n            penalized_data = self.reduce_all_exposures(\n                            df=dataf,\n                            column=self.pred_name,\n                            neutralizers=risky_feature_names,\n                        )\n            new_pred_col = f\"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}\"\n            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]\n        return NumerFrame(dataf)\n\n    def reduce_all_exposures(self, df: pd.DataFrame,\n                             column: str = \"prediction\",\n                             neutralizers: list = None,\n                             normalize=True,\n                             gaussianize=True,\n                             ):\n        if neutralizers is None:\n            neutralizers = [x for x in df.columns if x.startswith(\"feature\")]\n        neutralized = []\n\n        for era in tqdm(df[self.era_col].unique()):\n            df_era = df[df[self.era_col] == era]\n            scores = df_era[[column]].values\n            exposure_values = df_era[neutralizers].values\n\n            if normalize:\n                scores2 = []\n                for x in scores.T:\n                    x = (scipy.stats.rankdata(x, method='ordinal') - .5) / len(x)\n                    if gaussianize:\n                        x = scipy.stats.norm.ppf(x)\n                    scores2.append(x)\n                scores = np.array(scores2)[0]\n\n            scores, weights = self._reduce_exposure(scores, exposure_values,\n                                                    len(neutralizers), None)\n\n            scores /= tf.math.reduce_std(scores)\n            scores -= tf.reduce_min(scores)\n            scores /= tf.reduce_max(scores)\n            neutralized.append(scores.numpy())\n\n        predictions = pd.DataFrame(np.concatenate(neutralized),\n                                   columns=[column], index=df.index)\n        return predictions\n\n    def _reduce_exposure(self, prediction, features, input_size=50, weights=None):\n        model = tf.keras.models.Sequential([\n            tf.keras.layers.Input(input_size),\n            tf.keras.experimental.LinearModel(use_bias=False),\n        ])\n        feats = tf.convert_to_tensor(features - 0.5, dtype=tf.float32)\n        pred = tf.convert_to_tensor(prediction, dtype=tf.float32)\n        if weights is None:\n            optimizer = tf.keras.optimizers.Adamax()\n            start_exp = self.__exposures(feats, pred[:, None])\n            target_exps = tf.clip_by_value(start_exp, -self.max_exposure, self.max_exposure)\n            self._train_loop(model, optimizer, feats, pred, target_exps)\n        else:\n            model.set_weights(weights)\n        return pred[:,None] - model(feats), model.get_weights()\n\n\n    def _train_loop(self, model, optimizer, feats, pred, target_exps):\n        for i in range(1000000):\n            loss, grads = self.__train_loop_body(model, feats, pred, target_exps)\n            optimizer.apply_gradients(zip(grads, model.trainable_variables))\n            if loss < 1e-7:\n                break\n\n    @tf.function(experimental_relax_shapes=True)\n    def __train_loop_body(self, model, feats, pred, target_exps):\n        with tf.GradientTape() as tape:\n            exps = self.exposures(feats, pred[:, None] - model(feats, training=True))\n            loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) +\n                                 tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))\n        return loss, tape.gradient(loss, model.trainable_variables)\n\n    @staticmethod\n    @tf.function(experimental_relax_shapes=True, experimental_compile=True)\n    def __exposures(x, y):\n        x = x - tf.math.reduce_mean(x, axis=0)\n        x = x / tf.norm(x, axis=0)\n        y = y - tf.math.reduce_mean(y, axis=0)\n        y = y / tf.norm(y, axis=0)\n        return tf.matmul(x, y, transpose_a=True)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass FeaturePenalizer(BasePostProcessor):\n    \"\"\"Feature penalization with Tensorflow.\"\"\"\n\n    def __init__(\n        self,\n        model_list: list,\n        max_exposure: float,\n        risky_feature_names: list = None,\n        pred_name: str = \"prediction\",\n        era_col: str = \"era\",\n    ):\n        self.pred_name = pred_name\n        self.max_exposure = max_exposure\n        assert (\n            0.0 <= max_exposure <= 1.0\n        ), f\"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'.\"\n        self.new_col_name = f\"{self.pred_name}_penalized_{self.max_exposure}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.model_list = model_list\n        self.risky_feature_names = risky_feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        risky_feature_names = (\n            dataf.feature_cols\n            if not self.risky_feature_names\n            else self.risky_feature_names\n        )\n        for model_name in self.model_list:\n            penalized_data = self.reduce_all_exposures(\n                df=dataf,\n                column=self.pred_name,\n                neutralizers=risky_feature_names,\n            )\n            new_pred_col = (\n                f\"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}\"\n            )\n            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]\n        return NumerFrame(dataf)\n\n    def reduce_all_exposures(\n        self,\n        df: pd.DataFrame,\n        column: str = \"prediction\",\n        neutralizers: list = None,\n        normalize=True,\n        gaussianize=True,\n    ):\n        if neutralizers is None:\n            neutralizers = [x for x in df.columns if x.startswith(\"feature\")]\n        neutralized = []\n\n        for era in tqdm(df[self.era_col].unique()):\n            df_era = df[df[self.era_col] == era]\n            scores = df_era[[column]].values\n            exposure_values = df_era[neutralizers].values\n\n            if normalize:\n                scores2 = []\n                for x in scores.T:\n                    x = (scipy.stats.rankdata(x, method=\"ordinal\") - 0.5) / len(x)\n                    if gaussianize:\n                        x = scipy.stats.norm.ppf(x)\n                    scores2.append(x)\n                scores = np.array(scores2)[0]\n\n            scores, weights = self._reduce_exposure(\n                scores, exposure_values, len(neutralizers), None\n            )\n\n            scores /= tf.math.reduce_std(scores)\n            scores -= tf.reduce_min(scores)\n            scores /= tf.reduce_max(scores)\n            neutralized.append(scores.numpy())\n\n        predictions = pd.DataFrame(\n            np.concatenate(neutralized), columns=[column], index=df.index\n        )\n        return predictions\n\n    def _reduce_exposure(self, prediction, features, input_size=50, weights=None):\n        model = tf.keras.models.Sequential(\n            [\n                tf.keras.layers.Input(input_size),\n                tf.keras.experimental.LinearModel(use_bias=False),\n            ]\n        )\n        feats = tf.convert_to_tensor(features - 0.5, dtype=tf.float32)\n        pred = tf.convert_to_tensor(prediction, dtype=tf.float32)\n        if weights is None:\n            optimizer = tf.keras.optimizers.Adamax()\n            start_exp = self.__exposures(feats, pred[:, None])\n            target_exps = tf.clip_by_value(\n                start_exp, -self.max_exposure, self.max_exposure\n            )\n            self._train_loop(model, optimizer, feats, pred, target_exps)\n        else:\n            model.set_weights(weights)\n        return pred[:, None] - model(feats), model.get_weights()\n\n    def _train_loop(self, model, optimizer, feats, pred, target_exps):\n        for i in range(1000000):\n            loss, grads = self.__train_loop_body(model, feats, pred, target_exps)\n            optimizer.apply_gradients(zip(grads, model.trainable_variables))\n            if loss < 1e-7:\n                break\n\n    @tf.function(experimental_relax_shapes=True)\n    def __train_loop_body(self, model, feats, pred, target_exps):\n        with tf.GradientTape() as tape:\n            exps = self.exposures(feats, pred[:, None] - model(feats, training=True))\n            loss = tf.reduce_sum(\n                tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps))\n                + tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps))\n            )\n        return loss, tape.gradient(loss, model.trainable_variables)\n\n    @staticmethod\n    @tf.function(experimental_relax_shapes=True, experimental_compile=True)\n    def __exposures(x, y):\n        x = x - tf.math.reduce_mean(x, axis=0)\n        x = x / tf.norm(x, axis=0)\n        y = y - tf.math.reduce_mean(y, axis=0)\n        y = y / tf.norm(y, axis=0)\n        return tf.matmul(x, y, transpose_a=True)";
+                var nbb_cell_id = 56;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass FeaturePenalizer(BasePostProcessor):\n    \"\"\" Feature penalization with Tensorflow. \"\"\"\n    def __init__(self, model_list: list, max_exposure: float,\n                 risky_feature_names: list = None, pred_name: str = \"prediction\", era_col: str = 'era'):\n        self.pred_name = pred_name\n        self.max_exposure = max_exposure\n        assert 0. <= max_exposure <= 1., f\"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'.\"\n        self.new_col_name = f\"{self.pred_name}_penalized_{self.max_exposure}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.model_list = model_list\n        self.risky_feature_names = risky_feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names\n        for model_name in tqdm(self.model_list, desc=\"Feature Penalization\"):\n            penalized_data = self.reduce_all_exposures(\n                            df=dataf,\n                            column=self.pred_name,\n                            neutralizers=risky_feature_names,\n                        )\n            new_pred_col = f\"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}\"\n            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]\n        return NumerFrame(dataf)\n\n    def reduce_all_exposures(self, df: pd.DataFrame,\n                             column: str = \"prediction\",\n                             neutralizers: list = None,\n                             normalize=True,\n                             gaussianize=True,\n                             ):\n        if neutralizers is None:\n            neutralizers = [x for x in df.columns if x.startswith(\"feature\")]\n        neutralized = []\n\n        for era in tqdm(df[self.era_col].unique()):\n            df_era = df[df[self.era_col] == era]\n            scores = df_era[[column]].values\n            exposure_values = df_era[neutralizers].values\n\n            if normalize:\n                scores2 = []\n                for x in scores.T:\n                    x = (scipy.stats.rankdata(x, method='ordinal') - .5) / len(x)\n                    if gaussianize:\n                        x = scipy.stats.norm.ppf(x)\n                    scores2.append(x)\n                scores = np.array(scores2)[0]\n\n            scores, weights = self._reduce_exposure(scores, exposure_values,\n                                                    len(neutralizers), None)\n\n            scores /= tf.math.reduce_std(scores)\n            scores -= tf.reduce_min(scores)\n            scores /= tf.reduce_max(scores)\n            neutralized.append(scores.numpy())\n\n        predictions = pd.DataFrame(np.concatenate(neutralized),\n                                   columns=[column], index=df.index)\n        return predictions\n\n    def _reduce_exposure(self, prediction, features, input_size=50, weights=None):\n        model = tf.keras.models.Sequential([\n            tf.keras.layers.Input(input_size),\n            tf.keras.experimental.LinearModel(use_bias=False),\n        ])\n        feats = tf.convert_to_tensor(features - 0.5, dtype=tf.float32)\n        pred = tf.convert_to_tensor(prediction, dtype=tf.float32)\n        if weights is None:\n            optimizer = tf.keras.optimizers.Adamax()\n            start_exp = self.__exposures(feats, pred[:, None])\n            target_exps = tf.clip_by_value(start_exp, -self.max_exposure, self.max_exposure)\n            self._train_loop(model, optimizer, feats, pred, target_exps)\n        else:\n            model.set_weights(weights)\n        return pred[:,None] - model(feats), model.get_weights()\n\n\n    def _train_loop(self, model, optimizer, feats, pred, target_exps):\n        for i in range(1000000):\n            loss, grads = self.__train_loop_body(model, feats, pred, target_exps)\n            optimizer.apply_gradients(zip(grads, model.trainable_variables))\n            if loss < 1e-7:\n                break\n\n    @tf.function(experimental_relax_shapes=True)\n    def __train_loop_body(self, model, feats, pred, target_exps):\n        with tf.GradientTape() as tape:\n            exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))\n            loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) +\n                                 tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))\n        return loss, tape.gradient(loss, model.trainable_variables)\n\n    @staticmethod\n    @tf.function(experimental_relax_shapes=True, experimental_compile=True)\n    def __exposures(x, y):\n        x = x - tf.math.reduce_mean(x, axis=0)\n        x = x / tf.norm(x, axis=0)\n        y = y - tf.math.reduce_mean(y, axis=0)\n        y = y / tf.norm(y, axis=0)\n        return tf.matmul(x, y, transpose_a=True)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass FeaturePenalizer(BasePostProcessor):\n    \"\"\"Feature penalization with Tensorflow.\"\"\"\n\n    def __init__(\n        self,\n        model_list: list,\n        max_exposure: float,\n        risky_feature_names: list = None,\n        pred_name: str = \"prediction\",\n        era_col: str = \"era\",\n    ):\n        self.pred_name = pred_name\n        self.max_exposure = max_exposure\n        assert (\n            0.0 <= max_exposure <= 1.0\n        ), f\"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'.\"\n        self.new_col_name = f\"{self.pred_name}_penalized_{self.max_exposure}\"\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.model_list = model_list\n        self.risky_feature_names = risky_feature_names\n        self.era_col = era_col\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        risky_feature_names = (\n            dataf.feature_cols\n            if not self.risky_feature_names\n            else self.risky_feature_names\n        )\n        for model_name in tqdm(self.model_list, desc=\"Feature Penalization\"):\n            penalized_data = self.reduce_all_exposures(\n                df=dataf,\n                column=self.pred_name,\n                neutralizers=risky_feature_names,\n            )\n            new_pred_col = (\n                f\"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}\"\n            )\n            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]\n        return NumerFrame(dataf)\n\n    def reduce_all_exposures(\n        self,\n        df: pd.DataFrame,\n        column: str = \"prediction\",\n        neutralizers: list = None,\n        normalize=True,\n        gaussianize=True,\n    ):\n        if neutralizers is None:\n            neutralizers = [x for x in df.columns if x.startswith(\"feature\")]\n        neutralized = []\n\n        for era in tqdm(df[self.era_col].unique()):\n            df_era = df[df[self.era_col] == era]\n            scores = df_era[[column]].values\n            exposure_values = df_era[neutralizers].values\n\n            if normalize:\n                scores2 = []\n                for x in scores.T:\n                    x = (scipy.stats.rankdata(x, method=\"ordinal\") - 0.5) / len(x)\n                    if gaussianize:\n                        x = scipy.stats.norm.ppf(x)\n                    scores2.append(x)\n                scores = np.array(scores2)[0]\n\n            scores, weights = self._reduce_exposure(\n                scores, exposure_values, len(neutralizers), None\n            )\n\n            scores /= tf.math.reduce_std(scores)\n            scores -= tf.reduce_min(scores)\n            scores /= tf.reduce_max(scores)\n            neutralized.append(scores.numpy())\n\n        predictions = pd.DataFrame(\n            np.concatenate(neutralized), columns=[column], index=df.index\n        )\n        return predictions\n\n    def _reduce_exposure(self, prediction, features, input_size=50, weights=None):\n        model = tf.keras.models.Sequential(\n            [\n                tf.keras.layers.Input(input_size),\n                tf.keras.experimental.LinearModel(use_bias=False),\n            ]\n        )\n        feats = tf.convert_to_tensor(features - 0.5, dtype=tf.float32)\n        pred = tf.convert_to_tensor(prediction, dtype=tf.float32)\n        if weights is None:\n            optimizer = tf.keras.optimizers.Adamax()\n            start_exp = self.__exposures(feats, pred[:, None])\n            target_exps = tf.clip_by_value(\n                start_exp, -self.max_exposure, self.max_exposure\n            )\n            self._train_loop(model, optimizer, feats, pred, target_exps)\n        else:\n            model.set_weights(weights)\n        return pred[:, None] - model(feats), model.get_weights()\n\n    def _train_loop(self, model, optimizer, feats, pred, target_exps):\n        for i in range(1000000):\n            loss, grads = self.__train_loop_body(model, feats, pred, target_exps)\n            optimizer.apply_gradients(zip(grads, model.trainable_variables))\n            if loss < 1e-7:\n                break\n\n    @tf.function(experimental_relax_shapes=True)\n    def __train_loop_body(self, model, feats, pred, target_exps):\n        with tf.GradientTape() as tape:\n            exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))\n            loss = tf.reduce_sum(\n                tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps))\n                + tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps))\n            )\n        return loss, tape.gradient(loss, model.trainable_variables)\n\n    @staticmethod\n    @tf.function(experimental_relax_shapes=True, experimental_compile=True)\n    def __exposures(x, y):\n        x = x - tf.math.reduce_mean(x, axis=0)\n        x = x / tf.norm(x, axis=0)\n        y = y - tf.math.reduce_mean(y, axis=0)\n        y = y / tf.norm(y, axis=0)\n        return tf.matmul(x, y, transpose_a=True)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1550,7 +1563,8 @@ var element = $('#ef9dcb66-9eae-4aeb-8db6-5a69ad99aaa2');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_dataset</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">)</span>
+<span class="n">test_dataset</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -1565,15 +1579,81 @@ var element = $('#ef9dcb66-9eae-4aeb-8db6-5a69ad99aaa2');
 
 
 
-<div id="d6a5cef0-9a08-4a89-aff9-149a70d3fab5"></div>
+<div id="cb84cf2b-d256-468c-96e5-518e9fd8d875"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d6a5cef0-9a08-4a89-aff9-149a70d3fab5');
+var element = $('#cb84cf2b-d256-468c-96e5-518e9fd8d875');
 
             setTimeout(function() {
-                var nbb_cell_id = 22;
-                var nbb_unformatted_code = "# TODO Test Feature penalizer";
-                var nbb_formatted_code = "# TODO Test Feature penalizer";
+                var nbb_cell_id = 57;
+                var nbb_unformatted_code = "# TODO Test Feature penalizer\ntest_dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\ntest_dataset.loc[:, 'prediction'] = np.random.uniform(size=len(test_dataset))";
+                var nbb_formatted_code = "# TODO Test Feature penalizer\ntest_dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\ntest_dataset.loc[:, \"prediction\"] = np.random.uniform(size=len(test_dataset))";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ft</span> <span class="o">=</span> <span class="n">FeaturePenalizer</span><span class="p">(</span><span class="n">model_list</span><span class="o">=</span><span class="p">[],</span> <span class="n">pred_name</span><span class="o">=</span><span class="s1">&#39;prediction&#39;</span><span class="p">,</span> <span class="n">max_exposure</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">new_dataset</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeaturePenalizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">315</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">026732</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="745d3d68-29ea-4f46-9de8-b5a100f54eb7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#745d3d68-29ea-4f46-9de8-b5a100f54eb7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 58;
+                var nbb_unformatted_code = "ft = FeaturePenalizer(model_list=[], pred_name='prediction', max_exposure=0.8)\nnew_dataset = ft.transform(test_dataset);";
+                var nbb_formatted_code = "ft = FeaturePenalizer(model_list=[], pred_name=\"prediction\", max_exposure=0.8)\nnew_dataset = ft.transform(test_dataset)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1672,13 +1752,13 @@ Do some awesome postprocessing.
 
 
 
-<div id="6f1941da-8533-45da-ae08-d051a4e0745d"></div>
+<div id="82ba14ea-92af-48f4-8360-853a2201483f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6f1941da-8533-45da-ae08-d051a4e0745d');
+var element = $('#82ba14ea-92af-48f4-8360-853a2201483f');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
+                var nbb_cell_id = 59;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome postprocessing.\n    :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data (optional)\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome postprocessing.\n    :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data (optional)\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();

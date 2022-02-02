@@ -21,10 +21,10 @@ class ModelPipeline:
     """
     Execute all preprocessing, prediction and postprocessing for a given setup.
 
-    :param models: Initiliazed (!) numerai-blocks Models that add prediction columns to a given input Dataset
-    :param preprocessors: List of initialized (!) PreProcessors.
-    :param postprocessors: List of initialized (!) PostProcessors.
-    :param copy_first: Whether to copy the Dataset as a first preprocessing step.
+    :param models: Initiliazed numerai-blocks Models that add prediction columns to a given input Dataset
+    :param preprocessors: List of initialized PreProcessors.
+    :param postprocessors: List of initialized PostProcessors.
+    :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.
     Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.
     :param pipeline_name: Unique name for pipeline.
     """

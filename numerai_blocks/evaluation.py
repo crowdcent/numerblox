@@ -18,8 +18,8 @@ class BaseEvaluator:
     Numerai Classic and Numerai Signals.
     :param era_col: Column name pointing to eras.
     Most commonly "era" for Classic and "friday_date" for Signals.
-    :param fast_mode: Will skip compute intensive metrics
-    max_exposure, feature neutral mean and TB200 if set to True.
+    :param fast_mode: Will skip compute intensive metrics, namely
+    max_exposure, feature neutral mean and TB200, if set to True.
     """
     def __init__(self, era_col: str = "era", fast_mode = False):
         self.era_col = era_col
@@ -30,7 +30,7 @@ class BaseEvaluator:
                         example_col: str,
                         pred_cols: list = None,
                         target_col: str = "target"
-                        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                        ) -> pd.DataFrame:
         """
         Perform evaluation for each prediction column in the Dataset
         against give target and example prediction column.
