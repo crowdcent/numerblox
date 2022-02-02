@@ -5,10 +5,10 @@ __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator'
 # Cell
 import numpy as np
 import pandas as pd
-from typing import Tuple
 from tqdm.auto import tqdm
+from typing import Tuple, Union
 
-from .dataset import Dataset, create_dataset
+from .numerframe import NumerFrame, create_numerframe
 from .postprocessing import FeatureNeutralizer
 
 # Cell
@@ -18,52 +18,52 @@ class BaseEvaluator:
     Numerai Classic and Numerai Signals.
     :param era_col: Column name pointing to eras.
     Most commonly "era" for Classic and "friday_date" for Signals.
-    :param fast_mode: Will skip compute intensive metrics
-    max_exposure, feature neutral mean and TB200 if set to True.
+    :param fast_mode: Will skip compute intensive metrics, namely
+    max_exposure, feature neutral mean and TB200, if set to True.
     """
     def __init__(self, era_col: str = "era", fast_mode = False):
         self.era_col = era_col
         self.fast_mode = fast_mode
 
     def full_evaluation(self,
-                        dataset: Dataset,
+                        dataf: NumerFrame,
                         example_col: str,
                         pred_cols: list = None,
                         target_col: str = "target"
-                        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                        ) -> pd.DataFrame:
         """
         Perform evaluation for each prediction column in the Dataset
         against give target and example prediction column.
         """
         val_stats = pd.DataFrame()
-        dataset.dataf = dataset.dataf.fillna(0.5)
-        pred_cols = dataset.prediction_cols if not pred_cols else pred_cols
+        dataf.dataf = dataf.fillna(0.5)
+        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
         for col in tqdm(pred_cols, desc="Evaluation: "):
-            col_stats = self.evaluation_one_col(dataset=dataset,pred_col=col,
+            col_stats = self.evaluation_one_col(dataf=dataf, pred_col=col,
                                                 target_col=target_col,
                                                 example_col=example_col)
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
-    def evaluation_one_col(self, dataset: Dataset, pred_col: str, target_col: str, example_col: str):
+    def evaluation_one_col(self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, target_col: str, example_col: str):
         """
         Perform evaluation for one prediction column
         against given target and example prediction column.
         """
         col_stats = pd.DataFrame()
         # Compute stats
-        val_corrs = self.per_era_corrs(dataf=dataset.dataf,
+        val_corrs = self.per_era_corrs(dataf=dataf,
                                         pred_col=pred_col,
                                         target_col=target_col
                                        )
         mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_corrs)
         apy = self.apy(era_corrs=val_corrs)
-        example_corr = self.example_correlation(dataset=dataset,
+        example_corr = self.example_correlation(dataf=dataf,
                                                 pred_col=pred_col,
                                                 example_col=example_col
                                                 )
-        mmc_mean, mmc_std, mmc_sharpe = self.mmc(dataf=dataset.dataf,
+        mmc_mean, mmc_std, mmc_sharpe = self.mmc(dataf=dataf,
                                                  pred_col=pred_col,
                                                  target_col=target_col,
                                                  example_col=example_col
@@ -82,9 +82,9 @@ class BaseEvaluator:
 
         # Compute intensive stats
         if not self.fast_mode:
-            max_feature_exposure = self.max_feature_exposure(dataset=dataset, pred_col=pred_col)
-            fn_mean = self.feature_neutral_mean(dataset=dataset, pred_col=pred_col)
-            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(dataf=dataset.dataf,
+            max_feature_exposure = self.max_feature_exposure(dataf=dataf, pred_col=pred_col)
+            fn_mean = self.feature_neutral_mean(dataf=dataf, pred_col=pred_col)
+            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(dataf=dataf,
                                                                            pred_col=pred_col,
                                                                            target_col=target_col,
                                                                            tb=200
@@ -138,28 +138,28 @@ class BaseEvaluator:
               ) * 100
         return apy
 
-    def example_correlation(self, dataset: Dataset,
+    def example_correlation(self, dataf: Union[pd.DataFrame, NumerFrame],
                             pred_col: str, example_col: str):
         """ Correlations with example predictions. """
-        return self.per_era_corrs(dataf=dataset.dataf,
+        return self.per_era_corrs(dataf=dataf,
                                   pred_col=pred_col,
                                   target_col=example_col,
                                   ).mean()
 
-    def max_feature_exposure(self, dataset: Dataset, pred_col: str) -> np.float64:
+    def max_feature_exposure(self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str) -> np.float64:
         """ Maximum exposure over all features. """
-        max_per_era = dataset.dataf.groupby(self.era_col).apply(
-            lambda d: d[dataset.feature_cols].corrwith(d[pred_col]).abs().max())
+        max_per_era = dataf.groupby(self.era_col).apply(
+            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max())
         max_feature_exposure = max_per_era.mean()
         return max_feature_exposure
 
-    def feature_neutral_mean(self, dataset: Dataset, pred_col: str) -> np.float64:
+    def feature_neutral_mean(self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str) -> np.float64:
         """ Feature neutralized mean performance. """
         fn = FeatureNeutralizer(pred_name=pred_col,
                                 era_col=self.era_col,
                                 proportion=1.0)
-        neutralized_dataset = fn.transform(dataset=dataset)
-        return neutralized_dataset.dataf[fn.final_col_name].mean()
+        neutralized_dataf = fn(dataf=dataf)
+        return neutralized_dataf[fn.final_col_name].mean()
 
     def tbx_mean_std_sharpe(self,
                             dataf: pd.DataFrame,

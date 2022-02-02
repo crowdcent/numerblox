@@ -18,6 +18,7 @@ from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
+from .numerframe import NumerFrame
 from .download import BaseIO
 from .key import Key
 
@@ -31,7 +32,7 @@ class BaseSubmittor(BaseIO):
     @abstractmethod
     def save_csv(
         self,
-        dataf: pd.DataFrame,
+        dataf: Union[pd.DataFrame, NumerFrame],
         file_name: str,
         cols: Union[str, list],
         *args,
@@ -64,7 +65,7 @@ class BaseSubmittor(BaseIO):
 
     def full_submission(
         self,
-        dataf: pd.DataFrame,
+        dataf: Union[pd.DataFrame, NumerFrame],
         file_name: str,
         model_name: str,
         cols: Union[str, list],
@@ -82,7 +83,7 @@ class BaseSubmittor(BaseIO):
 
     def __call__(
         self,
-        dataf: pd.DataFrame,
+        dataf: Union[pd.DataFrame, NumerFrame],
         file_name: str,
         model_name: str,
         cols: Union[str, list],
@@ -129,7 +130,7 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 
     def save_csv(
         self,
-        dataf: pd.DataFrame,
+        dataf: Union[pd.DataFrame, NumerFrame],
         file_name: str,
         cols: Union[str, list],
         *args,
@@ -173,7 +174,7 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         ]
 
     def save_csv(
-        self, dataf: pd.DataFrame, file_name: str, cols: list = None, *args, **kwargs
+        self, dataf: Union[pd.DataFrame, NumerFrame], file_name: str, cols: list = None, *args, **kwargs
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
