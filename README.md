@@ -37,7 +37,7 @@ The library features the following tools to build your Numerai pipelines:
 #
 # # Initialize Dataset
 # metadata = {"version": 2, "model_name": "MY_MODEL"}
-# dataset = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet", **metadata)
+# dataset = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet", metadata=metadata)
 #
 # # Define and run pipeline
 # model1 = JoblibModel(model_directory="dir_with_joblib_models",

@@ -54,10 +54,10 @@ nb_path: "nbs/06_modelpipeline.ipynb"
 
 
 
-<div id="437b848d-26b1-4760-b0be-eacbb9f88679"></div>
+<div id="4aad4a0e-7d77-4b91-99f3-5c9a7621ce2c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#437b848d-26b1-4760-b0be-eacbb9f88679');
+var element = $('#4aad4a0e-7d77-4b91-99f3-5c9a7621ce2c');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -157,15 +157,15 @@ Highly recommended in order to avoid accidentally manipulating the original Data
 
 
 
-<div id="14a0e6ec-a0c0-4942-8e9d-763ae9f045f5"></div>
+<div id="9c8c9205-ff26-4404-b825-85cdd1c9d83e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#14a0e6ec-a0c0-4942-8e9d-763ae9f045f5');
+var element = $('#9c8c9205-ff26-4404-b825-85cdd1c9d83e');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed (!) numerai-blocks Models that add prediction columns to a given input Dataset\n    :param preprocessors: List of initialized (!) PreProcessors.\n    :param postprocessors: List of initialized (!) PostProcessors.\n    :param copy_first: Whether to copy the Dataset as a first preprocessing step.\n    Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.\n    :param pipeline_name: Unique name for pipeline.\n    \"\"\"\n    def __init__(self,\n                 models: List[BaseModel],\n                 preprocessors: List[BaseProcessor] = [],\n                 postprocessors: List[BaseProcessor] = [],\n                 copy_first = True,\n                 standardize = True,\n                 pipeline_name: str = None):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(self.preprocessors,\n                                 desc=f\"{self.pipeline_name} Preprocessing:\",\n                                 position=0):\n            rich_print(f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(self.postprocessors,\n                                  desc=f\"{self.pipeline_name} Postprocessing: \",\n                                  position=0):\n            rich_print(f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        for model in tqdm(self.models,\n                                  desc=f\"{self.pipeline_name} Model prediction: \",\n                                  position=0):\n            rich_print(f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\")\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Process full pipeline and return resulting Dataset. \"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\")\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed (!) numerai-blocks Models that add prediction columns to a given input Dataset\n    :param preprocessors: List of initialized (!) PreProcessors.\n    :param postprocessors: List of initialized (!) PostProcessors.\n    :param copy_first: Whether to copy the Dataset as a first preprocessing step.\n    Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.\n    :param pipeline_name: Unique name for pipeline.\n    \"\"\"\n\n    def __init__(\n        self,\n        models: List[BaseModel],\n        preprocessors: List[BaseProcessor] = [],\n        postprocessors: List[BaseProcessor] = [],\n        copy_first=True,\n        standardize=True,\n        pipeline_name: str = None,\n    ):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(\n            self.preprocessors, desc=f\"{self.pipeline_name} Preprocessing:\", position=0\n        ):\n            rich_print(\n                f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(\n            self.postprocessors,\n            desc=f\"{self.pipeline_name} Postprocessing: \",\n            position=0,\n        ):\n            rich_print(\n                f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        for model in tqdm(\n            self.models, desc=f\"{self.pipeline_name} Model prediction: \", position=0\n        ):\n            rich_print(\n                f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\"\n            )\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Process full pipeline and return resulting Dataset.\"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(\n            f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\"\n        )\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed numerai-blocks Models that add prediction columns to a given input Dataset\n    :param preprocessors: List of initialized PreProcessors.\n    :param postprocessors: List of initialized PostProcessors.\n    :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.\n    :param pipeline_name: Unique name for pipeline.\n    \"\"\"\n    def __init__(self,\n                 models: List[BaseModel],\n                 preprocessors: List[BaseProcessor] = [],\n                 postprocessors: List[BaseProcessor] = [],\n                 copy_first = True,\n                 standardize = True,\n                 pipeline_name: str = None):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(self.preprocessors,\n                                 desc=f\"{self.pipeline_name} Preprocessing:\",\n                                 position=0):\n            rich_print(f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(self.postprocessors,\n                                  desc=f\"{self.pipeline_name} Postprocessing: \",\n                                  position=0):\n            rich_print(f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        for model in tqdm(self.models,\n                                  desc=f\"{self.pipeline_name} Model prediction: \",\n                                  position=0):\n            rich_print(f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\")\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Process full pipeline and return resulting Dataset. \"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\")\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed numerai-blocks Models that add prediction columns to a given input Dataset\n    :param preprocessors: List of initialized PreProcessors.\n    :param postprocessors: List of initialized PostProcessors.\n    :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid accidentally manipulating the original Dataset and/or DataFrame.\n    :param pipeline_name: Unique name for pipeline.\n    \"\"\"\n\n    def __init__(\n        self,\n        models: List[BaseModel],\n        preprocessors: List[BaseProcessor] = [],\n        postprocessors: List[BaseProcessor] = [],\n        copy_first=True,\n        standardize=True,\n        pipeline_name: str = None,\n    ):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(\n            self.preprocessors, desc=f\"{self.pipeline_name} Preprocessing:\", position=0\n        ):\n            rich_print(\n                f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(\n            self.postprocessors,\n            desc=f\"{self.pipeline_name} Postprocessing: \",\n            position=0,\n        ):\n            rich_print(\n                f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        for model in tqdm(\n            self.models, desc=f\"{self.pipeline_name} Model prediction: \", position=0\n        ):\n            rich_print(\n                f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\"\n            )\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Process full pipeline and return resulting Dataset.\"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(\n            f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\"\n        )\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -217,10 +217,10 @@ var element = $('#14a0e6ec-a0c0-4942-8e9d-763ae9f045f5');
 
 
 
-<div id="dadb3efa-9490-409f-9302-09df004f7943"></div>
+<div id="aa8efeeb-0975-49c3-86f1-640037c41916"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
+var element = $('#aa8efeeb-0975-49c3-86f1-640037c41916');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -273,7 +273,7 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001037</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001031</span>. ✅
 </pre>
 
 </div>
@@ -296,7 +296,7 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">027744</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">031033</span>. ✅
 </pre>
 
 </div>
@@ -319,7 +319,7 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">6</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000998</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000897</span>. ✅
 </pre>
 
 </div>
@@ -375,7 +375,7 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003133</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003163</span>. ✅
 </pre>
 
 </div>
@@ -420,7 +420,7 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">011868</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">012706</span>. ✅
 </pre>
 
 </div>
@@ -443,10 +443,10 @@ var element = $('#dadb3efa-9490-409f-9302-09df004f7943');
 
 
 
-<div id="ca960d84-1c6a-4412-beb9-7117a2548aa2"></div>
+<div id="69344bfe-268c-4244-8143-8ee2e98770bd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ca960d84-1c6a-4412-beb9-7117a2548aa2');
+var element = $('#69344bfe-268c-4244-8143-8ee2e98770bd');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -668,13 +668,13 @@ var element = $('#ca960d84-1c6a-4412-beb9-7117a2548aa2');
 
 
 
-<div id="7bc10dcb-2b68-421b-912f-4f82b45f5508"></div>
+<div id="b2ab6cdc-c9cf-49ca-a510-d0fc55fde42c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7bc10dcb-2b68-421b-912f-4f82b45f5508');
+var element = $('#b2ab6cdc-c9cf-49ca-a510-d0fc55fde42c');
 
             setTimeout(function() {
-                var nbb_cell_id = 9;
+                var nbb_cell_id = 8;
                 var nbb_unformatted_code = "processed_dataf";
                 var nbb_formatted_code = "processed_dataf";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -751,13 +751,13 @@ var element = $('#7bc10dcb-2b68-421b-912f-4f82b45f5508');
 
 
 
-<div id="ba186dfc-609a-4f4f-80d1-c2f3cd2ac14c"></div>
+<div id="0165a806-891c-40a8-b50a-57136308822b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ba186dfc-609a-4f4f-80d1-c2f3cd2ac14c');
+var element = $('#0165a806-891c-40a8-b50a-57136308822b');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 9;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:\n        \"\"\" Process all pipelines and return list of resulting NumerFrames. \"\"\"\n        result_datafs = []\n        for name, pipeline in tqdm(self.pipelines.items(),\n                                   desc=\"Processing Pipeline Collection\"):\n            result_datafs.append(self.process_single_pipeline(dataf, name))\n        return result_datafs\n\n    def process_single_pipeline(self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str) -> NumerFrame:\n        rich_print(f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\")\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        available_pipelines = self.pipeline_names\n        assert pipeline_name in available_pipelines, f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(\n        self, dataf: Union[pd.DataFrame, NumerFrame]\n    ) -> List[NumerFrame]:\n        \"\"\"Process all pipelines and return list of resulting NumerFrames.\"\"\"\n        result_datafs = []\n        for name, pipeline in tqdm(\n            self.pipelines.items(), desc=\"Processing Pipeline Collection\"\n        ):\n            result_datafs.append(self.process_single_pipeline(dataf, name))\n        return result_datafs\n\n    def process_single_pipeline(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str\n    ) -> NumerFrame:\n        rich_print(\n            f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\"\n        )\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        available_pipelines = self.pipeline_names\n        assert (\n            pipeline_name in available_pipelines\n        ), f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -804,13 +804,13 @@ var element = $('#ba186dfc-609a-4f4f-80d1-c2f3cd2ac14c');
 
 
 
-<div id="d3ccaec1-f7fb-44ef-83e4-4c43bf1b8e80"></div>
+<div id="577ad714-a691-4519-902d-5da37b133c8e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d3ccaec1-f7fb-44ef-83e4-4c43bf1b8e80');
+var element = $('#577ad714-a691-4519-902d-5da37b133c8e');
 
             setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 10;
                 var nbb_unformatted_code = "# Different pipeline with no preprocessing or postprocessing. Only RandomModel\ntest_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
                 var nbb_formatted_code = "# Different pipeline with no preprocessing or postprocessing. Only RandomModel\ntest_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -858,13 +858,13 @@ var element = $('#d3ccaec1-f7fb-44ef-83e4-4c43bf1b8e80');
 
 
 
-<div id="27fc37d7-5d39-4a58-89fb-432d4b214cd7"></div>
+<div id="660f7b35-2e5d-43a6-8d5f-231954e30a97"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
+var element = $('#660f7b35-2e5d-43a6-8d5f-231954e30a97');
 
             setTimeout(function() {
-                var nbb_cell_id = 12;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "collection = ModelPipelineCollection([test_pipeline, test_pipeline2])\nassert collection.get_pipeline(\"test_pipeline2\").pipeline_name == 'test_pipeline2'";
                 var nbb_formatted_code = "collection = ModelPipelineCollection([test_pipeline, test_pipeline2])\nassert collection.get_pipeline(\"test_pipeline2\").pipeline_name == \"test_pipeline2\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -922,7 +922,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001030</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001103</span>. ✅
 </pre>
 
 </div>
@@ -945,7 +945,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">027165</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">029603</span>. ✅
 </pre>
 
 </div>
@@ -968,7 +968,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">6</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000995</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001053</span>. ✅
 </pre>
 
 </div>
@@ -1024,7 +1024,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003070</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003259</span>. ✅
 </pre>
 
 </div>
@@ -1069,7 +1069,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">010993</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">011518</span>. ✅
 </pre>
 
 </div>
@@ -1103,7 +1103,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001211</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001103</span>. ✅
 </pre>
 
 </div>
@@ -1125,7 +1125,7 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">315</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004206</span>. 
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">315</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004069</span>. 
 ✅
 </pre>
 
@@ -1149,13 +1149,13 @@ var element = $('#27fc37d7-5d39-4a58-89fb-432d4b214cd7');
 
 
 
-<div id="1d13465e-6d24-4494-acb7-02812b2a0566"></div>
+<div id="81b8f9e3-8606-47ec-a2f6-3198bcc4d9ac"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1d13465e-6d24-4494-acb7-02812b2a0566');
+var element = $('#81b8f9e3-8606-47ec-a2f6-3198bcc4d9ac');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 12;
                 var nbb_unformatted_code = "result_datasets = collection(dataf=dataf)";
                 var nbb_formatted_code = "result_datasets = collection(dataf=dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1381,13 +1381,13 @@ var element = $('#1d13465e-6d24-4494-acb7-02812b2a0566');
 
 
 
-<div id="5e6189ae-12c2-4752-92fa-bcfb3ecf3960"></div>
+<div id="5dffad5f-db5a-44fb-b8f9-2666325c12cb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
+var element = $('#5dffad5f-db5a-44fb-b8f9-2666325c12cb');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 13;
                 var nbb_unformatted_code = "result_datasets[0]";
                 var nbb_formatted_code = "result_datasets[0]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1497,7 +1497,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.50</td>
       <td>0.75</td>
       <td>0.50</td>
-      <td>0.5</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1521,7 +1521,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.25</td>
       <td>1.00</td>
       <td>0.25</td>
-      <td>0.1</td>
+      <td>0.9</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1545,7 +1545,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.25</td>
       <td>0.75</td>
       <td>0.25</td>
-      <td>0.8</td>
+      <td>0.2</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1569,7 +1569,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>1.00</td>
       <td>1.00</td>
       <td>0.25</td>
-      <td>0.4</td>
+      <td>0.5</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1617,7 +1617,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.25</td>
       <td>0.00</td>
       <td>0.50</td>
-      <td>0.3</td>
+      <td>0.6</td>
     </tr>
     <tr>
       <th>6</th>
@@ -1641,7 +1641,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.50</td>
       <td>1.00</td>
       <td>0.25</td>
-      <td>0.9</td>
+      <td>0.1</td>
     </tr>
     <tr>
       <th>7</th>
@@ -1665,7 +1665,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.50</td>
       <td>0.25</td>
       <td>0.25</td>
-      <td>1.0</td>
+      <td>0.8</td>
     </tr>
     <tr>
       <th>8</th>
@@ -1689,7 +1689,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>0.00</td>
       <td>0.00</td>
       <td>0.50</td>
-      <td>0.6</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>9</th>
@@ -1713,7 +1713,7 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
       <td>1.00</td>
       <td>0.75</td>
       <td>0.75</td>
-      <td>0.2</td>
+      <td>0.4</td>
     </tr>
   </tbody>
 </table>
@@ -1728,13 +1728,13 @@ var element = $('#5e6189ae-12c2-4752-92fa-bcfb3ecf3960');
 
 
 
-<div id="f10335b9-a771-4632-9d4a-44e2477278e8"></div>
+<div id="3529f150-51e9-4585-82b3-fdaa35654024"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f10335b9-a771-4632-9d4a-44e2477278e8');
+var element = $('#3529f150-51e9-4585-82b3-fdaa35654024');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 14;
                 var nbb_unformatted_code = "result_datasets[1]";
                 var nbb_formatted_code = "result_datasets[1]";
                 var nbb_cells = Jupyter.notebook.get_cells();

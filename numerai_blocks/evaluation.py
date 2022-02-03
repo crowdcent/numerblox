@@ -251,5 +251,5 @@ class NumeraiClassicEvaluator(BaseEvaluator):
 
 # Cell
 class NumeraiSignalsEvaluator(BaseEvaluator):
-    def __init__(self, era_col: str = "era", fast_mode = False):
+    def __init__(self, era_col: str = "friday_date", fast_mode = False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)

@@ -54,10 +54,10 @@ nb_path: "nbs/02_numerframe.ipynb"
 
 
 
-<div id="f7c6f445-7a0e-45dc-8246-99ba5261a409"></div>
+<div id="d15e56a0-ac7f-4845-ba35-fc6b23061648"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f7c6f445-7a0e-45dc-8246-99ba5261a409');
+var element = $('#d15e56a0-ac7f-4845-ba35-fc6b23061648');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -282,15 +282,15 @@ pd.DataFrame([Point(0, 0), Point(0, 3), Point(2, 3)])
 
 
 
-<div id="f244b29c-b130-49b7-a0b3-0129d3a00ea5"></div>
+<div id="d3256f6c-d976-4d85-aac1-ae767a0aaa20"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f244b29c-b130-49b7-a0b3-0129d3a00ea5');
+var element = $('#d3256f6c-d976-4d85-aac1-ae767a0aaa20');
 
             setTimeout(function() {
-                var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass AttrDict(dict):\n    \"\"\" Access dictionary elements as attributes. \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\nclass NumerFrame(pd.DataFrame):\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def add_metadata(self, *args, **kwargs):\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y";
-                var nbb_formatted_code = "# export\nclass AttrDict(dict):\n    \"\"\"Access dictionary elements as attributes.\"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\n\nclass NumerFrame(pd.DataFrame):\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def add_metadata(self, *args, **kwargs):\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y";
+                var nbb_cell_id = 9;
+                var nbb_unformatted_code = "# export\nclass AttrDict(dict):\n    \"\"\" Access dictionary elements as attributes. \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\nclass NumerFrame(pd.DataFrame):\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def __set_era_col(self):\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\"NumerFrame must contain either an 'era' or 'friday_date' column.\")\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y";
+                var nbb_formatted_code = "# export\nclass AttrDict(dict):\n    \"\"\"Access dictionary elements as attributes.\"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\n\nclass NumerFrame(pd.DataFrame):\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def __set_era_col(self):\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\n                \"NumerFrame must contain either an 'era' or 'friday_date' column.\"\n            )\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in Dataset that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into Dataset object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        # Make sure there is no overwrite on DataFrame\n        json_data.pop(\"dataf\", None)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:\n        \"\"\"Return DataFrame given selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self) -> pd.DataFrame:\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self) -> pd.DataFrame:\n        \"\"\"All columns that are not features, targets nor predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -324,7 +324,7 @@ var element = $('#f244b29c-b130-49b7-a0b3-0129d3a00ea5');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="create_numerframe" class="doc_header"><code>create_numerframe</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/numerframe.py#L105" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>create_numerframe</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong><code>metadata</code></strong>:<code>dict</code>=<em><code>None</code></em>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+<h4 id="create_numerframe" class="doc_header"><code>create_numerframe</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/numerframe.py#L116" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>create_numerframe</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong><code>metadata</code></strong>:<code>dict</code>=<em><code>None</code></em>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
 </blockquote>
 <p>Convenience function to initialize NumerFrame.
 Support most used file formats for Pandas DataFrames (.csv, .parquet and .pickle).
@@ -355,13 +355,13 @@ For more details check <a href="https://pandas.pydata.org/docs/reference/io.html
 
 
 
-<div id="aa8d6a14-7772-4d00-9719-8b7804f70ab2"></div>
+<div id="8e43ba03-d6b7-417f-bc91-c1cd8de6f32b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#aa8d6a14-7772-4d00-9719-8b7804f70ab2');
+var element = $('#8e43ba03-d6b7-417f-bc91-c1cd8de6f32b');
 
             setTimeout(function() {
-                var nbb_cell_id = 6;
+                var nbb_cell_id = 10;
                 var nbb_unformatted_code = "#export\ndef create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet and .pickle).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    :param file_path: Relative or absolute path to data file.\n    :param metadata: Metadata to be stored in NumerFrame.meta.\n    *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    # Suffix without dot\n    suffix = Path(file_path).suffix\n    if suffix == \".csv\":\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix == \".parquet\":\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
                 var nbb_formatted_code = "# export\ndef create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs):\n    \"\"\"\n    Convenience function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet and .pickle).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    :param file_path: Relative or absolute path to data file.\n    :param metadata: Metadata to be stored in NumerFrame.meta.\n    *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    # Suffix without dot\n    suffix = Path(file_path).suffix\n    if suffix == \".csv\":\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix == \".parquet\":\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -433,13 +433,13 @@ var element = $('#aa8d6a14-7772-4d00-9719-8b7804f70ab2');
 
 
 
-<div id="4d376d1f-d95d-4747-956b-280ddee74c40"></div>
+<div id="3702e14b-d9f9-4843-8f40-033f17659350"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4d376d1f-d95d-4747-956b-280ddee74c40');
+var element = $('#3702e14b-d9f9-4843-8f40-033f17659350');
 
             setTimeout(function() {
-                var nbb_cell_id = 7;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
                 var nbb_formatted_code = "# Random DataFrame\ntest_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -495,13 +495,13 @@ var element = $('#4d376d1f-d95d-4747-956b-280ddee74c40');
 
 
 
-<div id="9c8d2951-7786-4a4d-acff-78f8d9756545"></div>
+<div id="45f61164-7d68-4e36-8f44-832128095011"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9c8d2951-7786-4a4d-acff-78f8d9756545');
+var element = $('#45f61164-7d68-4e36-8f44-832128095011');
 
             setTimeout(function() {
-                var nbb_cell_id = 8;
+                var nbb_cell_id = 12;
                 var nbb_unformatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataset = NumerFrame(df)\nmemory_dataset.add_metadata(metadata)\nassert memory_dataset.meta.version == 42\nassert memory_dataset.meta.tournament_type == \"random\"";
                 var nbb_formatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataset = NumerFrame(df)\nmemory_dataset.add_metadata(metadata)\nassert memory_dataset.meta.version == 42\nassert memory_dataset.meta.tournament_type == \"random\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -548,7 +548,9 @@ var element = $('#9c8d2951-7786-4a4d-acff-78f8d9756545');
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&#39;version&#39;: 42,
+<pre>{&#39;era_col&#39;: &#39;era&#39;,
+ &#39;era_col_verified&#39;: True,
+ &#39;version&#39;: 42,
  &#39;additional_info&#39;: &#39;test_model&#39;,
  &#39;multi_target&#39;: False,
  &#39;tournament_type&#39;: &#39;random&#39;}</pre>
@@ -561,13 +563,13 @@ var element = $('#9c8d2951-7786-4a4d-acff-78f8d9756545');
 
 
 
-<div id="5918873f-74bf-4ae9-befa-c71dd330d27b"></div>
+<div id="9f09d99f-6a82-409c-8210-ab2c7a3f3189"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5918873f-74bf-4ae9-befa-c71dd330d27b');
+var element = $('#9f09d99f-6a82-409c-8210-ab2c7a3f3189');
 
             setTimeout(function() {
-                var nbb_cell_id = 9;
+                var nbb_cell_id = 13;
                 var nbb_unformatted_code = "memory_dataset.meta";
                 var nbb_formatted_code = "memory_dataset.meta";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -740,13 +742,13 @@ var element = $('#5918873f-74bf-4ae9-befa-c71dd330d27b');
 
 
 
-<div id="eabc7cef-e50e-4634-b056-cdbc25792f66"></div>
+<div id="2c4778b7-9d08-445f-af18-c80fa4961eaf"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#eabc7cef-e50e-4634-b056-cdbc25792f66');
+var element = $('#2c4778b7-9d08-445f-af18-c80fa4961eaf');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 14;
                 var nbb_unformatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\",\n                            metadata=metadata\n                            )\nassert dataset.meta.version == 1\nassert not dataset.meta.multi_target\ndataset.head(2)";
                 var nbb_formatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata=metadata\n)\nassert dataset.meta.version == 1\nassert not dataset.meta.multi_target\ndataset.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -793,7 +795,9 @@ var element = $('#eabc7cef-e50e-4634-b056-cdbc25792f66');
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&#39;version&#39;: 1,
+<pre>{&#39;era_col&#39;: &#39;era&#39;,
+ &#39;era_col_verified&#39;: True,
+ &#39;version&#39;: 1,
  &#39;additional_info&#39;: &#39;test_model&#39;,
  &#39;multi_target&#39;: False,
  &#39;tournament_type&#39;: &#39;classic&#39;}</pre>
@@ -806,13 +810,13 @@ var element = $('#eabc7cef-e50e-4634-b056-cdbc25792f66');
 
 
 
-<div id="5bba7f4d-6007-401b-b7ac-22337103d724"></div>
+<div id="05c1649f-a5e9-46f4-995a-9045a19787ec"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5bba7f4d-6007-401b-b7ac-22337103d724');
+var element = $('#05c1649f-a5e9-46f4-995a-9045a19787ec');
 
             setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 15;
                 var nbb_unformatted_code = "dataset.meta";
                 var nbb_formatted_code = "dataset.meta";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -968,13 +972,13 @@ var element = $('#5bba7f4d-6007-401b-b7ac-22337103d724');
 
 
 
-<div id="ae9e5a74-bee3-47be-bcef-1dcf0201675f"></div>
+<div id="fcff9530-8367-4455-96c8-c8779f6a7aad"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ae9e5a74-bee3-47be-bcef-1dcf0201675f');
+var element = $('#fcff9530-8367-4455-96c8-c8779f6a7aad');
 
             setTimeout(function() {
-                var nbb_cell_id = 12;
+                var nbb_cell_id = 16;
                 var nbb_unformatted_code = "dataset.get_feature_data.head(2)";
                 var nbb_formatted_code = "dataset.get_feature_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1038,13 +1042,13 @@ var element = $('#ae9e5a74-bee3-47be-bcef-1dcf0201675f');
 
 
 
-<div id="7a4bcb69-5d40-43cc-a75b-2e1d653969c9"></div>
+<div id="01ab77f4-0f30-482e-8fd6-36e35cae765b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7a4bcb69-5d40-43cc-a75b-2e1d653969c9');
+var element = $('#01ab77f4-0f30-482e-8fd6-36e35cae765b');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 17;
                 var nbb_unformatted_code = "dataset.aux_cols";
                 var nbb_formatted_code = "dataset.aux_cols";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1138,13 +1142,13 @@ var element = $('#7a4bcb69-5d40-43cc-a75b-2e1d653969c9');
 
 
 
-<div id="d7869d59-2ced-4ead-bd3b-fb61ff1b06aa"></div>
+<div id="17cf44d5-b52f-4839-92a5-1339368e5efc"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d7869d59-2ced-4ead-bd3b-fb61ff1b06aa');
+var element = $('#17cf44d5-b52f-4839-92a5-1339368e5efc');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 18;
                 var nbb_unformatted_code = "dataset.get_aux_data.head(2)";
                 var nbb_formatted_code = "dataset.get_aux_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1209,13 +1213,13 @@ var element = $('#d7869d59-2ced-4ead-bd3b-fb61ff1b06aa');
 
 
 
-<div id="380c9aa6-44c0-40e8-9ccf-7992870fcc09"></div>
+<div id="e5553234-1c66-4fbd-a360-8e33dec1f2a8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#380c9aa6-44c0-40e8-9ccf-7992870fcc09');
+var element = $('#e5553234-1c66-4fbd-a360-8e33dec1f2a8');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 19;
                 var nbb_unformatted_code = "dataset.export_json_metadata(\"config.json\")";
                 var nbb_formatted_code = "dataset.export_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1273,13 +1277,13 @@ var element = $('#380c9aa6-44c0-40e8-9ccf-7992870fcc09');
 
 
 
-<div id="fc31f3fc-cc25-4509-bbe9-1ba8e77354d0"></div>
+<div id="c58767bf-8aab-40dd-9d4a-c58aee019b53"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fc31f3fc-cc25-4509-bbe9-1ba8e77354d0');
+var element = $('#c58767bf-8aab-40dd-9d4a-c58aee019b53');
 
             setTimeout(function() {
-                var nbb_cell_id = 16;
+                var nbb_cell_id = 20;
                 var nbb_unformatted_code = "dataset.import_json_metadata(\"config.json\")";
                 var nbb_formatted_code = "dataset.import_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1327,13 +1331,13 @@ var element = $('#fc31f3fc-cc25-4509-bbe9-1ba8e77354d0');
 
 
 
-<div id="260819b1-5bbe-4d94-8df2-ad9db79d778b"></div>
+<div id="e4a286bb-c682-4907-b88b-1fed2cd244bd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#260819b1-5bbe-4d94-8df2-ad9db79d778b');
+var element = $('#e4a286bb-c682-4907-b88b-1fed2cd244bd');
 
             setTimeout(function() {
-                var nbb_cell_id = 17;
+                var nbb_cell_id = 21;
                 var nbb_unformatted_code = "assert dataset.meta.version == 1\nassert not dataset.meta.multi_target";
                 var nbb_formatted_code = "assert dataset.meta.version == 1\nassert not dataset.meta.multi_target";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1381,13 +1385,13 @@ var element = $('#260819b1-5bbe-4d94-8df2-ad9db79d778b');
 
 
 
-<div id="4a952cc0-1088-4737-9f4d-ce05df27bfa7"></div>
+<div id="7343b7bc-b0bf-4b18-bbeb-d4566f39aa72"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4a952cc0-1088-4737-9f4d-ce05df27bfa7');
+var element = $('#7343b7bc-b0bf-4b18-bbeb-d4566f39aa72');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
+                var nbb_cell_id = 22;
                 var nbb_unformatted_code = "dataf2 = dataset.copy()\nassert dataf2.equals(dataset)";
                 var nbb_formatted_code = "dataf2 = dataset.copy()\nassert dataf2.equals(dataset)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1482,13 +1486,13 @@ var element = $('#4a952cc0-1088-4737-9f4d-ce05df27bfa7');
 
 
 
-<div id="47e7a326-1f1a-4db8-8f38-923adcd67233"></div>
+<div id="2bd27663-8280-4354-9677-faf305862698"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#47e7a326-1f1a-4db8-8f38-923adcd67233');
+var element = $('#2bd27663-8280-4354-9677-faf305862698');
 
             setTimeout(function() {
-                var nbb_cell_id = 19;
+                var nbb_cell_id = 23;
                 var nbb_unformatted_code = "dataset.get_target_data.head(2)";
                 var nbb_formatted_code = "dataset.get_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1576,13 +1580,13 @@ var element = $('#47e7a326-1f1a-4db8-8f38-923adcd67233');
 
 
 
-<div id="eb477c46-b455-4db7-8dae-68a885022006"></div>
+<div id="adb4808b-ee4f-4662-9757-db20a13bfa54"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#eb477c46-b455-4db7-8dae-68a885022006');
+var element = $('#adb4808b-ee4f-4662-9757-db20a13bfa54');
 
             setTimeout(function() {
-                var nbb_cell_id = 20;
+                var nbb_cell_id = 24;
                 var nbb_unformatted_code = "dataset.get_single_target_data.head(2)";
                 var nbb_formatted_code = "dataset.get_single_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1632,13 +1636,13 @@ var element = $('#eb477c46-b455-4db7-8dae-68a885022006');
 
 
 
-<div id="596957bf-8ddf-46b7-94f0-70ae62226174"></div>
+<div id="a02b8b8c-bbe1-4432-a0c6-abdaa5433f3c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#596957bf-8ddf-46b7-94f0-70ae62226174');
+var element = $('#a02b8b8c-bbe1-4432-a0c6-abdaa5433f3c');
 
             setTimeout(function() {
-                var nbb_cell_id = 21;
+                var nbb_cell_id = 25;
                 var nbb_unformatted_code = "dataset.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset))\nnew_dataset = NumerFrame(dataset)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
                 var nbb_formatted_code = "dataset.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset))\nnew_dataset = NumerFrame(dataset)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1733,13 +1737,13 @@ var element = $('#596957bf-8ddf-46b7-94f0-70ae62226174');
 
 
 
-<div id="c1d201f3-8226-4d73-9fac-d30c33266d81"></div>
+<div id="ad519986-a303-4f4c-ab1c-498a83660312"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c1d201f3-8226-4d73-9fac-d30c33266d81');
+var element = $('#ad519986-a303-4f4c-ab1c-498a83660312');
 
             setTimeout(function() {
-                var nbb_cell_id = 22;
+                var nbb_cell_id = 26;
                 var nbb_unformatted_code = "dataset.get_column_selection(\"id\").head(2)";
                 var nbb_formatted_code = "dataset.get_column_selection(\"id\").head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1811,12 +1815,12 @@ var element = $('#c1d201f3-8226-4d73-9fac-d30c33266d81');
     <tr>
       <th>0</th>
       <td>n000315175b67977</td>
-      <td>0.738448</td>
+      <td>0.526526</td>
     </tr>
     <tr>
       <th>1</th>
       <td>n0014af834a96cdd</td>
-      <td>0.181310</td>
+      <td>0.242034</td>
     </tr>
   </tbody>
 </table>
@@ -1830,13 +1834,13 @@ var element = $('#c1d201f3-8226-4d73-9fac-d30c33266d81');
 
 
 
-<div id="cc773262-d4e8-443e-83cc-d7e82836a767"></div>
+<div id="8e56cbfa-4076-40e5-af6d-0497bfa5b9db"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cc773262-d4e8-443e-83cc-d7e82836a767');
+var element = $('#8e56cbfa-4076-40e5-af6d-0497bfa5b9db');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
+                var nbb_cell_id = 27;
                 var nbb_unformatted_code = "dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
                 var nbb_formatted_code = "dataset.get_column_selection([\"id\", \"prediction_test_1\"]).head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1879,7 +1883,7 @@ var element = $('#cc773262-d4e8-443e-83cc-d7e82836a767');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="NumerFrame.get_feature_target_pair" class="doc_header"><code>NumerFrame.get_feature_target_pair</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/numerframe.py#L94" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>NumerFrame.get_feature_target_pair</code>(<strong><code>multi_target</code></strong>=<em><code>False</code></em>)</p>
+<h4 id="NumerFrame.get_feature_target_pair" class="doc_header"><code>NumerFrame.get_feature_target_pair</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/numerframe.py#L105" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>NumerFrame.get_feature_target_pair</code>(<strong><code>multi_target</code></strong>=<em><code>False</code></em>)</p>
 </blockquote>
 <p>Get split of feature and target columns.
 :param multi_target: Returns only 'target' column by default.
@@ -2020,13 +2024,13 @@ Returns all target columns when set to True.</p>
 
 
 
-<div id="887a049b-ba17-4ea6-8909-6c42d168f501"></div>
+<div id="550fc7a5-26ae-4a98-b073-17a9c54cf4f6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#887a049b-ba17-4ea6-8909-6c42d168f501');
+var element = $('#550fc7a5-26ae-4a98-b073-17a9c54cf4f6');
 
             setTimeout(function() {
-                var nbb_cell_id = 25;
+                var nbb_cell_id = 29;
                 var nbb_unformatted_code = "X, y = dataset.get_feature_target_pair(multi_target=False)\nX.head(2)";
                 var nbb_formatted_code = "X, y = dataset.get_feature_target_pair(multi_target=False)\nX.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -2114,13 +2118,13 @@ var element = $('#887a049b-ba17-4ea6-8909-6c42d168f501');
 
 
 
-<div id="d646ed84-5912-4f49-87e5-c3e6a86e57eb"></div>
+<div id="3e282c7f-8c3b-44b0-a5f5-52db71533117"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d646ed84-5912-4f49-87e5-c3e6a86e57eb');
+var element = $('#3e282c7f-8c3b-44b0-a5f5-52db71533117');
 
             setTimeout(function() {
-                var nbb_cell_id = 26;
+                var nbb_cell_id = 30;
                 var nbb_unformatted_code = "y.head(2)";
                 var nbb_formatted_code = "y.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();

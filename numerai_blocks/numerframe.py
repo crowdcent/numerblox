@@ -26,6 +26,8 @@ class NumerFrame(pd.DataFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__init_meta_attrs()
+        if not "era_col_verified" in self.meta:
+            self.__set_era_col()
 
     @property
     def _constructor(self):
@@ -41,6 +43,15 @@ class NumerFrame(pd.DataFrame):
         self.aux_cols = [
             col for col in self.columns if col not in self.not_aux_cols
         ]
+
+    def __set_era_col(self):
+        if "era" in self.columns:
+            self.meta.era_col = "era"
+        elif "friday_date" in self.columns:
+            self.meta.era_col = "friday_date"
+        else:
+            raise AttributeError("NumerFrame must contain either an 'era' or 'friday_date' column.")
+        self.meta.era_col_verified = True
 
     def add_metadata(self, *args, **kwargs):
         self.meta.update(*args, **kwargs)
