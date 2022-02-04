@@ -36,7 +36,7 @@ class BaseEvaluator:
         against give target and example prediction column.
         """
         val_stats = pd.DataFrame()
-        dataf.dataf = dataf.fillna(0.5)
+        dataf = dataf.fillna(0.5)
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
         for col in tqdm(pred_cols, desc="Evaluation: "):
             col_stats = self.evaluation_one_col(dataf=dataf, pred_col=col,
