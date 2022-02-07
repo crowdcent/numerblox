@@ -113,12 +113,12 @@ class NumerFrame(pd.DataFrame):
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
 
-    def get_era_batch(self, eras: List[Any], convert_to_tf = False, autoencoder_batch = False, *args, **kwargs) -> tuple:
+    def get_era_batch(self, eras: List[Any], convert_to_tf = False, aemlp_batch = False, *args, **kwargs) -> tuple:
         """
         Get feature target pair batch of 1 or multiple eras.
         :param eras: List of era names. They need to be present in era_col.
         :param convert_to_tf: Convert to tf.Tensor.
-        :param autoencoder_batch: Specific target batch for autoencoder training.
+        :param aemlp_batch: Specific target batch for autoencoder training.
         y will contain three components: features, targets and targets.
         *args, **kwargs are passed to initialization of Tensor.
         """
@@ -128,12 +128,12 @@ class NumerFrame(pd.DataFrame):
             valid_eras.append(era)
         X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values
         y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values
-        if autoencoder_batch:
+        if aemlp_batch:
             y = [X.copy(), y.copy(), y.copy()]
 
         if convert_to_tf:
             X = tf.convert_to_tensor(X, *args, **kwargs)
-            if autoencoder_batch:
+            if aemlp_batch:
                 y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]
             else:
                 y = tf.convert_to_tensor(y, *args, **kwargs)
