@@ -8,6 +8,7 @@ import scipy
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from typing import Union
 import scipy.stats as sp
 from tqdm.auto import tqdm
 from typeguard import typechecked
@@ -15,8 +16,8 @@ from rich import print as rich_print
 from scipy.stats.mstats import gmean
 from sklearn.preprocessing import MinMaxScaler
 
+from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, display_processor_info
-from .dataset import Dataset
 
 # Cell
 class BasePostProcessor(BaseProcessor):
@@ -30,7 +31,7 @@ class BasePostProcessor(BaseProcessor):
         self.final_col_name = final_col_name
         assert final_col_name.startswith("prediction"), f"final_col name should start with 'prediction'. Got {final_col_name}"
 
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataset: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         ...
 
 # Cell
@@ -45,12 +46,12 @@ class Standardizer(BaseProcessor):
         self.cols = cols
 
     @display_processor_info
-    def transform(self, dataset: Dataset) -> Dataset:
-        cols = dataset.prediction_cols if not self.cols else self.cols
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
+        cols = dataf.prediction_cols if not self.cols else self.cols
         for col in cols:
-            assert dataset.dataf[col].between(0, 1).all(), f"All values should only contain values between 0 and 1. Does not hold for '{col}'"
-        dataset.dataf.loc[:, cols] = dataset.dataf.groupby('era')[cols].rank(pct=True)
-        return Dataset(**dataset.__dict__)
+            assert dataf[col].between(0, 1).all(), f"All values should only contain values between 0 and 1. Does not hold for '{col}'"
+        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
+        return NumerFrame(dataf)
 
 # Cell
 @typechecked
@@ -61,10 +62,10 @@ class MeanEnsembler(BasePostProcessor):
         self.cols = cols
 
     @display_processor_info
-    def transform(self, dataset: Dataset) -> Dataset:
-        dataset.dataf.loc[:, self.final_col_name] = dataset.dataf.loc[:, self.cols].mean(axis=1)
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        dataf.loc[:, self.final_col_name] = dataf.loc[:, self.cols].mean(axis=1)
         rich_print(f":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
 # Cell
 @typechecked
@@ -82,11 +83,11 @@ class DonateWeightedEnsembler(BasePostProcessor):
         self.weights = self._get_weights()
 
     @display_processor_info
-    def transform(self, dataset: Dataset) -> Dataset:
-        dataset.dataf.loc[:, self.final_col_name] = np.average(dataset.dataf.loc[:, self.cols],
-                                                               weights=self.weights, axis=1)
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        dataf.loc[:, self.final_col_name] = np.average(dataf.loc[:, self.cols],
+                                                       weights=self.weights, axis=1)
         rich_print(f":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:")
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
     def _get_weights(self) -> list:
         weights = []
@@ -107,11 +108,11 @@ class GeometricMeanEnsembler(BasePostProcessor):
         self.n_cols = len(cols)
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
-        new_col = dataset.dataf.loc[:, self.cols].apply(gmean, axis=1)
-        dataset.dataf.loc[:, self.final_col_name] = new_col
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+        new_col = dataf.loc[:, self.cols].apply(gmean, axis=1)
+        dataf.loc[:, self.final_col_name] = new_col
         rich_print(f":stew: Ensembled [blue]'{self.cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:")
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
 # Cell
 @typechecked
@@ -139,14 +140,14 @@ class FeatureNeutralizer(BasePostProcessor):
         self.era_col = era_col
 
     @display_processor_info
-    def transform(self, dataset: Dataset) -> Dataset:
-        feature_names = self.feature_names if self.feature_names else dataset.feature_cols
-        neutralized_preds = dataset.dataf.groupby(self.era_col)\
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
+        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
+        neutralized_preds = dataf.groupby(self.era_col)\
             .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names))
-        dataset.dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
+        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
         rich_print(f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:")
         rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
-        return Dataset(**dataset.__dict__)
+        return NumerFrame(dataf)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         scores = dataf[columns]
@@ -182,17 +183,17 @@ class FeaturePenalizer(BasePostProcessor):
         self.era_col = era_col
 
     @display_processor_info
-    def transform(self, dataset: Dataset) -> Dataset:
-        risky_feature_names = dataset.feature_cols if not self.risky_feature_names else self.risky_feature_names
-        for model_name in self.model_list:
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names
+        for model_name in tqdm(self.model_list, desc="Feature Penalization"):
             penalized_data = self.reduce_all_exposures(
-                            df=dataset.dataf,
+                            df=dataf,
                             column=self.pred_name,
                             neutralizers=risky_feature_names,
                         )
             new_pred_col = f"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}"
-            dataset.dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
-        return Dataset(**dataset.__dict__)
+            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
+        return NumerFrame(dataf)
 
     def reduce_all_exposures(self, df: pd.DataFrame,
                              column: str = "prediction",
@@ -257,7 +258,7 @@ class FeaturePenalizer(BasePostProcessor):
     @tf.function(experimental_relax_shapes=True)
     def __train_loop_body(self, model, feats, pred, target_exps):
         with tf.GradientTape() as tape:
-            exps = self.exposures(feats, pred[:, None] - model(feats, training=True))
+            exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
             loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) +
                                  tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))
         return loss, tape.gradient(loss, model.trainable_variables)
@@ -283,11 +284,11 @@ class AwesomePostProcessor(BasePostProcessor):
         super().__init__(final_col_name=final_col_name)
 
     @display_processor_info
-    def transform(self, dataset: Dataset, *args, **kwargs) -> Dataset:
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         # Do processing
         ...
         # Add new column(s) for manipulated data (optional)
-        dataset.dataf.loc[:, self.final_col_name] = ...
+        dataf.loc[:, self.final_col_name] = ...
         ...
-        # Parse all contents of Dataset to the next pipeline step
-        return Dataset(**dataset.__dict__)
+        # Parse all contents to the next pipeline step
+        return NumerFrame(dataf)
