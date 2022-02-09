@@ -174,7 +174,6 @@ class BaseEvaluator:
                              pred_col: str, target_col: str) -> Tuple[np.float64, np.float64, np.float64]:
         """ Feature neutralized mean performance. """
         fn = FeatureNeutralizer(pred_name=pred_col,
-                                era_col=self.era_col,
                                 proportion=1.0)
         neutralized_dataf = fn(dataf=dataf)
         neutral_corrs = self.per_era_corrs(dataf=neutralized_dataf,
