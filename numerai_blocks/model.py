@@ -67,7 +67,7 @@ class DirectoryModel(BaseModel):
         self.total_models = len(self.model_paths)
 
     @display_processor_info
-    def predict(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         """
         Use all recognized models to make predictions and average them out.
         :param dataf: A Preprocessed DataFrame where all its features can be passed to the model predict method.
@@ -106,7 +106,7 @@ class SingleModel(BaseModel):
                                         ".pickle": pickle.load}
         self.__check_valid_suffix()
 
-    def predict(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         model = self._load_model()
         predictions = model.predict(dataf.get_feature_data, *args, **kwargs)
         prediction_cols = self.get_prediction_col_names(predictions.shape)
@@ -197,7 +197,7 @@ class ConstantModel(BaseModel):
                          )
         self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])
 
-    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def predict(self, dataf: NumerFrame) -> NumerFrame:
         dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataf.get_feature_data)
         return NumerFrame(dataf)
 
@@ -231,9 +231,9 @@ class AwesomeModel(BaseModel):
                          )
 
     @display_processor_info
-    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def predict(self, dataf: NumerFrame) -> NumerFrame:
         """ Return Dataset with column(s) added for prediction(s). """
-        # NumerFrame functionality to get all features
+        # Get all features
         feature_df = dataf.get_feature_data
         # Predict and add to new column
         ...
