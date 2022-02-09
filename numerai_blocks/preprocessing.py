@@ -50,8 +50,8 @@ class CopyPreProcessor(BaseProcessor):
         super().__init__()
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Union[pd.DataFrame, NumerFrame]:
-        return dataf.copy()
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        return NumerFrame(dataf.copy())
 
 # Cell
 @typechecked

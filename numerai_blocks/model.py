@@ -52,7 +52,7 @@ class DirectoryModel(BaseModel):
     Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.
     Walks through every file with given file_suffix in a directory.
     :param model_directory: Main directory from which to read in models.
-    :param file_suffix: File format to load (For example, .joblib, .cbm or .lgb)
+    :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)
     :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, model_directory: str, file_suffix: str, model_name: str = None, *args, **kwargs):
@@ -91,6 +91,11 @@ class DirectoryModel(BaseModel):
 # Cell
 @typechecked
 class SingleModel(BaseModel):
+    """
+    Load single model from file and perform prediction logic.
+    :param model_directory: Main directory from which to read in models.
+    :param model_name: Name that will be used to create column names and for display purposes.
+    """
     def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
@@ -141,7 +146,12 @@ class SingleModel(BaseModel):
 # Cell
 @typechecked
 class JoblibModel(DirectoryModel):
-    """ Load and predict for arbitrary models saved as .joblib. """
+    """
+    Load and predict for arbitrary models in directory saved as .joblib.
+    All loaded models should have a .predict method and accept the features present in the data.
+    :param model_directory: Main directory from which to read in models.
+    :param model_name: Name that will be used to create column names and for display purposes.
+    """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'joblib'
         super().__init__(model_directory=model_directory,
@@ -156,7 +166,11 @@ class JoblibModel(DirectoryModel):
 # Cell
 @typechecked
 class CatBoostModel(DirectoryModel):
-    """ Load and predict with all .cbm models (CatBoostRegressor) in directory. """
+    """
+    Load and predict with all .cbm models (CatBoostRegressor) in directory.
+    :param model_directory: Main directory from which to read in models.
+    :param model_name: Name that will be used to create column names and for display purposes.
+    """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         file_suffix = 'cbm'
         super().__init__(model_directory=model_directory,
@@ -188,6 +202,8 @@ class ConstantModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes.
     Create constant prediction.
+    :param constant: Value for constant prediction.
+    :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, constant: float = 0.5, model_name: str = None):
         self.constant = constant
@@ -206,6 +222,7 @@ class RandomModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes.
     Create uniformly distributed predictions.
+    :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, model_name: str = None):
         model_name = model_name if model_name else "random"
