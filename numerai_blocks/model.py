@@ -239,7 +239,7 @@ class RandomModel(BaseModel):
 class AwesomeModel(BaseModel):
     """
     - TEMPLATE -
-    Predict with arbitrary model formats.
+    Predict with arbitrary prediction logic and model formats.
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
         super().__init__(model_directory=model_directory,
@@ -249,12 +249,12 @@ class AwesomeModel(BaseModel):
 
     @display_processor_info
     def predict(self, dataf: NumerFrame) -> NumerFrame:
-        """ Return Dataset with column(s) added for prediction(s). """
+        """ Return NumerFrame with column(s) added for prediction(s). """
         # Get all features
         feature_df = dataf.get_feature_data
         # Predict and add to new column
         ...
-        # Parse all contents of Dataset to the next pipeline step
+        # Parse all contents of NumerFrame to the next pipeline step
         return NumerFrame(dataf)
 
 # Cell
@@ -262,10 +262,10 @@ class AwesomeModel(BaseModel):
 class AwesomeDirectoryModel(DirectoryModel):
     """
     - TEMPLATE -
-    Load in all models of arbitrary file format where model has .predict method.
+    Load in all models of arbitrary file format and predict for all.
     """
     def __init__(self, model_directory: str, model_name: str = None, *args, **kwargs):
-        file_suffix = 'anything'
+        file_suffix = '.anything'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
                          model_name=model_name,
