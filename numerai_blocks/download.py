@@ -23,10 +23,9 @@ from google.cloud import storage
 @typechecked
 class BaseIO(ABC):
     """
-    Basic functionality for IO like downloading and uploading.
+    Basic functionality for IO (downloading and uploading).
     :param directory_path: Base folder for IO. Will be created if it does not exist.
     """
-
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
         self._create_directory()
@@ -90,7 +89,7 @@ class BaseIO(ABC):
         )
 
     def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:
-        """Create blob that interacts with Google Cloud Storage (GCS)"""
+        """ Create blob that interacts with Google Cloud Storage (GCS). """
         client = storage.Client()
         # https://console.cloud.google.com/storage/browser/[bucket_name]
         bucket = client.get_bucket(bucket_name)
@@ -99,7 +98,7 @@ class BaseIO(ABC):
 
     def _append_folder(self, folder: str) -> Path:
         """
-        Return base directory Path appended with 'folder'.
+        Return base directory Path object appended with 'folder'.
         Create directory if it does not exist.
         """
         dir = Path(self.dir / folder)
@@ -107,7 +106,7 @@ class BaseIO(ABC):
         return dir
 
     def _create_directory(self):
-        """Create base directory if it does not exist."""
+        """ Create base directory if it does not exist. """
         if not self.dir.is_dir():
             rich_print(
                 f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory..."
@@ -116,12 +115,12 @@ class BaseIO(ABC):
 
     @property
     def get_all_files(self) -> list:
-        """Return all contents in directory."""
+        """ Return all paths of contents in directory. """
         return list(self.dir.iterdir())
 
     @property
     def is_empty(self) -> bool:
-        """Check if directory is empty."""
+        """ Check if directory is empty. """
         return not bool(self.get_all_files)
 
 # Cell
@@ -131,23 +130,22 @@ class BaseDownloader(BaseIO):
     Abstract base class for downloaders.
     :param directory_path: Base folder to download files to.
     """
-
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
 
     @abstractmethod
     def download_training_data(self, *args, **kwargs):
-        """Download all necessary files needed for training."""
+        """ Download all necessary files needed for training. """
         ...
 
     @abstractmethod
     def download_inference_data(self, *args, **kwargs):
-        """Download minimal amount of files needed for weekly inference."""
+        """ Download minimal amount of files needed for weekly inference. """
         ...
 
     @staticmethod
     def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:
-        """Load JSON from file and return as dictionary."""
+        """ Load JSON from file and return as dictionary. """
         with open(file_path) as json_file:
             json_data = json.load(json_file, *args, **kwargs)
         if verbose:
@@ -163,13 +161,14 @@ class BaseDownloader(BaseIO):
 # Cell
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    -WARNING- Version 1 (legacy) is deprecated. Only supporting version 2+.
+    --------------------------------------------------------------------------------------
+    -WARNING- Version 1 (legacy data) is deprecated. Only supporting version 2+. -WARNING-
+    --------------------------------------------------------------------------------------
     Downloading from NumerAPI for Numerai Classic data.
 
     :param directory_path: Base folder to download files to.
     All *args, **kwargs will be passed to NumerAPI initialization.
     """
-
     def __init__(self, directory_path: str, *args, **kwargs):
         super().__init__(directory_path=directory_path)
         self.napi = NumerAPI(*args, **kwargs)
@@ -207,7 +206,8 @@ class NumeraiClassicDownloader(BaseDownloader):
     ):
         """
         Get Numerai classic training and validation data.
-        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
         :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param int8: Integer version of data
         """
@@ -227,8 +227,10 @@ class NumeraiClassicDownloader(BaseDownloader):
         round_num: int = None,
     ):
         """
-        Get Numerai classic inference data.
-        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        Get Numerai classic inference (tournament) data.
+        If only minimal live data is needed, consider .download_live_data.
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
         :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
@@ -247,7 +249,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         Download one of the available datasets through NumerAPI.
 
-        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets())
+        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)
         :param dest_path: Full path where file will be saved.
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
@@ -269,9 +271,10 @@ class NumeraiClassicDownloader(BaseDownloader):
             round_num: int = None
     ):
         """
-        Download all live data in specified folder for given version.
+        Download all live data in specified folder for given version (i.e. minimal data needed for inference).
 
-        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within directory root.
+        Saves in directory root by default.
         :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
@@ -290,7 +293,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         Download all example prediction data in specified folder for given version.
 
-        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
         :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
@@ -301,21 +305,23 @@ class NumeraiClassicDownloader(BaseDownloader):
                 filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
             )
 
-    def get_classic_features(self, subfolder: str = "", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", filename="features.json", *args, **kwargs) -> dict:
         """
-        Download feature overview (stats and feature sets) through NumerAPI and load.
-        :param subfolder: Specify folder to create folder within directory root. Saves in directory root by default.
+        Download feature overview (stats and feature sets) through NumerAPI and load as dict.
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
+        :param filename: name for feature overview.
+        Currently defined as 'features.json' in NumerAPI and used as default.
         *args, **kwargs will be passed to the JSON loader.
         """
         dir = self._append_folder(subfolder)
-        filename = "features.json"
         dest_path = str(dir.joinpath(filename))
         self.download_single_dataset(filename=filename, dest_path=dest_path)
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
     def _get_version_mapping(self, version: int) -> dict:
-        """Check if version is supported and return file mapping for version."""
+        """ Check if data version is supported and return file mapping for version. """
         try:
             mapping_dictionary = self.version_mapping[version]
         except KeyError:
@@ -359,14 +365,13 @@ class AwesomeCustomDownloader(BaseDownloader):
 
     :param directory_path: Base folder to download files to.
     """
-
-    def __init__(self, directory_path: str, *args, **kwargs):
+    def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
 
     def download_inference_data(self, *args, **kwargs):
-        """(minimal) weekly inference downloading here."""
+        """ (minimal) weekly inference downloading here. """
         ...
 
     def download_training_data(self, *args, **kwargs):
-        """Training + validation dataset downloading here."""
+        """ Training + validation dataset downloading here. """
         ...
