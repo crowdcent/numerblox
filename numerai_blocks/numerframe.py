@@ -10,6 +10,7 @@ import pandas as pd
 import tensorflow as tf
 from pathlib import Path
 from rich import print as rich_print
+from pandas_profiling import ProfileReport
 from typing import Union, Tuple, Any, List
 
 # Cell
@@ -20,6 +21,10 @@ class AttrDict(dict):
         self.__dict__ = self
 
 class NumerFrame(pd.DataFrame):
+    """
+    Data structure which extends Pandas DataFrames and
+    allows for additional Numerai specific functionality.
+    """
     _metadata = ["meta", "feature_cols", "target_cols",
                  "prediction_cols", "not_aux_cols", "aux_cols"]
     meta = AttrDict()
@@ -35,6 +40,7 @@ class NumerFrame(pd.DataFrame):
         return NumerFrame
 
     def __init_meta_attrs(self):
+        """ Dynamically track column groups. """
         self.feature_cols = [col for col in self.columns if col.startswith("feature")]
         self.target_cols = [col for col in self.columns if col.startswith("target")]
         self.prediction_cols = [
@@ -46,6 +52,7 @@ class NumerFrame(pd.DataFrame):
         ]
 
     def __set_era_col(self):
+        """ Each NumerFrame should have an era column to benefit from all functionality. """
         if "era" in self.columns:
             self.meta.era_col = "era"
         elif "friday_date" in self.columns:
@@ -55,10 +62,11 @@ class NumerFrame(pd.DataFrame):
         self.meta.era_col_verified = True
 
     def add_metadata(self, *args, **kwargs):
+        """ Parse arbitrary metadata (i.e. Python objects) to the meta attribute. """
         self.meta.update(*args, **kwargs)
 
     def export_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Export all attributes in Dataset that can be serialized to json file."""
+        """Export all attributes in NumerFrame that can be serialized to json file."""
         rich_print(f":file_folder: Exporting metadata to {file} :file_folder:")
         json_txt = json.dumps(
             self.meta.__dict__, default=lambda o: "<not serializable>", **kwargs
@@ -68,39 +76,41 @@ class NumerFrame(pd.DataFrame):
         Path(file).write_text(json_txt)
 
     def import_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Load arbitrary data into Dataset object from json file."""
+        """Load arbitrary data into NumerFrame object from json file."""
         rich_print(f":file_folder: Importing metadata from {file} :file_folder:")
         with open(file) as json_file:
             json_data = json.load(json_file, **kwargs)
         if verbose:
             rich_print(json_data)
-        # Make sure there is no overwrite on DataFrame
-        json_data.pop("dataf", None)
         self.meta.__dict__.update(json_data)
 
-    def get_column_selection(self, cols: Union[str, list]) -> pd.DataFrame:
-        """Return DataFrame given selection of columns."""
+    def get_column_selection(self, cols: Union[str, list]):
+        """ Return NumerFrame from selection of columns. """
         return self.loc[:, cols if isinstance(cols, list) else [cols]]
 
     @property
-    def get_feature_data(self) -> pd.DataFrame:
+    def get_feature_data(self):
+        """ All columns for which name starts with 'target'."""
         return self.get_column_selection(cols=self.feature_cols)
 
     @property
-    def get_target_data(self) -> pd.DataFrame:
+    def get_target_data(self):
+        """ All columns for which name starts with 'target'."""
         return self.get_column_selection(cols=self.target_cols)
 
     @property
-    def get_single_target_data(self) -> pd.DataFrame:
+    def get_single_target_data(self):
+        """ Column with name 'target' (Main Numerai target column). """
         return self.get_column_selection(cols=['target'])
 
     @property
-    def get_prediction_data(self) -> pd.DataFrame:
+    def get_prediction_data(self):
+        """ All columns for which name starts with 'prediction'."""
         return self.get_column_selection(cols=self.prediction_cols)
 
     @property
-    def get_aux_data(self) -> pd.DataFrame:
-        """All columns that are not features, targets nor predictions."""
+    def get_aux_data(self):
+        """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
 
     def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:
@@ -139,11 +149,19 @@ class NumerFrame(pd.DataFrame):
                 y = tf.convert_to_tensor(y, *args, **kwargs)
         return X, y
 
+    def profile_report(self, *args, **kwargs) -> ProfileReport:
+        """
+        DataFrame profiling. Might take a while to generate for large datasets.
+        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html
+        *args, **kwargs will be passed to ProfileReport initialization.
+        """
+        return ProfileReport(self, *args, **kwargs)
+
 # Cell
-def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs):
+def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) -> NumerFrame:
     """
     Convenience function to initialize NumerFrame.
-    Support most used file formats for Pandas DataFrames (.csv, .parquet and .pickle).
+    Support most used file formats for Pandas DataFrames (CSV, Parquet, Pickle, JSON and Excel).
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
     :param file_path: Relative or absolute path to data file.
@@ -153,12 +171,16 @@ def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs):
     assert Path(file_path).is_file(), f"{file_path} does not point to file."
     # Suffix without dot
     suffix = Path(file_path).suffix
-    if suffix == ".csv":
+    if suffix in [".csv"]:
         dataf = pd.read_csv(file_path, *args, **kwargs)
-    elif suffix == ".parquet":
+    elif suffix in [".parquet"]:
         dataf = pd.read_parquet(file_path, *args, **kwargs)
     elif suffix in [".pkl", ".pickle"]:
         dataf = pd.read_pickle(file_path, *args, **kwargs)
+    elif suffix in [".json"]:
+        dataf = pd.read_json(file_path, *args, **kwargs)
+    elif suffix in [".xls", ".xlsx", ".xlsm", "xlsb", ".odf", ".ods", ".odt"]:
+        dataf = pd.read_excel(file_path, *args, **kwargs)
     else:
         raise NotImplementedError
     num_frame = NumerFrame(dataf)
