@@ -41,10 +41,10 @@ class NumerFrame(pd.DataFrame):
 
     def __init_meta_attrs(self):
         """ Dynamically track column groups. """
-        self.feature_cols = [col for col in self.columns if col.startswith("feature")]
-        self.target_cols = [col for col in self.columns if col.startswith("target")]
+        self.feature_cols = [col for col in self.columns if str(col).startswith("feature")]
+        self.target_cols = [col for col in self.columns if str(col).startswith("target")]
         self.prediction_cols = [
-            col for col in self.columns if col.startswith("prediction")
+            col for col in self.columns if str(col).startswith("prediction")
         ]
         self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols
         self.aux_cols = [

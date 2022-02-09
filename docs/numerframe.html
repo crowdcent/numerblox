@@ -54,10 +54,10 @@ nb_path: "nbs/02_numerframe.ipynb"
 
 
 
-<div id="2adca9f7-8749-4dd1-b40d-26e00d2e159f"></div>
+<div id="ee233c21-1860-4767-be41-4375f58bdeaa"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2adca9f7-8749-4dd1-b40d-26e00d2e159f');
+var element = $('#ee233c21-1860-4767-be41-4375f58bdeaa');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -189,15 +189,15 @@ allows for additional Numerai specific functionality.</p>
 
 
 
-<div id="8e8f0bc4-e76d-4e89-9869-9e951ffac393"></div>
+<div id="4fe27e9e-81a3-4e18-b8f2-3eecfd861087"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8e8f0bc4-e76d-4e89-9869-9e951ffac393');
+var element = $('#4fe27e9e-81a3-4e18-b8f2-3eecfd861087');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass AttrDict(dict):\n    \"\"\" Access dictionary elements as attributes. \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\" Dynamically track column groups. \"\"\"\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def __set_era_col(self):\n        \"\"\" Each NumerFrame should have an era column to benefit from all functionality. \"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\"NumerFrame must contain either an 'era' or 'friday_date' column.\")\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\" Parse arbitrary metadata (i.e. Python objects) to the meta attribute. \"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\" Return NumerFrame from selection of columns. \"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\" Column with name 'target' (Main Numerai target column). \"\"\"\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\" All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\" All columns that are not features, targets or predictions. \"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(self, eras: List[Any], convert_to_tf = False, aemlp_batch = False, *args, **kwargs) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: List of era names. They need to be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert era in self[self.meta.era_col].unique(), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
-                var nbb_formatted_code = "# export\nclass AttrDict(dict):\n    \"\"\"Access dictionary elements as attributes.\"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\n\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\"Dynamically track column groups.\"\"\"\n        self.feature_cols = [col for col in self.columns if col.startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if col.startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if col.startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def __set_era_col(self):\n        \"\"\"Each NumerFrame should have an era column to benefit from all functionality.\"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\n                \"NumerFrame must contain either an 'era' or 'friday_date' column.\"\n            )\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\"Parse arbitrary metadata (i.e. Python objects) to the meta attribute.\"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\"Return NumerFrame from selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\"Column with name 'target' (Main Numerai target column).\"\"\"\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\"All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(\n        self, eras: List[Any], convert_to_tf=False, aemlp_batch=False, *args, **kwargs\n    ) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: List of era names. They need to be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert (\n                era in self[self.meta.era_col].unique()\n            ), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
+                var nbb_unformatted_code = "# export\nclass AttrDict(dict):\n    \"\"\" Access dictionary elements as attributes. \"\"\"\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\" Dynamically track column groups. \"\"\"\n        self.feature_cols = [col for col in self.columns if str(col).startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if str(col).startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def __set_era_col(self):\n        \"\"\" Each NumerFrame should have an era column to benefit from all functionality. \"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\"NumerFrame must contain either an 'era' or 'friday_date' column.\")\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\" Parse arbitrary metadata (i.e. Python objects) to the meta attribute. \"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\" Return NumerFrame from selection of columns. \"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\" Column with name 'target' (Main Numerai target column). \"\"\"\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\" All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\" All columns that are not features, targets or predictions. \"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(self, eras: List[Any], convert_to_tf = False, aemlp_batch = False, *args, **kwargs) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: List of era names. They need to be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert era in self[self.meta.era_col].unique(), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
+                var nbb_formatted_code = "# export\nclass AttrDict(dict):\n    \"\"\"Access dictionary elements as attributes.\"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(AttrDict, self).__init__(*args, **kwargs)\n        self.__dict__ = self\n\n\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\"Dynamically track column groups.\"\"\"\n        self.feature_cols = [\n            col for col in self.columns if str(col).startswith(\"feature\")\n        ]\n        self.target_cols = [\n            col for col in self.columns if str(col).startswith(\"target\")\n        ]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def __set_era_col(self):\n        \"\"\"Each NumerFrame should have an era column to benefit from all functionality.\"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\n                \"NumerFrame must contain either an 'era' or 'friday_date' column.\"\n            )\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\"Parse arbitrary metadata (i.e. Python objects) to the meta attribute.\"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\"Return NumerFrame from selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\"Column with name 'target' (Main Numerai target column).\"\"\"\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\"All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(\n        self, eras: List[Any], convert_to_tf=False, aemlp_batch=False, *args, **kwargs\n    ) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: List of era names. They need to be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert (\n                era in self[self.meta.era_col].unique()\n            ), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -262,10 +262,10 @@ For more details check <a href="https://pandas.pydata.org/docs/reference/io.html
 
 
 
-<div id="382af1aa-12ff-4908-b9a8-2a22d0b5b926"></div>
+<div id="c29423f2-5981-4337-8a4b-8f2f0059e485"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#382af1aa-12ff-4908-b9a8-2a22d0b5b926');
+var element = $('#c29423f2-5981-4337-8a4b-8f2f0059e485');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -341,10 +341,10 @@ You then have the option to add metadata with <code>.add_metadata</code>. All me
 
 
 
-<div id="47b975d9-b6e1-45cf-ba32-7d259e0388c2"></div>
+<div id="8530f799-46df-47db-ba90-04e0a7e52df9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#47b975d9-b6e1-45cf-ba32-7d259e0388c2');
+var element = $('#8530f799-46df-47db-ba90-04e0a7e52df9');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -403,10 +403,10 @@ var element = $('#47b975d9-b6e1-45cf-ba32-7d259e0388c2');
 
 
 
-<div id="0e192a6e-00fc-4cc0-ad9c-f1a59f304097"></div>
+<div id="719e5c1c-9801-4d51-80b0-832d24bff024"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0e192a6e-00fc-4cc0-ad9c-f1a59f304097');
+var element = $('#719e5c1c-9801-4d51-80b0-832d24bff024');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -478,10 +478,10 @@ var element = $('#0e192a6e-00fc-4cc0-ad9c-f1a59f304097');
 
 
 
-<div id="dfa1cf43-0d01-4ae5-a465-a027c961538c"></div>
+<div id="6da0a7d0-e88e-48c0-9920-13af29ebde51"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#dfa1cf43-0d01-4ae5-a465-a027c961538c');
+var element = $('#6da0a7d0-e88e-48c0-9920-13af29ebde51');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -541,10 +541,10 @@ var element = $('#dfa1cf43-0d01-4ae5-a465-a027c961538c');
 
 
 
-<div id="2fe07cf5-183f-4f20-b1d3-6e34ca01609f"></div>
+<div id="715fd9d0-90de-4430-a7e8-bda558d759b7"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2fe07cf5-183f-4f20-b1d3-6e34ca01609f');
+var element = $('#715fd9d0-90de-4430-a7e8-bda558d759b7');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -604,10 +604,10 @@ var element = $('#2fe07cf5-183f-4f20-b1d3-6e34ca01609f');
 
 
 
-<div id="27f22821-a81b-4cf8-aa4c-9b493446b260"></div>
+<div id="212a23b3-11e7-41c0-8c4d-c341494f7d7c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#27f22821-a81b-4cf8-aa4c-9b493446b260');
+var element = $('#212a23b3-11e7-41c0-8c4d-c341494f7d7c');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -657,10 +657,10 @@ var element = $('#27f22821-a81b-4cf8-aa4c-9b493446b260');
 
 
 
-<div id="a3067175-3dde-4b7d-a7f2-8af0cb882cc3"></div>
+<div id="08abd395-6364-47be-841f-6bb8b17ad20a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a3067175-3dde-4b7d-a7f2-8af0cb882cc3');
+var element = $('#08abd395-6364-47be-841f-6bb8b17ad20a');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -719,10 +719,10 @@ Docs: <a href="https://pandas-profiling.github.io/pandas-profiling/docs/master/i
 
 
 
-<div id="04988d51-8774-46e1-b5a5-f659766dcd87"></div>
+<div id="22954675-ab1b-49d8-bd5a-23f84dd7bbd0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#04988d51-8774-46e1-b5a5-f659766dcd87');
+var element = $('#22954675-ab1b-49d8-bd5a-23f84dd7bbd0');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -898,10 +898,10 @@ var element = $('#04988d51-8774-46e1-b5a5-f659766dcd87');
 
 
 
-<div id="0eddb604-199f-46e2-9f6c-925b4885b8aa"></div>
+<div id="3f3240c2-0aca-43ba-9c1f-c7aa809f5584"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0eddb604-199f-46e2-9f6c-925b4885b8aa');
+var element = $('#3f3240c2-0aca-43ba-9c1f-c7aa809f5584');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -966,10 +966,10 @@ var element = $('#0eddb604-199f-46e2-9f6c-925b4885b8aa');
 
 
 
-<div id="145302f5-bbdb-4b58-8818-bdd32b2f281e"></div>
+<div id="32cbfc34-a7af-459b-a756-1fdf076803ff"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#145302f5-bbdb-4b58-8818-bdd32b2f281e');
+var element = $('#32cbfc34-a7af-459b-a756-1fdf076803ff');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -1128,10 +1128,10 @@ var element = $('#145302f5-bbdb-4b58-8818-bdd32b2f281e');
 
 
 
-<div id="5a68158f-c456-4fc7-a780-9860fdfa757f"></div>
+<div id="7fb95200-9256-48ab-af00-b3faa71af846"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5a68158f-c456-4fc7-a780-9860fdfa757f');
+var element = $('#7fb95200-9256-48ab-af00-b3faa71af846');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1229,10 +1229,10 @@ var element = $('#5a68158f-c456-4fc7-a780-9860fdfa757f');
 
 
 
-<div id="86434008-4e7d-4045-995e-78201e279f13"></div>
+<div id="faf4bc84-bd44-4e8f-a606-bde0a84c3113"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#86434008-4e7d-4045-995e-78201e279f13');
+var element = $('#faf4bc84-bd44-4e8f-a606-bde0a84c3113');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1323,10 +1323,10 @@ var element = $('#86434008-4e7d-4045-995e-78201e279f13');
 
 
 
-<div id="ab843e02-5874-4198-9f68-3b4d73166050"></div>
+<div id="33ad932f-e569-4d99-a7b7-019ce517489d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ab843e02-5874-4198-9f68-3b4d73166050');
+var element = $('#33ad932f-e569-4d99-a7b7-019ce517489d');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1382,7 +1382,7 @@ var element = $('#ab843e02-5874-4198-9f68-3b4d73166050');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-02-09 17:00:23.762780: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+<pre>2022-02-09 22:35:24.530626: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 </pre>
 </div>
@@ -1410,10 +1410,10 @@ array([[0.  , 0.5 , 0.25, ..., 1.  , 0.5 , 0.75],
 
 
 
-<div id="75d4e462-b825-42c6-a7a2-dc4a9a03accc"></div>
+<div id="60a21e87-8a50-4b5c-8e52-867db9880ae3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#75d4e462-b825-42c6-a7a2-dc4a9a03accc');
+var element = $('#60a21e87-8a50-4b5c-8e52-867db9880ae3');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1511,10 +1511,10 @@ More info on these kinds this setup: <a href="https://forum.numer.ai/t/autoencod
 
 
 
-<div id="c7c40e0a-4ac0-4109-9eff-3e6942156c4a"></div>
+<div id="b0df892e-53ba-45d5-8cda-7aace3851b02"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c7c40e0a-4ac0-4109-9eff-3e6942156c4a');
+var element = $('#b0df892e-53ba-45d5-8cda-7aace3851b02');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1581,10 +1581,10 @@ var element = $('#c7c40e0a-4ac0-4109-9eff-3e6942156c4a');
 
 
 
-<div id="29165348-9c6d-40f9-bb4f-0f4487b89d9c"></div>
+<div id="4b63e699-40cf-495f-ac91-cd8c96673767"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#29165348-9c6d-40f9-bb4f-0f4487b89d9c');
+var element = $('#4b63e699-40cf-495f-ac91-cd8c96673767');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
@@ -1681,10 +1681,10 @@ var element = $('#29165348-9c6d-40f9-bb4f-0f4487b89d9c');
 
 
 
-<div id="167fdb3a-5e0b-4c58-9fef-c5b84772260c"></div>
+<div id="2737de3b-b2d4-42f8-bff5-5135088cbabe"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#167fdb3a-5e0b-4c58-9fef-c5b84772260c');
+var element = $('#2737de3b-b2d4-42f8-bff5-5135088cbabe');
 
             setTimeout(function() {
                 var nbb_cell_id = 22;
@@ -1752,10 +1752,10 @@ var element = $('#167fdb3a-5e0b-4c58-9fef-c5b84772260c');
 
 
 
-<div id="ee9d21f5-aa84-4b7f-8ade-6463423bd1cb"></div>
+<div id="da88624b-75ae-47fa-ae1e-7e6d8029920a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ee9d21f5-aa84-4b7f-8ade-6463423bd1cb');
+var element = $('#da88624b-75ae-47fa-ae1e-7e6d8029920a');
 
             setTimeout(function() {
                 var nbb_cell_id = 23;
@@ -1816,10 +1816,10 @@ var element = $('#ee9d21f5-aa84-4b7f-8ade-6463423bd1cb');
 
 
 
-<div id="08b76fe7-22c6-43f8-94dd-b65170bb81f5"></div>
+<div id="d12729b0-6413-4b63-96de-6491e51181ff"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#08b76fe7-22c6-43f8-94dd-b65170bb81f5');
+var element = $('#d12729b0-6413-4b63-96de-6491e51181ff');
 
             setTimeout(function() {
                 var nbb_cell_id = 24;
@@ -1870,10 +1870,10 @@ var element = $('#08b76fe7-22c6-43f8-94dd-b65170bb81f5');
 
 
 
-<div id="c2728102-3305-42b5-9391-256f6fb96928"></div>
+<div id="f0ff0e01-b4c2-47ba-b048-36c609bad2b3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c2728102-3305-42b5-9391-256f6fb96928');
+var element = $('#f0ff0e01-b4c2-47ba-b048-36c609bad2b3');
 
             setTimeout(function() {
                 var nbb_cell_id = 25;
@@ -1931,10 +1931,10 @@ var element = $('#c2728102-3305-42b5-9391-256f6fb96928');
 
 
 
-<div id="421823a9-b9dc-4fa5-a9b0-d8b74833cd28"></div>
+<div id="433e26c9-3d61-458b-ad4c-e05535597865"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#421823a9-b9dc-4fa5-a9b0-d8b74833cd28');
+var element = $('#433e26c9-3d61-458b-ad4c-e05535597865');
 
             setTimeout(function() {
                 var nbb_cell_id = 26;
@@ -1994,10 +1994,10 @@ var element = $('#421823a9-b9dc-4fa5-a9b0-d8b74833cd28');
 
 
 
-<div id="87945e66-d633-4fdc-8a0f-2d0573f32bc9"></div>
+<div id="660d1cff-04d1-4f49-97c1-f8831b392c75"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#87945e66-d633-4fdc-8a0f-2d0573f32bc9');
+var element = $('#660d1cff-04d1-4f49-97c1-f8831b392c75');
 
             setTimeout(function() {
                 var nbb_cell_id = 27;
@@ -2096,10 +2096,10 @@ var element = $('#87945e66-d633-4fdc-8a0f-2d0573f32bc9');
 
 
 
-<div id="0f65dd92-14e1-4877-94f0-6688311e7af9"></div>
+<div id="922b8754-f3d3-4210-8780-71d21e5b601b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0f65dd92-14e1-4877-94f0-6688311e7af9');
+var element = $('#922b8754-f3d3-4210-8780-71d21e5b601b');
 
             setTimeout(function() {
                 var nbb_cell_id = 28;
@@ -2175,12 +2175,12 @@ var element = $('#0f65dd92-14e1-4877-94f0-6688311e7af9');
     <tr>
       <th>0</th>
       <td>n000315175b67977</td>
-      <td>0.742098</td>
+      <td>0.898458</td>
     </tr>
     <tr>
       <th>1</th>
       <td>n0014af834a96cdd</td>
-      <td>0.780333</td>
+      <td>0.654028</td>
     </tr>
   </tbody>
 </table>
@@ -2194,10 +2194,10 @@ var element = $('#0f65dd92-14e1-4877-94f0-6688311e7af9');
 
 
 
-<div id="41de4d93-67a6-4f5a-8b5d-1016af1d61f4"></div>
+<div id="fd0113a0-a784-46c8-b3ab-5f6de3a9ce7e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#41de4d93-67a6-4f5a-8b5d-1016af1d61f4');
+var element = $('#fd0113a0-a784-46c8-b3ab-5f6de3a9ce7e');
 
             setTimeout(function() {
                 var nbb_cell_id = 29;
@@ -2247,10 +2247,10 @@ var element = $('#41de4d93-67a6-4f5a-8b5d-1016af1d61f4');
 
 
 
-<div id="aea25cb1-1c46-4028-ae97-f1deb7229e64"></div>
+<div id="c3894437-43d9-41ee-b097-33666dbb93cd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#aea25cb1-1c46-4028-ae97-f1deb7229e64');
+var element = $('#c3894437-43d9-41ee-b097-33666dbb93cd');
 
             setTimeout(function() {
                 var nbb_cell_id = 30;
@@ -2410,10 +2410,10 @@ var element = $('#aea25cb1-1c46-4028-ae97-f1deb7229e64');
 
 
 
-<div id="b6f75ccd-4d2f-417c-ac3b-ccc4459706fa"></div>
+<div id="669edc0b-df8e-478b-b193-c07d51efa625"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b6f75ccd-4d2f-417c-ac3b-ccc4459706fa');
+var element = $('#669edc0b-df8e-478b-b193-c07d51efa625');
 
             setTimeout(function() {
                 var nbb_cell_id = 31;
@@ -2504,10 +2504,10 @@ var element = $('#b6f75ccd-4d2f-417c-ac3b-ccc4459706fa');
 
 
 
-<div id="38c158df-66e3-4d2d-965c-09aa340644d7"></div>
+<div id="373a726f-d6f5-42f9-b39b-79a2b63ddb11"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#38c158df-66e3-4d2d-965c-09aa340644d7');
+var element = $('#373a726f-d6f5-42f9-b39b-79a2b63ddb11');
 
             setTimeout(function() {
                 var nbb_cell_id = 32;
