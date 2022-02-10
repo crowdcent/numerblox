@@ -14,12 +14,12 @@ from .postprocessing import FeatureNeutralizer
 # Cell
 class BaseEvaluator:
     """
-    Evaluation functionality that holds for both
+    Evaluation functionality that is relevant for both
     Numerai Classic and Numerai Signals.
     :param era_col: Column name pointing to eras.
-    Most commonly "era" for Classic and "friday_date" for Signals.
-    :param fast_mode: Will skip compute intensive metrics, namely
-    max_exposure, feature neutral mean and TB200, if set to True.
+    Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
+    :param fast_mode: Will skip compute intensive metrics if set to True,
+    namely max_exposure, feature neutral mean, TB200 and TB500.
     """
     def __init__(self, era_col: str = "era", fast_mode = False):
         self.era_col = era_col
@@ -32,7 +32,7 @@ class BaseEvaluator:
                         target_col: str = "target"
                         ) -> pd.DataFrame:
         """
-        Perform evaluation for each prediction column in the Dataset
+        Perform evaluation for each prediction column in the NumerFrame
         against give target and example prediction column.
         """
         val_stats = pd.DataFrame()
@@ -167,12 +167,15 @@ class BaseEvaluator:
         """ Maximum exposure over all features. """
         max_per_era = dataf.groupby(self.era_col).apply(
             lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max())
-        max_feature_exposure = max_per_era.mean()
+        max_feature_exposure = max_per_era.mean(skipna=True)
         return max_feature_exposure
 
     def feature_neutral_mean_std_sharpe(self, dataf: Union[pd.DataFrame, NumerFrame],
                              pred_col: str, target_col: str) -> Tuple[np.float64, np.float64, np.float64]:
-        """ Feature neutralized mean performance. """
+        """
+        Feature neutralized mean performance.
+        More info: https://docs.numer.ai/tournament/feature-neutral-correlation
+        """
         fn = FeatureNeutralizer(pred_name=pred_col,
                                 proportion=1.0)
         neutralized_dataf = fn(dataf=dataf)
@@ -192,7 +195,7 @@ class BaseEvaluator:
         Calculate Mean, Standard deviation and Sharpe ratio
         when we focus on the x top and x bottom predictions.
         :param tb: How many of top and bottom predictions to focus on.
-        TB200 is the most common situation.
+        TB200 and TB500 are the most common situations.
         """
         tb_val_corrs = self._score_by_date(dataf=dataf,
                                            columns=[pred_col],
@@ -205,11 +208,14 @@ class BaseEvaluator:
             target_col: str,
             example_col: str
             ) -> Tuple[np.float64, np.float64, np.float64]:
-        """ MMC Mean, standard deviation and Sharpe ratio. """
+        """
+        MMC Mean, standard deviation and Sharpe ratio.
+        More info: https://docs.numer.ai/tournament/metamodel-contribution
+        """
         mmc_scores = []
         corr_scores = []
         for _, x in dataf.groupby(self.era_col):
-            series = self.neutralize_series(self._normalize_uniform(x[pred_col]), (x[example_col]))
+            series = self._neutralize_series(self._normalize_uniform(x[pred_col]), (x[example_col]))
             mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))
             corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))
 
@@ -220,7 +226,7 @@ class BaseEvaluator:
         return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe
 
     @staticmethod
-    def neutralize_series(series, by, proportion=1.0):
+    def _neutralize_series(series, by, proportion=1.0):
         scores = series.values.reshape(-1, 1)
         exposures = by.values.reshape(-1, 1)
 
@@ -237,7 +243,7 @@ class BaseEvaluator:
 
     def _score_by_date(self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None):
         """
-        Get era correlation based on given tb (x top and bottom predictions).
+        Get era correlation based on given TB (x top and bottom predictions).
         :param tb: How many of top and bottom predictions to focus on.
         TB200 is the most common situation.
         """
@@ -267,10 +273,12 @@ class BaseEvaluator:
 
 # Cell
 class NumeraiClassicEvaluator(BaseEvaluator):
+    """ Evaluator for all metrics that are relevant in Numerai Classic. """
     def __init__(self, era_col: str = "era", fast_mode = False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
 
 # Cell
 class NumeraiSignalsEvaluator(BaseEvaluator):
+    """ Evaluator for all metrics that are relevant in Numerai Signals. """
     def __init__(self, era_col: str = "friday_date", fast_mode = False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
