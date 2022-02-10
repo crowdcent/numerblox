@@ -137,15 +137,14 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         **kwargs,
     ):
         """
-        :param dataf: DataFrame which should have the following columns:
+        :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example ['target'] or [20_NUMERAI_TARGETS]).
+        2. cols (for example, 'target', ['target'] or [ALL_NUMERAI_TARGETS]).
         """
         full_path = str(self.dir / file_name)
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
-
         dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
 
 # Cell

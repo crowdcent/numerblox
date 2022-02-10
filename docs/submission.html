@@ -54,10 +54,10 @@ nb_path: "nbs/09_submission.ipynb"
 
 
 
-<div id="7357202c-7515-4a3b-b5ad-d60c2a0b0549"></div>
+<div id="16c03081-0414-4a00-a9eb-07def3f890d9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7357202c-7515-4a3b-b5ad-d60c2a0b0549');
+var element = $('#16c03081-0414-4a00-a9eb-07def3f890d9');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -94,7 +94,15 @@ var element = $('#7357202c-7515-4a3b-b5ad-d60c2a0b0549');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="1.-Base">1. Base<a class="anchor-link" href="#1.-Base"> </a></h2>
+<h2 id="1.-BaseSubmittor">1. BaseSubmittor<a class="anchor-link" href="#1.-BaseSubmittor"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a> handles all submission logic common to Numerai Classic and Numerai Signals. Under the hood directory logic is handled by <a href="/numerai_blocks/download.html#BaseIO"><code>BaseIO</code></a>.
+Each submittor should inherit from <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a> and implement the <code>.save_csv</code> method.</p>
+
 </div>
 </div>
 </div>
@@ -111,7 +119,7 @@ var element = $('#7357202c-7515-4a3b-b5ad-d60c2a0b0549');
 <div class="output_markdown rendered_html output_subarea ">
 <h2 id="BaseSubmittor" class="doc_header"><code>class</code> <code>BaseSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L27" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>api</code></strong>:<code>Union</code>[<code>NumerAPI</code>, <code>SignalsAPI</code>]) :: <a href="/numerai_blocks/download.html#BaseIO"><code>BaseIO</code></a></p>
 </blockquote>
-<p>Basic functionality for IO like downloading and uploading.
+<p>Basic functionality for IO (downloading and uploading).
 :param directory_path: Base folder for IO. Will be created if it does not exist.</p>
 
 </div>
@@ -136,10 +144,10 @@ var element = $('#7357202c-7515-4a3b-b5ad-d60c2a0b0549');
 
 
 
-<div id="6bcb0723-119a-482a-ad3d-0b25cea5d7d9"></div>
+<div id="ff528240-4ced-409c-93aa-3217207681ec"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6bcb0723-119a-482a-ad3d-0b25cea5d7d9');
+var element = $('#ff528240-4ced-409c-93aa-3217207681ec');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -170,6 +178,14 @@ var element = $('#6bcb0723-119a-482a-ad3d-0b25cea5d7d9');
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="2.-Numerai-Classic">2. Numerai Classic<a class="anchor-link" href="#2.-Numerai-Classic"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For Numerai Classic submissions. Uses <a href="https://numerapi.readthedocs.io/en/latest/_modules/numerapi/numerapi.html">NumerAPI</a> under the hood.</p>
+<p>Note that using submittors requires a <a href="/numerai_blocks/key.html#Key"><code>Key</code></a> object. For more information about this, see section 8.</p>
+
 </div>
 </div>
 </div>
@@ -213,15 +229,15 @@ var element = $('#6bcb0723-119a-482a-ad3d-0b25cea5d7d9');
 
 
 
-<div id="71d04994-d47b-45ad-bf76-9ced50b7a873"></div>
+<div id="22c421a9-716d-4dbd-b6c9-c8b6321a53c3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#71d04994-d47b-45ad-bf76-9ced50b7a873');
+var element = $('#22c421a9-716d-4dbd-b6c9-c8b6321a53c3');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(\n            directory_path=directory_path, api=api\n        )\n\n    def save_csv(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have the following columns:\n        1. id (as index column)\n        2. cols (for example ['target'] or [20_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(directory_path=directory_path, api=api)\n\n    def save_csv(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have the following columns:\n        1. id (as index column)\n        2. cols (for example ['target'] or [20_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(\n            directory_path=directory_path, api=api\n        )\n\n    def save_csv(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'target', ['target'] or [ALL_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(directory_path=directory_path, api=api)\n\n    def save_csv(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'target', ['target'] or [ALL_NUMERAI_TARGETS]).\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -369,50 +385,50 @@ var element = $('#71d04994-d47b-45ad-bf76-9ced50b7a873');
   </thead>
   <tbody>
     <tr>
-      <th>4b9a7317-c533-4057-ba4d-b23fedf9963b</th>
-      <td>0.975645</td>
-      <td>0.505722</td>
-      <td>0.565854</td>
-      <td>0.875254</td>
-      <td>0.208024</td>
-      <td>0.690705</td>
-      <td>0.092810</td>
-      <td>0.403739</td>
-      <td>0.333202</td>
-      <td>0.949469</td>
-      <td>0.884230</td>
-      <td>0.742207</td>
-      <td>0.203517</td>
-      <td>0.879048</td>
-      <td>0.843503</td>
-      <td>0.173738</td>
-      <td>0.486906</td>
-      <td>0.339642</td>
-      <td>0.705131</td>
-      <td>0.945091</td>
+      <th>2c51cae5-a3b0-4e41-af06-0008dc777683</th>
+      <td>0.061551</td>
+      <td>0.515782</td>
+      <td>0.751113</td>
+      <td>0.402976</td>
+      <td>0.102649</td>
+      <td>0.730831</td>
+      <td>0.709637</td>
+      <td>0.518930</td>
+      <td>0.847464</td>
+      <td>0.402429</td>
+      <td>0.651045</td>
+      <td>0.821004</td>
+      <td>0.548298</td>
+      <td>0.966399</td>
+      <td>0.361777</td>
+      <td>0.671109</td>
+      <td>0.721875</td>
+      <td>0.446045</td>
+      <td>0.832106</td>
+      <td>0.926050</td>
     </tr>
     <tr>
-      <th>ed37dd28-e323-4d24-b2b1-b6b02202d294</th>
-      <td>0.776280</td>
-      <td>0.892568</td>
-      <td>0.817309</td>
-      <td>0.787299</td>
-      <td>0.630828</td>
-      <td>0.402839</td>
-      <td>0.960256</td>
-      <td>0.493967</td>
-      <td>0.018156</td>
-      <td>0.015503</td>
-      <td>0.179613</td>
-      <td>0.555080</td>
-      <td>0.192776</td>
-      <td>0.311228</td>
-      <td>0.003717</td>
-      <td>0.537301</td>
-      <td>0.602811</td>
-      <td>0.260697</td>
-      <td>0.029461</td>
-      <td>0.718513</td>
+      <th>fb69c175-d957-4d26-9999-52985ff43231</th>
+      <td>0.054526</td>
+      <td>0.651319</td>
+      <td>0.349868</td>
+      <td>0.378793</td>
+      <td>0.995423</td>
+      <td>0.912963</td>
+      <td>0.842005</td>
+      <td>0.934107</td>
+      <td>0.425093</td>
+      <td>0.675977</td>
+      <td>0.826391</td>
+      <td>0.637137</td>
+      <td>0.533402</td>
+      <td>0.744691</td>
+      <td>0.063971</td>
+      <td>0.448705</td>
+      <td>0.605762</td>
+      <td>0.888843</td>
+      <td>0.485489</td>
+      <td>0.288094</td>
     </tr>
   </tbody>
 </table>
@@ -426,10 +442,10 @@ var element = $('#71d04994-d47b-45ad-bf76-9ced50b7a873');
 
 
 
-<div id="b426541e-2cba-48bb-b140-d2f4fd444f09"></div>
+<div id="fcf712b0-af4e-4889-a38a-df08d10ece16"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b426541e-2cba-48bb-b140-d2f4fd444f09');
+var element = $('#fcf712b0-af4e-4889-a38a-df08d10ece16');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -535,51 +551,51 @@ var element = $('#b426541e-2cba-48bb-b140-d2f4fd444f09');
   <tbody>
     <tr>
       <th>0</th>
-      <td>4b9a7317-c533-4057-ba4d-b23fedf9963b</td>
-      <td>0.975645</td>
-      <td>0.505722</td>
-      <td>0.565854</td>
-      <td>0.875254</td>
-      <td>0.208024</td>
-      <td>0.690705</td>
-      <td>0.092810</td>
-      <td>0.403739</td>
-      <td>0.333202</td>
+      <td>2c51cae5-a3b0-4e41-af06-0008dc777683</td>
+      <td>0.061551</td>
+      <td>0.515782</td>
+      <td>0.751113</td>
+      <td>0.402976</td>
+      <td>0.102649</td>
+      <td>0.730831</td>
+      <td>0.709637</td>
+      <td>0.518930</td>
+      <td>0.847464</td>
       <td>...</td>
-      <td>0.884230</td>
-      <td>0.742207</td>
-      <td>0.203517</td>
-      <td>0.879048</td>
-      <td>0.843503</td>
-      <td>0.173738</td>
-      <td>0.486906</td>
-      <td>0.339642</td>
-      <td>0.705131</td>
-      <td>0.945091</td>
+      <td>0.651045</td>
+      <td>0.821004</td>
+      <td>0.548298</td>
+      <td>0.966399</td>
+      <td>0.361777</td>
+      <td>0.671109</td>
+      <td>0.721875</td>
+      <td>0.446045</td>
+      <td>0.832106</td>
+      <td>0.926050</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>ed37dd28-e323-4d24-b2b1-b6b02202d294</td>
-      <td>0.776280</td>
-      <td>0.892568</td>
-      <td>0.817309</td>
-      <td>0.787299</td>
-      <td>0.630828</td>
-      <td>0.402839</td>
-      <td>0.960256</td>
-      <td>0.493967</td>
-      <td>0.018156</td>
+      <td>fb69c175-d957-4d26-9999-52985ff43231</td>
+      <td>0.054526</td>
+      <td>0.651319</td>
+      <td>0.349868</td>
+      <td>0.378793</td>
+      <td>0.995423</td>
+      <td>0.912963</td>
+      <td>0.842005</td>
+      <td>0.934107</td>
+      <td>0.425093</td>
       <td>...</td>
-      <td>0.179613</td>
-      <td>0.555080</td>
-      <td>0.192776</td>
-      <td>0.311228</td>
-      <td>0.003717</td>
-      <td>0.537301</td>
-      <td>0.602811</td>
-      <td>0.260697</td>
-      <td>0.029461</td>
-      <td>0.718513</td>
+      <td>0.826391</td>
+      <td>0.637137</td>
+      <td>0.533402</td>
+      <td>0.744691</td>
+      <td>0.063971</td>
+      <td>0.448705</td>
+      <td>0.605762</td>
+      <td>0.888843</td>
+      <td>0.485489</td>
+      <td>0.288094</td>
     </tr>
   </tbody>
 </table>
@@ -594,10 +610,10 @@ var element = $('#b426541e-2cba-48bb-b140-d2f4fd444f09');
 
 
 
-<div id="fab7eda9-c4f1-40d9-bf5b-6beda079ab73"></div>
+<div id="b1a0e0d8-60e2-42a5-8e74-5f0e49aa9d5f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fab7eda9-c4f1-40d9-bf5b-6beda079ab73');
+var element = $('#b1a0e0d8-60e2-42a5-8e74-5f0e49aa9d5f');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -632,8 +648,7 @@ var element = $('#fab7eda9-c4f1-40d9-bf5b-6beda079ab73');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Save CSV and upload</span>
-<span class="c1"># num_sub.full_submission(dataf=test_dataf, file_name=&#39;test.csv&#39;, cols=targets, model_name=&quot;test&quot;)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># num_sub.full_submission(dataf=test_dataf, file_name=&#39;test.csv&#39;, cols=targets, model_name=&quot;test&quot;)</span>
 </pre></div>
 
     </div>
@@ -648,15 +663,15 @@ var element = $('#fab7eda9-c4f1-40d9-bf5b-6beda079ab73');
 
 
 
-<div id="700164fc-7446-48ee-8444-465c10c73fa8"></div>
+<div id="2f3369cd-86b7-4662-8639-bd8492e6ee27"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#700164fc-7446-48ee-8444-465c10c73fa8');
+var element = $('#2f3369cd-86b7-4662-8639-bd8492e6ee27');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
-                var nbb_unformatted_code = "# TODO Test full submission with dummy credentials\n# Save CSV and upload\n# num_sub.full_submission(dataf=test_dataf, file_name='test.csv', cols=targets, model_name=\"test\")";
-                var nbb_formatted_code = "# TODO Test full submission with dummy credentials\n# Save CSV and upload\n# num_sub.full_submission(dataf=test_dataf, file_name='test.csv', cols=targets, model_name=\"test\")";
+                var nbb_unformatted_code = "# Uncomment to save CSV and upload predictions\n# num_sub.full_submission(dataf=test_dataf, file_name='test.csv', cols=targets, model_name=\"test\")";
+                var nbb_formatted_code = "# Uncomment to save CSV and upload predictions\n# num_sub.full_submission(dataf=test_dataf, file_name='test.csv', cols=targets, model_name=\"test\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -714,15 +729,15 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="5f1d3489-7a3e-4583-9726-797eefe457fb"></div>
+<div id="9df1de3c-af7d-4672-b283-34acdaa577ab"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5f1d3489-7a3e-4583-9726-797eefe457fb');
+var element = $('#9df1de3c-af7d-4672-b283-34acdaa577ab');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "# Remove contents\nnum_sub.remove_base_directory()\nassert not os.path.exists(test_dir)";
-                var nbb_formatted_code = "# Remove contents\nnum_sub.remove_base_directory()\nassert not os.path.exists(test_dir)";
+                var nbb_unformatted_code = "# Remove contents after submitting is successful\nnum_sub.remove_base_directory()\nassert not os.path.exists(test_dir)";
+                var nbb_formatted_code = "# Remove contents after submitting is successful\nnum_sub.remove_base_directory()\nassert not os.path.exists(test_dir)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -751,6 +766,13 @@ var element = $('#5f1d3489-7a3e-4583-9726-797eefe457fb');
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For Numerai Signals submissions.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -762,7 +784,7 @@ var element = $('#5f1d3489-7a3e-4583-9726-797eefe457fb');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L153" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
+<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L152" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
 </blockquote>
 <p>Submit for Numerai Signals
 :param directory_path: Base directory to save and read prediction files from.
@@ -791,10 +813,10 @@ var element = $('#5f1d3489-7a3e-4583-9726-797eefe457fb');
 
 
 
-<div id="43747ffe-235b-4cb7-ad1e-ef01e5fe3e14"></div>
+<div id="fb795b55-eca3-44be-ab10-9ee6408362f0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#43747ffe-235b-4cb7-ad1e-ef01e5fe3e14');
+var element = $('#fb795b55-eca3-44be-ab10-9ee6408362f0');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -875,10 +897,10 @@ var element = $('#43747ffe-235b-4cb7-ad1e-ef01e5fe3e14');
 
 
 
-<div id="d5fe87d9-9fcb-450a-a42c-6448944d8d0c"></div>
+<div id="5ca13190-b4e2-4e46-a21e-dc7fbd2e5775"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d5fe87d9-9fcb-450a-a42c-6448944d8d0c');
+var element = $('#5ca13190-b4e2-4e46-a21e-dc7fbd2e5775');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -968,17 +990,17 @@ var element = $('#d5fe87d9-9fcb-450a-a42c-6448944d8d0c');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.356858</td>
-      <td>UEUT</td>
-      <td>20220128</td>
+      <td>0.696432</td>
+      <td>WGEJ</td>
+      <td>20220204</td>
       <td>live</td>
       <td>metadata</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.466330</td>
-      <td>ZTKX</td>
-      <td>20220128</td>
+      <td>0.381487</td>
+      <td>NSDE</td>
+      <td>20220204</td>
       <td>live</td>
       <td>metadata</td>
     </tr>
@@ -994,10 +1016,10 @@ var element = $('#d5fe87d9-9fcb-450a-a42c-6448944d8d0c');
 
 
 
-<div id="8132b2cd-1aef-4b2b-8a04-db2721f6f7f8"></div>
+<div id="e4772b44-3a18-4ace-9745-230d29fae3ed"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8132b2cd-1aef-4b2b-8a04-db2721f6f7f8');
+var element = $('#e4772b44-3a18-4ace-9745-230d29fae3ed');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -1047,6 +1069,15 @@ var element = $('#8132b2cd-1aef-4b2b-8a04-db2721f6f7f8');
 
 <div class="output_area">
 
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-02-10 14:57:10,037 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-02-10 14:57:10,038 INFO numexpr.utils: NumExpr defaulting to 8 threads.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📄 Saving Signals predictions CSV to <span style="color: #008000; text-decoration-color: #008000">'test_sub_signals/signals_test.csv'</span>. 📄
@@ -1087,16 +1118,16 @@ var element = $('#8132b2cd-1aef-4b2b-8a04-db2721f6f7f8');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.356858</td>
-      <td>UEUT</td>
-      <td>20220128</td>
+      <td>0.696432</td>
+      <td>WGEJ</td>
+      <td>20220204</td>
       <td>live</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.466330</td>
-      <td>ZTKX</td>
-      <td>20220128</td>
+      <td>0.381487</td>
+      <td>NSDE</td>
+      <td>20220204</td>
       <td>live</td>
     </tr>
   </tbody>
@@ -1111,10 +1142,10 @@ var element = $('#8132b2cd-1aef-4b2b-8a04-db2721f6f7f8');
 
 
 
-<div id="2f6146e0-d9ce-4445-a82c-a8857d7992cd"></div>
+<div id="d1d1116f-f4e9-46da-b4c5-fef5690b4924"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2f6146e0-d9ce-4445-a82c-a8857d7992cd');
+var element = $('#d1d1116f-f4e9-46da-b4c5-fef5690b4924');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1159,6 +1190,7 @@ var element = $('#2f6146e0-d9ce-4445-a82c-a8857d7992cd');
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_signal_validity</span><span class="p">(</span>
     <span class="n">submittor</span><span class="p">:</span> <span class="n">NumeraiSignalsSubmittor</span><span class="p">,</span> <span class="n">signals_dataf</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NumerFrame</span><span class="p">]</span>
 <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test value range of signal. &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">invalid_signal</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">signals_dataf</span><span class="p">)</span>
         <span class="n">invalid_signal</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;signal&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
@@ -1175,6 +1207,7 @@ var element = $('#2f6146e0-d9ce-4445-a82c-a8857d7992cd');
 <span class="k">def</span> <span class="nf">test_ticker_validity</span><span class="p">(</span>
     <span class="n">submittor</span><span class="p">:</span> <span class="n">NumeraiSignalsSubmittor</span><span class="p">,</span> <span class="n">signals_dataf</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NumerFrame</span><span class="p">]</span>
 <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test safeguard if ticker column is not valid. &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">invalid_ticker</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">signals_dataf</span><span class="p">)</span>
         <span class="n">invalid_ticker</span> <span class="o">=</span> <span class="n">invalid_ticker</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -1188,7 +1221,6 @@ var element = $('#2f6146e0-d9ce-4445-a82c-a8857d7992cd');
     <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="kc">False</span>
-
 
 <span class="k">assert</span> <span class="n">test_signal_validity</span><span class="p">(</span><span class="n">signals_sub</span><span class="p">,</span> <span class="n">signals_test_dataf</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">test_ticker_validity</span><span class="p">(</span><span class="n">signals_sub</span><span class="p">,</span> <span class="n">signals_test_dataf</span><span class="p">)</span>
@@ -1206,15 +1238,15 @@ var element = $('#2f6146e0-d9ce-4445-a82c-a8857d7992cd');
 
 
 
-<div id="d49256af-a8cb-4b50-9f56-f87f0779dcbb"></div>
+<div id="4762b741-90ea-4099-b6c4-c5bc546d58be"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d49256af-a8cb-4b50-9f56-f87f0779dcbb');
+var element = $('#4762b741-90ea-4099-b6c4-c5bc546d58be');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
-                var nbb_unformatted_code = "def test_signal_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    try:\n        invalid_signal = deepcopy(signals_dataf)\n        invalid_signal.loc[0, \"signal\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\n\ndef test_ticker_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    try:\n        invalid_ticker = deepcopy(signals_dataf)\n        invalid_ticker = invalid_ticker.rename(\n            {\"ticker\": \"not_a_valid_ticker_format\"}, axis=1\n        )\n        submittor.save_csv(\n            invalid_ticker,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_ticker.columns),\n        )\n    except NotImplementedError:\n        return True\n    return False\n\n\nassert test_signal_validity(signals_sub, signals_test_dataf)\nassert test_ticker_validity(signals_sub, signals_test_dataf)";
-                var nbb_formatted_code = "def test_signal_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    try:\n        invalid_signal = deepcopy(signals_dataf)\n        invalid_signal.loc[0, \"signal\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\n\ndef test_ticker_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    try:\n        invalid_ticker = deepcopy(signals_dataf)\n        invalid_ticker = invalid_ticker.rename(\n            {\"ticker\": \"not_a_valid_ticker_format\"}, axis=1\n        )\n        submittor.save_csv(\n            invalid_ticker,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_ticker.columns),\n        )\n    except NotImplementedError:\n        return True\n    return False\n\n\nassert test_signal_validity(signals_sub, signals_test_dataf)\nassert test_ticker_validity(signals_sub, signals_test_dataf)";
+                var nbb_unformatted_code = "def test_signal_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    \"\"\" Test value range of signal. \"\"\"\n    try:\n        invalid_signal = deepcopy(signals_dataf)\n        invalid_signal.loc[0, \"signal\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\n\ndef test_ticker_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    \"\"\" Test safeguard if ticker column is not valid. \"\"\"\n    try:\n        invalid_ticker = deepcopy(signals_dataf)\n        invalid_ticker = invalid_ticker.rename(\n            {\"ticker\": \"not_a_valid_ticker_format\"}, axis=1\n        )\n        submittor.save_csv(\n            invalid_ticker,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_ticker.columns),\n        )\n    except NotImplementedError:\n        return True\n    return False\n\n\nassert test_signal_validity(signals_sub, signals_test_dataf)\nassert test_ticker_validity(signals_sub, signals_test_dataf)";
+                var nbb_formatted_code = "def test_signal_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    \"\"\"Test value range of signal.\"\"\"\n    try:\n        invalid_signal = deepcopy(signals_dataf)\n        invalid_signal.loc[0, \"signal\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\n\ndef test_ticker_validity(\n    submittor: NumeraiSignalsSubmittor, signals_dataf: Union[pd.DataFrame, NumerFrame]\n):\n    \"\"\"Test safeguard if ticker column is not valid.\"\"\"\n    try:\n        invalid_ticker = deepcopy(signals_dataf)\n        invalid_ticker = invalid_ticker.rename(\n            {\"ticker\": \"not_a_valid_ticker_format\"}, axis=1\n        )\n        submittor.save_csv(\n            invalid_ticker,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_ticker.columns),\n        )\n    except NotImplementedError:\n        return True\n    return False\n\n\nassert test_signal_validity(signals_sub, signals_test_dataf)\nassert test_ticker_validity(signals_sub, signals_test_dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1244,8 +1276,7 @@ var element = $('#d49256af-a8cb-4b50-9f56-f87f0779dcbb');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Save CSV and upload</span>
-<span class="c1"># signals_sub.full_submission(dataf=signals_test_dataf, file_name=&#39;signals_test.csv&#39;, cols=signals_cols, model_name=&quot;test&quot;)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># signals_sub.full_submission(dataf=signals_test_dataf, file_name=&#39;signals_test.csv&#39;, cols=signals_cols, model_name=&quot;test&quot;)</span>
 </pre></div>
 
     </div>
@@ -1260,15 +1291,15 @@ var element = $('#d49256af-a8cb-4b50-9f56-f87f0779dcbb');
 
 
 
-<div id="a7ea80c3-07b8-47c1-b712-c1370cc42780"></div>
+<div id="008254c1-4c41-44c9-ae9f-300eb8b22725"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a7ea80c3-07b8-47c1-b712-c1370cc42780');
+var element = $('#008254c1-4c41-44c9-ae9f-300eb8b22725');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
-                var nbb_unformatted_code = "# TODO Test full submission with dummy credentials\n# Save CSV and upload\n# signals_sub.full_submission(dataf=signals_test_dataf, file_name='signals_test.csv', cols=signals_cols, model_name=\"test\")";
-                var nbb_formatted_code = "# TODO Test full submission with dummy credentials\n# Save CSV and upload\n# signals_sub.full_submission(dataf=signals_test_dataf, file_name='signals_test.csv', cols=signals_cols, model_name=\"test\")";
+                var nbb_unformatted_code = "# Uncomment to save CSV and upload predictions\n# signals_sub.full_submission(dataf=signals_test_dataf, file_name='signals_test.csv', cols=signals_cols, model_name=\"test\")";
+                var nbb_formatted_code = "# Uncomment to save CSV and upload predictions\n# signals_sub.full_submission(dataf=signals_test_dataf, file_name='signals_test.csv', cols=signals_cols, model_name=\"test\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1326,15 +1357,15 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="3bac2260-d36a-49f6-ba6a-cbb9d2be6d79"></div>
+<div id="642ab196-820a-47f1-9693-6d476177152e"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3bac2260-d36a-49f6-ba6a-cbb9d2be6d79');
+var element = $('#642ab196-820a-47f1-9693-6d476177152e');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
-                var nbb_unformatted_code = "# Remove contents\nsignals_sub.remove_base_directory()\nassert not os.path.exists(test_dir_signals)";
-                var nbb_formatted_code = "# Remove contents\nsignals_sub.remove_base_directory()\nassert not os.path.exists(test_dir_signals)";
+                var nbb_unformatted_code = "# Remove contents after submission is successful\nsignals_sub.remove_base_directory()\nassert not os.path.exists(test_dir_signals)";
+                var nbb_formatted_code = "# Remove contents after submission is successful\nsignals_sub.remove_base_directory()\nassert not os.path.exists(test_dir_signals)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
