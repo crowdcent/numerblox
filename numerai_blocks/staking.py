@@ -16,7 +16,7 @@ from .key import Key, load_key_from_json
 @typechecked
 class BaseStaker:
     """
-    Base class for staking functionality which holds for both Numerai Classic and Signals.
+    Base class for staking functionality which holds in both Numerai Classic and Signals.
     :param key: a numerai-blocks Key object
     :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).
     """
@@ -40,7 +40,10 @@ class BaseStaker:
                               model_id=model_id, tournament=self.tournament_number)
 
     def stake_drain_all(self):
-        """ WARNING!!! This function will remove all stakes for all models in your account!!! """
+        """
+        -WARNING- This function will remove all stakes for all models in your account!!! -WARNING-
+        User must answer prompt with 'Y' to confirm stake drain.
+        """
         prompt = input(f"WARNING: You are about to remove all stakes for all your models! Are you sure? [Y/n]")
         if prompt == "Y":
             model_names = list(self.get_model_mapping.keys())
@@ -51,7 +54,7 @@ class BaseStaker:
 
     def stake_drain_single(self, model_name: str):
         """
-        WARNING!!! This function removes your full stake for a given model name!!!
+        -WARNING- This function removes your full stake for a given model name!!! -WARNING-
         :param model_name: Lowercase raw model name (For example, 'integration_test').
         """
         model_id = self._get_model_id(model_name=model_name)
@@ -59,17 +62,20 @@ class BaseStaker:
         self.api.stake_drain(model_id=model_id, tournament=self.tournament_number)
 
     def _get_model_id(self, model_name: str) -> str:
-        """Get ID needed for staking."""
+        """
+        Get ID needed for staking.
+        :param model_name: Lowercase raw model name (For example, 'integration_test').
+        """
         return self.get_model_mapping[model_name]
 
     @property
     def get_model_mapping(self) -> dict:
-        """Mapping between raw model names and model IDs."""
+        """ Mapping between raw model names and model IDs. """
         return self.api.get_models()
 
     @property
     def available_nmr(self):
-        """ Check how much NMR is available in your wallet. """
+        """ Get amount of NMR that is available in your local wallet. """
         return np.float64(self.api.get_account()['availableNmr'])
 
 # Cell
@@ -87,15 +93,15 @@ class NumeraiClassicStaker(BaseStaker):
         Get mapping of stakes for all models.
         Example output:
             {
-            "my_model_1": 20,
-            "my_model_2": 100,
-            "my_model_3: 0
+            "my_model_1": 20.2,
+            "my_model_2": 100.5,
+            "my_model_3: 0.01
             }
         """
         stakes = [self._get_single_stake(model_name=model_name) for model_name in self.get_model_mapping.keys()]
         return {name: stake for name, stake in zip(self.get_model_mapping, stakes)}
 
-    def _get_single_stake(self, model_name: str):
+    def _get_single_stake(self, model_name: str) -> np.float64:
         return np.float64(self.api.stake_get(username=model_name))
 
 # Cell
