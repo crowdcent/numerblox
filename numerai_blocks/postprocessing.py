@@ -178,7 +178,7 @@ class FeatureNeutralizer(BasePostProcessor):
 @typechecked
 class FeaturePenalizer(BasePostProcessor):
     """ Feature penalization with Tensorflow. """
-    def __init__(self, model_list: list, max_exposure: float,
+    def __init__(self, max_exposure: float,
                  risky_feature_names: list = None, pred_name: str = "prediction"):
         self.pred_name = pred_name
         self.max_exposure = max_exposure
@@ -186,20 +186,17 @@ class FeaturePenalizer(BasePostProcessor):
         self.new_col_name = f"{self.pred_name}_penalized_{self.max_exposure}"
         super().__init__(final_col_name=self.new_col_name)
 
-        self.model_list = model_list
         self.risky_feature_names = risky_feature_names
 
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names
-        for model_name in tqdm(self.model_list, desc="Feature Penalization"):
-            penalized_data = self.reduce_all_exposures(
-                            dataf=dataf,
-                            column=self.pred_name,
-                            neutralizers=risky_feature_names,
-                        )
-            new_pred_col = f"prediction_{self.pred_name}_{model_name}_FP_{self.max_exposure}"
-            dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
+        penalized_data = self.reduce_all_exposures(dataf=dataf,
+                                                   column=self.pred_name,
+                                                   neutralizers=risky_feature_names
+                                                   )
+        new_pred_col = f"{self.pred_name}_FP_{self.max_exposure}"
+        dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
         return NumerFrame(dataf)
 
     def reduce_all_exposures(self, dataf: NumerFrame,
