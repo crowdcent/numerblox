@@ -123,21 +123,30 @@ class NumerFrame(pd.DataFrame):
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
 
-    def get_era_batch(self, eras: List[Any], convert_to_tf = False, aemlp_batch = False, *args, **kwargs) -> tuple:
+    def get_era_batch(self, eras: List[Any],
+                      convert_to_tf = False,
+                      aemlp_batch = False,
+                      features: list = None,
+                      targets: list = None,
+                      *args, **kwargs) -> tuple:
         """
         Get feature target pair batch of 1 or multiple eras.
-        :param eras: List of era names. They need to be present in era_col.
+        :param eras: Selection of era names that should be present in era_col.
         :param convert_to_tf: Convert to tf.Tensor.
         :param aemlp_batch: Specific target batch for autoencoder training.
         y will contain three components: features, targets and targets.
+        :param features: List of features to select. All by default
+        :param targets: List of targets to select. All by default.
         *args, **kwargs are passed to initialization of Tensor.
         """
         valid_eras = []
         for era in eras:
             assert era in self[self.meta.era_col].unique(), f"Era '{era}' not found in era column ({self.meta.era_col})"
             valid_eras.append(era)
-        X = self.loc[self[self.meta.era_col].isin(valid_eras)][self.feature_cols].values
-        y = self.loc[self[self.meta.era_col].isin(valid_eras)][self.target_cols].values
+        features = features if features else self.feature_cols
+        targets = targets if targets else self.target_cols
+        X = self.loc[self[self.meta.era_col].isin(valid_eras)][features].values
+        y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values
         if aemlp_batch:
             y = [X.copy(), y.copy(), y.copy()]
 
