@@ -32,7 +32,7 @@ Below we will illustrate a few base use cases for inference pipelines. To learn 
 #### 2.2.1. Numerai Classic
 
 ```
-# skip
+#other
 
 # --- 1. Download version 2 data ---
 downloader = NumeraiClassicDownloader("data")
