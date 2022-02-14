@@ -8,14 +8,12 @@ import glob
 import json
 import shutil
 from rich.tree import Tree
-from datetime import datetime
 from rich.console import Console
 from typeguard import typechecked
 from pathlib import Path, PosixPath
 from abc import ABC, abstractmethod
 from rich import print as rich_print
-from numerapi import NumerAPI, SignalsAPI
-from dateutil.relativedelta import relativedelta, FR
+from numerapi import NumerAPI
 
 from google.cloud import storage
 
