@@ -32,7 +32,8 @@ Below we will illustrate a few base use cases for inference pipelines. To learn 
 #### 2.2.1. Numerai Classic
 
 ```
-# slow
+# skip
+
 # --- 1. Download version 2 data ---
 downloader = NumeraiClassicDownloader("data")
 downloader.download_inference_data("current_round")
