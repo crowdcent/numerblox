@@ -177,7 +177,7 @@ class WandbKerasModel(SingleModel):
     More info on autoencoders:
     https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338
 
-    To authenticate with W&B you are given several options:
+    To authenticate your W&B account you are given several options:
     1. Run wandb login in terminal and follow instructions.
     2. Configure global environment variable "WANDB_API_KEY".
     3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and
