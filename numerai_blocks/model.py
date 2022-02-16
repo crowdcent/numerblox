@@ -11,9 +11,11 @@ import pickle
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
+import tensorflow as tf
 from pathlib import Path
 from typing import Union
 from tqdm.auto import tqdm
+from functools import partial
 from catboost import CatBoost
 from typeguard import typechecked
 from abc import ABC, abstractmethod
@@ -95,8 +97,11 @@ class SingleModel(BaseModel):
     Load single model from file and perform prediction logic.
     :param model_directory: Main directory from which to read in models.
     :param model_name: Name that will be used to create column names and for display purposes.
+    :param combine_preds: Whether to average predictions along column axis.
+    Convenient when you want to predict the main target by averaging a multi-target model.
     """
-    def __init__(self, model_file_path: str, model_name: str = None, *args, **kwargs):
+    def __init__(self, model_file_path: str, model_name: str = None,
+                 combine_preds = False, *args, **kwargs):
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
@@ -108,12 +113,16 @@ class SingleModel(BaseModel):
         self.suffix_to_model_mapping = {".joblib": joblib.load,
                                         ".cbm": CatBoost().load_model,
                                         ".pkl": pickle.load,
-                                        ".pickle": pickle.load}
+                                        ".pickle": pickle.load,
+                                        ".h5": partial(tf.keras.models.load_model, compile=False)
+                                        }
         self.__check_valid_suffix()
+        self.combine_preds = combine_preds
 
     def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
-        model = self._load_model()
-        predictions = model.predict(dataf.get_feature_data, *args, **kwargs)
+        model = self._load_model(*args, **kwargs)
+        predictions = model.predict(dataf.get_feature_data)
+        predictions = predictions.mean(axis=1) if self.combine_preds else predictions
         prediction_cols = self.get_prediction_col_names(predictions.shape)
         dataf.loc[:, prediction_cols] = predictions
         del model; gc.collect()
