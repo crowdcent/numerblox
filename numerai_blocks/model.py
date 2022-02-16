@@ -163,9 +163,9 @@ class WandbKerasModel(SingleModel):
     Load best .h5 model from Weights & Biases (W&B) run and make predictions.
     More info on W&B: https://wandb.ai/site
     :param model_directory: Main directory from which to read in models.
-    :param entity_name: Profile or team name (For example 'crowdcent')
-    :param project_name: Name of project where run is located (For example, 'numerai-classi').
-    :param wandb_run_id: hash of run within given project (For example, '1234abcd')
+    :param run_path: W&B path structured as entity/project/run_id.
+    Can be copied from the Overview tab of a W&B run.
+    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab
     Entity, project and id can be found in Overview tab of W&B run.
     :param file_name: Name of .h5 file as saved in W&B run.
     'model-best.h5' by default.
@@ -184,33 +184,21 @@ class WandbKerasModel(SingleModel):
     pass API key from https://wandb.ai/authorize
     """
     def __init__(self, model_directory: str,
-                 entity_name: str,
-                 project_name: str,
-                 wandb_run_id: str,
+                 run_path: str,
                  file_name: str = None,
                  combine_preds = True,
                  autoencoder_mlp = True):
-        self.entity_name = entity_name
-        self.project_name = project_name
-        self.wandb_run_id = wandb_run_id
+        self.run_path = run_path
         self.file_name = file_name
 
         self.dir = Path(model_directory)
         self.dir.mkdir(parents=True, exist_ok=True)
         self._download_model()
         super().__init__(model_file_path=self.full_file_path,
-                         model_name=wandb_run_id,
+                         model_name=self.run_path,
                          combine_preds=combine_preds,
                          autoencoder_mlp=autoencoder_mlp
                          )
-
-    @property
-    def wandb_path(self) -> str:
-        """
-        Path for W&B API. Can be found in the Overview tab of a W&B run.
-        More info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab
-        """
-        return f"{self.entity_name}/{self.project_name}/{self.wandb_run_id}"
 
     @property
     def full_file_path(self) -> str:
@@ -223,7 +211,7 @@ class WandbKerasModel(SingleModel):
         Use W&B API to download file.
         More info on API: https://docs.wandb.ai/guides/track/public-api-guide
         """
-        run = wandb.Api().run(self.wandb_path)
+        run = wandb.Api().run(self.run_path)
         run.file(self.full_file_path).download()
 
 # Cell
