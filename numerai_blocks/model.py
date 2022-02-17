@@ -35,7 +35,9 @@ class BaseModel(ABC):
     :param model_directory: Main directory from which to read in models.
     :param model_name: Name that will be used to create column names and for display purposes.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self, model_directory: str,
+                 model_name: str = None,
+                 ):
         self.model_directory = Path(model_directory)
         self.model_name = model_name if model_name else uuid.uuid4().hex
         self.prediction_col_name = f"prediction_{self.model_name}"
@@ -58,8 +60,13 @@ class DirectoryModel(BaseModel):
     :param model_directory: Main directory from which to read in models.
     :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)
     :param model_name: Name that will be used to create column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, file_suffix: str, model_name: str = None):
+    def __init__(self, model_directory: str, file_suffix: str,
+                 model_name: str = None,
+                 feature_cols: list = None
+                 ):
         super().__init__(model_directory=model_directory,
                          model_name=model_name,
                          )
@@ -68,6 +75,7 @@ class DirectoryModel(BaseModel):
         if self.file_suffix:
             assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
         self.total_models = len(self.model_paths)
+        self.feature_cols = feature_cols
 
     @display_processor_info
     def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
@@ -79,8 +87,9 @@ class DirectoryModel(BaseModel):
         """
         dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataf))
         models = self.load_models()
+        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
         for model in tqdm(models, desc=self.description, position=1):
-            predictions = model.predict(dataf.get_feature_data, *args, **kwargs)
+            predictions = model.predict(dataf[feature_cols], *args, **kwargs)
             dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
         del models; gc.collect()
         return NumerFrame(dataf)
@@ -103,9 +112,13 @@ class SingleModel(BaseModel):
     Will take the 3rd of tuple output in this case. Only relevant for NN models.
     More info on autoencoders:
     https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self, model_file_path: str, model_name: str = None,
-                 combine_preds = False, autoencoder_mlp = False):
+                 combine_preds = False, autoencoder_mlp = False,
+                 feature_cols: list = None
+                 ):
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
@@ -122,10 +135,12 @@ class SingleModel(BaseModel):
         self.__check_valid_suffix()
         self.combine_preds = combine_preds
         self.autoencoder_mlp = autoencoder_mlp
+        self.feature_cols = feature_cols
 
     def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         model = self._load_model(*args, **kwargs)
-        predictions = model.predict(dataf.get_feature_data)
+        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
+        predictions = model.predict(dataf[feature_cols])
         predictions = predictions[2] if self.autoencoder_mlp else predictions
         predictions = predictions.mean(axis=1) if self.combine_preds else predictions
         prediction_cols = self.get_prediction_col_names(predictions.shape)
@@ -177,6 +192,8 @@ class WandbKerasModel(SingleModel):
     More info on autoencoders:
     https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338
     :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
 
     To authenticate your W&B account you are given several options:
     1. Run wandb login in terminal and follow instructions.
@@ -189,15 +206,19 @@ class WandbKerasModel(SingleModel):
                  file_name: str = "model-best.h5",
                  combine_preds = False,
                  autoencoder_mlp = False,
-                 replace = False):
+                 replace = False,
+                 feature_cols: list = None
+                 ):
         self.run_path = run_path
         self.file_name = file_name
         self.replace = replace
+
         self._download_model()
         super().__init__(model_file_path=self.file_name,
                          model_name=self.run_path,
                          combine_preds=combine_preds,
-                         autoencoder_mlp=autoencoder_mlp
+                         autoencoder_mlp=autoencoder_mlp,
+                         feature_cols=feature_cols
                          )
 
     def _download_model(self):
@@ -222,12 +243,19 @@ class JoblibModel(DirectoryModel):
     All loaded models should have a .predict method and accept the features present in the data.
     :param model_directory: Main directory from which to read in models.
     :param model_name: Name that will be used to create column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self,
+                 model_directory: str,
+                 model_name: str = None,
+                 feature_cols: list = None
+                 ):
         file_suffix = 'joblib'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
                          model_name=model_name,
+                         feature_cols=feature_cols
                          )
 
     def load_models(self) -> list:
@@ -240,12 +268,19 @@ class CatBoostModel(DirectoryModel):
     Load and predict with all .cbm models (CatBoostRegressor) in directory.
     :param model_directory: Main directory from which to read in models.
     :param model_name: Name that will be used to define column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self,
+                 model_directory: str,
+                 model_name: str = None,
+                 feature_cols: list = None
+                 ):
         file_suffix = 'cbm'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
                          model_name=model_name,
+                         feature_cols=feature_cols
                          )
 
     def load_models(self) -> list:
@@ -258,12 +293,19 @@ class LGBMModel(DirectoryModel):
     Load and predict with all .lgb models (LightGBM) in directory.
     :param model_directory: Main directory from which to read in models.
     :param model_name: Name that will be used to define column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self,
+                 model_directory: str,
+                 model_name: str = None,
+                 feature_cols: list = None
+                 ):
         file_suffix = 'lgb'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
                          model_name=model_name,
+                         feature_cols=feature_cols
                          )
 
     def load_models(self) -> list:
@@ -352,17 +394,25 @@ class AwesomeModel(BaseModel):
     """
     - TEMPLATE -
     Predict with arbitrary prediction logic and model formats.
+
+    :param model_directory: Main directory from which to read in models.
+    :param model_name: Name that will be used to define column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self, model_directory: str, model_name: str = None,
+                 feature_cols: list = None):
         super().__init__(model_directory=model_directory,
                          model_name=model_name,
                          )
+        self.feature_cols = feature_cols
 
     @display_processor_info
     def predict(self, dataf: NumerFrame) -> NumerFrame:
         """ Return NumerFrame with column(s) added for prediction(s). """
         # Get all features
-        feature_df = dataf.get_feature_data
+        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
+        feature_df = dataf[feature_cols]
         # Predict and add to new column
         ...
         # Parse all contents of NumerFrame to the next pipeline step
@@ -374,12 +424,22 @@ class AwesomeDirectoryModel(DirectoryModel):
     """
     - TEMPLATE -
     Load in all models of arbitrary file format and predict for all.
+
+    :param model_directory: Main directory from which to read in models.
+    :param model_name: Name that will be used to define column names and for display purposes.
+    :param feature_cols: optional list of features to use for prediction.
+    Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
-    def __init__(self, model_directory: str, model_name: str = None):
+    def __init__(self,
+                 model_directory: str,
+                 model_name: str = None,
+                 feature_cols: list = None
+                 ):
         file_suffix = '.anything'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
                          model_name=model_name,
+                         feature_cols=feature_cols
                          )
 
     def load_models(self) -> list:
