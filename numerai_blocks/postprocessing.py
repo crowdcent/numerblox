@@ -63,7 +63,7 @@ class MeanEnsembler(BasePostProcessor):
         super().__init__(final_col_name=final_col_name)
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
         cols = self.cols if self.cols else dataf.prediction_cols
         dataf.loc[:, self.final_col_name] = dataf.loc[:, cols].mean(axis=1)
         rich_print(f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
