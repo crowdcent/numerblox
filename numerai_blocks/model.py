@@ -90,6 +90,8 @@ class DirectoryModel(BaseModel):
         feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
         for model in tqdm(models, desc=self.description, position=1):
             predictions = model.predict(dataf[feature_cols], *args, **kwargs)
+            # Check for if model output is a Pandas DataFrame
+            predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions
             dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
         del models; gc.collect()
         return NumerFrame(dataf)
@@ -141,6 +143,8 @@ class SingleModel(BaseModel):
         model = self._load_model(*args, **kwargs)
         feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
         predictions = model.predict(dataf[feature_cols])
+        # Check for if model output is a Pandas DataFrame
+        predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions
         predictions = predictions[2] if self.autoencoder_mlp else predictions
         predictions = predictions.mean(axis=1) if self.combine_preds else predictions
         prediction_cols = self.get_prediction_col_names(predictions.shape)
