@@ -159,8 +159,12 @@ class SingleModel(BaseModel):
     def get_prediction_col_names(self, pred_shape: tuple) -> list:
         """ Create multiple columns if predictions are multi-target. """
         if len(pred_shape) > 1:
-            # Multi target
-            prediction_cols = [f"{self.prediction_col_name}_{i}" for i in range(pred_shape[1])]
+            if pred_shape[1] > 1:
+                # Multi target
+                prediction_cols = [f"{self.prediction_col_name}_{i}" for i in range(pred_shape[1])]
+            else:
+                # Single target
+                prediction_cols = [self.prediction_col_name]
         else:
             # Single target
             prediction_cols = [self.prediction_col_name]
