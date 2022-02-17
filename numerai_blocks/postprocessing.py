@@ -58,14 +58,15 @@ class Standardizer(BasePostProcessor):
 @typechecked
 class MeanEnsembler(BasePostProcessor):
     """ Take simple mean of multiple cols and store in new col. """
-    def __init__(self, cols: list, final_col_name: str):
-        super().__init__(final_col_name=final_col_name)
+    def __init__(self, final_col_name: str, cols: list = None):
         self.cols = cols
+        super().__init__(final_col_name=final_col_name)
 
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
-        dataf.loc[:, self.final_col_name] = dataf.loc[:, self.cols].mean(axis=1)
-        rich_print(f":stew: Ensembled [blue]'{self.cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
+        cols = self.cols if self.cols else dataf.prediction_cols
+        dataf.loc[:, self.final_col_name] = dataf.loc[:, cols].mean(axis=1)
+        rich_print(f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
         return NumerFrame(dataf)
 
 # Cell
