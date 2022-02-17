@@ -20,6 +20,7 @@ from functools import partial
 from catboost import CatBoost
 from typeguard import typechecked
 from abc import ABC, abstractmethod
+from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
 
 from .numerframe import NumerFrame, create_numerframe
@@ -160,9 +161,8 @@ class SingleModel(BaseModel):
 @typechecked
 class WandbKerasModel(SingleModel):
     """
-    Load best .h5 model from Weights & Biases (W&B) run and make predictions.
+    Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.
     More info on W&B: https://wandb.ai/site
-    :param model_directory: Main directory from which to read in models.
     :param run_path: W&B path structured as entity/project/run_id.
     Can be copied from the Overview tab of a W&B run.
     For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab
@@ -176,6 +176,7 @@ class WandbKerasModel(SingleModel):
     Will take the 3rd of tuple output in this case. Only relevant for NN models.
     More info on autoencoders:
     https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338
+    :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.
 
     To authenticate your W&B account you are given several options:
     1. Run wandb login in terminal and follow instructions.
@@ -183,36 +184,35 @@ class WandbKerasModel(SingleModel):
     3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and
     pass API key from https://wandb.ai/authorize
     """
-    def __init__(self, model_directory: str,
+    def __init__(self,
                  run_path: str,
-                 file_name: str = None,
-                 combine_preds = True,
-                 autoencoder_mlp = True):
+                 file_name: str = "model-best.h5",
+                 combine_preds = False,
+                 autoencoder_mlp = False,
+                 replace = False):
         self.run_path = run_path
         self.file_name = file_name
-
-        self.dir = Path(model_directory)
-        self.dir.mkdir(parents=True, exist_ok=True)
+        self.replace = replace
         self._download_model()
-        super().__init__(model_file_path=self.full_file_path,
+        super().__init__(model_file_path=self.file_name,
                          model_name=self.run_path,
                          combine_preds=combine_preds,
                          autoencoder_mlp=autoencoder_mlp
                          )
 
-    @property
-    def full_file_path(self) -> str:
-        """ Full path for downloading file. """
-        file_name = "model-best.h5" if not self.file_name else self.file_name
-        return str(self.dir / file_name)
-
     def _download_model(self):
         """
-        Use W&B API to download file.
+        Use W&B API to download .h5 model file.
         More info on API: https://docs.wandb.ai/guides/track/public-api-guide
         """
+        if Path(self.file_name).is_file() and not self.replace:
+            rich_print(f":warning: [red] Model file '{self.file_name}' already exists in local environment.\
+            Skipping download of W&B run model. If this is not the model you want to use for prediction\
+            consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:")
+        else:
+            rich_print(f":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:")
         run = wandb.Api().run(self.run_path)
-        run.file(self.full_file_path).download()
+        run.file(name=self.file_name).download(replace=self.replace)
 
 # Cell
 @typechecked
