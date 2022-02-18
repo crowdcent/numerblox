@@ -6,8 +6,8 @@ __all__ = ['ModelPipeline', 'ModelPipelineCollection']
 import uuid
 import pandas as pd
 from tqdm.auto import tqdm
-from typing import List, Union
 from typeguard import typechecked
+from typing import List, Union, Dict
 from rich import print as rich_print
 
 from .numerframe import NumerFrame, create_numerframe
@@ -95,12 +95,12 @@ class ModelPipelineCollection:
         self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}
         self.pipeline_names = list(self.pipelines.keys())
 
-    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:
-        """ Process all pipelines and return list of resulting NumerFrames. """
-        result_datafs = []
+    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:
+        """ Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames. """
+        result_datafs = dict()
         for name, pipeline in tqdm(self.pipelines.items(),
                                    desc="Processing Pipeline Collection"):
-            result_datafs.append(self.process_single_pipeline(dataf, name))
+            result_datafs[name] = self.process_single_pipeline(dataf, name)
         return result_datafs
 
     def process_single_pipeline(self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str) -> NumerFrame:
@@ -116,5 +116,5 @@ class ModelPipelineCollection:
         assert pipeline_name in available_pipelines, f"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'."
         return self.pipelines[pipeline_name]
 
-    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> List[NumerFrame]:
+    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:
         return self.process_all_pipelines(dataf=dataf)

@@ -2,11 +2,11 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"BaseIO": "01_download.ipynb",
+index = {"AttrDict": "00_misc.ipynb",
+         "BaseIO": "01_download.ipynb",
          "BaseDownloader": "01_download.ipynb",
          "NumeraiClassicDownloader": "01_download.ipynb",
          "AwesomeCustomDownloader": "01_download.ipynb",
-         "AttrDict": "02_numerframe.ipynb",
          "NumerFrame": "02_numerframe.ipynb",
          "create_numerframe": "02_numerframe.ipynb",
          "BaseProcessor": "03_preprocessing.ipynb",
@@ -50,7 +50,8 @@ index = {"BaseIO": "01_download.ipynb",
          "NumeraiClassicStaker": "10_staking.ipynb",
          "NumeraiSignalsStaker": "10_staking.ipynb"}
 
-modules = ["download.py",
+modules = ["misc.py",
+           "download.py",
            "numerframe.py",
            "preprocessing.py",
            "model.py",
