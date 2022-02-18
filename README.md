@@ -14,68 +14,76 @@ Example and educational notebooks can be found in the `edu_nbs` directory. Devel
 
 The library features the following tools to build your Numerai pipelines:
 
-- Downloaders
-- NumerFrame
-- Preprocessing
-- Model
-- ModelPipeline and ModelPipelineCollection
-- Postprocessing
-- Evaluators
-- Key (containing authentication info)
-- Submittors
-- Staking functionality
+1. Downloaders
+2. NumerFrame
+3. Preprocessing
+4. Model
+5. Postprocessing
+6. ModelPipeline (and ModelPipelineCollection)
+7. Evaluators
+8. Key (containing authentication info)
+9. Submittors
+10. Staking functionality
 
-### 2.2. Quick Examples
+### 2.2. Examples
+
+Below we will illustrate a few base use cases for inference pipelines. To learn more in-depth about the features of the framework check out notebooks in the `edu_nbs` directory.
 
 #### 2.2.1. Numerai Classic
 
 ```
-# slow
-# Download version 2 data
-# downloader = NumeraiClassicDownloader("data")
-# downloader.download_inference_data("current_round")
-#
-# # Initialize Dataset
-# metadata = {"version": 2, "model_name": "MY_MODEL"}
-# dataset = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet", metadata=metadata)
-#
-# # Define and run pipeline
-# model1 = JoblibModel(model_directory="dir_with_joblib_models",
-#                      model_name="test_model")
-# pipeline = ModelPipeline(pipeline_name=dataset.base_model_name,
-#                              preprocessors=[],
-#                              models=[model1],
-#                              postprocessors=[FeatureNeutralizer(proportion=0.5)])
-# dataset = pipeline(dataset)
-#
-# # Submit
-# key = load_key_from_json("my_key.json")
-# submittor = NumeraiClassicSubmittor(directory_path="sub_current_round", key=key)
-# submittor.full_submission(dataf=dataset.dataf,
-#                           cols="prediction_test_model_neutralized_0.5",
-#                           file_name=f"{dataset.model_name}.csv",
-#                           model_name=dataset.model_name,
-#                           version=dataset.version
-#                           )
-#
-# # Remove data and subs
-# downloader.remove_base_directory()
-# submittor.remove_base_directory()
+#other
+#hide_output
+
+# --- 1. Download version 2 data ---
+downloader = NumeraiClassicDownloader("data")
+downloader.download_inference_data("current_round")
+
+# --- 2. Initialize NumerFrame ---
+metadata = {"version": 2,
+            "joblib_model_name": "test",
+            "joblib_model_path": "test_assets/joblib_v2_example_model.joblib",
+            "numerai_model_name": "test_model1",
+            "key_path": "test_assets/test_credentials.json"
+            }
+dataf = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet",
+                          metadata=metadata)
+
+# --- 3. Define and run pipeline ---
+model1 = SingleModel(dataf.meta.joblib_model_path,
+                     model_name=dataf.meta.joblib_model_name)
+# No preprocessing and 0.5 feature neutralization
+pipeline = ModelPipeline(preprocessors=[],
+                         models=[model1],
+                         postprocessors=[FeatureNeutralizer(
+                             pred_name=f"prediction_{dataf.meta.joblib_model_name}",
+                             proportion=0.5
+                         )]
+                         )
+dataset = pipeline(dataf)
+
+# --- 4. Submit ---
+# Random credentials
+key = load_key_from_json(dataf.meta.key_path)
+submittor = NumeraiClassicSubmittor(directory_path="sub_current_round", key=key)
+# Only works with valid key credentials
+submittor.full_submission(dataf=dataf,
+                          cols=f"prediction_{dataf.meta.joblib_model_name}_neutralized_0.5",
+                          file_name=f"{dataf.meta.numerai_model_name}.csv",
+                          model_name=dataf.meta.numerai_model_name,
+                          version=dataf.meta.version
+                          )
+
+# --- 5. Clean up environment (optional) ---
+downloader.remove_base_directory()
+submittor.remove_base_directory()
 ```
 
 
-    <IPython.core.display.Javascript object>
-
-
-
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Structure before starting                                                                        
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📄 my_key.json                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 dir_with_joblib_models                                                                       
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model1.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model2.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model3.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model4.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 model5.joblib                                                                            
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets                                                                                  
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib                                                           
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json                                                                    
 </pre>
 
 
@@ -85,28 +93,11 @@ The library features the following tools to build your Numerai pipelines:
 <span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data                                                                                         
 <span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round                                                                            
 <span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet                                                      
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 sub_current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 MY_MODEL.csv                                                                             
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📄 my_key.json                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 dir_with_joblib_models                                                                       
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model1.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model2.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model3.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 model4.joblib                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 model5.joblib                                                                            
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round                                                                            
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv                                                                          
 </pre>
 
 
-
-
-    <IPython.core.display.Javascript object>
-
-
-### 2.2.2. Numerai Signals
-
-```
-# slow
-```
 
 
     <IPython.core.display.Javascript object>
@@ -118,6 +109,8 @@ After you clone this repository, please run `nbdev_install_git_hooks` in your te
 
 ### Branch structure
 
+
+Every new feature should be implemented a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`.
 
 
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    

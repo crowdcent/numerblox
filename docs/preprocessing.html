@@ -54,10 +54,10 @@ nb_path: "nbs/03_preprocessing.ipynb"
 
 
 
-<div id="d811178f-4917-46f0-8d82-6b91af010041"></div>
+<div id="15c78c81-19a7-4618-bb28-4ea5e39dfba0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d811178f-4917-46f0-8d82-6b91af010041');
+var element = $('#15c78c81-19a7-4618-bb28-4ea5e39dfba0');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -100,7 +100,22 @@ var element = $('#d811178f-4917-46f0-8d82-6b91af010041');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>This objects will provide a solid base for all processing (pre and post) and log relevant information regarding the data pipeline.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="0.1.-BaseProcessor">0.1. BaseProcessor<a class="anchor-link" href="#0.1.-BaseProcessor"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> defines common functionality for Preprocessors and Postprocessors (Section 5).</p>
+<p>Every Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement the <code>.transform</code> method.</p>
+
 </div>
 </div>
 </div>
@@ -117,8 +132,7 @@ var element = $('#d811178f-4917-46f0-8d82-6b91af010041');
 <div class="output_markdown rendered_html output_subarea ">
 <h2 id="BaseProcessor" class="doc_header"><code>class</code> <code>BaseProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L20" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseProcessor</code>() :: <code>ABC</code></p>
 </blockquote>
-<p>New Preprocessors and Postprocessors should inherit from this object
-and implement the transform method.</p>
+<p>Common functionality for preprocessors and postprocessors.</p>
 
 </div>
 
@@ -142,15 +156,15 @@ and implement the transform method.</p>
 
 
 
-<div id="e9a96636-dafe-4dee-8b3c-46edd54f4fa9"></div>
+<div id="0c48c340-8878-4dec-870d-51e94824b9a7"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e9a96636-dafe-4dee-8b3c-46edd54f4fa9');
+var element = $('#0c48c340-8878-4dec-870d-51e94824b9a7');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        ...\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        return self.transform(dataf=dataf, *args, **kwargs)";
-                var nbb_formatted_code = "# export\nclass BaseProcessor(ABC):\n    \"\"\"\n    New Preprocessors and Postprocessors should inherit from this object\n    and implement the transform method.\n    \"\"\"\n\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        ...\n\n    def __call__(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        return self.transform(dataf=dataf, *args, **kwargs)";
+                var nbb_unformatted_code = "#export\nclass BaseProcessor(ABC):\n    \"\"\" Common functionality for preprocessors and postprocessors. \"\"\"\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        ...\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:\n        return self.transform(dataf=dataf, *args, **kwargs)";
+                var nbb_formatted_code = "# export\nclass BaseProcessor(ABC):\n    \"\"\"Common functionality for preprocessors and postprocessors.\"\"\"\n\n    def __init__(self):\n        ...\n\n    @abstractmethod\n    def transform(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        ...\n\n    def __call__(\n        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs\n    ) -> NumerFrame:\n        return self.transform(dataf=dataf, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -188,8 +202,9 @@ The decorator below will display:</p>
 <li>What the output shape of the data is.</li>
 <li>How long the step took to finish.</li>
 </ol>
-<p>Note that this wrapper only works for methods that return a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> object as a result. All implemented preprocessors, models and postprocessors have this property.</p>
 <p>To use this functionality, simply add <code>@display_processor_info</code> as a decorator to the function/method you want to track.</p>
+<p>We will use this decorator throughout the pipeline (preprocessing, model and postprocessing).</p>
+<p>Inspiration for this decorator: <a href="https://calmcode.io/pandas-pipe/logs.html">Calmcode Pandas Pipe Logs</a></p>
 
 </div>
 </div>
@@ -205,7 +220,7 @@ The decorator below will display:</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="display_processor_info" class="doc_header"><code>display_processor_info</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L36" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>display_processor_info</code>(<strong><code>func</code></strong>)</p>
+<h4 id="display_processor_info" class="doc_header"><code>display_processor_info</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L33" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>display_processor_info</code>(<strong><code>func</code></strong>)</p>
 </blockquote>
 <p>Fancy console output for data processing.</p>
 
@@ -231,10 +246,10 @@ The decorator below will display:</p>
 
 
 
-<div id="e2af90a0-9a7d-4661-9360-aeb8e73bed97"></div>
+<div id="1a25db77-01fe-4165-b3a9-5101d9e40e68"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e2af90a0-9a7d-4661-9360-aeb8e73bed97');
+var element = $('#1a25db77-01fe-4165-b3a9-5101d9e40e68');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -270,15 +285,21 @@ var element = $('#e2af90a0-9a7d-4661-9360-aeb8e73bed97');
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">TestDisplay</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">NumerFrame</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Small test for logging.</span>
+<span class="sd">    Output should mention &#39;TestDisplay&#39;,</span>
+<span class="sd">    Return output shape of (10, 314) and</span>
+<span class="sd">    time taken for step should be close to 2 seconds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">NumerFrame</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span> <span class="o">=</span> <span class="n">dataf</span>
     <span class="nd">@display_processor_info</span>
     <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumerFrame</span><span class="p">:</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataf</span>
 
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">)</span>
-<span class="n">TestDisplay</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="o">.</span><span class="n">test</span><span class="p">();</span>
+<span class="n">dataf</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">)</span>
+<span class="n">TestDisplay</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span><span class="o">.</span><span class="n">test</span><span class="p">();</span>
 </pre></div>
 
     </div>
@@ -292,7 +313,7 @@ var element = $('#e2af90a0-9a7d-4661-9360-aeb8e73bed97');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">007988</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003369</span>. ✅
 </pre>
 
 </div>
@@ -304,15 +325,15 @@ var element = $('#e2af90a0-9a7d-4661-9360-aeb8e73bed97');
 
 
 
-<div id="4096dcca-ced1-4042-984a-24c2a1a56e12"></div>
+<div id="84413bca-1163-49d7-a5f7-04bf185e0f11"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4096dcca-ced1-4042-984a-24c2a1a56e12');
+var element = $('#84413bca-1163-49d7-a5f7-04bf185e0f11');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "class TestDisplay:\n    def __init__(self, dataset: NumerFrame):\n        self.dataset = dataset\n    @display_processor_info\n    def test(self) -> NumerFrame:\n        time.sleep(2)\n        return self.dataset\n\ndataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nTestDisplay(dataset).test();";
-                var nbb_formatted_code = "class TestDisplay:\n    def __init__(self, dataset: NumerFrame):\n        self.dataset = dataset\n\n    @display_processor_info\n    def test(self) -> NumerFrame:\n        time.sleep(2)\n        return self.dataset\n\n\ndataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nTestDisplay(dataset).test()";
+                var nbb_unformatted_code = "class TestDisplay:\n    \"\"\"\n    Small test for logging.\n    Output should mention 'TestDisplay',\n    Return output shape of (10, 314) and\n    time taken for step should be close to 2 seconds.\n    \"\"\"\n    def __init__(self, dataf: NumerFrame):\n        self.dataf = dataf\n    @display_processor_info\n    def test(self) -> NumerFrame:\n        time.sleep(2)\n        return self.dataf\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nTestDisplay(dataf).test();";
+                var nbb_formatted_code = "class TestDisplay:\n    \"\"\"\n    Small test for logging.\n    Output should mention 'TestDisplay',\n    Return output shape of (10, 314) and\n    time taken for step should be close to 2 seconds.\n    \"\"\"\n\n    def __init__(self, dataf: NumerFrame):\n        self.dataf = dataf\n\n    @display_processor_info\n    def test(self) -> NumerFrame:\n        time.sleep(2)\n        return self.dataf\n\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nTestDisplay(dataf).test()";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -343,7 +364,28 @@ var element = $('#4096dcca-ced1-4042-984a-24c2a1a56e12');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="1.1.-Version-agnostic">1.1. Version agnostic<a class="anchor-link" href="#1.1.-Version-agnostic"> </a></h3>
+<p>We invite the Numerai community to develop new preprocessors. This section implements commonly used preprocessing for Numerai.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="1.0-Tournament-agnostic">1.0 Tournament agnostic<a class="anchor-link" href="#1.0-Tournament-agnostic"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This section cover all the available Preprocessors that can be applied for both Numerai Classic and Numerai Signals.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.0.1.-CopyPreProcessor">1.0.1. CopyPreProcessor<a class="anchor-link" href="#1.0.1.-CopyPreProcessor"> </a></h4><p>The first and obvious preprocessor is copying, which is implemented as a default in <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> (Section 4) to avoid manipulation of the original Dataset that you load in.</p>
+
 </div>
 </div>
 </div>
@@ -358,7 +400,7 @@ var element = $('#4096dcca-ced1-4042-984a-24c2a1a56e12');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="CopyPreProcessor" class="doc_header"><code>class</code> <code>CopyPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L50" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CopyPreProcessor</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="CopyPreProcessor" class="doc_header"><code>class</code> <code>CopyPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L47" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CopyPreProcessor</code>() :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Copy DataFrame to avoid manipulation of original DataFrame.</p>
 
@@ -384,15 +426,15 @@ var element = $('#4096dcca-ced1-4042-984a-24c2a1a56e12');
 
 
 
-<div id="b5093e15-71e1-4f41-849d-aa57b44e9c5a"></div>
+<div id="edc28952-74c6-49e5-9e43-884115d5cfba"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b5093e15-71e1-4f41-849d-aa57b44e9c5a');
+var element = $('#edc28952-74c6-49e5-9e43-884115d5cfba');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame. \"\"\"\n    def __init__(self):\n        super().__init__()\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Union[pd.DataFrame, NumerFrame]:\n        return dataf.copy()";
-                var nbb_formatted_code = "# export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame.\"\"\"\n\n    def __init__(self):\n        super().__init__()\n\n    @display_processor_info\n    def transform(\n        self, dataf: Union[pd.DataFrame, NumerFrame]\n    ) -> Union[pd.DataFrame, NumerFrame]:\n        return dataf.copy()";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame. \"\"\"\n    def __init__(self):\n        super().__init__()\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return NumerFrame(dataf.copy())";
+                var nbb_formatted_code = "# export\n@typechecked\nclass CopyPreProcessor(BaseProcessor):\n    \"\"\"Copy DataFrame to avoid manipulation of original DataFrame.\"\"\"\n\n    def __init__(self):\n        super().__init__()\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return NumerFrame(dataf.copy())";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -440,7 +482,7 @@ var element = $('#b5093e15-71e1-4f41-849d-aa57b44e9c5a');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000999</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001913</span>. ✅
 </pre>
 
 </div>
@@ -452,10 +494,10 @@ var element = $('#b5093e15-71e1-4f41-849d-aa57b44e9c5a');
 
 
 
-<div id="88394eed-540b-4c27-89e0-459301792009"></div>
+<div id="2ca58af9-f857-4d0b-bac1-70c842275039"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#88394eed-540b-4c27-89e0-459301792009');
+var element = $('#2ca58af9-f857-4d0b-bac1-70c842275039');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -483,6 +525,13 @@ var element = $('#88394eed-540b-4c27-89e0-459301792009');
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.0.2.-FeatureSelectionPreProcessor">1.0.2. FeatureSelectionPreProcessor<a class="anchor-link" href="#1.0.2.-FeatureSelectionPreProcessor"> </a></h4><p><a href="/numerai_blocks/preprocessing.html#FeatureSelectionPreProcessor"><code>FeatureSelectionPreProcessor</code></a> will keep all features that you pass + keeps all other columns that are not features.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -494,7 +543,7 @@ var element = $('#88394eed-540b-4c27-89e0-459301792009');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeatureSelectionPreProcessor" class="doc_header"><code>class</code> <code>FeatureSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L61" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureSelectionPreProcessor</code>(<strong><code>feature_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="FeatureSelectionPreProcessor" class="doc_header"><code>class</code> <code>FeatureSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L58" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureSelectionPreProcessor</code>(<strong><code>feature_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Keep only features given + all target, predictions and aux columns.</p>
 
@@ -520,15 +569,15 @@ var element = $('#88394eed-540b-4c27-89e0-459301792009');
 
 
 
-<div id="b59f8fc2-9b6d-424b-aa8a-85c061c517b3"></div>
+<div id="973d767a-3190-4561-9ec9-bcf5d62f3469"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b59f8fc2-9b6d-424b-aa8a-85c061c517b3');
+var element = $('#973d767a-3190-4561-9ec9-bcf5d62f3469');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, feature_cols: Union[str, list]):\n        super().__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        keep_cols = self.feature_cols + dataf.target_cols + dataf.prediction_cols + dataf.aux_cols\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, feature_cols: Union[str, list]):\n        super().__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        keep_cols = (\n            self.feature_cols\n            + dataf.target_cols\n            + dataf.prediction_cols\n            + dataf.aux_cols\n        )\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, feature_cols: Union[str, list]):\n        super().__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        keep_cols = self.feature_cols + dataf.target_cols + dataf.prediction_cols + dataf.aux_cols\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass FeatureSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, feature_cols: Union[str, list]):\n        super().__init__()\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        keep_cols = (\n            self.feature_cols\n            + dataf.target_cols\n            + dataf.prediction_cols\n            + dataf.aux_cols\n        )\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -575,7 +624,7 @@ var element = $('#b59f8fc2-9b6d-424b-aa8a-85c061c517b3');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">000891</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001450</span>. ✅
 </pre>
 
 </div>
@@ -587,10 +636,10 @@ var element = $('#b59f8fc2-9b6d-424b-aa8a-85c061c517b3');
 
 
 
-<div id="4f988925-abb0-4665-a1f5-7986eb524392"></div>
+<div id="ae0185e4-c8ba-4619-9c58-c6bab599d0d4"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4f988925-abb0-4665-a1f5-7986eb524392');
+var element = $('#ae0185e4-c8ba-4619-9c58-c6bab599d0d4');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -693,10 +742,10 @@ var element = $('#4f988925-abb0-4665-a1f5-7986eb524392');
 
 
 
-<div id="27a634d4-f199-4cf2-b5e7-5f32d4ecf426"></div>
+<div id="4c16e79a-3795-4e53-a2cd-a1a77cf5ff0d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#27a634d4-f199-4cf2-b5e7-5f32d4ecf426');
+var element = $('#4c16e79a-3795-4e53-a2cd-a1a77cf5ff0d');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -724,6 +773,14 @@ var element = $('#27a634d4-f199-4cf2-b5e7-5f32d4ecf426');
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.0.2.-TargetSelectionPreProcessor">1.0.2. TargetSelectionPreProcessor<a class="anchor-link" href="#1.0.2.-TargetSelectionPreProcessor"> </a></h4><p><a href="/numerai_blocks/preprocessing.html#TargetSelectionPreProcessor"><code>TargetSelectionPreProcessor</code></a> will keep all targets that you pass + all other columns that are not targets.</p>
+<p>Not relevant for an inference pipeline, but especially convenient for Numerai Classic training if you train on a subset of the available targets. Can also be applied to Signals if you are using multiple engineered targets in your pipeline.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -735,7 +792,7 @@ var element = $('#27a634d4-f199-4cf2-b5e7-5f32d4ecf426');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="TargetSelectionPreProcessor" class="doc_header"><code>class</code> <code>TargetSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L77" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>TargetSelectionPreProcessor</code>(<strong><code>target_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="TargetSelectionPreProcessor" class="doc_header"><code>class</code> <code>TargetSelectionPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L74" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>TargetSelectionPreProcessor</code>(<strong><code>target_cols</code></strong>:<code>Union</code>[<code>str</code>, <code>list</code>]) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>Keep only features given + all target, predictions and aux columns.</p>
 
@@ -761,15 +818,15 @@ var element = $('#27a634d4-f199-4cf2-b5e7-5f32d4ecf426');
 
 
 
-<div id="3a8615eb-919d-40cf-b368-23c1037dcf03"></div>
+<div id="0c4a6a4e-5340-4e64-8534-b450be60cf03"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3a8615eb-919d-40cf-b368-23c1037dcf03');
+var element = $('#0c4a6a4e-5340-4e64-8534-b450be60cf03');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, target_cols: Union[str, list]):\n        super().__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        keep_cols = self.target_cols + dataf.feature_cols + dataf.prediction_cols + dataf.aux_cols\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, target_cols: Union[str, list]):\n        super().__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        keep_cols = (\n            self.target_cols\n            + dataf.feature_cols\n            + dataf.prediction_cols\n            + dataf.aux_cols\n        )\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n    def __init__(self, target_cols: Union[str, list]):\n        super().__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        keep_cols = self.target_cols + dataf.feature_cols + dataf.prediction_cols + dataf.aux_cols\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass TargetSelectionPreProcessor(BaseProcessor):\n    \"\"\"\n    Keep only features given + all target, predictions and aux columns.\n    \"\"\"\n\n    def __init__(self, target_cols: Union[str, list]):\n        super().__init__()\n        self.target_cols = target_cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        keep_cols = (\n            self.target_cols\n            + dataf.feature_cols\n            + dataf.prediction_cols\n            + dataf.aux_cols\n        )\n        dataf = dataf.loc[:, keep_cols]\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -818,7 +875,7 @@ var element = $('#3a8615eb-919d-40cf-b368-23c1037dcf03');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TargetSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1055</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">014660</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">016715</span>. ✅
 </pre>
 
 </div>
@@ -956,10 +1013,10 @@ var element = $('#3a8615eb-919d-40cf-b368-23c1037dcf03');
 
 
 
-<div id="82dadda8-2d46-44f8-8833-f0dd0833cf06"></div>
+<div id="f6e628c1-a6a4-4b71-b409-bd035732c15a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#82dadda8-2d46-44f8-8833-f0dd0833cf06');
+var element = $('#f6e628c1-a6a4-4b71-b409-bd035732c15a');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -989,7 +1046,46 @@ var element = $('#82dadda8-2d46-44f8-8833-f0dd0833cf06');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="1.2.-Version-1-specific">1.2. Version 1 specific<a class="anchor-link" href="#1.2.-Version-1-specific"> </a></h3>
+<h3 id="1.1.-Numerai-Classic">1.1. Numerai Classic<a class="anchor-link" href="#1.1.-Numerai-Classic"> </a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The Numerai Classic dataset has a certain structure that you may not encounter in the Numerai Signals tournament.
+Therefore, this section has all preprocessors that can only be applied to Numerai Classic.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.1.0-Numerai-Classic:-Version-agnostic">1.1.0 Numerai Classic: Version agnostic<a class="anchor-link" href="#1.1.0-Numerai-Classic:-Version-agnostic"> </a></h4><p>Preprocessors that work for all Numerai Classic versions.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.1.1.-Numerai-Classic:-Version-1-specific">1.1.1. Numerai Classic: Version 1 specific<a class="anchor-link" href="#1.1.1.-Numerai-Classic:-Version-1-specific"> </a></h4><p>Preprocessors that only work for version 1 (legacy data).
+When using version 1 preprocessor it is recommended that the input <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> has <code>version</code> in its metadata.
+This avoids using version 1 preprocessors on version 2 data and confusing error messages.</p>
+<p>As a new user we recommend to start modeling the version 2 data and avoid version 1.
+The preprocessors below are there for legacy and compatibility reasons.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="1.1.1.1.-GroupStatsPreProcessor">1.1.1.1. GroupStatsPreProcessor<a class="anchor-link" href="#1.1.1.1.-GroupStatsPreProcessor"> </a></h5>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The version 1 legacy data has 6 groups of features which allows us to calculate aggregate features.</p>
+
 </div>
 </div>
 </div>
@@ -1004,7 +1100,7 @@ var element = $('#82dadda8-2d46-44f8-8833-f0dd0833cf06');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="GroupStatsPreProcessor" class="doc_header"><code>class</code> <code>GroupStatsPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L92" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GroupStatsPreProcessor</code>(<strong><code>groups</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="GroupStatsPreProcessor" class="doc_header"><code>class</code> <code>GroupStatsPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L89" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GroupStatsPreProcessor</code>(<strong><code>groups</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <p>WARNING: Only supported for Version 1 (legacy) data.
 Calculate group statistics for all data groups.
@@ -1032,15 +1128,15 @@ Calculate group statistics for all data groups.
 
 
 
-<div id="b3bd5e07-896e-4740-8d1d-771426fc7aab"></div>
+<div id="8080779d-c875-4d6e-98fc-204a0de86f28"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b3bd5e07-896e-4740-8d1d-771426fc7aab');
+var element = $('#8080779d-c875-4d6e-98fc-204a0de86f28');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
-                var nbb_unformatted_code = "#export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\"intelligence\", \"wisdom\", \"charisma\",\n                           \"dexterity\", \"strength\", \"constitution\"]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        assert hasattr(dataf.meta, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataf.meta, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
-                var nbb_formatted_code = "# export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        assert hasattr(\n            dataf.meta, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataf.meta, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
+                var nbb_unformatted_code = "#export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\"intelligence\", \"wisdom\", \"charisma\",\n                           \"dexterity\", \"strength\", \"constitution\"]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\" Check validity and add group features. \"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\" Make sure this is only used for version 1 data. \"\"\"\n        assert hasattr(dataf.meta, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataf.meta, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
+                var nbb_formatted_code = "# export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\"Check validity and add group features.\"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\"Make sure this is only used for version 1 data.\"\"\"\n        assert hasattr(\n            dataf.meta, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataf.meta, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1088,7 +1184,7 @@ var element = $('#b3bd5e07-896e-4740-8d1d-771426fc7aab');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">024320</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">024193</span>. ✅
 </pre>
 
 </div>
@@ -1100,10 +1196,10 @@ var element = $('#b3bd5e07-896e-4740-8d1d-771426fc7aab');
 
 
 
-<div id="5d76ab44-530e-429e-ad80-2cb42e961824"></div>
+<div id="46a0eadd-1cbd-4848-8c94-a87efe3b5c30"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5d76ab44-530e-429e-ad80-2cb42e961824');
+var element = $('#46a0eadd-1cbd-4848-8c94-a87efe3b5c30');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1252,10 +1348,10 @@ var element = $('#5d76ab44-530e-429e-ad80-2cb42e961824');
 
 
 
-<div id="3048a494-37f8-4f11-afde-47f8858e09c6"></div>
+<div id="38c6e766-0de0-4fd1-9a3b-32d5da815cdb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3048a494-37f8-4f11-afde-47f8858e09c6');
+var element = $('#38c6e766-0de0-4fd1-9a3b-32d5da815cdb');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1321,7 +1417,7 @@ var element = $('#3048a494-37f8-4f11-afde-47f8858e09c6');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">018905</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">020284</span>. ✅
 </pre>
 
 </div>
@@ -1333,10 +1429,10 @@ var element = $('#3048a494-37f8-4f11-afde-47f8858e09c6');
 
 
 
-<div id="0534a756-fb9c-4316-93ed-5d7411f9154d"></div>
+<div id="c59d1c56-e4c5-44c2-bdfc-faea8f3d2888"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0534a756-fb9c-4316-93ed-5d7411f9154d');
+var element = $('#c59d1c56-e4c5-44c2-bdfc-faea8f3d2888');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1366,13 +1462,15 @@ var element = $('#0534a756-fb9c-4316-93ed-5d7411f9154d');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="1.3.-Version-2-specific">1.3. Version 2 specific<a class="anchor-link" href="#1.3.-Version-2-specific"> </a></h3>
+<h4 id="1.1.2.-Numerai-Classic:-Version-2-specific">1.1.2. Numerai Classic: Version 2 specific<a class="anchor-link" href="#1.1.2.-Numerai-Classic:-Version-2-specific"> </a></h4><p>Preprocessors that are only compatible with version 2 data. If the preprocessor is agnostic to Numerai Classic version implement under heading 1.1.0.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="1.4.-Signals-specific">1.4. Signals specific<a class="anchor-link" href="#1.4.-Signals-specific"> </a></h3>
+<h3 id="1.2.-Signals">1.2. Signals<a class="anchor-link" href="#1.2.-Signals"> </a></h3><p>Preprocessors that are specific to Numerai Signals.</p>
+
 </div>
 </div>
 </div>
@@ -1384,10 +1482,10 @@ var element = $('#0534a756-fb9c-4316-93ed-5d7411f9154d');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>There are an almost unlimited number of ways to preprocess data. We have only scratched the surface with the preprocessors currently implemented in <code>numerai-blocks</code>. We invite the Numerai community to develop Numerai Classic and Signals preprocessors for <code>numerai-blocks</code>.</p>
-<p>A new Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement a <code>transform</code> method. The <code>transform</code> method should take a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> as input and return a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> object as output. An example is given below.</p>
+<p>There are an almost unlimited number of ways to preprocess (selection, engineering and manipulation). We have only scratched the surface with the preprocessors currently implemented in <code>numerai-blocks</code>. We invite the Numerai community to develop Numerai Classic and Signals preprocessors for <code>numerai-blocks</code>.</p>
+<p>A new Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement a <code>transform</code> method. For efficient implementation we recommend you use <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> functionality for preprocessing, but if this is not relevant for your application, the Preprocessor can also support a Pandas DataFrame as input as long as it returns a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a>. This ensures that the Preprocessor still works within a full <code>numerai-blocks</code> pipeline. A template for new Preprocessors is given below.</p>
 <p>To enable fancy logging output. Add the <code>@display_processor_info</code> decorator to the <code>transform</code> method.</p>
-<p>Note that arbitrary metadata can be added or changed in a preprocessing step.</p>
+<p>Note that arbitrary metadata stored by <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> can be added or changed in a preprocessing step.</p>
 
 </div>
 </div>
@@ -1403,7 +1501,7 @@ var element = $('#0534a756-fb9c-4316-93ed-5d7411f9154d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomePreProcessor" class="doc_header"><code>class</code> <code>AwesomePreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L124" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePreProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="AwesomePreProcessor" class="doc_header"><code>class</code> <code>AwesomePreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L123" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePreProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -1432,10 +1530,10 @@ Do some awesome preprocessing.</li>
 
 
 
-<div id="13748d7f-a1c7-4342-9a24-69502b725eec"></div>
+<div id="e767752d-f5a7-4b71-87ea-ab6e3378f918"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#13748d7f-a1c7-4342-9a24-69502b725eec');
+var element = $('#e767752d-f5a7-4b71-87ea-ab6e3378f918');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;

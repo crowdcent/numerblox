@@ -18,10 +18,7 @@ from .numerframe import NumerFrame, create_numerframe
 
 # Cell
 class BaseProcessor(ABC):
-    """
-    New Preprocessors and Postprocessors should inherit from this object
-    and implement the transform method.
-    """
+    """ Common functionality for preprocessors and postprocessors. """
     def __init__(self):
         ...
 
@@ -53,8 +50,8 @@ class CopyPreProcessor(BaseProcessor):
         super().__init__()
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Union[pd.DataFrame, NumerFrame]:
-        return dataf.copy()
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        return NumerFrame(dataf.copy())
 
 # Cell
 @typechecked
@@ -67,7 +64,7 @@ class FeatureSelectionPreProcessor(BaseProcessor):
         self.feature_cols = feature_cols
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
         keep_cols = self.feature_cols + dataf.target_cols + dataf.prediction_cols + dataf.aux_cols
         dataf = dataf.loc[:, keep_cols]
         return NumerFrame(dataf)
@@ -83,7 +80,7 @@ class TargetSelectionPreProcessor(BaseProcessor):
         self.target_cols = target_cols
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
         keep_cols = self.target_cols + dataf.feature_cols + dataf.prediction_cols + dataf.aux_cols
         dataf = dataf.loc[:, keep_cols]
         return NumerFrame(dataf)
@@ -103,6 +100,7 @@ class GroupStatsPreProcessor(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+        """ Check validity and add group features. """
         self._check_data_validity(dataf=dataf)
         dataf = dataf.pipe(self._add_group_features)
         return NumerFrame(dataf)
@@ -117,6 +115,7 @@ class GroupStatsPreProcessor(BaseProcessor):
         return dataf
 
     def _check_data_validity(self, dataf: NumerFrame):
+        """ Make sure this is only used for version 1 data. """
         assert hasattr(dataf.meta, 'version'), f"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data."
         assert getattr(dataf.meta, 'version') == 1, f"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'."
 

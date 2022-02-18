@@ -10,7 +10,7 @@ from dataclasses import dataclass, FrozenInstanceError
 # Cell
 @dataclass(frozen=True)
 class Key:
-    """Immutable and validated Numerai credentials."""
+    """Immutable Numerai credentials."""
     pub_id: str
     secret_key: str
 
@@ -29,7 +29,7 @@ class Key:
 def load_key_from_json(file_path: str, *args, **kwargs):
     """
     Initialize Key object from JSON file.
-    Credentials file should have the following format:
+    Credentials file must have the following format:
     {
     "pub_id": "PUBLIC_ID",
     "secret_key": "SECRET_KEY"
