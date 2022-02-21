@@ -91,6 +91,7 @@ class BaseSubmittor(BaseIO):
         :param csv_paths: List of full paths to .csv prediction files.
         :param aux_cols: ['id'] for Numerai Classic and
         For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.
+        All aux_cols will be stored as index.
         :param era_col: Column indicating era ('era' or 'last_friday').
         Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.
         :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
@@ -104,7 +105,7 @@ class BaseSubmittor(BaseIO):
                            inplace=True)
         # Combine all numeric columns with rank mean
         num_dataf = final_dataf.select_dtypes(include=np.number)
-        num_dataf = num_dataf.groupby(era_col) if era_col else final_dataf
+        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf
         final_dataf[pred_col] = num_dataf.rank(pct=True, method="first").mean(axis=1)
         return final_dataf[[pred_col]]
 
