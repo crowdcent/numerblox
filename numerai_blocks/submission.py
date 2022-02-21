@@ -92,7 +92,7 @@ class BaseSubmittor(BaseIO):
         :param aux_cols: ['id'] for Numerai Classic and
         For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.
         :param era_col: Column indicating era ('era' or 'last_friday').
-        Will be used for ranked mean if given. Groupby will be skipped by default.
+        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.
         :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
         """
         all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]
@@ -112,7 +112,7 @@ class BaseSubmittor(BaseIO):
         """
         Get ID needed for prediction uploading.
         :param model_name: Raw lowercase model name
-        of model that you have access to.
+        of Numerai model that you have access to.
         """
         return self.get_model_mapping[model_name]
 
