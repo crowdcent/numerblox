@@ -32,7 +32,7 @@ class BaseSubmittor(BaseIO):
     @abstractmethod
     def save_csv(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
         cols: Union[str, list],
         *args,
@@ -65,7 +65,7 @@ class BaseSubmittor(BaseIO):
 
     def full_submission(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
         model_name: str,
         cols: Union[str, list],
@@ -83,7 +83,7 @@ class BaseSubmittor(BaseIO):
 
     def __call__(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
         model_name: str,
         cols: Union[str, list],
@@ -112,6 +112,18 @@ class BaseSubmittor(BaseIO):
         """Mapping between raw model names and model IDs."""
         return self.api.get_models()
 
+    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):
+        """ Check if all predictions are in range (0...1). """
+        cols = [cols] if isinstance(cols, str) else cols
+        for col in cols:
+            if not dataf[col].between(0, 1).all():
+                min_val, max_val = dataf[col].min(), dataf[col].max()
+                raise ValueError(
+                    f"Values in 'signal' must be between 0 and 1 (exclusive). \
+Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
+                )
+
+
 # Cell
 @typechecked
 class NumeraiClassicSubmittor(BaseSubmittor):
@@ -130,17 +142,22 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 
     def save_csv(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
-        cols: Union[str, list],
+        cols: Union[str, list] = "prediction",
         *args,
         **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example, 'target', ['target'] or [ALL_NUMERAI_TARGETS]).
+        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).
+        :param file_name: .csv file path .
+        :param cols: All prediction columns.
+        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].
         """
+        self._check_value_range(dataf=dataf, cols=cols)
+
         full_path = str(self.dir / file_name)
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
@@ -173,7 +190,7 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         ]
 
     def save_csv(
-        self, dataf: Union[pd.DataFrame, NumerFrame], file_name: str, cols: list = None, *args, **kwargs
+        self, dataf: pd.DataFrame, file_name: str, cols: list = None, *args, **kwargs
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
@@ -183,27 +200,15 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
          3. friday_date (YYYYMMDD format date indication)
          4. data_type ('val' and 'live' partitions)
 
-         :param file_name: For example, 'sub_<model_name>_round<n>.csv'
+         :param file_name: .csv file path.
          :param cols: All cols that should be passed to CSV. Defaults to 2 standard columns.
           ('bloomberg_ticker', 'signal')
         """
         if not cols:
             cols = ["bloomberg_ticker", "signal"]
 
-        # Check for valid ticker format
-        valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
-        if not valid_tickers:
-            raise NotImplementedError(
-                f"No supported ticker format in {cols}). \
-            Supported: '{self.supported_ticker_formats}'"
-            )
-
-        # signal must be in range (0...1)
-        if not dataf["signal"].between(0, 1).all():
-            min_val, max_val = dataf["signal"].min(), dataf["signal"].max()
-            raise ValueError(
-                f"Values in 'signal' must be between 0 and 1 (exclusive). Found min value of '{min_val}' and max value of '{max_val}'"
-            )
+        self._check_ticker_format(cols=cols)
+        self._check_value_range(dataf=dataf, cols="signal")
 
         full_path = str(self.dir / file_name)
         rich_print(
@@ -212,3 +217,12 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         dataf.loc[:, cols].reset_index(drop=True).to_csv(
             full_path, index=False, *args, **kwargs
         )
+
+    def _check_ticker_format(self, cols: list):
+        """ Check for valid ticker format. """
+        valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
+        if not valid_tickers:
+            raise NotImplementedError(
+                f"No supported ticker format in {cols}). \
+Supported: '{self.supported_ticker_formats}'"
+            )
