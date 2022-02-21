@@ -81,6 +81,32 @@ class BaseSubmittor(BaseIO):
             file_name=file_name, model_name=model_name, *args, **kwargs
         )
 
+    def combine_csvs(self, csv_paths: list,
+                     aux_cols: list,
+                     era_col: str = None,
+                     pred_col: str = 'prediction') -> pd.DataFrame:
+        """
+        Read in csv files and combine all predictions with a rank mean.
+        Multi-target predictions will be averaged out.
+        :param csv_paths: List of full paths to .csv prediction files.
+        :param aux_cols: ['id'] for Numerai Classic and [ticker column] for Numerai Signals.
+        :param era_col: Column indicating era ('era' or 'last_friday').
+        Will be used for ranked mean if given. Groupby will be skipped by default.
+        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
+        """
+        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]
+        final_dataf = pd.concat(all_datafs, axis="columns")
+        # Remove issue of duplicate columns
+        numeric_cols = final_dataf.select_dtypes(include=np.number).columns
+        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},
+                           axis=1,
+                           inplace=True)
+        # Combine all numeric columns with rank mean
+        num_dataf = final_dataf.select_dtypes(include=np.number)
+        num_dataf = num_dataf.groupby(era_col) if era_col else final_dataf
+        final_dataf[pred_col] = num_dataf.rank(pct=True, method="first").mean(axis=1)
+        return final_dataf[[pred_col]]
+
     def _get_model_id(self, model_name: str) -> str:
         """
         Get ID needed for prediction uploading.
@@ -166,21 +192,6 @@ class NumeraiClassicSubmittor(BaseSubmittor):
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
         dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
-
-    def combine_csvs(self, csv_paths: list) -> pd.DataFrame:
-        """
-        Read in csv files and combine all predictions with a rank mean.
-        Multi-target predictions will be averaged out.
-        :param csv_paths: List of full paths to .csv prediction files.
-        """
-        datafs = []
-        for i, path in tqdm(enumerate(csv_paths),
-                            desc=f"Combine CSVs"):
-            dataf = pd.read_csv(path, index_col="id")
-            datafs.append(dataf)
-        final_dataf = pd.concat(datafs, axis="columns")
-        final_dataf['prediction'] = final_dataf.rank(pct=True, method="first").mean(axis=1)
-        return final_dataf.loc[:, ['prediction']]
 
 # Cell
 @typechecked
