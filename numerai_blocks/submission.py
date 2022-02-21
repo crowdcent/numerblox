@@ -10,6 +10,7 @@ import pandas as pd
 from typing import Union
 from copy import deepcopy
 from random import choices
+from tqdm.auto import tqdm
 from datetime import datetime
 from abc import abstractmethod
 from typeguard import typechecked
@@ -18,7 +19,6 @@ from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
-from .numerframe import NumerFrame
 from .download import BaseIO
 from .key import Key
 
@@ -81,30 +81,12 @@ class BaseSubmittor(BaseIO):
             file_name=file_name, model_name=model_name, *args, **kwargs
         )
 
-    def __call__(
-        self,
-        dataf: pd.DataFrame,
-        file_name: str,
-        model_name: str,
-        cols: Union[str, list],
-        *args,
-        **kwargs,
-    ):
-        """
-        The most common use case will be to create a CSV and submit it immediately after that.
-        full_submission handles this.
-        """
-        self.full_submission(
-            dataf=dataf,
-            file_name=file_name,
-            model_name=model_name,
-            cols=cols,
-            *args,
-            **kwargs,
-        )
-
     def _get_model_id(self, model_name: str) -> str:
-        """Get ID needed for prediction uploading."""
+        """
+        Get ID needed for prediction uploading.
+        :param model_name: Raw lowercase model name
+        of model that you have access to.
+        """
         return self.get_model_mapping[model_name]
 
     @property
@@ -123,6 +105,28 @@ class BaseSubmittor(BaseIO):
 Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
                 )
 
+    def __call__(
+            self,
+            dataf: pd.DataFrame,
+            file_name: str,
+            model_name: str,
+            cols: Union[str, list],
+            *args,
+            **kwargs,
+    ):
+        """
+        The most common use case will be to create a CSV and submit it immediately after that.
+        full_submission handles this.
+        """
+        self.full_submission(
+            dataf=dataf,
+            file_name=file_name,
+            model_name=model_name,
+            cols=cols,
+            *args,
+            **kwargs,
+        )
+
 
 # Cell
 @typechecked
@@ -133,7 +137,6 @@ class NumeraiClassicSubmittor(BaseSubmittor):
     :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.
     *args, **kwargs will be passed to NumerAPI initialization.
     """
-
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
         super().__init__(
@@ -163,6 +166,21 @@ class NumeraiClassicSubmittor(BaseSubmittor):
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
         dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
+
+    def combine_csvs(self, csv_paths: list) -> pd.DataFrame:
+        """
+        Read in csv files and combine all predictions with a rank mean.
+        Multi-target predictions will be averaged out.
+        :param csv_paths: List of full paths to .csv prediction files.
+        """
+        datafs = []
+        for i, path in tqdm(enumerate(csv_paths),
+                            desc=f"Combine CSVs"):
+            dataf = pd.read_csv(path, index_col="id")
+            datafs.append(dataf)
+        final_dataf = pd.concat(datafs, axis="columns")
+        final_dataf['prediction'] = final_dataf.rank(pct=True, method="first").mean(axis=1)
+        return final_dataf.loc[:, ['prediction']]
 
 # Cell
 @typechecked
