@@ -89,7 +89,8 @@ class BaseSubmittor(BaseIO):
         Read in csv files and combine all predictions with a rank mean.
         Multi-target predictions will be averaged out.
         :param csv_paths: List of full paths to .csv prediction files.
-        :param aux_cols: ['id'] for Numerai Classic and [ticker column] for Numerai Signals.
+        :param aux_cols: ['id'] for Numerai Classic and
+        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.
         :param era_col: Column indicating era ('era' or 'last_friday').
         Will be used for ranked mean if given. Groupby will be skipped by default.
         :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
