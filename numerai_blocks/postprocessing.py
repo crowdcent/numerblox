@@ -49,8 +49,6 @@ class Standardizer(BasePostProcessor):
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         cols = dataf.prediction_cols if not self.cols else self.cols
-        for col in cols:
-            assert dataf[col].between(0, 1).all(), f"All values should only contain values between 0 and 1. Does not hold for '{col}'"
         dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
         return NumerFrame(dataf)
 
