@@ -176,23 +176,28 @@ class FeatureNeutralizer(BasePostProcessor):
 # Cell
 @typechecked
 class FeaturePenalizer(BasePostProcessor):
-    """ Feature penalization with Tensorflow. """
-    def __init__(self, max_exposure: float,
-                 risky_feature_names: list = None, pred_name: str = "prediction"):
+    """
+    Feature penalization with TensorFlow by jrb.
+    :param feature_names: List of column names to reduce feature exposure.
+    Uses all feature columns by default.
+    :param pred_name: Prediction column to neutralize.
+    :param proportion: Number in range [0...1] indicating how much to reduce max feature exposure to.
+    """    def __init__(self, max_exposure: float,
+                 feature_names: list = None, pred_name: str = "prediction"):
         self.pred_name = pred_name
         self.max_exposure = max_exposure
         assert 0. <= max_exposure <= 1., f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
         self.new_col_name = f"{self.pred_name}_penalized_{self.max_exposure}"
         super().__init__(final_col_name=self.new_col_name)
 
-        self.risky_feature_names = risky_feature_names
+        self.feature_names = feature_names
 
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
-        risky_feature_names = dataf.feature_cols if not self.risky_feature_names else self.risky_feature_names
+        feature_names = dataf.feature_cols if not self.feature_names else self.feature_names
         penalized_data = self.reduce_all_exposures(dataf=dataf,
                                                    column=self.pred_name,
-                                                   neutralizers=risky_feature_names
+                                                   neutralizers=feature_names
                                                    )
         new_pred_col = f"{self.pred_name}_FP_{self.max_exposure}"
         dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
@@ -231,7 +236,7 @@ class FeaturePenalizer(BasePostProcessor):
             neutralized.append(scores.numpy())
 
         predictions = pd.DataFrame(np.concatenate(neutralized),
-                                   columns=[column], index=df.index)
+                                   columns=[column], index=dataf.index)
         return predictions
 
     def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
