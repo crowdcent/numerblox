@@ -182,7 +182,8 @@ class FeaturePenalizer(BasePostProcessor):
     Uses all feature columns by default.
     :param pred_name: Prediction column to neutralize.
     :param proportion: Number in range [0...1] indicating how much to reduce max feature exposure to.
-    """    def __init__(self, max_exposure: float,
+    """
+    def __init__(self, max_exposure: float,
                  feature_names: list = None, pred_name: str = "prediction"):
         self.pred_name = pred_name
         self.max_exposure = max_exposure
