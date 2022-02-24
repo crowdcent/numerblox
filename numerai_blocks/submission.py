@@ -10,6 +10,7 @@ import pandas as pd
 from typing import Union
 from copy import deepcopy
 from random import choices
+from tqdm.auto import tqdm
 from datetime import datetime
 from abc import abstractmethod
 from typeguard import typechecked
@@ -18,7 +19,6 @@ from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
-from .numerframe import NumerFrame
 from .download import BaseIO
 from .key import Key
 
@@ -32,7 +32,7 @@ class BaseSubmittor(BaseIO):
     @abstractmethod
     def save_csv(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
         cols: Union[str, list],
         *args,
@@ -65,7 +65,7 @@ class BaseSubmittor(BaseIO):
 
     def full_submission(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
         model_name: str,
         cols: Union[str, list],
@@ -81,14 +81,66 @@ class BaseSubmittor(BaseIO):
             file_name=file_name, model_name=model_name, *args, **kwargs
         )
 
+    def combine_csvs(self, csv_paths: list,
+                     aux_cols: list,
+                     era_col: str = None,
+                     pred_col: str = 'prediction') -> pd.DataFrame:
+        """
+        Read in csv files and combine all predictions with a rank mean.
+        Multi-target predictions will be averaged out.
+        :param csv_paths: List of full paths to .csv prediction files.
+        :param aux_cols: ['id'] for Numerai Classic and
+        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.
+        All aux_cols will be stored as index.
+        :param era_col: Column indicating era ('era' or 'last_friday').
+        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.
+        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
+        """
+        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]
+        final_dataf = pd.concat(all_datafs, axis="columns")
+        # Remove issue of duplicate columns
+        numeric_cols = final_dataf.select_dtypes(include=np.number).columns
+        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},
+                           axis=1,
+                           inplace=True)
+        # Combine all numeric columns with rank mean
+        num_dataf = final_dataf.select_dtypes(include=np.number)
+        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf
+        final_dataf[pred_col] = num_dataf.rank(pct=True, method="first").mean(axis=1)
+        return final_dataf[[pred_col]]
+
+    def _get_model_id(self, model_name: str) -> str:
+        """
+        Get ID needed for prediction uploading.
+        :param model_name: Raw lowercase model name
+        of Numerai model that you have access to.
+        """
+        return self.get_model_mapping[model_name]
+
+    @property
+    def get_model_mapping(self) -> dict:
+        """Mapping between raw model names and model IDs."""
+        return self.api.get_models()
+
+    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):
+        """ Check if all predictions are in range (0...1). """
+        cols = [cols] if isinstance(cols, str) else cols
+        for col in cols:
+            if not dataf[col].between(0, 1).all():
+                min_val, max_val = dataf[col].min(), dataf[col].max()
+                raise ValueError(
+                    f"Values in 'signal' must be between 0 and 1 (exclusive). \
+Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
+                )
+
     def __call__(
-        self,
-        dataf: Union[pd.DataFrame, NumerFrame],
-        file_name: str,
-        model_name: str,
-        cols: Union[str, list],
-        *args,
-        **kwargs,
+            self,
+            dataf: pd.DataFrame,
+            file_name: str,
+            model_name: str,
+            cols: Union[str, list],
+            *args,
+            **kwargs,
     ):
         """
         The most common use case will be to create a CSV and submit it immediately after that.
@@ -103,14 +155,6 @@ class BaseSubmittor(BaseIO):
             **kwargs,
         )
 
-    def _get_model_id(self, model_name: str) -> str:
-        """Get ID needed for prediction uploading."""
-        return self.get_model_mapping[model_name]
-
-    @property
-    def get_model_mapping(self) -> dict:
-        """Mapping between raw model names and model IDs."""
-        return self.api.get_models()
 
 # Cell
 @typechecked
@@ -121,7 +165,6 @@ class NumeraiClassicSubmittor(BaseSubmittor):
     :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.
     *args, **kwargs will be passed to NumerAPI initialization.
     """
-
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
         super().__init__(
@@ -130,17 +173,22 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 
     def save_csv(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: pd.DataFrame,
         file_name: str,
-        cols: Union[str, list],
+        cols: Union[str, list] = "prediction",
         *args,
         **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example, 'target', ['target'] or [ALL_NUMERAI_TARGETS]).
+        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).
+        :param file_name: .csv file path .
+        :param cols: All prediction columns.
+        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].
         """
+        self._check_value_range(dataf=dataf, cols=cols)
+
         full_path = str(self.dir / file_name)
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
@@ -173,7 +221,7 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         ]
 
     def save_csv(
-        self, dataf: Union[pd.DataFrame, NumerFrame], file_name: str, cols: list = None, *args, **kwargs
+        self, dataf: pd.DataFrame, file_name: str, cols: list = None, *args, **kwargs
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
@@ -183,27 +231,15 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
          3. friday_date (YYYYMMDD format date indication)
          4. data_type ('val' and 'live' partitions)
 
-         :param file_name: For example, 'sub_<model_name>_round<n>.csv'
+         :param file_name: .csv file path.
          :param cols: All cols that should be passed to CSV. Defaults to 2 standard columns.
           ('bloomberg_ticker', 'signal')
         """
         if not cols:
             cols = ["bloomberg_ticker", "signal"]
 
-        # Check for valid ticker format
-        valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
-        if not valid_tickers:
-            raise NotImplementedError(
-                f"No supported ticker format in {cols}). \
-            Supported: '{self.supported_ticker_formats}'"
-            )
-
-        # signal must be in range (0...1)
-        if not dataf["signal"].between(0, 1).all():
-            min_val, max_val = dataf["signal"].min(), dataf["signal"].max()
-            raise ValueError(
-                f"Values in 'signal' must be between 0 and 1 (exclusive). Found min value of '{min_val}' and max value of '{max_val}'"
-            )
+        self._check_ticker_format(cols=cols)
+        self._check_value_range(dataf=dataf, cols="signal")
 
         full_path = str(self.dir / file_name)
         rich_print(
@@ -212,3 +248,12 @@ class NumeraiSignalsSubmittor(BaseSubmittor):
         dataf.loc[:, cols].reset_index(drop=True).to_csv(
             full_path, index=False, *args, **kwargs
         )
+
+    def _check_ticker_format(self, cols: list):
+        """ Check for valid ticker format. """
+        valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
+        if not valid_tickers:
+            raise NotImplementedError(
+                f"No supported ticker format in {cols}). \
+Supported: '{self.supported_ticker_formats}'"
+            )
