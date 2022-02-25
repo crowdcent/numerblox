@@ -49,23 +49,36 @@ class BaseModel(ABC):
         ...
         return NumerFrame(dataf)
 
+    def get_prediction_col_names(self, pred_shape: tuple) -> list:
+        """ Create multiple columns if predictions are multi-target. """
+        prediction_cols = self.prediction_col_name
+        if len(pred_shape) > 1:
+            if pred_shape[1] > 1:
+                prediction_cols = [f"{self.prediction_col_name}_{i}" for i in range(pred_shape[1])]
+        return prediction_cols
+
     def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         return self.predict(dataf=dataf)
 
 # Cell
 class DirectoryModel(BaseModel):
     """
-    Base class implementation for JoblibModel, CatBoostModel, LGBMModel, etc.
+    Base class implementation where predictions are average out from a directory of models.
+    Examples, JoblibModel, CatBoostModel, LGBMModel, etc.
     Walks through every file with given file_suffix in a directory.
     :param model_directory: Main directory from which to read in models.
     :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)
     :param model_name: Name that will be used to create column names and for display purposes.
     :param feature_cols: optional list of features to use for prediction.
     Selects all feature columns (i.e. column names with prefix 'feature') by default.
+    :param combine_preds: Whether to average predictions along column axis.
+    Only relevant for multi target models.
+    Convenient when you want to predict the main target by averaging a multi-target model.
     """
     def __init__(self, model_directory: str, file_suffix: str,
                  model_name: str = None,
-                 feature_cols: list = None
+                 feature_cols: list = None,
+                 combine_preds = True,
                  ):
         super().__init__(model_directory=model_directory,
                          model_name=model_name,
@@ -76,6 +89,7 @@ class DirectoryModel(BaseModel):
             assert self.model_paths, f"No {self.file_suffix} files found in {self.model_directory}."
         self.total_models = len(self.model_paths)
         self.feature_cols = feature_cols
+        self.combine_preds = combine_preds
 
     @display_processor_info
     def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
@@ -92,7 +106,9 @@ class DirectoryModel(BaseModel):
             predictions = model.predict(dataf[feature_cols], *args, **kwargs)
             # Check for if model output is a Pandas DataFrame
             predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions
-            dataf.loc[:, self.prediction_col_name] += predictions / self.total_models
+            predictions = predictions.mean(axis=1) if self.combine_preds and len(predictions.shape) > 1 else predictions
+            prediction_cols = self.get_prediction_col_names(predictions.shape)
+            dataf.loc[:, prediction_cols] = dataf.loc[:, prediction_cols] + (predictions / self.total_models)
         del models; gc.collect()
         return NumerFrame(dataf)
 
@@ -109,6 +125,7 @@ class SingleModel(BaseModel):
     :param model_file_path: Full path to model file.
     :param model_name: Name that will be used to create column names and for display purposes.
     :param combine_preds: Whether to average predictions along column axis.
+    Only relevant for multi target models.
     Convenient when you want to predict the main target by averaging a multi-target model.
     :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
     Will take the 3rd of tuple output in this case. Only relevant for NN models.
@@ -155,20 +172,6 @@ class SingleModel(BaseModel):
     def _load_model(self, *args, **kwargs):
         """ Load arbitrary model from path using suffix to model mapping. """
         return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)
-
-    def get_prediction_col_names(self, pred_shape: tuple) -> list:
-        """ Create multiple columns if predictions are multi-target. """
-        if len(pred_shape) > 1:
-            if pred_shape[1] > 1:
-                # Multi target
-                prediction_cols = [f"{self.prediction_col_name}_{i}" for i in range(pred_shape[1])]
-            else:
-                # Single target
-                prediction_cols = [self.prediction_col_name]
-        else:
-            # Single target
-            prediction_cols = [self.prediction_col_name]
-        return prediction_cols
 
     def __check_valid_suffix(self):
         """ Detailed message if model is not supported in this class. """
