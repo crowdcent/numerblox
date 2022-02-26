@@ -4,6 +4,7 @@ __all__ = ['BaseModel', 'DirectoryModel', 'SingleModel', 'WandbKerasModel', 'Job
            'ConstantModel', 'RandomModel', 'ExamplePredictionsModel', 'AwesomeModel', 'AwesomeDirectoryModel']
 
 # Cell
+import os
 import gc
 import uuid
 import wandb
@@ -225,7 +226,7 @@ class WandbKerasModel(SingleModel):
         self.replace = replace
 
         self._download_model()
-        super().__init__(model_file_path=self.file_name,
+        super().__init__(model_file_path=f"{self.run_path.split('/')[-1]}_{self.file_name}",
                          model_name=self.run_path,
                          combine_preds=combine_preds,
                          autoencoder_mlp=autoencoder_mlp,
@@ -245,6 +246,7 @@ class WandbKerasModel(SingleModel):
             rich_print(f":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:")
         run = wandb.Api().run(self.run_path)
         run.file(name=self.file_name).download(replace=self.replace)
+        os.rename(self.file_name, f"{self.run_path.split('/')[-1]}_{self.file_name}")
 
 # Cell
 @typechecked
