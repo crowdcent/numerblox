@@ -25,10 +25,13 @@ class BasePostProcessor(BaseProcessor):
     Base class for postprocessing objects.
     Postprocessors manipulate or introduce new prediction columns in a NumerFrame.
     """
+
     def __init__(self, final_col_name: str):
         super().__init__()
         self.final_col_name = final_col_name
-        assert final_col_name.startswith("prediction"), f"final_col name should start with 'prediction'. Got {final_col_name}"
+        assert final_col_name.startswith(
+            "prediction"
+        ), f"final_col name should start with 'prediction'. Got {final_col_name}"
 
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         ...
@@ -42,6 +45,7 @@ class Standardizer(BasePostProcessor):
     :param cols: All prediction columns that should be standardized.
     Use all prediction columns by default.
     """
+
     def __init__(self, cols: list = None):
         super().__init__(final_col_name="prediction")
         self.cols = cols
@@ -55,7 +59,8 @@ class Standardizer(BasePostProcessor):
 # Cell
 @typechecked
 class MeanEnsembler(BasePostProcessor):
-    """ Take simple mean of multiple cols and store in new col. """
+    """Take simple mean of multiple cols and store in new col."""
+
     def __init__(self, final_col_name: str, cols: list = None):
         self.cols = cols
         super().__init__(final_col_name=final_col_name)
@@ -64,7 +69,9 @@ class MeanEnsembler(BasePostProcessor):
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         cols = self.cols if self.cols else dataf.prediction_cols
         dataf.loc[:, self.final_col_name] = dataf.loc[:, cols].mean(axis=1)
-        rich_print(f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:")
+        rich_print(
+            f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:"
+        )
         return NumerFrame(dataf)
 
 # Cell
@@ -81,6 +88,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
     Uses all prediction columns by default.
     :param final_col_name: New column name for ensembled values.
     """
+
     def __init__(self, final_col_name: str, cols: list = None):
         super().__init__(final_col_name=final_col_name)
         self.cols = cols
@@ -90,17 +98,20 @@ class DonateWeightedEnsembler(BasePostProcessor):
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         cols = self.cols if self.cols else dataf.prediction_cols
-        dataf.loc[:, self.final_col_name] = np.average(dataf.loc[:, cols],
-                                                       weights=self.weights, axis=1)
-        rich_print(f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:")
+        dataf.loc[:, self.final_col_name] = np.average(
+            dataf.loc[:, cols], weights=self.weights, axis=1
+        )
+        rich_print(
+            f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:"
+        )
         return NumerFrame(dataf)
 
     def _get_weights(self) -> list:
-        """  Exponential weights. """
+        """Exponential weights."""
         weights = []
-        for j in range(1, self.n_cols+1):
+        for j in range(1, self.n_cols + 1):
             j = 2 if j == 1 else j
-            weights.append(1 / (2**(self.n_cols + 1 - j)))
+            weights.append(1 / (2 ** (self.n_cols + 1 - j)))
         return weights
 
 # Cell
@@ -112,6 +123,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
     Uses all prediction columns by default.
     :param final_col_name: New column name for ensembled values.
     """
+
     def __init__(self, final_col_name: str, cols: list = None):
         super().__init__(final_col_name=final_col_name)
         self.cols = cols
@@ -121,7 +133,9 @@ class GeometricMeanEnsembler(BasePostProcessor):
         cols = self.cols if self.cols else dataf.prediction_cols
         new_col = dataf.loc[:, cols].apply(gmean, axis=1)
         dataf.loc[:, self.final_col_name] = new_col
-        rich_print(f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:")
+        rich_print(
+            f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:"
+        )
         return NumerFrame(dataf)
 
 # Cell
@@ -134,14 +148,24 @@ class FeatureNeutralizer(BasePostProcessor):
     :param pred_name: Prediction column to neutralize.
     :param proportion: Number in range [0...1] indicating how much to neutralize.
     """
-    def __init__(self,
-                 feature_names: list = None,
-                 pred_name: str = "prediction",
-                 proportion: float = 0.5):
+
+    def __init__(
+        self,
+        feature_names: list = None,
+        pred_name: str = "prediction",
+        proportion: float = 0.5,
+        suffix: str = None,
+    ):
         self.pred_name = pred_name
         self.proportion = proportion
-        assert 0. <= proportion <= 1., f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
-        self.new_col_name = f"{self.pred_name}_neutralized_{self.proportion}"
+        assert (
+            0.0 <= proportion <= 1.0
+        ), f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
+        self.new_col_name = (
+            f"{self.pred_name}_neutralized_{self.proportion}_{suffix}"
+            if suffix
+            else f"{self.pred_name}_neutralized_{self.proportion}"
+        )
         super().__init__(final_col_name=self.new_col_name)
 
         self.feature_names = feature_names
@@ -149,17 +173,26 @@ class FeatureNeutralizer(BasePostProcessor):
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
-        neutralized_preds = dataf.groupby(dataf.meta.era_col)\
-            .apply(lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names))
-        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(neutralized_preds)
-        rich_print(f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:")
-        rich_print(f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].")
+        neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(
+            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)
+        )
+        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(
+            neutralized_preds
+        )
+        rich_print(
+            f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:"
+        )
+        rich_print(
+            f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]."
+        )
         return NumerFrame(dataf)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         scores = dataf[columns]
         exposures = dataf[by].values
-        scores = scores - self.proportion * exposures.dot(np.linalg.pinv(exposures).dot(scores))
+        scores = scores - self.proportion * exposures.dot(
+            np.linalg.pinv(exposures).dot(scores)
+        )
         return scores / scores.std()
 
     @staticmethod
@@ -167,7 +200,9 @@ class FeatureNeutralizer(BasePostProcessor):
         normalized_ranks = (dataf.rank(method="first") - 0.5) / len(dataf)
         return sp.norm.ppf(normalized_ranks)
 
-    def normalize_and_neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
+    def normalize_and_neutralize(
+        self, dataf: pd.DataFrame, columns: list, by: list
+    ) -> pd.DataFrame:
         # Convert the scores to a normal distribution
         dataf[columns] = self.normalize(dataf[columns])
         dataf[columns] = self.neutralize(dataf, columns, by)
@@ -183,33 +218,47 @@ class FeaturePenalizer(BasePostProcessor):
     :param pred_name: Prediction column to neutralize.
     :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
     """
-    def __init__(self, max_exposure: float,
-                 feature_names: list = None, pred_name: str = "prediction"):
+
+    def __init__(
+        self,
+        max_exposure: float,
+        feature_names: list = None,
+        pred_name: str = "prediction",
+        suffix: str = None,
+    ):
         self.pred_name = pred_name
         self.max_exposure = max_exposure
-        assert 0. <= max_exposure <= 1., f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
-        self.new_col_name = f"{self.pred_name}_penalized_{self.max_exposure}"
+        assert (
+            0.0 <= max_exposure <= 1.0
+        ), f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
+        self.new_col_name = (
+            f"{self.pred_name}_penalized_{self.max_exposure}_{suffix}"
+            if suffix
+            else f"{self.pred_name}_penalized_{self.max_exposure}"
+        )
         super().__init__(final_col_name=self.new_col_name)
 
         self.feature_names = feature_names
 
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
-        feature_names = dataf.feature_cols if not self.feature_names else self.feature_names
-        penalized_data = self.reduce_all_exposures(dataf=dataf,
-                                                   column=self.pred_name,
-                                                   neutralizers=feature_names
-                                                   )
-        new_pred_col = f"{self.pred_name}_FP_{self.max_exposure}"
-        dataf.loc[:, new_pred_col] = penalized_data[self.pred_name]
+        feature_names = (
+            dataf.feature_cols if not self.feature_names else self.feature_names
+        )
+        penalized_data = self.reduce_all_exposures(
+            dataf=dataf, column=self.pred_name, neutralizers=feature_names
+        )
+        dataf.loc[:, self.new_col_name] = penalized_data[self.pred_name]
         return NumerFrame(dataf)
 
-    def reduce_all_exposures(self, dataf: NumerFrame,
-                             column: str = "prediction",
-                             neutralizers: list = None,
-                             normalize=True,
-                             gaussianize=True,
-                             ) -> pd.DataFrame:
+    def reduce_all_exposures(
+        self,
+        dataf: NumerFrame,
+        column: str = "prediction",
+        neutralizers: list = None,
+        normalize=True,
+        gaussianize=True,
+    ) -> pd.DataFrame:
         if neutralizers is None:
             neutralizers = [x for x in dataf.columns if x.startswith("feature")]
         neutralized = []
@@ -222,40 +271,45 @@ class FeaturePenalizer(BasePostProcessor):
             if normalize:
                 scores2 = []
                 for x in scores.T:
-                    x = (scipy.stats.rankdata(x, method='ordinal') - .5) / len(x)
+                    x = (scipy.stats.rankdata(x, method="ordinal") - 0.5) / len(x)
                     if gaussianize:
                         x = scipy.stats.norm.ppf(x)
                     scores2.append(x)
                 scores = np.array(scores2)[0]
 
-            scores, weights = self._reduce_exposure(scores, exposure_values,
-                                                    len(neutralizers), None)
+            scores, weights = self._reduce_exposure(
+                scores, exposure_values, len(neutralizers), None
+            )
 
             scores /= tf.math.reduce_std(scores)
             scores -= tf.reduce_min(scores)
             scores /= tf.reduce_max(scores)
             neutralized.append(scores.numpy())
 
-        predictions = pd.DataFrame(np.concatenate(neutralized),
-                                   columns=[column], index=dataf.index)
+        predictions = pd.DataFrame(
+            np.concatenate(neutralized), columns=[column], index=dataf.index
+        )
         return predictions
 
     def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Input(input_size),
-            tf.keras.experimental.LinearModel(use_bias=False),
-        ])
+        model = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Input(input_size),
+                tf.keras.experimental.LinearModel(use_bias=False),
+            ]
+        )
         feats = tf.convert_to_tensor(features - 0.5, dtype=tf.float32)
         pred = tf.convert_to_tensor(prediction, dtype=tf.float32)
         if weights is None:
             optimizer = tf.keras.optimizers.Adamax()
             start_exp = self.__exposures(feats, pred[:, None])
-            target_exps = tf.clip_by_value(start_exp, -self.max_exposure, self.max_exposure)
+            target_exps = tf.clip_by_value(
+                start_exp, -self.max_exposure, self.max_exposure
+            )
             self._train_loop(model, optimizer, feats, pred, target_exps)
         else:
             model.set_weights(weights)
-        return pred[:,None] - model(feats), model.get_weights()
-
+        return pred[:, None] - model(feats), model.get_weights()
 
     def _train_loop(self, model, optimizer, feats, pred, target_exps):
         for i in range(1000000):
@@ -268,8 +322,10 @@ class FeaturePenalizer(BasePostProcessor):
     def __train_loop_body(self, model, feats, pred, target_exps):
         with tf.GradientTape() as tape:
             exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
-            loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) +
-                                 tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))
+            loss = tf.reduce_sum(
+                tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps))
+                + tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps))
+            )
         return loss, tape.gradient(loss, model.trainable_variables)
 
     @staticmethod
@@ -289,6 +345,7 @@ class AwesomePostProcessor(BasePostProcessor):
     Do some awesome postprocessing.
     :param final_col_name: Column name to store manipulated or ensembled predictions in.
     """
+
     def __init__(self, final_col_name: str, *args, **kwargs):
         super().__init__(final_col_name=final_col_name)
 
