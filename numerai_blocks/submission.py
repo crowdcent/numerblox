@@ -129,7 +129,7 @@ class BaseSubmittor(BaseIO):
             if not dataf[col].between(0, 1).all():
                 min_val, max_val = dataf[col].min(), dataf[col].max()
                 raise ValueError(
-                    f"Values in 'signal' must be between 0 and 1 (exclusive). \
+                    f"Values must be between 0 and 1. \
 Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
                 )
 
@@ -172,17 +172,17 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         )
 
     def save_csv(
-        self,
-        dataf: pd.DataFrame,
-        file_name: str,
-        cols: str = "prediction",
-        *args,
-        **kwargs,
+            self,
+            dataf: pd.DataFrame,
+            file_name: str,
+            cols: str = "prediction",
+            *args,
+            **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. col (for example, 'prediction_mymodel').
+        2. cols (for example, 'prediction_mymodel').
         :param file_name: .csv file path.
         :param cols: Prediction column name.
         For example, 'prediction' or 'prediction_mymodel'.
