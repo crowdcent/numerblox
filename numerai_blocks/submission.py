@@ -175,25 +175,27 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         self,
         dataf: pd.DataFrame,
         file_name: str,
-        cols: Union[str, list] = "prediction",
+        cols: str = "prediction",
         *args,
         **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).
-        :param file_name: .csv file path .
-        :param cols: All prediction columns.
-        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].
+        2. col (for example, 'prediction_mymodel').
+        :param file_name: .csv file path.
+        :param cols: Prediction column name.
+        For example, 'prediction' or 'prediction_mymodel'.
         """
-        self._check_value_range(dataf=dataf, cols=cols)
+        sub_dataf = deepcopy(dataf)
+        self._check_value_range(dataf=sub_dataf, cols=cols)
 
         full_path = str(self.dir / file_name)
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
-        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
+        sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]
+        sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
 
 # Cell
 @typechecked
