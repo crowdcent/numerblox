@@ -51,29 +51,16 @@ nb_path: "nbs/04_model.ipynb"
 
 <div class="output_area">
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
-The nb_black extension is already loaded. To reload it, use:
-  %reload_ext nb_black
-The lab_black extension is already loaded. To reload it, use:
-  %reload_ext lab_black
-</pre>
-</div>
-</div>
-
-<div class="output_area">
 
 
 
-
-<div id="903b6078-d977-4cd2-b5e4-b72cce8916ca"></div>
+<div id="e502c3b7-4075-48d1-9f78-5ff705175a84"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#903b6078-d977-4cd2-b5e4-b72cce8916ca');
+var element = $('#e502c3b7-4075-48d1-9f78-5ff705175a84');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 1;
                 var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
                 var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -137,7 +124,7 @@ var element = $('#903b6078-d977-4cd2-b5e4-b72cce8916ca');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseModel" class="doc_header"><code>class</code> <code>BaseModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L31" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <code>ABC</code></p>
+<h2 id="BaseModel" class="doc_header"><code>class</code> <code>BaseModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L33" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <code>ABC</code></p>
 </blockquote>
 <p>Setup for model prediction on a Dataset.</p>
 <p>:param model_directory: Main directory from which to read in models.
@@ -165,13 +152,13 @@ var element = $('#903b6078-d977-4cd2-b5e4-b72cce8916ca');
 
 
 
-<div id="e7741d27-4242-47c5-8059-25a48db45130"></div>
+<div id="a1086c59-ea99-432f-a687-c71b980affef"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e7741d27-4242-47c5-8059-25a48db45130');
+var element = $('#a1086c59-ea99-432f-a687-c71b980affef');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
+                var nbb_cell_id = 5;
                 var nbb_unformatted_code = "#export\nclass BaseModel(ABC):\n    \"\"\"\n    Setup for model prediction on a Dataset.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n    def __init__(self, model_directory: str,\n                 model_name: str = None,\n                 ):\n        self.model_directory = Path(model_directory)\n        self.model_name = model_name if model_name else uuid.uuid4().hex\n        self.prediction_col_name = f\"prediction_{self.model_name}\"\n        self.description = f\"{self.__class__.__name__}: '{self.model_name}' prediction\"\n\n    @abstractmethod\n    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Return NumerFrame with column added for prediction. \"\"\"\n        ...\n        return NumerFrame(dataf)\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\" Create multiple columns if predictions are multi-target. \"\"\"\n        prediction_cols = self.prediction_col_name\n        if len(pred_shape) > 1:\n            if pred_shape[1] > 1:\n                prediction_cols = [f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])]\n        return prediction_cols\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.predict(dataf=dataf)";
                 var nbb_formatted_code = "# export\nclass BaseModel(ABC):\n    \"\"\"\n    Setup for model prediction on a Dataset.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n\n    def __init__(\n        self,\n        model_directory: str,\n        model_name: str = None,\n    ):\n        self.model_directory = Path(model_directory)\n        self.model_name = model_name if model_name else uuid.uuid4().hex\n        self.prediction_col_name = f\"prediction_{self.model_name}\"\n        self.description = f\"{self.__class__.__name__}: '{self.model_name}' prediction\"\n\n    @abstractmethod\n    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Return NumerFrame with column added for prediction.\"\"\"\n        ...\n        return NumerFrame(dataf)\n\n    def get_prediction_col_names(self, pred_shape: tuple) -> list:\n        \"\"\"Create multiple columns if predictions are multi-target.\"\"\"\n        prediction_cols = self.prediction_col_name\n        if len(pred_shape) > 1:\n            if pred_shape[1] > 1:\n                prediction_cols = [\n                    f\"{self.prediction_col_name}_{i}\" for i in range(pred_shape[1])\n                ]\n        return prediction_cols\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.predict(dataf=dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -222,7 +209,7 @@ var element = $('#e7741d27-4242-47c5-8059-25a48db45130');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="DirectoryModel" class="doc_header"><code>class</code> <code>DirectoryModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L64" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DirectoryModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>file_suffix</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>True</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="DirectoryModel" class="doc_header"><code>class</code> <code>DirectoryModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L66" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DirectoryModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>file_suffix</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>True</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Base class implementation where predictions are average out from a directory of models.
 Examples, JoblibModel, CatBoostModel, LGBMModel, etc.
@@ -258,13 +245,13 @@ Convenient when you want to predict the main target by averaging a multi-target 
 
 
 
-<div id="d7746fee-3198-4fa6-afc5-a9975ea9ffe4"></div>
+<div id="c1b72564-fd71-40b3-9f89-53dba8f1c10f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d7746fee-3198-4fa6-afc5-a9975ea9ffe4');
+var element = $('#c1b72564-fd71-40b3-9f89-53dba8f1c10f');
 
             setTimeout(function() {
-                var nbb_cell_id = 19;
+                var nbb_cell_id = 6;
                 var nbb_unformatted_code = "#export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation where predictions are average out from a directory of models.\n    Examples, JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    :param combine_preds: Whether to average predictions along column axis.\n    Only relevant for multi target models.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    \"\"\"\n    def __init__(self, model_directory: str, file_suffix: str,\n                 model_name: str = None,\n                 feature_cols: list = None,\n                 combine_preds = True,\n                 ):\n        super().__init__(model_directory=model_directory,\n                         model_name=model_name,\n                         )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f'*.{self.file_suffix}'))\n        if self.file_suffix:\n            assert self.model_paths, f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n        self.feature_cols = feature_cols\n        self.combine_preds = combine_preds\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataf: A Preprocessed DataFrame where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataf))\n        models = self.load_models()\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(dataf[feature_cols], *args, **kwargs)\n            # Check for if model output is a Pandas DataFrame\n            predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions\n            predictions = predictions.mean(axis=1) if self.combine_preds and len(predictions.shape) > 1 else predictions\n            prediction_cols = self.get_prediction_col_names(predictions.shape)\n            dataf.loc[:, prediction_cols] = dataf.loc[:, prediction_cols] + (predictions / self.total_models)\n        del models; gc.collect()\n        return NumerFrame(dataf)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models detected in self.model_paths. \"\"\"\n        ...";
                 var nbb_formatted_code = "# export\nclass DirectoryModel(BaseModel):\n    \"\"\"\n    Base class implementation where predictions are average out from a directory of models.\n    Examples, JoblibModel, CatBoostModel, LGBMModel, etc.\n    Walks through every file with given file_suffix in a directory.\n    :param model_directory: Main directory from which to read in models.\n    :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    :param combine_preds: Whether to average predictions along column axis.\n    Only relevant for multi target models.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    \"\"\"\n\n    def __init__(\n        self,\n        model_directory: str,\n        file_suffix: str,\n        model_name: str = None,\n        feature_cols: list = None,\n        combine_preds=True,\n    ):\n        super().__init__(\n            model_directory=model_directory,\n            model_name=model_name,\n        )\n        self.file_suffix = file_suffix\n        self.model_paths = list(self.model_directory.glob(f\"*.{self.file_suffix}\"))\n        if self.file_suffix:\n            assert (\n                self.model_paths\n            ), f\"No {self.file_suffix} files found in {self.model_directory}.\"\n        self.total_models = len(self.model_paths)\n        self.feature_cols = feature_cols\n        self.combine_preds = combine_preds\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\"\n        Use all recognized models to make predictions and average them out.\n        :param dataf: A Preprocessed DataFrame where all its features can be passed to the model predict method.\n        *args, **kwargs will be parsed into the model.predict method.\n        :return: A new dataset with prediction column added.\n        \"\"\"\n        dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataf))\n        models = self.load_models()\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        for model in tqdm(models, desc=self.description, position=1):\n            predictions = model.predict(dataf[feature_cols], *args, **kwargs)\n            # Check for if model output is a Pandas DataFrame\n            predictions = (\n                predictions.values\n                if isinstance(predictions, pd.DataFrame)\n                else predictions\n            )\n            predictions = (\n                predictions.mean(axis=1)\n                if self.combine_preds and len(predictions.shape) > 1\n                else predictions\n            )\n            prediction_cols = self.get_prediction_col_names(predictions.shape)\n            dataf.loc[:, prediction_cols] = dataf.loc[:, prediction_cols] + (\n                predictions / self.total_models\n            )\n        del models\n        gc.collect()\n        return NumerFrame(dataf)\n\n    @abstractmethod\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models detected in self.model_paths.\"\"\"\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -336,7 +323,7 @@ For multiple targets the new column names will be <code>prediction_{MODEL_NAME}_
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SingleModel" class="doc_header"><code>class</code> <code>SingleModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L122" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SingleModel</code>(<strong><code>model_file_path</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>False</code></em>, <strong><code>autoencoder_mlp</code></strong>=<em><code>False</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="SingleModel" class="doc_header"><code>class</code> <code>SingleModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L124" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SingleModel</code>(<strong><code>model_file_path</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>False</code></em>, <strong><code>autoencoder_mlp</code></strong>=<em><code>False</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Load single model from file and perform prediction logic.
 :param model_file_path: Full path to model file.
@@ -373,13 +360,13 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
 
 
 
-<div id="e3bedb0f-d651-40d8-a856-febe90d12476"></div>
+<div id="dcd50330-7c06-4518-94f0-9e73f7092eff"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e3bedb0f-d651-40d8-a856-febe90d12476');
+var element = $('#dcd50330-7c06-4518-94f0-9e73f7092eff');
 
             setTimeout(function() {
-                var nbb_cell_id = 20;
+                var nbb_cell_id = 7;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass SingleModel(BaseModel):\n    \"\"\"\n    Load single model from file and perform prediction logic.\n    :param model_file_path: Full path to model file.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param combine_preds: Whether to average predictions along column axis.\n    Only relevant for multi target models.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self, model_file_path: str, model_name: str = None,\n                 combine_preds = False, autoencoder_mlp = False,\n                 feature_cols: list = None\n                 ):\n        self.model_file_path = Path(model_file_path)\n        assert self.model_file_path.exists(), f\"File path '{self.model_file_path}' does not exist.\"\n        assert self.model_file_path.is_file(), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super().__init__(model_directory=str(self.model_file_path.parent),\n                         model_name=model_name,\n                         )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\".joblib\": joblib.load,\n                                        \".cbm\": CatBoost().load_model,\n                                        \".pkl\": pickle.load,\n                                        \".pickle\": pickle.load,\n                                        \".h5\": partial(tf.keras.models.load_model, compile=False)\n                                        }\n        self.__check_valid_suffix()\n        self.combine_preds = combine_preds\n        self.autoencoder_mlp = autoencoder_mlp\n        self.feature_cols = feature_cols\n\n    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        model = self._load_model(*args, **kwargs)\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        predictions = model.predict(dataf[feature_cols])\n        # Check for if model output is a Pandas DataFrame\n        predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions\n        predictions = predictions[2] if self.autoencoder_mlp else predictions\n        predictions = predictions.mean(axis=1) if self.combine_preds else predictions\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataf.loc[:, prediction_cols] = predictions\n        del model; gc.collect()\n        return NumerFrame(dataf)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\" Load arbitrary model from path using suffix to model mapping. \"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)\n\n    def __check_valid_suffix(self):\n        \"\"\" Detailed message if model is not supported in this class. \"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
                 var nbb_formatted_code = "# export\n@typechecked\nclass SingleModel(BaseModel):\n    \"\"\"\n    Load single model from file and perform prediction logic.\n    :param model_file_path: Full path to model file.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param combine_preds: Whether to average predictions along column axis.\n    Only relevant for multi target models.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self,\n        model_file_path: str,\n        model_name: str = None,\n        combine_preds=False,\n        autoencoder_mlp=False,\n        feature_cols: list = None,\n    ):\n        self.model_file_path = Path(model_file_path)\n        assert (\n            self.model_file_path.exists()\n        ), f\"File path '{self.model_file_path}' does not exist.\"\n        assert (\n            self.model_file_path.is_file()\n        ), f\"File path must point to file. Not valid for '{self.model_file_path}'.\"\n        super().__init__(\n            model_directory=str(self.model_file_path.parent),\n            model_name=model_name,\n        )\n        self.model_suffix = self.model_file_path.suffix\n        self.suffix_to_model_mapping = {\n            \".joblib\": joblib.load,\n            \".cbm\": CatBoost().load_model,\n            \".pkl\": pickle.load,\n            \".pickle\": pickle.load,\n            \".h5\": partial(tf.keras.models.load_model, compile=False),\n        }\n        self.__check_valid_suffix()\n        self.combine_preds = combine_preds\n        self.autoencoder_mlp = autoencoder_mlp\n        self.feature_cols = feature_cols\n\n    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        model = self._load_model(*args, **kwargs)\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        predictions = model.predict(dataf[feature_cols])\n        # Check for if model output is a Pandas DataFrame\n        predictions = (\n            predictions.values if isinstance(predictions, pd.DataFrame) else predictions\n        )\n        predictions = predictions[2] if self.autoencoder_mlp else predictions\n        predictions = predictions.mean(axis=1) if self.combine_preds else predictions\n        prediction_cols = self.get_prediction_col_names(predictions.shape)\n        dataf.loc[:, prediction_cols] = predictions\n        del model\n        gc.collect()\n        return NumerFrame(dataf)\n\n    def _load_model(self, *args, **kwargs):\n        \"\"\"Load arbitrary model from path using suffix to model mapping.\"\"\"\n        return self.suffix_to_model_mapping[self.model_suffix](\n            str(self.model_file_path), *args, **kwargs\n        )\n\n    def __check_valid_suffix(self):\n        \"\"\"Detailed message if model is not supported in this class.\"\"\"\n        try:\n            self.suffix_to_model_mapping[self.model_suffix]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}\"\n            )";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -441,13 +428,13 @@ n9d39dea58c9e3cf         0.492578
 
 
 
-<div id="5c356389-bc11-45fa-b006-be948c7e9810"></div>
+<div id="4b6b96be-ba31-48fc-8d6f-5537be2e2a49"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5c356389-bc11-45fa-b006-be948c7e9810');
+var element = $('#4b6b96be-ba31-48fc-8d6f-5537be2e2a49');
 
             setTimeout(function() {
-                var nbb_cell_id = 21;
+                var nbb_cell_id = 8;
                 var nbb_unformatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\ntest_paths = [\"test_assets/joblib_v2_example_model.joblib\"]\nfor path in test_paths:\n    model = SingleModel(path, model_name=\"test\")\n    print(model.predict(dataf).get_prediction_data.head(2))";
                 var nbb_formatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\ntest_paths = [\"test_assets/joblib_v2_example_model.joblib\"]\nfor path in test_paths:\n    model = SingleModel(path, model_name=\"test\")\n    print(model.predict(dataf).get_prediction_data.head(2))";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -496,10 +483,10 @@ var element = $('#5c356389-bc11-45fa-b006-be948c7e9810');
 
 <div class="output_text output_subarea output_execute_result">
 <pre>{&#39;.joblib&#39;: &lt;function joblib.numpy_pickle.load(filename, mmap_mode=None)&gt;,
- &#39;.cbm&#39;: &lt;bound method CatBoost.load_model of &lt;catboost.core.CatBoost object at 0x7fb6c1142550&gt;&gt;,
+ &#39;.cbm&#39;: &lt;bound method CatBoost.load_model of &lt;catboost.core.CatBoost object at 0x7facb19a7990&gt;&gt;,
  &#39;.pkl&#39;: &lt;function _pickle.load(file, *, fix_imports=True, encoding=&#39;ASCII&#39;, errors=&#39;strict&#39;)&gt;,
  &#39;.pickle&#39;: &lt;function _pickle.load(file, *, fix_imports=True, encoding=&#39;ASCII&#39;, errors=&#39;strict&#39;)&gt;,
- &#39;.h5&#39;: functools.partial(&lt;function load_model at 0x7fb691fa34d0&gt;, compile=False)}</pre>
+ &#39;.h5&#39;: functools.partial(&lt;function load_model at 0x7fac60b1b4d0&gt;, compile=False)}</pre>
 </div>
 
 </div>
@@ -509,13 +496,13 @@ var element = $('#5c356389-bc11-45fa-b006-be948c7e9810');
 
 
 
-<div id="38dc27e6-0e2b-4982-a115-13f7cc506bed"></div>
+<div id="86f0ef40-146e-4117-8975-d20aff23c717"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#38dc27e6-0e2b-4982-a115-13f7cc506bed');
+var element = $('#86f0ef40-146e-4117-8975-d20aff23c717');
 
             setTimeout(function() {
-                var nbb_cell_id = 22;
+                var nbb_cell_id = 9;
                 var nbb_unformatted_code = "model = SingleModel(test_paths[0], model_name=\"test\")\nmodel.suffix_to_model_mapping";
                 var nbb_formatted_code = "model = SingleModel(test_paths[0], model_name=\"test\")\nmodel.suffix_to_model_mapping";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -571,7 +558,7 @@ pass API key from <a href="https://wandb.ai/authorize">https://wandb.ai/authoriz
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="WandbKerasModel" class="doc_header"><code>class</code> <code>WandbKerasModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L188" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>WandbKerasModel</code>(<strong><code>run_path</code></strong>:<code>str</code>, <strong><code>file_name</code></strong>:<code>str</code>=<em><code>'model-best.h5'</code></em>, <strong><code>combine_preds</code></strong>=<em><code>False</code></em>, <strong><code>autoencoder_mlp</code></strong>=<em><code>False</code></em>, <strong><code>replace</code></strong>=<em><code>False</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#SingleModel"><code>SingleModel</code></a></p>
+<h2 id="WandbKerasModel" class="doc_header"><code>class</code> <code>WandbKerasModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L190" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>WandbKerasModel</code>(<strong><code>run_path</code></strong>:<code>str</code>, <strong><code>file_name</code></strong>:<code>str</code>=<em><code>'model-best.h5'</code></em>, <strong><code>combine_preds</code></strong>=<em><code>False</code></em>, <strong><code>autoencoder_mlp</code></strong>=<em><code>False</code></em>, <strong><code>replace</code></strong>=<em><code>False</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#SingleModel"><code>SingleModel</code></a></p>
 </blockquote>
 <p>Download best .h5 model from Weights &amp; Biases (W&amp;B) run in local directory and make predictions.
 More info on W&amp;B: <a href="https://wandb.ai/site">https://wandb.ai/site</a>
@@ -621,15 +608,15 @@ pass API key from <a href="https://wandb.ai/authorize">https://wandb.ai/authoriz
 
 
 
-<div id="ac79e86e-791b-41ea-9a82-61cc548ed0c8"></div>
+<div id="7a7406ec-a9d8-4fd3-8fc3-c7af25e6681a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ac79e86e-791b-41ea-9a82-61cc548ed0c8');
+var element = $('#7a7406ec-a9d8-4fd3-8fc3-c7af25e6681a');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass WandbKerasModel(SingleModel):\n    \"\"\"\n    Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.\n    More info on W&B: https://wandb.ai/site\n    :param run_path: W&B path structured as entity/project/run_id.\n    Can be copied from the Overview tab of a W&B run.\n    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab\n    Entity, project and id can be found in Overview tab of W&B run.\n    :param file_name: Name of .h5 file as saved in W&B run.\n    'model-best.h5' by default.\n    File name can be found under files tab of W&B run.\n    :param combine_preds: Whether to average predictions along column axis.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n\n    To authenticate your W&B account you are given several options:\n    1. Run wandb login in terminal and follow instructions.\n    2. Configure global environment variable \"WANDB_API_KEY\".\n    3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and\n    pass API key from https://wandb.ai/authorize\n    \"\"\"\n    def __init__(self,\n                 run_path: str,\n                 file_name: str = \"model-best.h5\",\n                 combine_preds = False,\n                 autoencoder_mlp = False,\n                 replace = False,\n                 feature_cols: list = None\n                 ):\n        self.run_path = run_path\n        self.file_name = file_name\n        self.replace = replace\n\n        self._download_model()\n        super().__init__(model_file_path=self.file_name,\n                         model_name=self.run_path,\n                         combine_preds=combine_preds,\n                         autoencoder_mlp=autoencoder_mlp,\n                         feature_cols=feature_cols\n                         )\n\n    def _download_model(self):\n        \"\"\"\n        Use W&B API to download .h5 model file.\n        More info on API: https://docs.wandb.ai/guides/track/public-api-guide\n        \"\"\"\n        if Path(self.file_name).is_file() and not self.replace:\n            rich_print(f\":warning: [red] Model file '{self.file_name}' already exists in local environment.\\\n            Skipping download of W&B run model. If this is not the model you want to use for prediction\\\n            consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:\")\n        else:\n            rich_print(f\":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:\")\n        run = wandb.Api().run(self.run_path)\n        run.file(name=self.file_name).download(replace=self.replace)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass WandbKerasModel(SingleModel):\n    \"\"\"\n    Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.\n    More info on W&B: https://wandb.ai/site\n    :param run_path: W&B path structured as entity/project/run_id.\n    Can be copied from the Overview tab of a W&B run.\n    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab\n    Entity, project and id can be found in Overview tab of W&B run.\n    :param file_name: Name of .h5 file as saved in W&B run.\n    'model-best.h5' by default.\n    File name can be found under files tab of W&B run.\n    :param combine_preds: Whether to average predictions along column axis.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n\n    To authenticate your W&B account you are given several options:\n    1. Run wandb login in terminal and follow instructions.\n    2. Configure global environment variable \"WANDB_API_KEY\".\n    3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and\n    pass API key from https://wandb.ai/authorize\n    \"\"\"\n\n    def __init__(\n        self,\n        run_path: str,\n        file_name: str = \"model-best.h5\",\n        combine_preds=False,\n        autoencoder_mlp=False,\n        replace=False,\n        feature_cols: list = None,\n    ):\n        self.run_path = run_path\n        self.file_name = file_name\n        self.replace = replace\n\n        self._download_model()\n        super().__init__(\n            model_file_path=self.file_name,\n            model_name=self.run_path,\n            combine_preds=combine_preds,\n            autoencoder_mlp=autoencoder_mlp,\n            feature_cols=feature_cols,\n        )\n\n    def _download_model(self):\n        \"\"\"\n        Use W&B API to download .h5 model file.\n        More info on API: https://docs.wandb.ai/guides/track/public-api-guide\n        \"\"\"\n        if Path(self.file_name).is_file() and not self.replace:\n            rich_print(\n                f\":warning: [red] Model file '{self.file_name}' already exists in local environment.\\\n            Skipping download of W&B run model. If this is not the model you want to use for prediction\\\n            consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:\"\n            )\n        else:\n            rich_print(\n                f\":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:\"\n            )\n        run = wandb.Api().run(self.run_path)\n        run.file(name=self.file_name).download(replace=self.replace)";
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass WandbKerasModel(SingleModel):\n    \"\"\"\n    Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.\n    More info on W&B: https://wandb.ai/site\n    :param run_path: W&B path structured as entity/project/run_id.\n    Can be copied from the Overview tab of a W&B run.\n    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab\n    Entity, project and id can be found in Overview tab of W&B run.\n    :param file_name: Name of .h5 file as saved in W&B run.\n    'model-best.h5' by default.\n    File name can be found under files tab of W&B run.\n    :param combine_preds: Whether to average predictions along column axis.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n\n    To authenticate your W&B account you are given several options:\n    1. Run wandb login in terminal and follow instructions.\n    2. Configure global environment variable \"WANDB_API_KEY\".\n    3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and\n    pass API key from https://wandb.ai/authorize\n    \"\"\"\n    def __init__(self,\n                 run_path: str,\n                 file_name: str = \"model-best.h5\",\n                 combine_preds = False,\n                 autoencoder_mlp = False,\n                 replace = False,\n                 feature_cols: list = None\n                 ):\n        self.run_path = run_path\n        self.file_name = file_name\n        self.replace = replace\n\n        self._download_model()\n        super().__init__(model_file_path=f\"{self.run_path.split('/')[-1]}_{self.file_name}\",\n                         model_name=self.run_path,\n                         combine_preds=combine_preds,\n                         autoencoder_mlp=autoencoder_mlp,\n                         feature_cols=feature_cols\n                         )\n\n    def _download_model(self):\n        \"\"\"\n        Use W&B API to download .h5 model file.\n        More info on API: https://docs.wandb.ai/guides/track/public-api-guide\n        \"\"\"\n        if Path(self.file_name).is_file() and not self.replace:\n            rich_print(f\":warning: [red] Model file '{self.file_name}' already exists in local environment.\\\n            Skipping download of W&B run model. If this is not the model you want to use for prediction\\\n            consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:\")\n        else:\n            rich_print(f\":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:\")\n        run = wandb.Api().run(self.run_path)\n        run.file(name=self.file_name).download(replace=self.replace)\n        os.rename(self.file_name, f\"{self.run_path.split('/')[-1]}_{self.file_name}\")";
+                var nbb_formatted_code = "# export\n@typechecked\nclass WandbKerasModel(SingleModel):\n    \"\"\"\n    Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.\n    More info on W&B: https://wandb.ai/site\n    :param run_path: W&B path structured as entity/project/run_id.\n    Can be copied from the Overview tab of a W&B run.\n    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab\n    Entity, project and id can be found in Overview tab of W&B run.\n    :param file_name: Name of .h5 file as saved in W&B run.\n    'model-best.h5' by default.\n    File name can be found under files tab of W&B run.\n    :param combine_preds: Whether to average predictions along column axis.\n    Convenient when you want to predict the main target by averaging a multi-target model.\n    :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.\n    Will take the 3rd of tuple output in this case. Only relevant for NN models.\n    More info on autoencoders:\n    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338\n    :param replace: Replace any model files saved under the same file name with downloaden W&B run model. WARNING: Setting to True may overwrite models in your local environment.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n\n    To authenticate your W&B account you are given several options:\n    1. Run wandb login in terminal and follow instructions.\n    2. Configure global environment variable \"WANDB_API_KEY\".\n    3. Run wandb.init(project=PROJECT_NAME, entity=ENTITY_NAME) and\n    pass API key from https://wandb.ai/authorize\n    \"\"\"\n\n    def __init__(\n        self,\n        run_path: str,\n        file_name: str = \"model-best.h5\",\n        combine_preds=False,\n        autoencoder_mlp=False,\n        replace=False,\n        feature_cols: list = None,\n    ):\n        self.run_path = run_path\n        self.file_name = file_name\n        self.replace = replace\n\n        self._download_model()\n        super().__init__(\n            model_file_path=f\"{self.run_path.split('/')[-1]}_{self.file_name}\",\n            model_name=self.run_path,\n            combine_preds=combine_preds,\n            autoencoder_mlp=autoencoder_mlp,\n            feature_cols=feature_cols,\n        )\n\n    def _download_model(self):\n        \"\"\"\n        Use W&B API to download .h5 model file.\n        More info on API: https://docs.wandb.ai/guides/track/public-api-guide\n        \"\"\"\n        if Path(self.file_name).is_file() and not self.replace:\n            rich_print(\n                f\":warning: [red] Model file '{self.file_name}' already exists in local environment.\\\n            Skipping download of W&B run model. If this is not the model you want to use for prediction\\\n            consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:\"\n            )\n        else:\n            rich_print(\n                f\":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:\"\n            )\n        run = wandb.Api().run(self.run_path)\n        run.file(name=self.file_name).download(replace=self.replace)\n        os.rename(self.file_name, f\"{self.run_path.split('/')[-1]}_{self.file_name}\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -675,15 +662,326 @@ var element = $('#ac79e86e-791b-41ea-9a82-61cc548ed0c8');
 
 
 
-<div id="46bed420-8e85-4673-825d-86e203348f2b"></div>
+<div id="12170d16-7d7b-4825-b2e4-87c1309a5adb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#46bed420-8e85-4673-825d-86e203348f2b');
+var element = $('#12170d16-7d7b-4825-b2e4-87c1309a5adb');
 
             setTimeout(function() {
-                var nbb_cell_id = 24;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "run_path = \"user123/project/abcd1234\"\n# model = WandbKerasModel(run_path=run_path)";
                 var nbb_formatted_code = "run_path = \"user123/project/abcd1234\"\n# model = WandbKerasModel(run_path=run_path)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="1.3.-CSVSub">1.3. CSVSub<a class="anchor-link" href="#1.3.-CSVSub"> </a></h3><p>This model is a wrapper for if you want to add predictions from external CSVs in a directory to your model pipeline.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="ExternalCSVs" class="doc_header"><code>class</code> <code>ExternalCSVs</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L254" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExternalCSVs</code>(<strong><code>data_directory</code></strong>:<code>str</code>=<em><code>'external_submissions'</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+</blockquote>
+<p>Load external submissions and add to NumerFrame.
+:param data_directory: Directory path for retrieving external submission.
+All csv files in this directory will be added to NumerFrame.
+Make sure all external predictions are prepared as ready for submission.
+i.e. IDs lining up and one column named 'prediction'.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="d9c778ba-6c81-4f2f-944c-1a927eed8162"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#d9c778ba-6c81-4f2f-944c-1a927eed8162');
+
+            setTimeout(function() {
+                var nbb_cell_id = 12;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass ExternalCSVs(BaseModel):\n    \"\"\"\n    Load external submissions and add to NumerFrame.\n    :param data_directory: Directory path for retrieving external submission.\n    All csv files in this directory will be added to NumerFrame.\n    Make sure all external predictions are prepared as ready for submission.\n    i.e. IDs lining up and one column named 'prediction'.\n    \"\"\"\n    def __init__(self, data_directory: str = \"external_submissions\"):\n        super().__init__(model_directory=data_directory)\n        self.data_directory = Path(data_directory)\n        self.paths = list(self.data_directory.glob(\"*.csv\"))\n        if not self.paths:\n            rich_print(f\":warning: WARNING: No csvs found in directory '{self.data_directory}'. :warning:\")\n\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\" Return NumerFrame with added external predictions. \"\"\"\n        for path in tqdm(self.paths, desc=\"External submissions\"):\n            dataf.loc[:, f\"prediction_{path.name}\"] = self._get_preds(path)\n        return NumerFrame(dataf)\n\n    def _get_preds(self, path: Path) -> pd.Series:\n        pred_col = pd.read_csv(path, index_col=0, header=0)['prediction']\n        if not pred_col.between(0, 1).all():\n            raise ValueError(f\"Prediction values must be between 0 and 1. Does not hold for '{path.name}'.\")\n        return pred_col";
+                var nbb_formatted_code = "# export\n@typechecked\nclass ExternalCSVs(BaseModel):\n    \"\"\"\n    Load external submissions and add to NumerFrame.\n    :param data_directory: Directory path for retrieving external submission.\n    All csv files in this directory will be added to NumerFrame.\n    Make sure all external predictions are prepared as ready for submission.\n    i.e. IDs lining up and one column named 'prediction'.\n    \"\"\"\n\n    def __init__(self, data_directory: str = \"external_submissions\"):\n        super().__init__(model_directory=data_directory)\n        self.data_directory = Path(data_directory)\n        self.paths = list(self.data_directory.glob(\"*.csv\"))\n        if not self.paths:\n            rich_print(\n                f\":warning: WARNING: No csvs found in directory '{self.data_directory}'. :warning:\"\n            )\n\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\"Return NumerFrame with added external predictions.\"\"\"\n        for path in tqdm(self.paths, desc=\"External submissions\"):\n            dataf.loc[:, f\"prediction_{path.name}\"] = self._get_preds(path)\n        return NumerFrame(dataf)\n\n    def _get_preds(self, path: Path) -> pd.Series:\n        pred_col = pd.read_csv(path, index_col=0, header=0)[\"prediction\"]\n        if not pred_col.between(0, 1).all():\n            raise ValueError(\n                f\"Prediction values must be between 0 and 1. Does not hold for '{path.name}'.\"\n            )\n        return pred_col";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For testing, the <code>external_submissions</code> directory contains <code>test_predictions.csv</code> with values from feature <code>target_thomas_20</code>.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_2_data.parquet&quot;</span><span class="p">)</span>
+<span class="n">external</span> <span class="o">=</span> <span class="n">ExternalCSVs</span><span class="p">(</span><span class="n">data_directory</span><span class="o">=</span><span class="s2">&quot;test_assets/external_submissions&quot;</span><span class="p">)</span>
+<span class="n">new_dataf</span> <span class="o">=</span> <span class="n">external</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="93765cfb-9cf6-4f03-9b66-13038295c7a0"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#93765cfb-9cf6-4f03-9b66-13038295c7a0');
+
+            setTimeout(function() {
+                var nbb_cell_id = 13;
+                var nbb_unformatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\nexternal = ExternalCSVs(data_directory=\"test_assets/external_submissions\")\nnew_dataf = external.predict(dataf)";
+                var nbb_formatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\nexternal = ExternalCSVs(data_directory=\"test_assets/external_submissions\")\nnew_dataf = external.predict(dataf)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">new_dataf</span><span class="p">[</span><span class="s1">&#39;prediction_test_predictions.csv&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">new_dataf</span><span class="p">[</span><span class="s1">&#39;target_thomas_20&#39;</span><span class="p">])</span>
+<span class="n">new_dataf</span><span class="o">.</span><span class="n">get_prediction_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>prediction_test_predictions.csv</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n559bd06a8861222</th>
+      <td>0.333333</td>
+    </tr>
+    <tr>
+      <th>n9d39dea58c9e3cf</th>
+      <td>0.500000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="cb1ab11a-218a-481e-b0ad-fbc2ddb0fcfb"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#cb1ab11a-218a-481e-b0ad-fbc2ddb0fcfb');
+
+            setTimeout(function() {
+                var nbb_cell_id = 14;
+                var nbb_unformatted_code = "assert new_dataf['prediction_test_predictions.csv'].astype(np.float32).equals(new_dataf['target_thomas_20'])\nnew_dataf.get_prediction_data.head(2)";
+                var nbb_formatted_code = "assert (\n    new_dataf[\"prediction_test_predictions.csv\"]\n    .astype(np.float32)\n    .equals(new_dataf[\"target_thomas_20\"])\n)\nnew_dataf.get_prediction_data.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If no submissions are found in the given <code>data_directory</code> you should recieve a warning.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ExternalCSVs</span><span class="p">(</span><span class="n">data_directory</span><span class="o">=</span><span class="s2">&quot;Some_nonexisting_directory_12354321&quot;</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No csvs found in directory <span style="color: #008000; text-decoration-color: #008000">'Some_nonexisting_directory_12354321'</span>. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="828ea6ba-a4c6-4761-ba1c-e787cde30240"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#828ea6ba-a4c6-4761-ba1c-e787cde30240');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "ExternalCSVs(data_directory=\"Some_nonexisting_directory_12354321\");";
+                var nbb_formatted_code = "ExternalCSVs(data_directory=\"Some_nonexisting_directory_12354321\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -736,7 +1034,7 @@ var element = $('#46bed420-8e85-4673-825d-86e203348f2b');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="JoblibModel" class="doc_header"><code>class</code> <code>JoblibModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L251" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>JoblibModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
+<h2 id="JoblibModel" class="doc_header"><code>class</code> <code>JoblibModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L283" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>JoblibModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <p>Load and predict for arbitrary models in directory saved as .joblib.
 All loaded models should have a .predict method and accept the features present in the data.
@@ -767,13 +1065,13 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
 
 
 
-<div id="a8cb9312-347a-4c87-9e56-84995184228c"></div>
+<div id="38636786-a674-4991-92cc-5f7bac297ca5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a8cb9312-347a-4c87-9e56-84995184228c');
+var element = $('#38636786-a674-4991-92cc-5f7bac297ca5');
 
             setTimeout(function() {
-                var nbb_cell_id = 25;
+                var nbb_cell_id = 16;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\"\n    Load and predict for arbitrary models in directory saved as .joblib.\n    All loaded models should have a .predict method and accept the features present in the data.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self,\n                 model_directory: str,\n                 model_name: str = None,\n                 feature_cols: list = None\n                 ):\n        file_suffix = 'joblib'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         feature_cols=feature_cols\n                         )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
                 var nbb_formatted_code = "# export\n@typechecked\nclass JoblibModel(DirectoryModel):\n    \"\"\"\n    Load and predict for arbitrary models in directory saved as .joblib.\n    All loaded models should have a .predict method and accept the features present in the data.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self, model_directory: str, model_name: str = None, feature_cols: list = None\n    ):\n        file_suffix = \"joblib\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            feature_cols=feature_cols,\n        )\n\n    def load_models(self) -> list:\n        return [joblib.load(path) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -824,7 +1122,7 @@ var element = $('#a8cb9312-347a-4c87-9e56-84995184228c');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1074</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">394503</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">372850</span>. ✅
 </pre>
 
 </div>
@@ -885,13 +1183,13 @@ var element = $('#a8cb9312-347a-4c87-9e56-84995184228c');
 
 
 
-<div id="f3244598-22c5-4a98-96cc-9d08c28800f2"></div>
+<div id="e0b3993f-a833-4613-98e8-6255966ebe7a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f3244598-22c5-4a98-96cc-9d08c28800f2');
+var element = $('#e0b3993f-a833-4613-98e8-6255966ebe7a');
 
             setTimeout(function() {
-                var nbb_cell_id = 26;
+                var nbb_cell_id = 17;
                 var nbb_unformatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\", metadata={\"version\": 2})\nmodel = JoblibModel(\"test_assets\", model_name=\"Joblib_LGB\")\npredictions = model.predict(dataf).get_prediction_data\nassert predictions['prediction_Joblib_LGB'].between(0, 1).all()\npredictions.head(3)";
                 var nbb_formatted_code = "dataf = create_numerframe(\n    \"test_assets/mini_numerai_version_2_data.parquet\", metadata={\"version\": 2}\n)\nmodel = JoblibModel(\"test_assets\", model_name=\"Joblib_LGB\")\npredictions = model.predict(dataf).get_prediction_data\nassert predictions[\"prediction_Joblib_LGB\"].between(0, 1).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -940,7 +1238,7 @@ var element = $('#f3244598-22c5-4a98-96cc-9d08c28800f2');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="CatBoostModel" class="doc_header"><code>class</code> <code>CatBoostModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L277" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CatBoostModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
+<h2 id="CatBoostModel" class="doc_header"><code>class</code> <code>CatBoostModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L309" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CatBoostModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <p>Load and predict with all .cbm models (CatBoostRegressor) in directory.
 :param model_directory: Main directory from which to read in models.
@@ -970,13 +1268,13 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
 
 
 
-<div id="6ce6c96b-a605-464d-9951-87cab56ed2c5"></div>
+<div id="2f670714-0937-42f1-98c1-ef90fcdae2eb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6ce6c96b-a605-464d-9951-87cab56ed2c5');
+var element = $('#2f670714-0937-42f1-98c1-ef90fcdae2eb');
 
             setTimeout(function() {
-                var nbb_cell_id = 27;
+                var nbb_cell_id = 18;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\"\n    Load and predict with all .cbm models (CatBoostRegressor) in directory.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self,\n                 model_directory: str,\n                 model_name: str = None,\n                 feature_cols: list = None\n                 ):\n        file_suffix = 'cbm'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         feature_cols=feature_cols\n                         )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
                 var nbb_formatted_code = "# export\n@typechecked\nclass CatBoostModel(DirectoryModel):\n    \"\"\"\n    Load and predict with all .cbm models (CatBoostRegressor) in directory.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self, model_directory: str, model_name: str = None, feature_cols: list = None\n    ):\n        file_suffix = \"cbm\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            feature_cols=feature_cols,\n        )\n\n    def load_models(self) -> list:\n        return [CatBoost().load_model(path) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1026,7 +1324,7 @@ var element = $('#6ce6c96b-a605-464d-9951-87cab56ed2c5');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">045209</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">040821</span>. ✅
 </pre>
 
 </div>
@@ -1038,13 +1336,13 @@ var element = $('#6ce6c96b-a605-464d-9951-87cab56ed2c5');
 
 
 
-<div id="f5ef88cb-5251-4d3f-be51-27d867accfe8"></div>
+<div id="1c6a68bb-653a-442b-b8a3-24f163acdf07"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f5ef88cb-5251-4d3f-be51-27d867accfe8');
+var element = $('#1c6a68bb-653a-442b-b8a3-24f163acdf07');
 
             setTimeout(function() {
-                var nbb_cell_id = 28;
+                var nbb_cell_id = 19;
                 var nbb_unformatted_code = "from numerai_blocks.preprocessing import GroupStatsPreProcessor\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", {\"version\": 1})\nprocessed_dataf = GroupStatsPreProcessor()(dataf)\nmodel = CatBoostModel(\"test_assets\", model_name=\"CB\")";
                 var nbb_formatted_code = "from numerai_blocks.preprocessing import GroupStatsPreProcessor\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", {\"version\": 1})\nprocessed_dataf = GroupStatsPreProcessor()(dataf)\nmodel = CatBoostModel(\"test_assets\", model_name=\"CB\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1092,7 +1390,7 @@ var element = $('#f5ef88cb-5251-4d3f-be51-27d867accfe8');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">333</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">295325</span>.
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">333</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">313855</span>.
 ✅
 </pre>
 
@@ -1150,13 +1448,13 @@ var element = $('#f5ef88cb-5251-4d3f-be51-27d867accfe8');
 
 
 
-<div id="0953bb75-8f33-4ece-aeb0-a72886d1298d"></div>
+<div id="5ebd1ce0-534c-4a30-ab9f-0fd38d142bef"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0953bb75-8f33-4ece-aeb0-a72886d1298d');
+var element = $('#5ebd1ce0-534c-4a30-ab9f-0fd38d142bef');
 
             setTimeout(function() {
-                var nbb_cell_id = 29;
+                var nbb_cell_id = 20;
                 var nbb_unformatted_code = "predictions = model.predict(processed_dataf).get_prediction_data\nassert predictions['prediction_CB'].between(0, 1).all()\npredictions.head(3)";
                 var nbb_formatted_code = "predictions = model.predict(processed_dataf).get_prediction_data\nassert predictions[\"prediction_CB\"].between(0, 1).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1205,7 +1503,7 @@ var element = $('#0953bb75-8f33-4ece-aeb0-a72886d1298d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="LGBMModel" class="doc_header"><code>class</code> <code>LGBMModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L302" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>LGBMModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
+<h2 id="LGBMModel" class="doc_header"><code>class</code> <code>LGBMModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L334" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>LGBMModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <p>Load and predict with all .lgb models (LightGBM) in directory.
 :param model_directory: Main directory from which to read in models.
@@ -1235,13 +1533,13 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
 
 
 
-<div id="0cdfa4e4-82d2-402e-b3c5-3973b21b514f"></div>
+<div id="ee6e78a2-9d18-44e7-b075-0309d16c54f6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0cdfa4e4-82d2-402e-b3c5-3973b21b514f');
+var element = $('#ee6e78a2-9d18-44e7-b075-0309d16c54f6');
 
             setTimeout(function() {
-                var nbb_cell_id = 30;
+                var nbb_cell_id = 21;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\"\n    Load and predict with all .lgb models (LightGBM) in directory.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self,\n                 model_directory: str,\n                 model_name: str = None,\n                 feature_cols: list = None\n                 ):\n        file_suffix = 'lgb'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         feature_cols=feature_cols\n                         )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
                 var nbb_formatted_code = "# export\n@typechecked\nclass LGBMModel(DirectoryModel):\n    \"\"\"\n    Load and predict with all .lgb models (LightGBM) in directory.\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self, model_directory: str, model_name: str = None, feature_cols: list = None\n    ):\n        file_suffix = \"lgb\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            feature_cols=feature_cols,\n        )\n\n    def load_models(self) -> list:\n        return [lgb.Booster(model_file=str(path)) for path in self.model_paths]";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1292,7 +1590,7 @@ var element = $('#0cdfa4e4-82d2-402e-b3c5-3973b21b514f');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DirectoryModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1074</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">397787</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">398737</span>. ✅
 </pre>
 
 </div>
@@ -1353,13 +1651,13 @@ var element = $('#0cdfa4e4-82d2-402e-b3c5-3973b21b514f');
 
 
 
-<div id="4b450326-88cd-4e3a-b6e9-9522f090b75b"></div>
+<div id="05dea496-1e2c-4844-97c9-bf9edbf97015"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4b450326-88cd-4e3a-b6e9-9522f090b75b');
+var element = $('#05dea496-1e2c-4844-97c9-bf9edbf97015');
 
             setTimeout(function() {
-                var nbb_cell_id = 31;
+                var nbb_cell_id = 22;
                 var nbb_unformatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\nmodel = LGBMModel(\"test_assets\", model_name=\"LGB\")\npredictions = model.predict(dataf).get_prediction_data\nassert predictions['prediction_LGB'].between(0, 1).all()\npredictions.head(3)";
                 var nbb_formatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_2_data.parquet\")\nmodel = LGBMModel(\"test_assets\", model_name=\"LGB\")\npredictions = model.predict(dataf).get_prediction_data\nassert predictions[\"prediction_LGB\"].between(0, 1).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1421,7 +1719,7 @@ var element = $('#4b450326-88cd-4e3a-b6e9-9522f090b75b');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ConstantModel" class="doc_header"><code>class</code> <code>ConstantModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L326" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ConstantModel</code>(<strong><code>constant</code></strong>:<code>float</code>=<em><code>0.5</code></em>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="ConstantModel" class="doc_header"><code>class</code> <code>ConstantModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L358" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ConstantModel</code>(<strong><code>constant</code></strong>:<code>float</code>=<em><code>0.5</code></em>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>WARNING: Only use this Model for testing purposes.
 Create constant prediction.
@@ -1450,13 +1748,13 @@ Create constant prediction.
 
 
 
-<div id="894ec58f-003c-497a-b1e0-9ae06b0557c8"></div>
+<div id="08de1090-405d-4085-afe5-48b6717d3168"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#894ec58f-003c-497a-b1e0-9ae06b0557c8');
+var element = $('#08de1090-405d-4085-afe5-48b6717d3168');
 
             setTimeout(function() {
-                var nbb_cell_id = 32;
+                var nbb_cell_id = 23;
                 var nbb_unformatted_code = "#export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    :param constant: Value for constant prediction.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super().__init__(model_directory=\"\",\n                         model_name=model_name\n                         )\n        self.clf = DummyRegressor(strategy='constant', constant=constant).fit([0.], [0.])\n\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataf.get_feature_data)\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\nclass ConstantModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create constant prediction.\n    :param constant: Value for constant prediction.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n\n    def __init__(self, constant: float = 0.5, model_name: str = None):\n        self.constant = constant\n        model_name = model_name if model_name else f\"constant_{self.constant}\"\n        super().__init__(model_directory=\"\", model_name=model_name)\n        self.clf = DummyRegressor(strategy=\"constant\", constant=constant).fit(\n            [0.0], [0.0]\n        )\n\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        dataf.loc[:, self.prediction_col_name] = self.clf.predict(\n            dataf.get_feature_data\n        )\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1553,13 +1851,13 @@ var element = $('#894ec58f-003c-497a-b1e0-9ae06b0557c8');
 
 
 
-<div id="2fc13184-2bcb-463c-a815-508a053e7b6b"></div>
+<div id="b240f72d-95b1-46d6-96d1-6d2a07c91965"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2fc13184-2bcb-463c-a815-508a053e7b6b');
+var element = $('#b240f72d-95b1-46d6-96d1-6d2a07c91965');
 
             setTimeout(function() {
-                var nbb_cell_id = 33;
+                var nbb_cell_id = 24;
                 var nbb_unformatted_code = "constant = 0.85\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nconstant_model = ConstantModel(constant=constant)\npredictions = constant_model.predict(dataf).get_prediction_data\nassert (predictions.to_numpy() == constant).all()\npredictions.head(3)";
                 var nbb_formatted_code = "constant = 0.85\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nconstant_model = ConstantModel(constant=constant)\npredictions = constant_model.predict(dataf).get_prediction_data\nassert (predictions.to_numpy() == constant).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1608,7 +1906,7 @@ var element = $('#2fc13184-2bcb-463c-a815-508a053e7b6b');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="RandomModel" class="doc_header"><code>class</code> <code>RandomModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L346" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RandomModel</code>(<strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="RandomModel" class="doc_header"><code>class</code> <code>RandomModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L378" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RandomModel</code>(<strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>WARNING: Only use this Model for testing purposes.
 Create uniformly distributed predictions.
@@ -1636,13 +1934,13 @@ Create uniformly distributed predictions.
 
 
 
-<div id="f69caa4e-2e3c-4e07-8c04-570a78afce63"></div>
+<div id="6c8d7af1-e236-4aca-a9bb-6368fede72d4"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f69caa4e-2e3c-4e07-8c04-570a78afce63');
+var element = $('#6c8d7af1-e236-4aca-a9bb-6368fede72d4');
 
             setTimeout(function() {
-                var nbb_cell_id = 34;
+                var nbb_cell_id = 25;
                 var nbb_unformatted_code = "#export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super().__init__(model_directory=\"\",\n                         model_name=model_name\n                         )\n\n    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataf))\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\nclass RandomModel(BaseModel):\n    \"\"\"\n    WARNING: Only use this Model for testing purposes.\n    Create uniformly distributed predictions.\n    :param model_name: Name that will be used to create column names and for display purposes.\n    \"\"\"\n\n    def __init__(self, model_name: str = None):\n        model_name = model_name if model_name else \"random\"\n        super().__init__(model_directory=\"\", model_name=model_name)\n\n    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataf))\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1716,15 +2014,15 @@ var element = $('#f69caa4e-2e3c-4e07-8c04-570a78afce63');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.225435</td>
+      <td>0.793875</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.763317</td>
+      <td>0.536771</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.296617</td>
+      <td>0.180774</td>
     </tr>
   </tbody>
 </table>
@@ -1738,13 +2036,13 @@ var element = $('#f69caa4e-2e3c-4e07-8c04-570a78afce63');
 
 
 
-<div id="8ee3bf53-279a-4cb2-a0fb-b634b093462f"></div>
+<div id="0c9876a8-a2fc-44b6-a7ac-7e98531f38df"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8ee3bf53-279a-4cb2-a0fb-b634b093462f');
+var element = $('#0c9876a8-a2fc-44b6-a7ac-7e98531f38df');
 
             setTimeout(function() {
-                var nbb_cell_id = 35;
+                var nbb_cell_id = 26;
                 var nbb_unformatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nrandom_model = RandomModel()\npredictions = random_model.predict(dataf).get_prediction_data\nassert predictions['prediction_random'].between(0, 1).all()\npredictions.head(3)";
                 var nbb_formatted_code = "dataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\")\nrandom_model = RandomModel()\npredictions = random_model.predict(dataf).get_prediction_data\nassert predictions[\"prediction_random\"].between(0, 1).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1793,7 +2091,7 @@ var element = $('#8ee3bf53-279a-4cb2-a0fb-b634b093462f');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ExamplePredictionsModel" class="doc_header"><code>class</code> <code>ExamplePredictionsModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L364" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExamplePredictionsModel</code>(<strong><code>file_name</code></strong>:<code>str</code>=<em><code>'example_validation_predictions.parquet'</code></em>, <strong><code>data_directory</code></strong>:<code>str</code>=<em><code>'example_predictions_model'</code></em>, <strong><code>round_num</code></strong>:<code>int</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="ExamplePredictionsModel" class="doc_header"><code>class</code> <code>ExamplePredictionsModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L396" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExamplePredictionsModel</code>(<strong><code>file_name</code></strong>:<code>str</code>=<em><code>'example_validation_predictions.parquet'</code></em>, <strong><code>data_directory</code></strong>:<code>str</code>=<em><code>'example_predictions_model'</code></em>, <strong><code>round_num</code></strong>:<code>int</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Load example predictions and add to NumerFrame.
 :param file_name: File to download from NumerAPI.
@@ -1824,13 +2122,13 @@ or directory where example data already exists.
 
 
 
-<div id="3e98ff17-2a0c-46bd-a87b-18c9bef1f620"></div>
+<div id="72bbc786-e539-4e7c-9ef4-ba2b70aee844"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3e98ff17-2a0c-46bd-a87b-18c9bef1f620');
+var element = $('#72bbc786-e539-4e7c-9ef4-ba2b70aee844');
 
             setTimeout(function() {
-                var nbb_cell_id = 36;
+                var nbb_cell_id = 27;
                 var nbb_unformatted_code = "#export\n@typechecked\nclass ExamplePredictionsModel(BaseModel):\n    \"\"\"\n    Load example predictions and add to NumerFrame.\n    :param file_name: File to download from NumerAPI.\n    'example_validation_predictions.parquet' by default.\n    :param data_directory: Directory path to download example predictions to\n    or directory where example data already exists.\n    :param round_num: Optional round number. Downloads most recent round by default.\n    \"\"\"\n    def __init__(self, file_name: str = \"example_validation_predictions.parquet\",\n                 data_directory: str = \"example_predictions_model\",\n                 round_num: int = None):\n        super().__init__(model_directory=\"\",\n                         model_name=\"example\",\n                         )\n        self.file_name = file_name\n        self.data_directory = data_directory\n        self.round_num = round_num\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\" Return NumerFrame with added example predictions. \"\"\"\n        self._download_example_preds()\n        example_preds = self._load_example_preds()\n        dataf.loc[:, self.prediction_col_name] = dataf.merge(example_preds, on='id', how='left')['prediction']\n        self.downloader.remove_base_directory()\n        return NumerFrame(dataf)\n\n    def _download_example_preds(self):\n        self.downloader = NumeraiClassicDownloader(directory_path=self.data_directory)\n        self.dest_path = f\"{str(self.downloader.dir)}/{self.file_name}\"\n        self.downloader.download_single_dataset(filename=self.file_name,\n                                                dest_path=self.dest_path,\n                                                round_num=self.round_num)\n\n    def _load_example_preds(self, *args, **kwargs):\n        return pd.read_parquet(self.dest_path, *args, **kwargs)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass ExamplePredictionsModel(BaseModel):\n    \"\"\"\n    Load example predictions and add to NumerFrame.\n    :param file_name: File to download from NumerAPI.\n    'example_validation_predictions.parquet' by default.\n    :param data_directory: Directory path to download example predictions to\n    or directory where example data already exists.\n    :param round_num: Optional round number. Downloads most recent round by default.\n    \"\"\"\n\n    def __init__(\n        self,\n        file_name: str = \"example_validation_predictions.parquet\",\n        data_directory: str = \"example_predictions_model\",\n        round_num: int = None,\n    ):\n        super().__init__(\n            model_directory=\"\",\n            model_name=\"example\",\n        )\n        self.file_name = file_name\n        self.data_directory = data_directory\n        self.round_num = round_num\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\"Return NumerFrame with added example predictions.\"\"\"\n        self._download_example_preds()\n        example_preds = self._load_example_preds()\n        dataf.loc[:, self.prediction_col_name] = dataf.merge(\n            example_preds, on=\"id\", how=\"left\"\n        )[\"prediction\"]\n        self.downloader.remove_base_directory()\n        return NumerFrame(dataf)\n\n    def _download_example_preds(self):\n        self.downloader = NumeraiClassicDownloader(directory_path=self.data_directory)\n        self.dest_path = f\"{str(self.downloader.dir)}/{self.file_name}\"\n        self.downloader.download_single_dataset(\n            filename=self.file_name, dest_path=self.dest_path, round_num=self.round_num\n        )\n\n    def _load_example_preds(self, *args, **kwargs):\n        return pd.read_parquet(self.dest_path, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1909,117 +2207,118 @@ var element = $('#3e98ff17-2a0c-46bd-a87b-18c9bef1f620');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-02-25 14:13:48,106 INFO numerapi.utils: starting download
-example_predictions_model/numerai_validation_data.parquet:  12%|█▏        | 26.8M/228M [00:16&lt;00:45, 4.41MB/s]  </pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg">/var/folders/d5/1qd2ftjn7ts_5_k6w2k2g4c00000gn/T/ipykernel_9301/577057450.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      5</span> val_save_path <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">f&#34;{str(downloader.dir)}/{val_file}&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">      6</span> downloader.download_single_dataset(filename=val_file,
-<span class="ansi-green-fg">----&gt; 7</span><span class="ansi-red-fg">                                    dest_path=val_save_path)
-</span><span class="ansi-green-intense-fg ansi-bold">      8</span> 
-<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-red-fg"># Load validation data and add example predictions</span>
-
-<span class="ansi-green-fg">~/Desktop/crowdcent/repositories/numerai-blocks/numerai_blocks/download.py</span> in <span class="ansi-cyan-fg">download_single_dataset</span><span class="ansi-blue-fg">(self, filename, dest_path, round_num)</span>
-<span class="ansi-green-intense-fg ansi-bold">    259</span>         )
-<span class="ansi-green-intense-fg ansi-bold">    260</span>         self.napi.download_dataset(
-<span class="ansi-green-fg">--&gt; 261</span><span class="ansi-red-fg">             </span>filename<span class="ansi-blue-fg">=</span>filename<span class="ansi-blue-fg">,</span> dest_path<span class="ansi-blue-fg">=</span>dest_path<span class="ansi-blue-fg">,</span> round_num<span class="ansi-blue-fg">=</span>round_num
-<span class="ansi-green-intense-fg ansi-bold">    262</span>         )
-<span class="ansi-green-intense-fg ansi-bold">    263</span> 
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/site-packages/numerapi/numerapi.py</span> in <span class="ansi-cyan-fg">download_dataset</span><span class="ansi-blue-fg">(self, filename, dest_path, round_num)</span>
-<span class="ansi-green-intense-fg ansi-bold">    103</span> 
-<span class="ansi-green-intense-fg ansi-bold">    104</span>         dataset_url <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>raw_query<span class="ansi-blue-fg">(</span>query<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;data&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;dataset&#39;</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-fg">--&gt; 105</span><span class="ansi-red-fg">         </span>utils<span class="ansi-blue-fg">.</span>download_file<span class="ansi-blue-fg">(</span>dataset_url<span class="ansi-blue-fg">,</span> dest_path<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>show_progress_bars<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    106</span> 
-<span class="ansi-green-intense-fg ansi-bold">    107</span>     <span class="ansi-green-fg">def</span> get_dataset_url<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> tournament<span class="ansi-blue-fg">:</span> int <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">8</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> str<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/site-packages/numerapi/utils.py</span> in <span class="ansi-cyan-fg">download_file</span><span class="ansi-blue-fg">(url, dest_path, show_progress_bars)</span>
-<span class="ansi-green-intense-fg ansi-bold">     76</span>     pbar<span class="ansi-blue-fg">.</span>update<span class="ansi-blue-fg">(</span>file_size<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     77</span>     <span class="ansi-green-fg">with</span> open<span class="ansi-blue-fg">(</span>dest_path<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;ab&#34;</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> dest_file<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 78</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">for</span> chunk <span class="ansi-green-fg">in</span> req<span class="ansi-blue-fg">.</span>iter_content<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1024</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     79</span>             dest_file<span class="ansi-blue-fg">.</span>write<span class="ansi-blue-fg">(</span>chunk<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     80</span>             pbar<span class="ansi-blue-fg">.</span>update<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1024</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/site-packages/requests/models.py</span> in <span class="ansi-cyan-fg">generate</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">    758</span>             <span class="ansi-green-fg">if</span> hasattr<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>raw<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;stream&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    759</span>                 <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 760</span><span class="ansi-red-fg">                     </span><span class="ansi-green-fg">for</span> chunk <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>raw<span class="ansi-blue-fg">.</span>stream<span class="ansi-blue-fg">(</span>chunk_size<span class="ansi-blue-fg">,</span> decode_content<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    761</span>                         <span class="ansi-green-fg">yield</span> chunk
-<span class="ansi-green-intense-fg ansi-bold">    762</span>                 <span class="ansi-green-fg">except</span> ProtocolError <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/site-packages/urllib3/response.py</span> in <span class="ansi-cyan-fg">stream</span><span class="ansi-blue-fg">(self, amt, decode_content)</span>
-<span class="ansi-green-intense-fg ansi-bold">    574</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    575</span>             <span class="ansi-green-fg">while</span> <span class="ansi-green-fg">not</span> is_fp_closed<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_fp<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 576</span><span class="ansi-red-fg">                 </span>data <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span>amt<span class="ansi-blue-fg">=</span>amt<span class="ansi-blue-fg">,</span> decode_content<span class="ansi-blue-fg">=</span>decode_content<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    577</span> 
-<span class="ansi-green-intense-fg ansi-bold">    578</span>                 <span class="ansi-green-fg">if</span> data<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/site-packages/urllib3/response.py</span> in <span class="ansi-cyan-fg">read</span><span class="ansi-blue-fg">(self, amt, decode_content, cache_content)</span>
-<span class="ansi-green-intense-fg ansi-bold">    517</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    518</span>                 cache_content <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span>
-<span class="ansi-green-fg">--&gt; 519</span><span class="ansi-red-fg">                 </span>data <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_fp<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span>amt<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> fp_closed <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">b&#34;&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">    520</span>                 if (
-<span class="ansi-green-intense-fg ansi-bold">    521</span>                     amt <span class="ansi-blue-fg">!=</span> <span class="ansi-cyan-fg">0</span> <span class="ansi-green-fg">and</span> <span class="ansi-green-fg">not</span> data
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/http/client.py</span> in <span class="ansi-cyan-fg">read</span><span class="ansi-blue-fg">(self, amt)</span>
-<span class="ansi-green-intense-fg ansi-bold">    463</span>             <span class="ansi-red-fg"># Amount is given, implement using readinto</span>
-<span class="ansi-green-intense-fg ansi-bold">    464</span>             b <span class="ansi-blue-fg">=</span> bytearray<span class="ansi-blue-fg">(</span>amt<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 465</span><span class="ansi-red-fg">             </span>n <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>readinto<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    466</span>             <span class="ansi-green-fg">return</span> memoryview<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span>n<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>tobytes<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    467</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/http/client.py</span> in <span class="ansi-cyan-fg">readinto</span><span class="ansi-blue-fg">(self, b)</span>
-<span class="ansi-green-intense-fg ansi-bold">    507</span>         <span class="ansi-red-fg"># connection, and the user is reading more bytes than will be provided</span>
-<span class="ansi-green-intense-fg ansi-bold">    508</span>         <span class="ansi-red-fg"># (for example, reading in 1k chunks)</span>
-<span class="ansi-green-fg">--&gt; 509</span><span class="ansi-red-fg">         </span>n <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>fp<span class="ansi-blue-fg">.</span>readinto<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    510</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> n <span class="ansi-green-fg">and</span> b<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    511</span>             <span class="ansi-red-fg"># Ideally, we would raise IncompleteRead if the content-length</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/socket.py</span> in <span class="ansi-cyan-fg">readinto</span><span class="ansi-blue-fg">(self, b)</span>
-<span class="ansi-green-intense-fg ansi-bold">    587</span>         <span class="ansi-green-fg">while</span> <span class="ansi-green-fg">True</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    588</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 589</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_sock<span class="ansi-blue-fg">.</span>recv_into<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    590</span>             <span class="ansi-green-fg">except</span> timeout<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    591</span>                 self<span class="ansi-blue-fg">.</span>_timeout_occurred <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/ssl.py</span> in <span class="ansi-cyan-fg">recv_into</span><span class="ansi-blue-fg">(self, buffer, nbytes, flags)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1069</span>                   <span class="ansi-blue-fg">&#34;non-zero flags not allowed in calls to recv_into() on %s&#34;</span> <span class="ansi-blue-fg">%</span>
-<span class="ansi-green-intense-fg ansi-bold">   1070</span>                   self.__class__)
-<span class="ansi-green-fg">-&gt; 1071</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span>nbytes<span class="ansi-blue-fg">,</span> buffer<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1072</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   1073</span>             <span class="ansi-green-fg">return</span> super<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>recv_into<span class="ansi-blue-fg">(</span>buffer<span class="ansi-blue-fg">,</span> nbytes<span class="ansi-blue-fg">,</span> flags<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/opt/anaconda3/envs/numerai-blocks37/lib/python3.7/ssl.py</span> in <span class="ansi-cyan-fg">read</span><span class="ansi-blue-fg">(self, len, buffer)</span>
-<span class="ansi-green-intense-fg ansi-bold">    927</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    928</span>             <span class="ansi-green-fg">if</span> buffer <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 929</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_sslobj<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">,</span> buffer<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    930</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    931</span>                 <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_sslobj<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+<pre>2022-02-28 18:56:16,421 INFO numerapi.utils: starting download
+example_predictions_model/numerai_validation_data.parquet: 228MB [00:47, 4.74MB/s]                              
+</pre>
 </div>
 </div>
 
 <div class="output_area">
 
 
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'example_validation_predictions.parquet'</span> 📁
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-02-28 18:57:08,822 INFO numerapi.utils: starting download
+example_predictions_model/example_validation_predictions.parquet: 13.0MB [00:02, 5.80MB/s]                            
+</pre>
+</div>
+</div>
+
+<div class="output_area">
 
 
-<div id="6b4ea146-bb80-40df-bf52-2f9ff5223c01"></div>
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'NumeraiClassicDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
+Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/example_prediction</span>
+<span style="color: #008000; text-decoration-color: #008000">s_model'</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">ExamplePredictionsModel</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1074</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:06</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">423734</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>prediction_example</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n000777698096000</th>
+      <td>0.228263</td>
+    </tr>
+    <tr>
+      <th>n0009793a3b91c27</th>
+      <td>0.731198</td>
+    </tr>
+    <tr>
+      <th>n00099ccd6698ab0</th>
+      <td>0.846885</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="65bbc716-3dc9-498d-9518-c006363ffd85"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6b4ea146-bb80-40df-bf52-2f9ff5223c01');
+var element = $('#65bbc716-3dc9-498d-9518-c006363ffd85');
 
             setTimeout(function() {
-                var nbb_cell_id = 37;
+                var nbb_cell_id = 28;
                 var nbb_unformatted_code = "# slow\n# Download validation data\ndownloader = NumeraiClassicDownloader(\"example_predictions_model\")\nval_file = \"numerai_validation_data.parquet\"\nval_save_path = f\"{str(downloader.dir)}/{val_file}\"\ndownloader.download_single_dataset(filename=val_file,\n                                   dest_path=val_save_path)\n\n# Load validation data and add example predictions\ndataf = create_numerframe(val_save_path)\nexample_model = ExamplePredictionsModel()\npredictions = example_model.predict(dataf).get_prediction_data\nassert predictions['prediction_example'].between(0, 1).all()\npredictions.head(3)";
                 var nbb_formatted_code = "# slow\n# Download validation data\ndownloader = NumeraiClassicDownloader(\"example_predictions_model\")\nval_file = \"numerai_validation_data.parquet\"\nval_save_path = f\"{str(downloader.dir)}/{val_file}\"\ndownloader.download_single_dataset(filename=val_file, dest_path=val_save_path)\n\n# Load validation data and add example predictions\ndataf = create_numerframe(val_save_path)\nexample_model = ExamplePredictionsModel()\npredictions = example_model.predict(dataf).get_prediction_data\nassert predictions[\"prediction_example\"].between(0, 1).all()\npredictions.head(3)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -2099,7 +2398,7 @@ Examples:</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomeModel" class="doc_header"><code>class</code> <code>AwesomeModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L404" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
+<h2 id="AwesomeModel" class="doc_header"><code>class</code> <code>AwesomeModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L436" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -2123,6 +2422,42 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="1f4bac3a-6b41-450d-9b45-29e81e705c25"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#1f4bac3a-6b41-450d-9b45-29e81e705c25');
+
+            setTimeout(function() {
+                var nbb_cell_id = 29;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary prediction logic and model formats.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self, model_directory: str, model_name: str = None,\n                 feature_cols: list = None):\n        super().__init__(model_directory=model_directory,\n                         model_name=model_name,\n                         )\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\" Return NumerFrame with column(s) added for prediction(s). \"\"\"\n        # Get all features\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        feature_df = dataf[feature_cols]\n        # Predict and add to new column\n        ...\n        # Parse all contents of NumerFrame to the next pipeline step\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeModel(BaseModel):\n    \"\"\"\n    - TEMPLATE -\n    Predict with arbitrary prediction logic and model formats.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self, model_directory: str, model_name: str = None, feature_cols: list = None\n    ):\n        super().__init__(\n            model_directory=model_directory,\n            model_name=model_name,\n        )\n        self.feature_cols = feature_cols\n\n    @display_processor_info\n    def predict(self, dataf: NumerFrame) -> NumerFrame:\n        \"\"\"Return NumerFrame with column(s) added for prediction(s).\"\"\"\n        # Get all features\n        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols\n        feature_df = dataf[feature_cols]\n        # Predict and add to new column\n        ...\n        # Parse all contents of NumerFrame to the next pipeline step\n        return NumerFrame(dataf)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}
@@ -2154,7 +2489,7 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomeDirectoryModel" class="doc_header"><code>class</code> <code>AwesomeDirectoryModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L434" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeDirectoryModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
+<h2 id="AwesomeDirectoryModel" class="doc_header"><code>class</code> <code>AwesomeDirectoryModel</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model.py#L466" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeDirectoryModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -2178,6 +2513,42 @@ Selects all feature columns (i.e. column names with prefix 'feature') by default
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="11dced7f-8632-42b2-bb94-c17ff9606521"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#11dced7f-8632-42b2-bb94-c17ff9606521');
+
+            setTimeout(function() {
+                var nbb_cell_id = 30;
+                var nbb_unformatted_code = "#export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format and predict for all.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n    def __init__(self,\n                 model_directory: str,\n                 model_name: str = None,\n                 feature_cols: list = None\n                 ):\n        file_suffix = '.anything'\n        super().__init__(model_directory=model_directory,\n                         file_suffix=file_suffix,\n                         model_name=model_name,\n                         feature_cols=feature_cols\n                         )\n\n    def load_models(self) -> list:\n        \"\"\" Instantiate all models and return as a list. (abstract method) \"\"\"\n        ...";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomeDirectoryModel(DirectoryModel):\n    \"\"\"\n    - TEMPLATE -\n    Load in all models of arbitrary file format and predict for all.\n\n    :param model_directory: Main directory from which to read in models.\n    :param model_name: Name that will be used to define column names and for display purposes.\n    :param feature_cols: optional list of features to use for prediction.\n    Selects all feature columns (i.e. column names with prefix 'feature') by default.\n    \"\"\"\n\n    def __init__(\n        self, model_directory: str, model_name: str = None, feature_cols: list = None\n    ):\n        file_suffix = \".anything\"\n        super().__init__(\n            model_directory=model_directory,\n            file_suffix=file_suffix,\n            model_name=model_name,\n            feature_cols=feature_cols,\n        )\n\n    def load_models(self) -> list:\n        \"\"\"Instantiate all models and return as a list. (abstract method)\"\"\"\n        ...";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}
