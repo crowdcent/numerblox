@@ -8,7 +8,6 @@ import scipy
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from typing import Union
 import scipy.stats as sp
 from tqdm.auto import tqdm
 from typeguard import typechecked
@@ -59,7 +58,14 @@ class Standardizer(BasePostProcessor):
 # Cell
 @typechecked
 class MeanEnsembler(BasePostProcessor):
-    """Take simple mean of multiple cols and store in new col."""
+    """
+    Take simple mean of multiple cols and store in new col.
+    :param final_col_name: Name of new averaged column.
+    final_col_name should start with "prediction".
+    :param cols: Column names to average.
+    :param standardize: Whether to standardize by era before averaging.
+    Highly recommended as columns that are averaged may have different distributions.
+    """
 
     def __init__(
         self, final_col_name: str, cols: list = None, standardize: bool = False
@@ -72,11 +78,10 @@ class MeanEnsembler(BasePostProcessor):
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         cols = self.cols if self.cols else dataf.prediction_cols
         if self.standardize:
-            dataf.loc[:, self.final_col_name] = (
-                dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True).mean(axis=1)
-            )
+            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
         else:
-            dataf.loc[:, self.final_col_name] = dataf.loc[:, cols].mean(axis=1)
+            to_average = dataf[cols]
+        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)
         rich_print(
             f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:"
         )
