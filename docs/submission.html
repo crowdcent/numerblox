@@ -54,10 +54,10 @@ nb_path: "nbs/09_submission.ipynb"
 
 
 
-<div id="1c887ba2-355e-4dd4-bf78-868490fb1a5b"></div>
+<div id="dc570d0e-5a0f-4465-b70b-66dc8bb669c1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1c887ba2-355e-4dd4-bf78-868490fb1a5b');
+var element = $('#dc570d0e-5a0f-4465-b70b-66dc8bb669c1');
 
             setTimeout(function() {
                 var nbb_cell_id = 1;
@@ -144,15 +144,15 @@ Each submittor should inherit from <a href="/numerai_blocks/submission.html#Base
 
 
 
-<div id="c168107f-fd49-4bc8-b662-edc6198067f8"></div>
+<div id="780bb7f2-40ec-4c6c-8e6f-d18585a5be54"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c168107f-fd49-4bc8-b662-edc6198067f8');
+var element = $('#780bb7f2-40ec-4c6c-8e6f-d18585a5be54');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super().__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def combine_csvs(self, csv_paths: list,\n                     aux_cols: list,\n                     era_col: str = None,\n                     pred_col: str = 'prediction') -> pd.DataFrame:\n        \"\"\"\n        Read in csv files and combine all predictions with a rank mean.\n        Multi-target predictions will be averaged out.\n        :param csv_paths: List of full paths to .csv prediction files.\n        :param aux_cols: ['id'] for Numerai Classic and\n        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.\n        :param era_col: Column indicating era ('era' or 'last_friday').\n        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.\n        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.\n        \"\"\"\n        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]\n        final_dataf = pd.concat(all_datafs, axis=\"columns\")\n        # Remove issue of duplicate columns\n        numeric_cols = final_dataf.select_dtypes(include=np.number).columns\n        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},\n                           axis=1,\n                           inplace=True)\n        # Combine all numeric columns with rank mean\n        num_dataf = final_dataf.select_dtypes(include=np.number)\n        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf\n        final_dataf[pred_col] = num_dataf.rank(pct=True, method=\"first\").mean(axis=1)\n        return final_dataf[[pred_col]]\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"\n        Get ID needed for prediction uploading.\n        :param model_name: Raw lowercase model name\n        of Numerai model that you have access to.\n        \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):\n        \"\"\" Check if all predictions are in range (0...1). \"\"\"\n        cols = [cols] if isinstance(cols, str) else cols\n        for col in cols:\n            if not dataf[col].between(0, 1).all():\n                min_val, max_val = dataf[col].min(), dataf[col].max()\n                raise ValueError(\n                    f\"Values in 'signal' must be between 0 and 1 (exclusive). \\\nFound min value of '{min_val}' and max value of '{max_val}' for column '{col}'.\"\n                )\n\n    def __call__(\n            self,\n            dataf: pd.DataFrame,\n            file_name: str,\n            model_name: str,\n            cols: Union[str, list],\n            *args,\n            **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super().__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def combine_csvs(\n        self,\n        csv_paths: list,\n        aux_cols: list,\n        era_col: str = None,\n        pred_col: str = \"prediction\",\n    ) -> pd.DataFrame:\n        \"\"\"\n        Read in csv files and combine all predictions with a rank mean.\n        Multi-target predictions will be averaged out.\n        :param csv_paths: List of full paths to .csv prediction files.\n        :param aux_cols: ['id'] for Numerai Classic and\n        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.\n        :param era_col: Column indicating era ('era' or 'last_friday').\n        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.\n        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.\n        \"\"\"\n        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]\n        final_dataf = pd.concat(all_datafs, axis=\"columns\")\n        # Remove issue of duplicate columns\n        numeric_cols = final_dataf.select_dtypes(include=np.number).columns\n        final_dataf.rename(\n            {k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},\n            axis=1,\n            inplace=True,\n        )\n        # Combine all numeric columns with rank mean\n        num_dataf = final_dataf.select_dtypes(include=np.number)\n        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf\n        final_dataf[pred_col] = num_dataf.rank(pct=True, method=\"first\").mean(axis=1)\n        return final_dataf[[pred_col]]\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"\n        Get ID needed for prediction uploading.\n        :param model_name: Raw lowercase model name\n        of Numerai model that you have access to.\n        \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):\n        \"\"\"Check if all predictions are in range (0...1).\"\"\"\n        cols = [cols] if isinstance(cols, str) else cols\n        for col in cols:\n            if not dataf[col].between(0, 1).all():\n                min_val, max_val = dataf[col].min(), dataf[col].max()\n                raise ValueError(\n                    f\"Values in 'signal' must be between 0 and 1 (exclusive). \\\nFound min value of '{min_val}' and max value of '{max_val}' for column '{col}'.\"\n                )\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super().__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def combine_csvs(self, csv_paths: list,\n                     aux_cols: list,\n                     era_col: str = None,\n                     pred_col: str = 'prediction') -> pd.DataFrame:\n        \"\"\"\n        Read in csv files and combine all predictions with a rank mean.\n        Multi-target predictions will be averaged out.\n        :param csv_paths: List of full paths to .csv prediction files.\n        :param aux_cols: ['id'] for Numerai Classic and\n        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.\n        All aux_cols will be stored as index.\n        :param era_col: Column indicating era ('era' or 'last_friday').\n        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.\n        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.\n        \"\"\"\n        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]\n        final_dataf = pd.concat(all_datafs, axis=\"columns\")\n        # Remove issue of duplicate columns\n        numeric_cols = final_dataf.select_dtypes(include=np.number).columns\n        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},\n                           axis=1,\n                           inplace=True)\n        # Combine all numeric columns with rank mean\n        num_dataf = final_dataf.select_dtypes(include=np.number)\n        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf\n        final_dataf[pred_col] = num_dataf.rank(pct=True, method=\"first\").mean(axis=1)\n        return final_dataf[[pred_col]]\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"\n        Get ID needed for prediction uploading.\n        :param model_name: Raw lowercase model name\n        of Numerai model that you have access to.\n        \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):\n        \"\"\" Check if all predictions are in range (0...1). \"\"\"\n        cols = [cols] if isinstance(cols, str) else cols\n        for col in cols:\n            if not dataf[col].between(0, 1).all():\n                min_val, max_val = dataf[col].min(), dataf[col].max()\n                raise ValueError(\n                    f\"Values must be between 0 and 1. \\\nFound min value of '{min_val}' and max value of '{max_val}' for column '{col}'.\"\n                )\n\n    def __call__(\n            self,\n            dataf: pd.DataFrame,\n            file_name: str,\n            model_name: str,\n            cols: Union[str, list],\n            *args,\n            **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseSubmittor(BaseIO):\n    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):\n        super().__init__(directory_path)\n        self.api = api\n\n    @abstractmethod\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        For Numerai Classic: Save index column + 'cols' (targets) to CSV.\n        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.\n        \"\"\"\n        ...\n\n    def upload_predictions(self, file_name: str, model_name: str, *args, **kwargs):\n        \"\"\"\n        Upload CSV file to Numerai for given model name.\n        :param file_name: File name/path relative to directory_path.\n        :param model_name: Lowercase raw model name (For example, 'integration_test').\n        \"\"\"\n        full_path = str(self.dir / file_name)\n        model_id = self._get_model_id(model_name=model_name)\n        api_type = str(self.api.__class__.__name__)\n        rich_print(\n            f\":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:\"\n        )\n        self.api.upload_predictions(\n            file_path=full_path, model_id=model_id, *args, **kwargs\n        )\n        rich_print(\n            f\":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:\"\n        )\n\n    def full_submission(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        Save DataFrame to csv and upload predictions through API.\n        *args, **kwargs are passed to numerapi API.\n        \"\"\"\n        self.save_csv(dataf=dataf, file_name=file_name, cols=cols)\n        self.upload_predictions(\n            file_name=file_name, model_name=model_name, *args, **kwargs\n        )\n\n    def combine_csvs(\n        self,\n        csv_paths: list,\n        aux_cols: list,\n        era_col: str = None,\n        pred_col: str = \"prediction\",\n    ) -> pd.DataFrame:\n        \"\"\"\n        Read in csv files and combine all predictions with a rank mean.\n        Multi-target predictions will be averaged out.\n        :param csv_paths: List of full paths to .csv prediction files.\n        :param aux_cols: ['id'] for Numerai Classic and\n        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.\n        All aux_cols will be stored as index.\n        :param era_col: Column indicating era ('era' or 'last_friday').\n        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.\n        :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.\n        \"\"\"\n        all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]\n        final_dataf = pd.concat(all_datafs, axis=\"columns\")\n        # Remove issue of duplicate columns\n        numeric_cols = final_dataf.select_dtypes(include=np.number).columns\n        final_dataf.rename(\n            {k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},\n            axis=1,\n            inplace=True,\n        )\n        # Combine all numeric columns with rank mean\n        num_dataf = final_dataf.select_dtypes(include=np.number)\n        num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf\n        final_dataf[pred_col] = num_dataf.rank(pct=True, method=\"first\").mean(axis=1)\n        return final_dataf[[pred_col]]\n\n    def _get_model_id(self, model_name: str) -> str:\n        \"\"\"\n        Get ID needed for prediction uploading.\n        :param model_name: Raw lowercase model name\n        of Numerai model that you have access to.\n        \"\"\"\n        return self.get_model_mapping[model_name]\n\n    @property\n    def get_model_mapping(self) -> dict:\n        \"\"\"Mapping between raw model names and model IDs.\"\"\"\n        return self.api.get_models()\n\n    def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):\n        \"\"\"Check if all predictions are in range (0...1).\"\"\"\n        cols = [cols] if isinstance(cols, str) else cols\n        for col in cols:\n            if not dataf[col].between(0, 1).all():\n                min_val, max_val = dataf[col].min(), dataf[col].max()\n                raise ValueError(\n                    f\"Values must be between 0 and 1. \\\nFound min value of '{min_val}' and max value of '{max_val}' for column '{col}'.\"\n                )\n\n    def __call__(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        model_name: str,\n        cols: Union[str, list],\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        The most common use case will be to create a CSV and submit it immediately after that.\n        full_submission handles this.\n        \"\"\"\n        self.full_submission(\n            dataf=dataf,\n            file_name=file_name,\n            model_name=model_name,\n            cols=cols,\n            *args,\n            **kwargs,\n        )";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -229,15 +229,15 @@ var element = $('#c168107f-fd49-4bc8-b662-edc6198067f8');
 
 
 
-<div id="dc11ba8c-8875-46f0-b876-abe862367fe9"></div>
+<div id="7e704e62-095e-48f6-8139-18922fbaaa35"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#dc11ba8c-8875-46f0-b876-abe862367fe9');
+var element = $('#7e704e62-095e-48f6-8139-18922fbaaa35');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(\n            directory_path=directory_path, api=api\n        )\n\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list] = \"prediction\",\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).\n        :param file_name: .csv file path .\n        :param cols: All prediction columns.\n        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].\n        \"\"\"\n        self._check_value_range(dataf=dataf, cols=cols)\n\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(directory_path=directory_path, api=api)\n\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: Union[str, list] = \"prediction\",\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).\n        :param file_name: .csv file path .\n        :param cols: All prediction columns.\n        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].\n        \"\"\"\n        self._check_value_range(dataf=dataf, cols=cols)\n\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(\n            directory_path=directory_path, api=api\n        )\n\n    def save_csv(\n            self,\n            dataf: pd.DataFrame,\n            file_name: str,\n            cols: str = \"prediction\",\n            *args,\n            **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'prediction_mymodel').\n        :param file_name: .csv file path.\n        :param cols: Prediction column name.\n        For example, 'prediction' or 'prediction_mymodel'.\n        \"\"\"\n        sub_dataf = deepcopy(dataf)\n        self._check_value_range(dataf=sub_dataf, cols=cols)\n\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]\n        sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass NumeraiClassicSubmittor(BaseSubmittor):\n    \"\"\"\n    Submit for Numerai Classic.\n    :param directory_path: Base directory to save and read prediction files from.\n    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.\n    *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, key: Key, *args, **kwargs):\n        api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)\n        super().__init__(directory_path=directory_path, api=api)\n\n    def save_csv(\n        self,\n        dataf: pd.DataFrame,\n        file_name: str,\n        cols: str = \"prediction\",\n        *args,\n        **kwargs,\n    ):\n        \"\"\"\n        :param dataf: DataFrame which should have at least the following columns:\n        1. id (as index column)\n        2. cols (for example, 'prediction_mymodel').\n        :param file_name: .csv file path.\n        :param cols: Prediction column name.\n        For example, 'prediction' or 'prediction_mymodel'.\n        \"\"\"\n        sub_dataf = deepcopy(dataf)\n        self._check_value_range(dataf=sub_dataf, cols=cols)\n\n        full_path = str(self.dir / file_name)\n        rich_print(\n            f\":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:\"\n        )\n        sub_dataf.loc[:, \"prediction\"] = sub_dataf[cols]\n        sub_dataf.loc[:, \"prediction\"].to_csv(full_path, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -279,9 +279,9 @@ var element = $('#dc11ba8c-8875-46f0-b876-abe862367fe9');
 <span class="k">assert</span> <span class="n">num_sub</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
 
 <span class="c1"># Create random dataframe</span>
-<span class="n">n_rows</span><span class="p">,</span> <span class="n">n_columns</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">20</span>
-<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;prediction_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_columns</span><span class="p">)]</span>
-<span class="n">test_dataf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_columns</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+<span class="n">n_rows</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="s2">&quot;prediction&quot;</span>
+<span class="n">test_dataf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_rows</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">targets</span><span class="p">])</span>
 <span class="n">test_dataf</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_rows</span><span class="p">)]</span>
 <span class="n">test_dataf</span> <span class="o">=</span> <span class="n">test_dataf</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
 <span class="n">test_dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -327,97 +327,21 @@ var element = $('#dc11ba8c-8875-46f0-b876-abe862367fe9');
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>prediction_0</th>
-      <th>prediction_1</th>
-      <th>prediction_2</th>
-      <th>prediction_3</th>
-      <th>prediction_4</th>
-      <th>prediction_5</th>
-      <th>prediction_6</th>
-      <th>prediction_7</th>
-      <th>prediction_8</th>
-      <th>prediction_9</th>
-      <th>prediction_10</th>
-      <th>prediction_11</th>
-      <th>prediction_12</th>
-      <th>prediction_13</th>
-      <th>prediction_14</th>
-      <th>prediction_15</th>
-      <th>prediction_16</th>
-      <th>prediction_17</th>
-      <th>prediction_18</th>
-      <th>prediction_19</th>
+      <th>prediction</th>
     </tr>
     <tr>
       <th>id</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
       <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>ca19cd5c-064e-4995-8bc4-8e50db937b13</th>
-      <td>0.026739</td>
-      <td>0.494845</td>
-      <td>0.750314</td>
-      <td>0.041747</td>
-      <td>0.433298</td>
-      <td>0.941396</td>
-      <td>0.710164</td>
-      <td>0.835003</td>
-      <td>0.521567</td>
-      <td>0.302367</td>
-      <td>0.765282</td>
-      <td>0.682919</td>
-      <td>0.196182</td>
-      <td>0.540741</td>
-      <td>0.407401</td>
-      <td>0.836970</td>
-      <td>0.596686</td>
-      <td>0.903761</td>
-      <td>0.583121</td>
-      <td>0.101307</td>
+      <th>bbbef6d7-16a2-48dd-a3ae-7fd8cc6b2357</th>
+      <td>0.364516</td>
     </tr>
     <tr>
-      <th>80799cb5-e18f-4fdf-b531-888915e3b953</th>
-      <td>0.847020</td>
-      <td>0.045929</td>
-      <td>0.737293</td>
-      <td>0.985391</td>
-      <td>0.049435</td>
-      <td>0.646051</td>
-      <td>0.186502</td>
-      <td>0.640824</td>
-      <td>0.456032</td>
-      <td>0.056171</td>
-      <td>0.883943</td>
-      <td>0.017666</td>
-      <td>0.251635</td>
-      <td>0.687605</td>
-      <td>0.422195</td>
-      <td>0.984378</td>
-      <td>0.180722</td>
-      <td>0.050582</td>
-      <td>0.169628</td>
-      <td>0.130811</td>
+      <th>213de7b6-4033-47a5-bac1-202810254cbc</th>
+      <td>0.467664</td>
     </tr>
   </tbody>
 </table>
@@ -431,15 +355,15 @@ var element = $('#dc11ba8c-8875-46f0-b876-abe862367fe9');
 
 
 
-<div id="ce7920d9-add0-407e-abfe-bb1cf4d267de"></div>
+<div id="0b12c068-74a9-403d-bda7-dfb4ae1e0eb1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ce7920d9-add0-407e-abfe-bb1cf4d267de');
+var element = $('#0b12c068-74a9-403d-bda7-dfb4ae1e0eb1');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "# Initialization (Random credentials)\ntest_dir = \"test_sub\"\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=test_dir, key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"prediction_{i}\" for i in range(n_columns)]\ntest_dataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ntest_dataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ntest_dataf = test_dataf.set_index(\"id\")\ntest_dataf.head(2)";
-                var nbb_formatted_code = "# Initialization (Random credentials)\ntest_dir = \"test_sub\"\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=test_dir, key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows, n_columns = 100, 20\ntargets = [f\"prediction_{i}\" for i in range(n_columns)]\ntest_dataf = pd.DataFrame(np.random.uniform(size=(n_rows, n_columns)), columns=targets)\ntest_dataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ntest_dataf = test_dataf.set_index(\"id\")\ntest_dataf.head(2)";
+                var nbb_unformatted_code = "# Initialization (Random credentials)\ntest_dir = \"test_sub\"\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=test_dir, key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows = 100\ntargets = \"prediction\"\ntest_dataf = pd.DataFrame(np.random.uniform(size=n_rows), columns=[targets])\ntest_dataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ntest_dataf = test_dataf.set_index(\"id\")\ntest_dataf.head(2)";
+                var nbb_formatted_code = "# Initialization (Random credentials)\ntest_dir = \"test_sub\"\nclassic_key = Key(pub_id=\"UFVCTElDX0lE\", secret_key=\"U1VQRVJfU0VDUkVUX0tFWQ==\")\nnum_sub = NumeraiClassicSubmittor(directory_path=test_dir, key=classic_key)\nassert num_sub.dir.is_dir()\n\n# Create random dataframe\nn_rows = 100\ntargets = \"prediction\"\ntest_dataf = pd.DataFrame(np.random.uniform(size=n_rows), columns=[targets])\ntest_dataf[\"id\"] = [uuid.uuid4() for _ in range(n_rows)]\ntest_dataf = test_dataf.set_index(\"id\")\ntest_dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -485,8 +409,8 @@ var element = $('#ce7920d9-add0-407e-abfe-bb1cf4d267de');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-02-21 18:01:22,901 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
-2022-02-21 18:01:22,902 INFO numexpr.utils: NumExpr defaulting to 8 threads.
+<pre>2022-02-28 21:21:56,505 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-02-28 21:21:56,506 INFO numexpr.utils: NumExpr defaulting to 8 threads.
 </pre>
 </div>
 </div>
@@ -536,80 +460,22 @@ var element = $('#ce7920d9-add0-407e-abfe-bb1cf4d267de');
     <tr style="text-align: right;">
       <th></th>
       <th>id</th>
-      <th>prediction_0</th>
-      <th>prediction_1</th>
-      <th>prediction_2</th>
-      <th>prediction_3</th>
-      <th>prediction_4</th>
-      <th>prediction_5</th>
-      <th>prediction_6</th>
-      <th>prediction_7</th>
-      <th>prediction_8</th>
-      <th>...</th>
-      <th>prediction_10</th>
-      <th>prediction_11</th>
-      <th>prediction_12</th>
-      <th>prediction_13</th>
-      <th>prediction_14</th>
-      <th>prediction_15</th>
-      <th>prediction_16</th>
-      <th>prediction_17</th>
-      <th>prediction_18</th>
-      <th>prediction_19</th>
+      <th>prediction</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>ca19cd5c-064e-4995-8bc4-8e50db937b13</td>
-      <td>0.026739</td>
-      <td>0.494845</td>
-      <td>0.750314</td>
-      <td>0.041747</td>
-      <td>0.433298</td>
-      <td>0.941396</td>
-      <td>0.710164</td>
-      <td>0.835003</td>
-      <td>0.521567</td>
-      <td>...</td>
-      <td>0.765282</td>
-      <td>0.682919</td>
-      <td>0.196182</td>
-      <td>0.540741</td>
-      <td>0.407401</td>
-      <td>0.836970</td>
-      <td>0.596686</td>
-      <td>0.903761</td>
-      <td>0.583121</td>
-      <td>0.101307</td>
+      <td>bbbef6d7-16a2-48dd-a3ae-7fd8cc6b2357</td>
+      <td>0.364516</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>80799cb5-e18f-4fdf-b531-888915e3b953</td>
-      <td>0.847020</td>
-      <td>0.045929</td>
-      <td>0.737293</td>
-      <td>0.985391</td>
-      <td>0.049435</td>
-      <td>0.646051</td>
-      <td>0.186502</td>
-      <td>0.640824</td>
-      <td>0.456032</td>
-      <td>...</td>
-      <td>0.883943</td>
-      <td>0.017666</td>
-      <td>0.251635</td>
-      <td>0.687605</td>
-      <td>0.422195</td>
-      <td>0.984378</td>
-      <td>0.180722</td>
-      <td>0.050582</td>
-      <td>0.169628</td>
-      <td>0.130811</td>
+      <td>213de7b6-4033-47a5-bac1-202810254cbc</td>
+      <td>0.467664</td>
     </tr>
   </tbody>
 </table>
-<p>2 rows × 21 columns</p>
 </div>
 </div>
 
@@ -620,10 +486,10 @@ var element = $('#ce7920d9-add0-407e-abfe-bb1cf4d267de');
 
 
 
-<div id="4be7afb2-16e3-4ba1-a40b-a4566cc95f6e"></div>
+<div id="26a2a103-8464-43b1-828d-3524c80954ca"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4be7afb2-16e3-4ba1-a40b-a4566cc95f6e');
+var element = $('#26a2a103-8464-43b1-828d-3524c80954ca');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -701,12 +567,12 @@ var element = $('#4be7afb2-16e3-4ba1-a40b-a4566cc95f6e');
   </thead>
   <tbody>
     <tr>
-      <th>ca19cd5c-064e-4995-8bc4-8e50db937b13</th>
-      <td>0.5305</td>
+      <th>bbbef6d7-16a2-48dd-a3ae-7fd8cc6b2357</th>
+      <td>0.37</td>
     </tr>
     <tr>
-      <th>80799cb5-e18f-4fdf-b531-888915e3b953</th>
-      <td>0.4310</td>
+      <th>213de7b6-4033-47a5-bac1-202810254cbc</th>
+      <td>0.54</td>
     </tr>
   </tbody>
 </table>
@@ -720,10 +586,10 @@ var element = $('#4be7afb2-16e3-4ba1-a40b-a4566cc95f6e');
 
 
 
-<div id="838091fa-c446-484d-a4fc-e64a1148a1ae"></div>
+<div id="c926f081-6454-44cf-8b6c-a11b2f59a240"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#838091fa-c446-484d-a4fc-e64a1148a1ae');
+var element = $('#c926f081-6454-44cf-8b6c-a11b2f59a240');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -764,11 +630,11 @@ var element = $('#838091fa-c446-484d-a4fc-e64a1148a1ae');
     <span class="sd">&quot;&quot;&quot; Test value range of prediction. &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">invalid_signal</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
-        <span class="n">invalid_signal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;prediction_0&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
+        <span class="n">invalid_signal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;prediction&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
         <span class="n">submittor</span><span class="o">.</span><span class="n">save_csv</span><span class="p">(</span>
             <span class="n">invalid_signal</span><span class="p">,</span>
             <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;should_not_save.csv&quot;</span><span class="p">,</span>
-            <span class="n">cols</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid_signal</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span>
+            <span class="n">cols</span><span class="o">=</span><span class="s2">&quot;prediction&quot;</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -789,15 +655,15 @@ var element = $('#838091fa-c446-484d-a4fc-e64a1148a1ae');
 
 
 
-<div id="89290b74-b75b-4887-9b6a-cd7661fd6115"></div>
+<div id="024ee8c6-1cf1-4c82-9460-661e88f4c957"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#89290b74-b75b-4887-9b6a-cd7661fd6115');
+var element = $('#024ee8c6-1cf1-4c82-9460-661e88f4c957');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "def test_signal_validity(\n        submittor: NumeraiClassicSubmittor, dataf: pd.DataFrame\n):\n    \"\"\" Test value range of prediction. \"\"\"\n    try:\n        invalid_signal = deepcopy(dataf)\n        invalid_signal.iloc[0][\"prediction_0\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\nassert test_signal_validity(num_sub, test_dataf)";
-                var nbb_formatted_code = "def test_signal_validity(submittor: NumeraiClassicSubmittor, dataf: pd.DataFrame):\n    \"\"\"Test value range of prediction.\"\"\"\n    try:\n        invalid_signal = deepcopy(dataf)\n        invalid_signal.iloc[0][\"prediction_0\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=list(invalid_signal.columns),\n        )\n    except ValueError:\n        return True\n    return False\n\n\nassert test_signal_validity(num_sub, test_dataf)";
+                var nbb_unformatted_code = "def test_signal_validity(\n        submittor: NumeraiClassicSubmittor, dataf: pd.DataFrame\n):\n    \"\"\" Test value range of prediction. \"\"\"\n    try:\n        invalid_signal = deepcopy(dataf)\n        invalid_signal.iloc[0][\"prediction\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=\"prediction\",\n        )\n    except ValueError:\n        return True\n    return False\n\nassert test_signal_validity(num_sub, test_dataf)";
+                var nbb_formatted_code = "def test_signal_validity(submittor: NumeraiClassicSubmittor, dataf: pd.DataFrame):\n    \"\"\"Test value range of prediction.\"\"\"\n    try:\n        invalid_signal = deepcopy(dataf)\n        invalid_signal.iloc[0][\"prediction\"] += 10\n        submittor.save_csv(\n            invalid_signal,\n            file_name=\"should_not_save.csv\",\n            cols=\"prediction\",\n        )\n    except ValueError:\n        return True\n    return False\n\n\nassert test_signal_validity(num_sub, test_dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -842,10 +708,10 @@ var element = $('#89290b74-b75b-4887-9b6a-cd7661fd6115');
 
 
 
-<div id="d549c2c6-00df-45ce-b763-652a17555d9e"></div>
+<div id="ccd7e2ae-54d5-4b74-8fd3-e60ddce42b81"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d549c2c6-00df-45ce-b763-652a17555d9e');
+var element = $('#ccd7e2ae-54d5-4b74-8fd3-e60ddce42b81');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -908,10 +774,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="078df134-9907-4401-937e-214dfa0de8d3"></div>
+<div id="e01c9781-e17e-4d71-a676-64b9b4e7ff5d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#078df134-9907-4401-937e-214dfa0de8d3');
+var element = $('#e01c9781-e17e-4d71-a676-64b9b4e7ff5d');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -963,7 +829,7 @@ var element = $('#078df134-9907-4401-937e-214dfa0de8d3');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L200" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
+<h2 id="NumeraiSignalsSubmittor" class="doc_header"><code>class</code> <code>NumeraiSignalsSubmittor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/submission.py#L202" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsSubmittor</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<a href="/numerai_blocks/key.html#Key"><code>Key</code></a>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/submission.html#BaseSubmittor"><code>BaseSubmittor</code></a></p>
 </blockquote>
 <p>Submit for Numerai Signals
 :param directory_path: Base directory to save and read prediction files from.
@@ -992,10 +858,10 @@ var element = $('#078df134-9907-4401-937e-214dfa0de8d3');
 
 
 
-<div id="2823d94c-54ad-4fed-9186-065606610e57"></div>
+<div id="5016f15e-0d2c-45a5-86c5-7eab4c50dd27"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2823d94c-54ad-4fed-9186-065606610e57');
+var element = $('#5016f15e-0d2c-45a5-86c5-7eab4c50dd27');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -1076,10 +942,10 @@ var element = $('#2823d94c-54ad-4fed-9186-065606610e57');
 
 
 
-<div id="4e53de7e-4817-4d5a-9982-062569ee9a18"></div>
+<div id="4c5ef07e-0639-4f25-83c5-5e213b56b151"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4e53de7e-4817-4d5a-9982-062569ee9a18');
+var element = $('#4c5ef07e-0639-4f25-83c5-5e213b56b151');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1168,16 +1034,16 @@ var element = $('#4e53de7e-4817-4d5a-9982-062569ee9a18');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.059345</td>
-      <td>ODRZ</td>
-      <td>20220218</td>
+      <td>0.878729</td>
+      <td>PZYG</td>
+      <td>20220225</td>
       <td>live</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.753304</td>
-      <td>TAIJ</td>
-      <td>20220218</td>
+      <td>0.683227</td>
+      <td>TAWU</td>
+      <td>20220225</td>
       <td>live</td>
     </tr>
   </tbody>
@@ -1192,10 +1058,10 @@ var element = $('#4e53de7e-4817-4d5a-9982-062569ee9a18');
 
 
 
-<div id="469ae47a-d84e-4e57-b441-559b5646a6c4"></div>
+<div id="6f11037c-28ca-4d16-97df-b2890a5871bd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#469ae47a-d84e-4e57-b441-559b5646a6c4');
+var element = $('#6f11037c-28ca-4d16-97df-b2890a5871bd');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -1297,17 +1163,17 @@ var element = $('#469ae47a-d84e-4e57-b441-559b5646a6c4');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.059345</td>
-      <td>ODRZ</td>
+      <td>0.878729</td>
+      <td>PZYG</td>
       <td>live</td>
-      <td>20220218</td>
+      <td>20220225</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.753304</td>
-      <td>TAIJ</td>
+      <td>0.683227</td>
+      <td>TAWU</td>
       <td>live</td>
-      <td>20220218</td>
+      <td>20220225</td>
     </tr>
   </tbody>
 </table>
@@ -1321,10 +1187,10 @@ var element = $('#469ae47a-d84e-4e57-b441-559b5646a6c4');
 
 
 
-<div id="2a320572-b30e-401f-8baa-61444688e32c"></div>
+<div id="578899eb-d081-424c-aec7-dc0807bf918c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2a320572-b30e-401f-8baa-61444688e32c');
+var element = $('#578899eb-d081-424c-aec7-dc0807bf918c');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1410,16 +1276,16 @@ var element = $('#2a320572-b30e-401f-8baa-61444688e32c');
   </thead>
   <tbody>
     <tr>
-      <th>ODRZ</th>
-      <th>20220218</th>
+      <th>PZYG</th>
+      <th>20220225</th>
       <th>live</th>
-      <td>0.0618</td>
+      <td>0.8794</td>
     </tr>
     <tr>
-      <th>TAIJ</th>
-      <th>20220218</th>
+      <th>TAWU</th>
+      <th>20220225</th>
       <th>live</th>
-      <td>0.7562</td>
+      <td>0.6892</td>
     </tr>
   </tbody>
 </table>
@@ -1433,10 +1299,10 @@ var element = $('#2a320572-b30e-401f-8baa-61444688e32c');
 
 
 
-<div id="e007a3a7-a0fd-47b4-bd58-cb6f759681bc"></div>
+<div id="83069a51-f196-4ff0-b94d-56d44b1e54a6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e007a3a7-a0fd-47b4-bd58-cb6f759681bc');
+var element = $('#83069a51-f196-4ff0-b94d-56d44b1e54a6');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1529,10 +1395,10 @@ var element = $('#e007a3a7-a0fd-47b4-bd58-cb6f759681bc');
 
 
 
-<div id="73882a15-e14a-4b28-9156-212c3ad002d9"></div>
+<div id="d80a9de6-a159-4327-aaf9-a8519fc46433"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#73882a15-e14a-4b28-9156-212c3ad002d9');
+var element = $('#d80a9de6-a159-4327-aaf9-a8519fc46433');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1582,10 +1448,10 @@ var element = $('#73882a15-e14a-4b28-9156-212c3ad002d9');
 
 
 
-<div id="93fb136a-7c59-4873-9f0e-b6f60307f19d"></div>
+<div id="5cdc5662-08d8-412b-8173-3340cf0d4e9f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#93fb136a-7c59-4873-9f0e-b6f60307f19d');
+var element = $('#5cdc5662-08d8-412b-8173-3340cf0d4e9f');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1648,10 +1514,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="4d0d63fb-0845-45e0-9f1c-90bdc6cd1bd5"></div>
+<div id="f171e2bc-828d-49c1-9952-470a97059121"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4d0d63fb-0845-45e0-9f1c-90bdc6cd1bd5');
+var element = $('#f171e2bc-828d-49c1-9952-470a97059121');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
