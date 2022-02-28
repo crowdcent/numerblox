@@ -129,7 +129,7 @@ class BaseSubmittor(BaseIO):
             if not dataf[col].between(0, 1).all():
                 min_val, max_val = dataf[col].min(), dataf[col].max()
                 raise ValueError(
-                    f"Values in 'signal' must be between 0 and 1 (exclusive). \
+                    f"Values must be between 0 and 1. \
 Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
                 )
 
