@@ -22,7 +22,7 @@ from google.cloud import storage
 class BaseIO(ABC):
     """
     Basic functionality for IO (downloading and uploading).
-    :param directory_path: Base folder for IO. Will be created if it does not exist.
+    | :param directory_path: Base folder for IO. Will be created if it does not exist.
     """
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
@@ -126,7 +126,7 @@ class BaseIO(ABC):
 class BaseDownloader(BaseIO):
     """
     Abstract base class for downloaders.
-    :param directory_path: Base folder to download files to.
+    | :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
@@ -159,13 +159,11 @@ class BaseDownloader(BaseIO):
 # Cell
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    --------------------------------------------------------------------------------------
-    -WARNING- Version 1 (legacy data) is deprecated. Only supporting version 2+. -WARNING-
-    --------------------------------------------------------------------------------------
-    Downloading from NumerAPI for Numerai Classic data.
+    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.
 
-    :param directory_path: Base folder to download files to.
-    All *args, **kwargs will be passed to NumerAPI initialization.
+    | Downloading from NumerAPI for Numerai Classic data.
+    | :param directory_path: Base folder to download files to.
+    | All *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, *args, **kwargs):
         super().__init__(directory_path=directory_path)
@@ -333,8 +331,7 @@ class AwesomeCustomDownloader(BaseDownloader):
     """
     - TEMPLATE -
     Download awesome financial data from who knows where.
-
-    :param directory_path: Base folder to download files to.
+    | :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
