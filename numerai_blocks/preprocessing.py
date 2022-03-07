@@ -17,6 +17,11 @@ from rich import print as rich_print
 
 from .numerframe import NumerFrame, create_numerframe
 
+try:
+    from talib import abstract as tab
+except ImportError:
+    print("WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.")
+
 # Cell
 class BaseProcessor(ABC):
     """ Common functionality for preprocessors and postprocessors. """
@@ -123,26 +128,24 @@ class GroupStatsPreProcessor(BaseProcessor):
         assert getattr(dataf.meta, 'version') == 1, f"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'."
 
 # Cell
-try:
-    from talib import abstract as tab
-except ImportError:
-    print("WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.")
-
 class TalibFeatureGenerator(BaseProcessor):
     """
-    Generate relevant features available in TA-Lib. \
-    More info: https://mrjbq7.github.io/ta-lib \
-
+    Generate relevant features available in TA-Lib. \n
+    More info: https://mrjbq7.github.io/ta-lib \n
     Input DataFrames for these functions should have the following columns defined:
-    ['open', 'high', 'low', 'close', 'volume']
-
-    | Make sure that all values are sorted in chronological order (by ticker). \
+    ['open', 'high', 'low', 'close', 'volume'] \n
+    | Make sure that all values are sorted in chronological order (by ticker). \n
     | :param windows: List of ranges for window features.
-    | Windows will be applied for all features specified in self.window_features. \
+    | Windows will be applied for all features specified in self.window_features. \n
     | :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
         super().__init__()
+        try:
+            import talib
+        except ImportError:
+            raise ImportError("TA-Lib is not installed and required to use TalibFeatureGenerator. Check https://mrjbq7.github.io/ta-lib/install.html for more info on installation.")
+
         self.windows = windows
         self.ticker_col = ticker_col
         self.window_features = ["NATR", "ADXR", "AROONOSC", "DX", "MFI",
@@ -151,6 +154,7 @@ class TalibFeatureGenerator(BaseProcessor):
                                 "ULTOSC", "TRIX", "ADXR", "CCI",
                                 "CMO", "WILLR"]
         self.no_window_features = ["AD", "OBV", "APO", "MACD", "PPO"]
+        self.hlocv_cols = ['open', 'high', 'low', 'close', 'volume']
 
     def get_no_window_features(self, dataf: pd.DataFrame):
         for func in tqdm(self.no_window_features, desc="No window features"):
@@ -193,10 +197,8 @@ class TalibFeatureGenerator(BaseProcessor):
         else:
             return tab.Function(func)(inputs, timeperiod=window)
 
-    @staticmethod
-    def __get_inputs(dataf: pd.DataFrame) -> dict:
-        cols = ['open', 'high', 'low', 'close', 'volume']
-        return {col: dataf[col].values.astype(np.float64) for col in cols}
+    def __get_inputs(self, dataf: pd.DataFrame) -> dict:
+        return {col: dataf[col].values.astype(np.float64) for col in self.hlocv_cols}
 
 # Cell
 class AwesomePreProcessor(BaseProcessor):
