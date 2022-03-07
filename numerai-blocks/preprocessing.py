@@ -15,7 +15,7 @@ from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 
-from .numerframe import NumerFrame, create_numerframe
+from numerai_blocks.numerframe import NumerFrame, create_numerframe
 
 # Cell
 class BaseProcessor(ABC):

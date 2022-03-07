@@ -13,7 +13,7 @@ from rich import print as rich_print
 from pandas_profiling import ProfileReport
 from typing import Union, Tuple, Any, List
 
-from .misc import AttrDict
+from numerai_blocks.misc import AttrDict
 
 # Cell
 class NumerFrame(pd.DataFrame):

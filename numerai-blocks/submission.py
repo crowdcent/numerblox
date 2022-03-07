@@ -19,8 +19,8 @@ from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
-from .download import BaseIO
-from .key import Key
+from numerai_blocks.download import BaseIO
+from numerai_blocks.key import Key
 
 # Cell
 @typechecked

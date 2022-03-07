@@ -25,9 +25,9 @@ from abc import ABC, abstractmethod
 from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
 
-from .download import NumeraiClassicDownloader
-from .numerframe import NumerFrame, create_numerframe
-from .preprocessing import display_processor_info
+from numerai_blocks.download import NumeraiClassicDownloader
+from numerai_blocks.numerframe import NumerFrame, create_numerframe
+from numerai_blocks.preprocessing import display_processor_info
 
 # Cell
 class BaseModel(ABC):

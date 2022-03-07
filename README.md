@@ -27,7 +27,7 @@ The library features the following tools to build your Numerai pipelines:
 
 ### 2.2. Examples
 
-Below we will illustrate a few base use cases for inference pipelines. To learn more in-depth about the features of the framework check out notebooks in the `edu_nbs` directory.
+Below we will illustrate a basic use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in the `edu_nbs` directory.
 
 #### 2.2.1. Numerai Classic
 
@@ -99,30 +99,50 @@ submittor.remove_base_directory()
 
 
 
-
-    <IPython.core.display.Javascript object>
-
-
 ## Contributing
 
-After you clone this repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which clean up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran) which causes unnecessary merge conflicts.
+Thanks a lot for wanting to help us out with this project! Here are a few guidelines to smooth out development of `numerai-blocks`.
+
+We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
+
+If you are thinking of contributing and are not familiar with nbdev, it may take some time to learn nbdev development. We are happy to help out and point you to documentation or videos to learn more.
+
+If you are interested in the full scope of what nbdev has to offer, check out this tutorial with Jeremy Howard:
+ [https://youtu.be/Hrs7iEYmRmg](https://youtu.be/Hrs7iEYmRmg).
+
+Why are we using nbdev? To learn more about the rationale behind nbdev:
+[https://youtu.be/9Q6sLbz37gk](https://youtu.be/9Q6sLbz37gk)
+
+nbdev live coding example with Hamel Husain:
+[https://youtu.be/ZJTop5uqC2U](https://youtu.be/ZJTop5uqC2U)
+
+
+
+### Bugs / Issues / Enhancements.
+
+Even though most of the components in this library are tested the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please define appropriate labels for the Github issue.
+
+### Contributing Code
+
+There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
+
+Before pushing code to the branch you are working in, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so all code is synced.
+
+
 
 ### Branch structure
 
 
-Every new feature should be implemented a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`.
+Every new feature should be implemented in a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`. Explicit bugfixes should be names `bugfix/{FIX_DESCRIPTION}`. An example structure is given below.
 
 
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    
 <span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 main (release)                                                                               
 <span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev                                                                                    
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/1                                                                            
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/2                                                                            
-<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ feature/3                                                                            
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features                                                          
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader                                                          
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management                                                 
+<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix                                                         
 </pre>
 
-
-
-
-    <IPython.core.display.Javascript object>
 

@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 from typing import Tuple, Union
 
-from .numerframe import NumerFrame, create_numerframe
-from .postprocessing import FeatureNeutralizer
+from numerai_blocks.numerframe import NumerFrame, create_numerframe
+from numerai_blocks.postprocessing import FeatureNeutralizer
 
 # Cell
 class BaseEvaluator:
