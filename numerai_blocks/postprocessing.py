@@ -225,7 +225,11 @@ class FeatureNeutralizer(BasePostProcessor):
 @typechecked
 class FeaturePenalizer(BasePostProcessor):
     """
-    Feature penalization with TensorFlow by jrb.
+    Feature penalization with TensorFlow.
+
+    Source (by jrb): https://github.com/jonrtaylor/twitch/blob/master/FE_Clipping_Script.ipynb
+
+    Source of first PyTorch implementation (by mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
 
     | :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \
     | :param pred_name: Prediction column to neutralize. \
