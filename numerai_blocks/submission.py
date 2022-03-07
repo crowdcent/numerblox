@@ -25,6 +25,15 @@ from .key import Key
 # Cell
 @typechecked
 class BaseSubmittor(BaseIO):
+    """
+    Basic functionality for submitting to Numerai.
+
+    Uses numerapi under the hood.
+    More info: https://numerapi.readthedocs.io/
+
+    | :param directory_path: Directory to store and read submissions from. \
+    | :param api: NumerAPI or SignalsAPI
+    """
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
         super().__init__(directory_path)
         self.api = api
@@ -161,9 +170,10 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
 class NumeraiClassicSubmittor(BaseSubmittor):
     """
     Submit for Numerai Classic.
-    :param directory_path: Base directory to save and read prediction files from.
-    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.
-    *args, **kwargs will be passed to NumerAPI initialization.
+
+    | :param directory_path: Base directory to save and read prediction files from. \
+    | :param key: Key object containing valid credentials for Numerai Classic. \
+    | *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
@@ -202,9 +212,10 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 class NumeraiSignalsSubmittor(BaseSubmittor):
     """
     Submit for Numerai Signals
-    :param directory_path: Base directory to save and read prediction files from.
-    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Signals.
-    *args, **kwargs will be passed to SignalsAPI initialization.
+
+    | :param directory_path: Base directory to save and read prediction files from. \
+    | :param key: Key object containing valid credentials for Numerai Signals. \
+    | *args, **kwargs will be passed to SignalsAPI initialization.
     """
 
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):

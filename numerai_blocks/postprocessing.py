@@ -22,6 +22,7 @@ from .preprocessing import BaseProcessor, display_processor_info
 class BasePostProcessor(BaseProcessor):
     """
     Base class for postprocessing objects.
+
     Postprocessors manipulate or introduce new prediction columns in a NumerFrame.
     """
 
@@ -41,8 +42,8 @@ class Standardizer(BasePostProcessor):
     """
     Uniform standardization of prediction columns.
     All values should only contain values in the range [0...1].
-    :param cols: All prediction columns that should be standardized.
-    Use all prediction columns by default.
+
+    | :param cols: All prediction columns that should be standardized. Use all prediction columns by default.
     """
 
     def __init__(self, cols: list = None):
@@ -60,11 +61,11 @@ class Standardizer(BasePostProcessor):
 class MeanEnsembler(BasePostProcessor):
     """
     Take simple mean of multiple cols and store in new col.
-    :param final_col_name: Name of new averaged column.
-    final_col_name should start with "prediction".
-    :param cols: Column names to average.
-    :param standardize: Whether to standardize by era before averaging.
-    Highly recommended as columns that are averaged may have different distributions.
+
+    | :param final_col_name: Name of new averaged column.
+    final_col_name should start with "prediction". \
+    | :param cols: Column names to average. \
+    | :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.
     """
 
     def __init__(
@@ -97,11 +98,10 @@ class DonateWeightedEnsembler(BasePostProcessor):
 
     Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
 
-    :param cols: Prediction columns to ensemble.
-    Uses all prediction columns by default.
-    :param final_col_name: New column name for ensembled values.
+    | :param cols: Prediction columns to ensemble.
+    Uses all prediction columns by default. \
+    | :param final_col_name: New column name for ensembled values.
     """
-
     def __init__(self, final_col_name: str, cols: list = None):
         super().__init__(final_col_name=final_col_name)
         self.cols = cols
@@ -132,9 +132,10 @@ class DonateWeightedEnsembler(BasePostProcessor):
 class GeometricMeanEnsembler(BasePostProcessor):
     """
     Calculate the weighted Geometric mean.
-    :param cols: Prediction columns to ensemble.
-    Uses all prediction columns by default.
-    :param final_col_name: New column name for ensembled values.
+
+    | :param cols: Prediction columns to ensemble.
+    Uses all prediction columns by default. \
+    | :param final_col_name: New column name for ensembled values.
     """
 
     def __init__(self, final_col_name: str, cols: list = None):
@@ -156,12 +157,11 @@ class GeometricMeanEnsembler(BasePostProcessor):
 class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
-    :param feature_names: List of column names to neutralize against.
-    Uses all feature columns by default.
-    :param pred_name: Prediction column to neutralize.
-    :param proportion: Number in range [0...1] indicating how much to neutralize.
-    """
 
+    | :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \
+    | :param pred_name: Prediction column to neutralize. \
+    | :param proportion: Number in range [0...1] indicating how much to neutralize.
+    """
     def __init__(
         self,
         feature_names: list = None,
@@ -225,13 +225,16 @@ class FeatureNeutralizer(BasePostProcessor):
 @typechecked
 class FeaturePenalizer(BasePostProcessor):
     """
-    Feature penalization with TensorFlow by jrb.
-    :param feature_names: List of column names to reduce feature exposure.
-    Uses all feature columns by default.
-    :param pred_name: Prediction column to neutralize.
-    :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
-    """
+    Feature penalization with TensorFlow.
 
+    Source (by jrb): https://github.com/jonrtaylor/twitch/blob/master/FE_Clipping_Script.ipynb
+
+    Source of first PyTorch implementation (by mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
+
+    | :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \
+    | :param pred_name: Prediction column to neutralize. \
+    | :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
+    """
     def __init__(
         self,
         max_exposure: float,
@@ -354,9 +357,9 @@ class FeaturePenalizer(BasePostProcessor):
 @typechecked
 class AwesomePostProcessor(BasePostProcessor):
     """
-    - TEMPLATE -
-    Do some awesome postprocessing.
-    :param final_col_name: Column name to store manipulated or ensembled predictions in.
+    TEMPLATE - Do some awesome postprocessing.
+
+    | :param final_col_name: Column name to store manipulated or ensembled predictions in.
     """
 
     def __init__(self, final_col_name: str, *args, **kwargs):
