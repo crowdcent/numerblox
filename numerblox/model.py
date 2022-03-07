@@ -34,7 +34,7 @@ class BaseModel(ABC):
     """
     Setup for model prediction on a Dataset.
 
-    | :param model_directory: Main directory from which to read in models. \
+    | :param model_directory: Main directory from which to read in models. \n
     | :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, model_directory: str,
@@ -67,11 +67,11 @@ class DirectoryModel(BaseModel):
     """
     Base class implementation where predictions are averaged out from a directory of models. Walks through every file with given file_suffix in a directory.
 
-    | :param model_directory: Main directory from which to read in models. \
-    | :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb) \
-    | :param model_name: Name that will be used to create column names and for display purposes. \
-    | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default. \
-    | :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models. \
+    | :param model_directory: Main directory from which to read in models. \n
+    | :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb) \n
+    | :param model_name: Name that will be used to create column names and for display purposes. \n
+    | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default. \n
+    | :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models. \n
     Convenient when you want to predict the main target by averaging a multi-target model.
     """
     def __init__(self, model_directory: str, file_suffix: str,
@@ -122,14 +122,14 @@ class SingleModel(BaseModel):
     """
     Load single model from file and perform prediction logic.
 
-    | :param model_file_path: Full path to model file. \
-    | :param model_name: Name that will be used to create column names and for display purposes. \
+    | :param model_file_path: Full path to model file. \n
+    | :param model_name: Name that will be used to create column names and for display purposes. \n
     | :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.
-    Convenient when you want to predict the main target by averaging a multi-target model. \
+    Convenient when you want to predict the main target by averaging a multi-target model. \n
     | :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
     Will take the 3rd of tuple output in this case. Only relevant for NN models.
     More info on autoencoders:
-    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338 \
+    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338 \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self, model_file_path: str, model_name: str = None,
@@ -190,16 +190,16 @@ class WandbKerasModel(SingleModel):
 
     | :param run_path: W&B path structured as entity/project/run_id.
     Can be copied from the Overview tab of a W&B run.
-    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab \
+    For more info: https://docs.wandb.ai/ref/app/pages/run-page#overview-tab \n
     | :param file_name: Name of .h5 file as saved in W&B run.
     'model-best.h5' by default.
-    File name can be found under files tab of W&B run. \
-    | :param combine_preds: Whether to average predictions along column axis. Convenient when you want to predict the main target by averaging a multi-target model. \
+    File name can be found under files tab of W&B run. \n
+    | :param combine_preds: Whether to average predictions along column axis. Convenient when you want to predict the main target by averaging a multi-target model. \n
     | :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
-    Will take the 3rd of tuple output in this case. Only relevant for NN models.
+    Will take the 3rd of tuple output in this case. Only relevant for NN models. \n
     More info on autoencoders:
-    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338 \
-    | :param replace: Replace any model files saved under the same file name with downloaded W&B run model. WARNING: Setting to True may overwrite models in your local environment. \
+    https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338 \n
+    | :param replace: Replace any model files saved under the same file name with downloaded W&B run model. WARNING: Setting to True may overwrite models in your local environment. \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self,
@@ -241,12 +241,10 @@ class WandbKerasModel(SingleModel):
 @typechecked
 class ExternalCSVs(BaseModel):
     """
-    Load external submissions and add to NumerFrame.
-
-    | :param data_directory: Directory path for retrieving external submission.
-
+    Load external submissions and add to NumerFrame. \n
     All csv files in this directory will be added to NumerFrame.
-    Make sure all external predictions are prepared and ready for submission. i.e. IDs lining up and one column named 'prediction'.
+    Make sure all external predictions are prepared and ready for submission. i.e. IDs lining up and one column named 'prediction'. \n
+    | :param data_directory: Directory path for retrieving external submission.
     """
     def __init__(self, data_directory: str = "external_submissions"):
         super().__init__(model_directory=data_directory)
@@ -275,8 +273,8 @@ class JoblibModel(DirectoryModel):
 
     All loaded models should have a .predict method and accept the features present in the data.
 
-    | :param model_directory: Main directory from which to read in models. \
-    | :param model_name: Name that will be used to create column names and for display purposes. \
+    | :param model_directory: Main directory from which to read in models. \n
+    | :param model_name: Name that will be used to create column names and for display purposes. \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self,
@@ -300,8 +298,8 @@ class CatBoostModel(DirectoryModel):
     """
     Load and predict with all .cbm models (CatBoostRegressor) in directory.
 
-    | :param model_directory: Main directory from which to read in models. \
-    | :param model_name: Name that will be used to define column names and for display purposes. \
+    | :param model_directory: Main directory from which to read in models. \n
+    | :param model_name: Name that will be used to define column names and for display purposes. \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self,
@@ -325,8 +323,8 @@ class LGBMModel(DirectoryModel):
     """
     Load and predict with all .lgb models (LightGBM) in directory.
 
-    | :param model_directory: Main directory from which to read in models. \
-    | :param model_name: Name that will be used to define column names and for display purposes. \
+    | :param model_directory: Main directory from which to read in models. \n
+    | :param model_name: Name that will be used to define column names and for display purposes. \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self,
@@ -347,11 +345,10 @@ class LGBMModel(DirectoryModel):
 # Cell
 class ConstantModel(BaseModel):
     """
-    WARNING: Only use this Model for testing purposes.
-
+    WARNING: Only use this Model for testing purposes. \n
     Create constant prediction.
 
-    | :param constant: Value for constant prediction. \
+    | :param constant: Value for constant prediction. \n
     | :param model_name: Name that will be used to create column names and for display purposes.
     """
     def __init__(self, constant: float = 0.5, model_name: str = None):
@@ -369,7 +366,7 @@ class ConstantModel(BaseModel):
 # Cell
 class RandomModel(BaseModel):
     """
-    WARNING: Only use this Model for testing purposes.
+    WARNING: Only use this Model for testing purposes. \n
     Create uniformly distributed predictions.
 
     | :param model_name: Name that will be used to create column names and for display purposes.
@@ -388,11 +385,10 @@ class RandomModel(BaseModel):
 @typechecked
 class ExamplePredictionsModel(BaseModel):
     """
-    Load example predictions and add to NumerFrame.
-
+    Load example predictions and add to NumerFrame. \n
     | :param file_name: File to download from NumerAPI.
-    'example_validation_predictions.parquet' by default. \
-    | :param data_directory: Directory path to download example predictions to or directory where example data already exists. \
+    'example_validation_predictions.parquet' by default. \n
+    | :param data_directory: Directory path to download example predictions to or directory where example data already exists. \n
     | :param round_num: Optional round number. Downloads most recent round by default.
     """
     def __init__(self, file_name: str = "example_validation_predictions.parquet",
@@ -430,8 +426,8 @@ class AwesomeModel(BaseModel):
     """
     TEMPLATE - Predict with arbitrary prediction logic and model formats.
 
-    | :param model_directory: Main directory from which to read in models. \
-    | :param model_name: Name that will be used to define column names and for display purposes. \
+    | :param model_directory: Main directory from which to read in models. \n
+    | :param model_name: Name that will be used to define column names and for display purposes. \n
     | :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self, model_directory: str, model_name: str = None,
@@ -458,8 +454,8 @@ class AwesomeDirectoryModel(DirectoryModel):
     """
     TEMPLATE - Load in all models of arbitrary file format and predict for all.
 
-    :param model_directory: Main directory from which to read in models. \
-    :param model_name: Name that will be used to define column names and for display purposes. \
+    :param model_directory: Main directory from which to read in models. \n
+    :param model_name: Name that will be used to define column names and for display purposes. \n
     :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.
     """
     def __init__(self,

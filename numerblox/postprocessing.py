@@ -63,8 +63,8 @@ class MeanEnsembler(BasePostProcessor):
     Take simple mean of multiple cols and store in new col.
 
     | :param final_col_name: Name of new averaged column.
-    final_col_name should start with "prediction". \
-    | :param cols: Column names to average. \
+    final_col_name should start with "prediction". \n
+    | :param cols: Column names to average. \n
     | :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.
     """
 
@@ -99,7 +99,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
     Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
 
     | :param cols: Prediction columns to ensemble.
-    Uses all prediction columns by default. \
+    Uses all prediction columns by default. \n
     | :param final_col_name: New column name for ensembled values.
     """
     def __init__(self, final_col_name: str, cols: list = None):
@@ -134,7 +134,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
     Calculate the weighted Geometric mean.
 
     | :param cols: Prediction columns to ensemble.
-    Uses all prediction columns by default. \
+    Uses all prediction columns by default. \n
     | :param final_col_name: New column name for ensembled values.
     """
 
@@ -158,8 +158,8 @@ class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
 
-    | :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \
-    | :param pred_name: Prediction column to neutralize. \
+    | :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \n
+    | :param pred_name: Prediction column to neutralize. \n
     | :param proportion: Number in range [0...1] indicating how much to neutralize.
     """
     def __init__(
@@ -231,8 +231,8 @@ class FeaturePenalizer(BasePostProcessor):
 
     Source of first PyTorch implementation (by mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
 
-    | :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \
-    | :param pred_name: Prediction column to neutralize. \
+    | :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \n
+    | :param pred_name: Prediction column to neutralize. \n
     | :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
     """
     def __init__(
