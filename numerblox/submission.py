@@ -26,12 +26,11 @@ from .key import Key
 @typechecked
 class BaseSubmittor(BaseIO):
     """
-    Basic functionality for submitting to Numerai.
-
+    Basic functionality for submitting to Numerai. \n
     Uses numerapi under the hood.
-    More info: https://numerapi.readthedocs.io/
+    More info: https://numerapi.readthedocs.io/ \n
 
-    | :param directory_path: Directory to store and read submissions from. \
+    | :param directory_path: Directory to store and read submissions from. \n
     | :param api: NumerAPI or SignalsAPI
     """
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
@@ -171,8 +170,8 @@ class NumeraiClassicSubmittor(BaseSubmittor):
     """
     Submit for Numerai Classic.
 
-    | :param directory_path: Base directory to save and read prediction files from. \
-    | :param key: Key object containing valid credentials for Numerai Classic. \
+    | :param directory_path: Base directory to save and read prediction files from. \n
+    | :param key: Key object containing valid credentials for Numerai Classic. \n
     | *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
@@ -211,10 +210,10 @@ class NumeraiClassicSubmittor(BaseSubmittor):
 @typechecked
 class NumeraiSignalsSubmittor(BaseSubmittor):
     """
-    Submit for Numerai Signals
+    Submit for Numerai Signals.
 
-    | :param directory_path: Base directory to save and read prediction files from. \
-    | :param key: Key object containing valid credentials for Numerai Signals. \
+    | :param directory_path: Base directory to save and read prediction files from. \n
+    | :param key: Key object containing valid credentials for Numerai Signals. \n
     | *args, **kwargs will be passed to SignalsAPI initialization.
     """
 
