@@ -6,8 +6,8 @@ title: ModelPipeline and ModelPipelineCollection
 keywords: fastai
 sidebar: home_sidebar
 
-
-
+summary: "Putting it all together."
+description: "Putting it all together."
 nb_path: "nbs/06_modelpipeline.ipynb"
 ---
 <!--
@@ -29,70 +29,14 @@ nb_path: "nbs/06_modelpipeline.ipynb"
 </div>
     {% endraw %}
 
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
-<span class="o">%</span><span class="k">autoreload</span> 2
-<span class="o">%</span><span class="k">load_ext</span> nb_black
-<span class="o">%</span><span class="k">load_ext</span> lab_black
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="f82f66b2-a7d5-4526-bfee-3f918428bde2"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#f82f66b2-a7d5-4526-bfee-3f918428bde2');
-
-            setTimeout(function() {
-                var nbb_cell_id = 1;
-                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
-                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The functionality below uses the <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a>, <code>PreProcessor</code>, <code>Model</code> and <code>PostProcessor</code> objects to easily propagate
+<h2 id="Overview">Overview<a class="anchor-link" href="#Overview"> </a></h2><p>The functionality below uses the <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a>, <code>PreProcessor</code>, <code>Model</code> and <code>PostProcessor</code> objects to easily propagate
 data, generate predictions and postprocess them in one go.</p>
 <p>Specifically, this section introduces two objects:</p>
 <ol>
-<li><a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>: Run all preprocessing, models and postprocessing that you define and return a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a>.</li>
-<li><a href="/numerai_blocks/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a>: Manage and run multiple <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects.</li>
+<li><a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>: Run all preprocessing, models and postprocessing that you define and return a <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a>.</li>
+<li><a href="/numerblox/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a>: Manage and run multiple <a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects.</li>
 </ol>
 
 </div>
@@ -113,8 +57,7 @@ data, generate predictions and postprocess them in one go.</p>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> handles all preprocessing, model prediction and postprocessing.
-After the <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> completes it returns a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> with the preprocessed data, metadata and postprocessed prediction columns.</p>
+<p><a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> handles all preprocessing, model prediction and postprocessing. It returns a <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> with the preprocessed data, metadata and postprocessed prediction columns.</p>
 
 </div>
 </div>
@@ -130,15 +73,15 @@ After the <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>Model
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ModelPipeline" class="doc_header"><code>class</code> <code>ModelPipeline</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model_pipeline.py#L20" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ModelPipeline</code>(<strong><code>models</code></strong>:<code>List</code>[<a href="/numerai_blocks/model.html#BaseModel"><code>BaseModel</code></a>], <strong><code>preprocessors</code></strong>:<code>List</code>[<a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a>]=<em><code>[]</code></em>, <strong><code>postprocessors</code></strong>:<code>List</code>[<a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a>]=<em><code>[]</code></em>, <strong><code>copy_first</code></strong>=<em><code>True</code></em>, <strong><code>standardize</code></strong>=<em><code>True</code></em>, <strong><code>pipeline_name</code></strong>:<code>str</code>=<em><code>None</code></em>)</p>
+<h2 id="ModelPipeline" class="doc_header"><code>class</code> <code>ModelPipeline</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model_pipeline.py#L20" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ModelPipeline</code>(<strong><code>models</code></strong>:<code>List</code>[<a href="/numerblox/model.html#BaseModel"><code>BaseModel</code></a>], <strong><code>preprocessors</code></strong>:<code>List</code>[<a href="/numerblox/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a>]=<em><code>[]</code></em>, <strong><code>postprocessors</code></strong>:<code>List</code>[<a href="/numerblox/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a>]=<em><code>[]</code></em>, <strong><code>copy_first</code></strong>=<em><code>True</code></em>, <strong><code>standardize</code></strong>=<em><code>True</code></em>, <strong><code>pipeline_name</code></strong>:<code>str</code>=<em><code>None</code></em>)</p>
 </blockquote>
 <p>Execute all preprocessing, prediction and postprocessing for a given setup.</p>
-<p>:param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel)
-:param preprocessors: List of initialized Preprocessors.
-:param postprocessors: List of initialized Postprocessors.
-:param copy_first: Whether to copy the NumerFrame as a first preprocessing step.
-Highly recommended in order to avoid surprise behaviour by manipulating the original dataset.
-:param pipeline_name: Unique name for pipeline. Only used for display purposes.</p>
+<p>| :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel)</p>
+<p>| :param preprocessors: List of initialized Preprocessors.</p>
+<p>| :param postprocessors: List of initialized Postprocessors.</p>
+<p>| :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.</p>
+<p>Highly recommended in order to avoid surprise behaviour by manipulating the original dataset.</p>
+<p>| :param pipeline_name: Unique name for pipeline. Only used for display purposes.</p>
 
 </div>
 
@@ -162,15 +105,15 @@ Highly recommended in order to avoid surprise behaviour by manipulating the orig
 
 
 
-<div id="e19f6e1d-b816-48c1-8f79-9f9853d2783c"></div>
+<div id="367323ee-0a20-452a-a340-307cc67b7068"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e19f6e1d-b816-48c1-8f79-9f9853d2783c');
+var element = $('#367323ee-0a20-452a-a340-307cc67b7068');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel)\n    :param preprocessors: List of initialized Preprocessors.\n    :param postprocessors: List of initialized Postprocessors.\n    :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset.\n    :param pipeline_name: Unique name for pipeline. Only used for display purposes.\n    \"\"\"\n    def __init__(self,\n                 models: List[BaseModel],\n                 preprocessors: List[BaseProcessor] = [],\n                 postprocessors: List[BaseProcessor] = [],\n                 copy_first = True,\n                 standardize = True,\n                 pipeline_name: str = None):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all preprocessing steps. Copies input by default. \"\"\"\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(self.preprocessors,\n                                 desc=f\"{self.pipeline_name} Preprocessing:\",\n                                 position=0):\n            rich_print(f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all postprocessing steps. Standardizes model prediction by default. \"\"\"\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(self.postprocessors,\n                                  desc=f\"{self.pipeline_name} Postprocessing: \",\n                                  position=0):\n            rich_print(f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all models. \"\"\"\n        for model in tqdm(self.models,\n                                  desc=f\"{self.pipeline_name} Model prediction: \",\n                                  position=0):\n            rich_print(f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\")\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Process full pipeline and return resulting NumerFrame. \"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\")\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel)\n    :param preprocessors: List of initialized Preprocessors.\n    :param postprocessors: List of initialized Postprocessors.\n    :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset.\n    :param pipeline_name: Unique name for pipeline. Only used for display purposes.\n    \"\"\"\n\n    def __init__(\n        self,\n        models: List[BaseModel],\n        preprocessors: List[BaseProcessor] = [],\n        postprocessors: List[BaseProcessor] = [],\n        copy_first=True,\n        standardize=True,\n        pipeline_name: str = None,\n    ):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all preprocessing steps. Copies input by default.\"\"\"\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(\n            self.preprocessors, desc=f\"{self.pipeline_name} Preprocessing:\", position=0\n        ):\n            rich_print(\n                f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all postprocessing steps. Standardizes model prediction by default.\"\"\"\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(\n            self.postprocessors,\n            desc=f\"{self.pipeline_name} Postprocessing: \",\n            position=0,\n        ):\n            rich_print(\n                f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all models.\"\"\"\n        for model in tqdm(\n            self.models, desc=f\"{self.pipeline_name} Model prediction: \", position=0\n        ):\n            rich_print(\n                f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\"\n            )\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Process full pipeline and return resulting NumerFrame.\"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(\n            f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\"\n        )\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    | :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel) \\\n    | :param preprocessors: List of initialized Preprocessors. \\\n    | :param postprocessors: List of initialized Postprocessors. \\\n    | :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset. \\\n    | :param pipeline_name: Unique name for pipeline. Only used for display purposes.\n    \"\"\"\n    def __init__(self,\n                 models: List[BaseModel],\n                 preprocessors: List[BaseProcessor] = [],\n                 postprocessors: List[BaseProcessor] = [],\n                 copy_first = True,\n                 standardize = True,\n                 pipeline_name: str = None):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all preprocessing steps. Copies input by default. \"\"\"\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(self.preprocessors,\n                                 desc=f\"{self.pipeline_name} Preprocessing:\",\n                                 position=0):\n            rich_print(f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all postprocessing steps. Standardizes model prediction by default. \"\"\"\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(self.postprocessors,\n                                  desc=f\"{self.pipeline_name} Postprocessing: \",\n                                  position=0):\n            rich_print(f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\")\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Run all models. \"\"\"\n        for model in tqdm(self.models,\n                                  desc=f\"{self.pipeline_name} Model prediction: \",\n                                  position=0):\n            rich_print(f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\")\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\" Process full pipeline and return resulting NumerFrame. \"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\")\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipeline:\n    \"\"\"\n    Execute all preprocessing, prediction and postprocessing for a given setup.\n\n    | :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel) \\\n    | :param preprocessors: List of initialized Preprocessors. \\\n    | :param postprocessors: List of initialized Postprocessors. \\\n    | :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.\n    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset. \\\n    | :param pipeline_name: Unique name for pipeline. Only used for display purposes.\n    \"\"\"\n\n    def __init__(\n        self,\n        models: List[BaseModel],\n        preprocessors: List[BaseProcessor] = [],\n        postprocessors: List[BaseProcessor] = [],\n        copy_first=True,\n        standardize=True,\n        pipeline_name: str = None,\n    ):\n        self.pipeline_name = pipeline_name if pipeline_name else uuid.uuid4().hex\n        self.models = models\n        self.copy_first = copy_first\n        self.standardize = standardize\n        self.preprocessors = preprocessors\n        self.postprocessors = postprocessors\n\n    def preprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all preprocessing steps. Copies input by default.\"\"\"\n        if self.copy_first:\n            dataf = CopyPreProcessor()(dataf)\n        for preprocessor in tqdm(\n            self.preprocessors, desc=f\"{self.pipeline_name} Preprocessing:\", position=0\n        ):\n            rich_print(\n                f\":construction: Applying preprocessing: '[bold]{preprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = preprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def postprocess(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all postprocessing steps. Standardizes model prediction by default.\"\"\"\n        if self.standardize:\n            dataf = Standardizer()(dataf)\n        for postprocessor in tqdm(\n            self.postprocessors,\n            desc=f\"{self.pipeline_name} Postprocessing: \",\n            position=0,\n        ):\n            rich_print(\n                f\":construction: Applying postprocessing: '[bold]{postprocessor.__class__.__name__}[/bold]' :construction:\"\n            )\n            dataf = postprocessor(dataf)\n        return NumerFrame(dataf)\n\n    def process_models(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Run all models.\"\"\"\n        for model in tqdm(\n            self.models, desc=f\"{self.pipeline_name} Model prediction: \", position=0\n        ):\n            rich_print(\n                f\":robot: Generating model predictions with '[bold]{model.__class__.__name__}[/bold]'. :robot:\"\n            )\n            dataf = model(dataf)\n        return NumerFrame(dataf)\n\n    def pipeline(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        \"\"\"Process full pipeline and return resulting NumerFrame.\"\"\"\n        preprocessed_dataf = self.preprocess(dataf)\n        prediction_dataf = self.process_models(preprocessed_dataf)\n        processed_prediction_dataf = self.postprocess(prediction_dataf)\n        rich_print(\n            f\":checkered_flag: [green]Finished pipeline:[green] [bold blue]'{self.pipeline_name}'[bold blue]! :checkered_flag:\"\n        )\n        return processed_prediction_dataf\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:\n        return self.pipeline(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -193,6 +136,13 @@ var element = $('#e19f6e1d-b816-48c1-8f79-9f9853d2783c');
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Example using several preprocessor, dummy models and postprocessors</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -222,15 +172,15 @@ var element = $('#e19f6e1d-b816-48c1-8f79-9f9853d2783c');
 
 
 
-<div id="ffa881e7-cad9-48d6-988b-4da18df9bfcf"></div>
+<div id="3f6807fb-9086-4d43-8345-c7e0e9f10c6d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
+var element = $('#3f6807fb-9086-4d43-8345-c7e0e9f10c6d');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# Example using several preprocessor, dummy models and postprocessors\nmodel_names = [\"test_0.5\", \"test_0.8\"]\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", metadata={'version': 1})\npreprocessors = [GroupStatsPreProcessor(), FeatureSelectionPreProcessor(feature_cols=['feature_intelligence_mean', 'feature_intelligence_std'])]\nmodels = [ConstantModel(constant=0.5, model_name=model_names[0]), ConstantModel(constant=0.8, model_name=model_names[1])]\npostprocessors = [MeanEnsembler(cols=[f\"prediction_{name}\" for name in model_names], final_col_name='prediction_ensembled'),\n                  FeatureNeutralizer(feature_names=['feature_intelligence_mean', 'feature_intelligence_std'],\n                                     pred_name='prediction_ensembled', proportion=0.8)]";
-                var nbb_formatted_code = "# Example using several preprocessor, dummy models and postprocessors\nmodel_names = [\"test_0.5\", \"test_0.8\"]\n\ndataf = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1}\n)\npreprocessors = [\n    GroupStatsPreProcessor(),\n    FeatureSelectionPreProcessor(\n        feature_cols=[\"feature_intelligence_mean\", \"feature_intelligence_std\"]\n    ),\n]\nmodels = [\n    ConstantModel(constant=0.5, model_name=model_names[0]),\n    ConstantModel(constant=0.8, model_name=model_names[1]),\n]\npostprocessors = [\n    MeanEnsembler(\n        cols=[f\"prediction_{name}\" for name in model_names],\n        final_col_name=\"prediction_ensembled\",\n    ),\n    FeatureNeutralizer(\n        feature_names=[\"feature_intelligence_mean\", \"feature_intelligence_std\"],\n        pred_name=\"prediction_ensembled\",\n        proportion=0.8,\n    ),\n]";
+                var nbb_unformatted_code = "model_names = [\"test_0.5\", \"test_0.8\"]\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", metadata={'version': 1})\npreprocessors = [GroupStatsPreProcessor(), FeatureSelectionPreProcessor(feature_cols=['feature_intelligence_mean', 'feature_intelligence_std'])]\nmodels = [ConstantModel(constant=0.5, model_name=model_names[0]), ConstantModel(constant=0.8, model_name=model_names[1])]\npostprocessors = [MeanEnsembler(cols=[f\"prediction_{name}\" for name in model_names], final_col_name='prediction_ensembled'),\n                  FeatureNeutralizer(feature_names=['feature_intelligence_mean', 'feature_intelligence_std'],\n                                     pred_name='prediction_ensembled', proportion=0.8)]";
+                var nbb_formatted_code = "model_names = [\"test_0.5\", \"test_0.8\"]\n\ndataf = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1}\n)\npreprocessors = [\n    GroupStatsPreProcessor(),\n    FeatureSelectionPreProcessor(\n        feature_cols=[\"feature_intelligence_mean\", \"feature_intelligence_std\"]\n    ),\n]\nmodels = [\n    ConstantModel(constant=0.5, model_name=model_names[0]),\n    ConstantModel(constant=0.8, model_name=model_names[1]),\n]\npostprocessors = [\n    MeanEnsembler(\n        cols=[f\"prediction_{name}\" for name in model_names],\n        final_col_name=\"prediction_ensembled\",\n    ),\n    FeatureNeutralizer(\n        feature_names=[\"feature_intelligence_mean\", \"feature_intelligence_std\"],\n        pred_name=\"prediction_ensembled\",\n        proportion=0.8,\n    ),\n]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -278,7 +228,7 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003049</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004304</span>. ✅
 </pre>
 
 </div>
@@ -301,7 +251,7 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">046367</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">065916</span>. ✅
 </pre>
 
 </div>
@@ -324,7 +274,7 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">6</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002711</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002979</span>. ✅
 </pre>
 
 </div>
@@ -380,7 +330,7 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004963</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">016568</span>. ✅
 </pre>
 
 </div>
@@ -425,7 +375,7 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">037718</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">062018</span>. ✅
 </pre>
 
 </div>
@@ -448,10 +398,10 @@ var element = $('#ffa881e7-cad9-48d6-988b-4da18df9bfcf');
 
 
 
-<div id="2aad5f58-66c0-4481-a3ba-da34f88e71c0"></div>
+<div id="f749c144-fbff-42c9-9cf4-bed0e43345a6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2aad5f58-66c0-4481-a3ba-da34f88e71c0');
+var element = $('#f749c144-fbff-42c9-9cf4-bed0e43345a6');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -488,7 +438,7 @@ var element = $('#2aad5f58-66c0-4481-a3ba-da34f88e71c0');
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">processed_dataf</span><span class="o">.</span><span class="n">meta</span> <span class="o">==</span> <span class="n">dataf</span><span class="o">.</span><span class="n">meta</span>
 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">processed_dataf</span><span class="p">,</span> <span class="n">NumerFrame</span><span class="p">)</span>
-<span class="n">processed_dataf</span>
+<span class="n">processed_dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -544,7 +494,7 @@ var element = $('#2aad5f58-66c0-4481-a3ba-da34f88e71c0');
       <td>0.5</td>
       <td>0.8</td>
       <td>0.65</td>
-      <td>0.000000</td>
+      <td>0.00000</td>
     </tr>
     <tr>
       <th>1</th>
@@ -557,111 +507,7 @@ var element = $('#2aad5f58-66c0-4481-a3ba-da34f88e71c0');
       <td>0.5</td>
       <td>0.8</td>
       <td>0.65</td>
-      <td>0.360880</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0.479167</td>
-      <td>0.327843</td>
-      <td>0.25</td>
-      <td>n001c93979ac41d4</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.350519</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0.416667</td>
-      <td>0.288675</td>
-      <td>0.25</td>
-      <td>n0034e4143f22a13</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.450910</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0.270833</td>
-      <td>0.128732</td>
-      <td>0.75</td>
-      <td>n00679d1a636062f</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.378539</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>0.500000</td>
-      <td>0.213201</td>
-      <td>0.50</td>
-      <td>n009aa2d32389eca</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.361540</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>0.604167</td>
-      <td>0.391070</td>
-      <td>0.25</td>
-      <td>n009ef1a5fe009b6</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.719895</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>0.770833</td>
-      <td>0.270906</td>
-      <td>0.25</td>
-      <td>n00ae5d51f55fb0f</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.339932</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>0.625000</td>
-      <td>0.291937</td>
-      <td>0.50</td>
-      <td>n00b0ac86d77aed7</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>0.710710</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>0.562500</td>
-      <td>0.284545</td>
-      <td>0.75</td>
-      <td>n00c63366aeaf76a</td>
-      <td>era1</td>
-      <td>train</td>
-      <td>0.5</td>
-      <td>0.8</td>
-      <td>0.65</td>
-      <td>1.000000</td>
+      <td>0.36088</td>
     </tr>
   </tbody>
 </table>
@@ -675,15 +521,15 @@ var element = $('#2aad5f58-66c0-4481-a3ba-da34f88e71c0');
 
 
 
-<div id="59cca721-9856-494a-b237-749ba87f41a8"></div>
+<div id="c4af54bd-6b9f-4901-9b01-db7b5d2a0c70"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#59cca721-9856-494a-b237-749ba87f41a8');
+var element = $('#c4af54bd-6b9f-4901-9b01-db7b5d2a0c70');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
-                var nbb_unformatted_code = "assert processed_dataf.meta == dataf.meta\nassert isinstance(processed_dataf, NumerFrame)\nprocessed_dataf";
-                var nbb_formatted_code = "assert processed_dataf.meta == dataf.meta\nassert isinstance(processed_dataf, NumerFrame)\nprocessed_dataf";
+                var nbb_unformatted_code = "assert processed_dataf.meta == dataf.meta\nassert isinstance(processed_dataf, NumerFrame)\nprocessed_dataf.head(2)";
+                var nbb_formatted_code = "assert processed_dataf.meta == dataf.meta\nassert isinstance(processed_dataf, NumerFrame)\nprocessed_dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -714,8 +560,8 @@ var element = $('#59cca721-9856-494a-b237-749ba87f41a8');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a href="/numerai_blocks/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> can be used to easily manage and run multiple <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects.</p>
-<p><a href="/numerai_blocks/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> simply takes a list of <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects as input.</p>
+<p><a href="/numerblox/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> can be used to manage and run multiple <a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects.</p>
+<p><a href="/numerblox/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> simply takes a list of <a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> objects as input.</p>
 
 </div>
 </div>
@@ -731,10 +577,10 @@ var element = $('#59cca721-9856-494a-b237-749ba87f41a8');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ModelPipelineCollection" class="doc_header"><code>class</code> <code>ModelPipelineCollection</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/model_pipeline.py#L89" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ModelPipelineCollection</code>(<strong><code>pipelines</code></strong>:<code>List</code>[<a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>])</p>
+<h2 id="ModelPipelineCollection" class="doc_header"><code>class</code> <code>ModelPipelineCollection</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model_pipeline.py#L89" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ModelPipelineCollection</code>(<strong><code>pipelines</code></strong>:<code>List</code>[<a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>])</p>
 </blockquote>
-<p>Execute multiple initialized ModelPipelines in a sequence.
-:param pipelines: List of initialized ModelPipelines.</p>
+<p>Execute multiple initialized ModelPipelines in a sequence.</p>
+<p>:param pipelines: List of initialized ModelPipelines.</p>
 
 </div>
 
@@ -758,68 +604,15 @@ var element = $('#59cca721-9856-494a-b237-749ba87f41a8');
 
 
 
-<div id="873a9761-34f6-4c4d-80e6-4a980ea92835"></div>
+<div id="915b718b-5588-4544-9736-45b81bb9b2a3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#873a9761-34f6-4c4d-80e6-4a980ea92835');
+var element = $('#915b718b-5588-4544-9736-45b81bb9b2a3');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
-                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        \"\"\" Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames. \"\"\"\n        result_datafs = dict()\n        for name, pipeline in tqdm(self.pipelines.items(),\n                                   desc=\"Processing Pipeline Collection\"):\n            result_datafs[name] = self.process_single_pipeline(dataf, name)\n        return result_datafs\n\n    def process_single_pipeline(self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str) -> NumerFrame:\n        \"\"\" Run full model pipeline for given name in collection. \"\"\"\n        rich_print(f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\")\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        \"\"\" Retrieve model pipeline for given name. \"\"\"\n        available_pipelines = self.pipeline_names\n        assert pipeline_name in available_pipelines, f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(\n        self, dataf: Union[pd.DataFrame, NumerFrame]\n    ) -> Dict[str, NumerFrame]:\n        \"\"\"Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames.\"\"\"\n        result_datafs = dict()\n        for name, pipeline in tqdm(\n            self.pipelines.items(), desc=\"Processing Pipeline Collection\"\n        ):\n            result_datafs[name] = self.process_single_pipeline(dataf, name)\n        return result_datafs\n\n    def process_single_pipeline(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str\n    ) -> NumerFrame:\n        \"\"\"Run full model pipeline for given name in collection.\"\"\"\n        rich_print(\n            f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\"\n        )\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        \"\"\"Retrieve model pipeline for given name.\"\"\"\n        available_pipelines = self.pipeline_names\n        assert (\n            pipeline_name in available_pipelines\n        ), f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_pipeline2</span> <span class="o">=</span> <span class="n">ModelPipeline</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">RandomModel</span><span class="p">()],</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline2&quot;</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="89ec5f77-e130-4a5d-b59c-e0cca3e36d7f"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#89ec5f77-e130-4a5d-b59c-e0cca3e36d7f');
-
-            setTimeout(function() {
-                var nbb_cell_id = 10;
-                var nbb_unformatted_code = "# Different pipeline with no preprocessing or postprocessing. Only RandomModel\ntest_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
-                var nbb_formatted_code = "# Different pipeline with no preprocessing or postprocessing. Only RandomModel\ntest_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
+                var nbb_unformatted_code = "#export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        \"\"\" Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames. \"\"\"\n        result_datafs = dict()\n        for name, pipeline in tqdm(self.pipelines.items(),\n                                   desc=\"Processing Pipeline Collection\"):\n            result_datafs[name] = self.process_single_pipeline(dataf, name)\n        return result_datafs\n\n    def process_single_pipeline(self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str) -> NumerFrame:\n        \"\"\" Run full model pipeline for given name in collection. \"\"\"\n        rich_print(f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\")\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        \"\"\" Retrieve model pipeline for given name. \"\"\"\n        available_pipelines = self.pipeline_names\n        assert pipeline_name in available_pipelines, f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass ModelPipelineCollection:\n    \"\"\"\n    Execute multiple initialized ModelPipelines in a sequence.\n\n    :param pipelines: List of initialized ModelPipelines.\n    \"\"\"\n\n    def __init__(self, pipelines: List[ModelPipeline]):\n        self.pipelines = {pipe.pipeline_name: pipe for pipe in pipelines}\n        self.pipeline_names = list(self.pipelines.keys())\n\n    def process_all_pipelines(\n        self, dataf: Union[pd.DataFrame, NumerFrame]\n    ) -> Dict[str, NumerFrame]:\n        \"\"\"Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames.\"\"\"\n        result_datafs = dict()\n        for name, pipeline in tqdm(\n            self.pipelines.items(), desc=\"Processing Pipeline Collection\"\n        ):\n            result_datafs[name] = self.process_single_pipeline(dataf, name)\n        return result_datafs\n\n    def process_single_pipeline(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pipeline_name: str\n    ) -> NumerFrame:\n        \"\"\"Run full model pipeline for given name in collection.\"\"\"\n        rich_print(\n            f\":construction_worker: [bold green]Processing model pipeline:[/bold green] '{pipeline_name}' :construction_worker:\"\n        )\n        pipeline = self.get_pipeline(pipeline_name)\n        dataf = pipeline(dataf)\n        return NumerFrame(dataf)\n\n    def get_pipeline(self, pipeline_name: str) -> ModelPipeline:\n        \"\"\"Retrieve model pipeline for given name.\"\"\"\n        available_pipelines = self.pipeline_names\n        assert (\n            pipeline_name in available_pipelines\n        ), f\"Requested pipeline '{pipeline_name}', but only the following models are in the collection: '{available_pipelines}'.\"\n        return self.pipelines[pipeline_name]\n\n    def __call__(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:\n        return self.process_all_pipelines(dataf=dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -844,7 +637,67 @@ var element = $('#89ec5f77-e130-4a5d-b59c-e0cca3e36d7f');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>In this example we will process two <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>s with different characteristics on the same data.</p>
+<p>We introduce a different pipeline with no preprocessing or postprocessing. Only a <a href="/numerblox/model.html#RandomModel"><code>RandomModel</code></a>.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_pipeline2</span> <span class="o">=</span> <span class="n">ModelPipeline</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">RandomModel</span><span class="p">()],</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline2&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="d9946b31-8fc8-47b2-9e5c-2a95511ee0a7"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#d9946b31-8fc8-47b2-9e5c-2a95511ee0a7');
+
+            setTimeout(function() {
+                var nbb_cell_id = 10;
+                var nbb_unformatted_code = "test_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
+                var nbb_formatted_code = "test_pipeline2 = ModelPipeline(models=[RandomModel()], pipeline_name=\"test_pipeline2\")";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We process two <a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a>s with different characteristics on the same data.</p>
 
 </div>
 </div>
@@ -872,10 +725,10 @@ var element = $('#89ec5f77-e130-4a5d-b59c-e0cca3e36d7f');
 
 
 
-<div id="55b65c32-3163-4396-a15a-071582fc0b67"></div>
+<div id="536b8d79-7ae7-41a7-b604-556fc2dab3d8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
+var element = $('#536b8d79-7ae7-41a7-b604-556fc2dab3d8');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -936,7 +789,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003491</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003256</span>. ✅
 </pre>
 
 </div>
@@ -959,7 +812,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">044189</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">056507</span>. ✅
 </pre>
 
 </div>
@@ -982,7 +835,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">6</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001761</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003839</span>. ✅
 </pre>
 
 </div>
@@ -1038,7 +891,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004741</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">MeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">004683</span>. ✅
 </pre>
 
 </div>
@@ -1083,7 +936,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">022222</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">025675</span>. ✅
 </pre>
 
 </div>
@@ -1117,7 +970,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002892</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002941</span>. ✅
 </pre>
 
 </div>
@@ -1139,7 +992,7 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">315</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">008565</span>. 
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">315</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006861</span>. 
 ✅
 </pre>
 
@@ -1163,10 +1016,10 @@ var element = $('#55b65c32-3163-4396-a15a-071582fc0b67');
 
 
 
-<div id="f3151e21-fc9e-494f-bf47-6f479817019c"></div>
+<div id="cbb5ccaa-61f1-45fd-927f-84befde520e1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f3151e21-fc9e-494f-bf47-6f479817019c');
+var element = $('#cbb5ccaa-61f1-45fd-927f-84befde520e1');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -1196,7 +1049,7 @@ var element = $('#f3151e21-fc9e-494f-bf47-6f479817019c');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The <a href="/numerai_blocks/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> returns a dictionary mapping pipeline names to <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> objects, retaining all metadata and added prediction columns for each. Note that in this example, the 1st <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> had a feature selection step, so it did not retain all columns. However, the second dataset retained all feature columns, because it did not have a feature selection step.</p>
+<p>The <a href="/numerblox/modelpipeline.html#ModelPipelineCollection"><code>ModelPipelineCollection</code></a> returns a dictionary mapping pipeline names to <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> objects, retaining all metadata and added prediction columns for each. Note that in this example, the 1st <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> had a feature selection step, so it did not retain all columns. However, the second dataset retained all feature columns, because no preprocessing was done.</p>
 
 </div>
 </div>
@@ -1233,10 +1086,10 @@ var element = $('#f3151e21-fc9e-494f-bf47-6f479817019c');
 
 
 
-<div id="06aa76ba-ec09-4f96-b009-d9f5184b9893"></div>
+<div id="9b6b6de9-6d08-486c-aa25-0b7b50e6d13a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#06aa76ba-ec09-4f96-b009-d9f5184b9893');
+var element = $('#9b6b6de9-6d08-486c-aa25-0b7b50e6d13a');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -1354,10 +1207,10 @@ var element = $('#06aa76ba-ec09-4f96-b009-d9f5184b9893');
 
 
 
-<div id="fa580738-aa2a-4677-9c90-6e132a698232"></div>
+<div id="6b50f53d-f4f3-4246-9e59-c3ca93acb882"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#fa580738-aa2a-4677-9c90-6e132a698232');
+var element = $('#6b50f53d-f4f3-4246-9e59-c3ca93acb882');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1494,7 +1347,7 @@ var element = $('#fa580738-aa2a-4677-9c90-6e132a698232');
       <td>0.25</td>
       <td>1.00</td>
       <td>0.25</td>
-      <td>0.7</td>
+      <td>0.1</td>
     </tr>
   </tbody>
 </table>
@@ -1509,10 +1362,10 @@ var element = $('#fa580738-aa2a-4677-9c90-6e132a698232');
 
 
 
-<div id="adc38691-75a6-4481-bacc-f4c3bab053ef"></div>
+<div id="552ad51a-82b7-4021-a969-926de9ba1231"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#adc38691-75a6-4481-bacc-f4c3bab053ef');
+var element = $('#552ad51a-82b7-4021-a969-926de9ba1231');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -1542,7 +1395,7 @@ var element = $('#adc38691-75a6-4481-bacc-f4c3bab053ef');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Since metadata is not manipulated in these pipelines, metadata should be the same as the original <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> for all resulting <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> objects.</p>
+<p>Since metadata is not manipulated in these pipelines, metadata should be the same as the original <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> for all resulting <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> objects.</p>
 
 </div>
 </div>
@@ -1570,10 +1423,10 @@ var element = $('#adc38691-75a6-4481-bacc-f4c3bab053ef');
 
 
 
-<div id="0fdfc579-32ea-4e50-b9d2-f0be29d8e3d9"></div>
+<div id="140e1be2-3158-4966-a866-8868e64aacb5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0fdfc579-32ea-4e50-b9d2-f0be29d8e3d9');
+var element = $('#140e1be2-3158-4966-a866-8868e64aacb5');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1633,10 +1486,10 @@ var element = $('#0fdfc579-32ea-4e50-b9d2-f0be29d8e3d9');
 
 
 
-<div id="7ae9aebe-dadc-468d-9751-c39d19174bab"></div>
+<div id="dd4eb418-a752-4485-977c-57049e47686a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7ae9aebe-dadc-468d-9751-c39d19174bab');
+var element = $('#dd4eb418-a752-4485-977c-57049e47686a');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;

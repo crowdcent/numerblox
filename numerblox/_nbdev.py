@@ -15,11 +15,13 @@ index = {"AttrDict": "00_misc.ipynb",
          "FeatureSelectionPreProcessor": "03_preprocessing.ipynb",
          "TargetSelectionPreProcessor": "03_preprocessing.ipynb",
          "GroupStatsPreProcessor": "03_preprocessing.ipynb",
+         "TalibFeatureGenerator": "03_preprocessing.ipynb",
          "AwesomePreProcessor": "03_preprocessing.ipynb",
          "BaseModel": "04_model.ipynb",
          "DirectoryModel": "04_model.ipynb",
          "SingleModel": "04_model.ipynb",
          "WandbKerasModel": "04_model.ipynb",
+         "ExternalCSVs": "04_model.ipynb",
          "JoblibModel": "04_model.ipynb",
          "CatBoostModel": "04_model.ipynb",
          "LGBMModel": "04_model.ipynb",
@@ -62,8 +64,8 @@ modules = ["misc.py",
            "submission.py",
            "staking.py"]
 
-doc_url = "https://crowdcent.github.io/numerai_blocks/"
+doc_url = "https://crowdcent.github.io/numerblox/"
 
-git_url = "https://github.com/crowdcent/numerai_blocks/tree/main/"
+git_url = "https://github.com/crowdcent/numerblox/tree/main/"
 
 def custom_doc_links(name): return None

@@ -25,6 +25,14 @@ from .key import Key
 # Cell
 @typechecked
 class BaseSubmittor(BaseIO):
+    """
+    Basic functionality for submitting to Numerai. \n
+    Uses numerapi under the hood.
+    More info: https://numerapi.readthedocs.io/ \n
+
+    | :param directory_path: Directory to store and read submissions from. \n
+    | :param api: NumerAPI or SignalsAPI
+    """
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
         super().__init__(directory_path)
         self.api = api
@@ -129,7 +137,7 @@ class BaseSubmittor(BaseIO):
             if not dataf[col].between(0, 1).all():
                 min_val, max_val = dataf[col].min(), dataf[col].max()
                 raise ValueError(
-                    f"Values in 'signal' must be between 0 and 1 (exclusive). \
+                    f"Values must be between 0 and 1. \
 Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
                 )
 
@@ -161,9 +169,10 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
 class NumeraiClassicSubmittor(BaseSubmittor):
     """
     Submit for Numerai Classic.
-    :param directory_path: Base directory to save and read prediction files from.
-    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Classic.
-    *args, **kwargs will be passed to NumerAPI initialization.
+
+    | :param directory_path: Base directory to save and read prediction files from. \n
+    | :param key: Key object containing valid credentials for Numerai Classic. \n
+    | *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
@@ -172,37 +181,40 @@ class NumeraiClassicSubmittor(BaseSubmittor):
         )
 
     def save_csv(
-        self,
-        dataf: pd.DataFrame,
-        file_name: str,
-        cols: Union[str, list] = "prediction",
-        *args,
-        **kwargs,
+            self,
+            dataf: pd.DataFrame,
+            file_name: str,
+            cols: str = "prediction",
+            *args,
+            **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS]).
-        :param file_name: .csv file path .
-        :param cols: All prediction columns.
-        For example, 'prediction', ['prediction'] or [ALL_NUMERAI_TARGETS].
+        2. cols (for example, 'prediction_mymodel').
+        :param file_name: .csv file path.
+        :param cols: Prediction column name.
+        For example, 'prediction' or 'prediction_mymodel'.
         """
-        self._check_value_range(dataf=dataf, cols=cols)
+        sub_dataf = deepcopy(dataf)
+        self._check_value_range(dataf=sub_dataf, cols=cols)
 
         full_path = str(self.dir / file_name)
         rich_print(
             f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
         )
-        dataf.loc[:, cols].to_csv(full_path, *args, **kwargs)
+        sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]
+        sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
 
 # Cell
 @typechecked
 class NumeraiSignalsSubmittor(BaseSubmittor):
     """
-    Submit for Numerai Signals
-    :param directory_path: Base directory to save and read prediction files from.
-    :param key: Key object (numerai-blocks.key.Key) containing valid credentials for Numerai Signals.
-    *args, **kwargs will be passed to SignalsAPI initialization.
+    Submit for Numerai Signals.
+
+    | :param directory_path: Base directory to save and read prediction files from. \n
+    | :param key: Key object containing valid credentials for Numerai Signals. \n
+    | *args, **kwargs will be passed to SignalsAPI initialization.
     """
 
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
