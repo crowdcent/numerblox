@@ -169,8 +169,8 @@ def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) ->
     Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
-    | :param file_path: Relative or absolute path to data file.
-    | :param metadata: Metadata to be stored in NumerFrame.meta.
+    | :param file_path: Relative or absolute path to data file. \
+    | :param metadata: Metadata to be stored in NumerFrame.meta. \
     | *args, **kwargs will be passed to Pandas loading function.
     """
     assert Path(file_path).is_file(), f"{file_path} does not point to file."

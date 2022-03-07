@@ -130,15 +130,15 @@ except ImportError:
 
 class TalibFeatureGenerator(BaseProcessor):
     """
-    | Generate relevant features available in TA-Lib.
-    | More info: https://mrjbq7.github.io/ta-lib
+    Generate relevant features available in TA-Lib. \
+    More info: https://mrjbq7.github.io/ta-lib \
 
-    | Input DataFrames for these functions should have the following columns defined:
+    Input DataFrames for these functions should have the following columns defined:
     ['open', 'high', 'low', 'close', 'volume']
-    | Make sure that all values are sorted in chronological order (by ticker).
 
+    | Make sure that all values are sorted in chronological order (by ticker). \
     | :param windows: List of ranges for window features.
-    | Windows will be applied for all features specified in self.window_features.
+    | Windows will be applied for all features specified in self.window_features. \
     | :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
@@ -201,8 +201,7 @@ class TalibFeatureGenerator(BaseProcessor):
 # Cell
 class AwesomePreProcessor(BaseProcessor):
     """
-    - TEMPLATE -
-    Do some awesome preprocessing.
+    TEMPLATE - Do some awesome preprocessing.
     """
     def __init__(self, *args, **kwargs):
         super().__init__()

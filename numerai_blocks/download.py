@@ -22,6 +22,7 @@ from google.cloud import storage
 class BaseIO(ABC):
     """
     Basic functionality for IO (downloading and uploading).
+
     | :param directory_path: Base folder for IO. Will be created if it does not exist.
     """
     def __init__(self, directory_path: str):
@@ -126,6 +127,7 @@ class BaseIO(ABC):
 class BaseDownloader(BaseIO):
     """
     Abstract base class for downloaders.
+
     | :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
@@ -161,8 +163,8 @@ class NumeraiClassicDownloader(BaseDownloader):
     """
     WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.
 
-    | Downloading from NumerAPI for Numerai Classic data.
-    | :param directory_path: Base folder to download files to.
+    | Downloading from NumerAPI for Numerai Classic data. \
+    | :param directory_path: Base folder to download files to. \
     | All *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, *args, **kwargs):
@@ -329,8 +331,9 @@ class NumeraiClassicDownloader(BaseDownloader):
 # Cell
 class AwesomeCustomDownloader(BaseDownloader):
     """
-    - TEMPLATE -
+    TEMPLATE -
     Download awesome financial data from who knows where.
+
     | :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
