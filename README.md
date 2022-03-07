@@ -4,7 +4,7 @@
 
 ## 1. Install
 
-`pip install numerai_blocks`
+`pip install`
 
 ## 2. How to use
 
@@ -14,20 +14,20 @@ Example and educational notebooks can be found in the `edu_nbs` directory. Devel
 
 The library features the following tools to build your Numerai pipelines:
 
-1. Downloaders
-2. NumerFrame
-3. Preprocessing
-4. Model
-5. Postprocessing
-6. ModelPipeline (and ModelPipelineCollection)
-7. Evaluators
-8. Key (containing authentication info)
-9. Submittors
-10. Staking functionality
+1. `download`
+2. `numerframe`
+3. `preprocessing`
+4. `model`
+5. `postprocessing`
+6. `ModelPipeline` (and `ModelPipelineCollection`)
+7. `evaluation`
+8. `Key` (containing authentication info)
+9. `NumeraiClassicSubmittor` and `NumeraiSignalsSubmittor`
+10. `staking`
 
 ### 2.2. Examples
 
-Below we will illustrate a basic use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in the `edu_nbs` directory.
+Below we will illustrate a common use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in the `edu_nbs` directory.
 
 #### 2.2.1. Numerai Classic
 
@@ -101,9 +101,9 @@ submittor.remove_base_directory()
 
 ## Contributing
 
-Thanks a lot for wanting to help us out with this project! Here are a few guidelines to smooth out development of `numerai_blocks`.
+Below are a few guidelines to smooth out development of `numerai_blocks`.
 
-We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
+Thanks a lot for wanting to help us out with this project! We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
 
 If you are thinking of contributing and are not familiar with nbdev, it may take some time to learn nbdev development. We are happy to help out and point you to documentation or videos to learn more.
 
@@ -120,7 +120,7 @@ nbdev live coding example with Hamel Husain:
 
 ### Bugs / Issues / Enhancements.
 
-Even though most of the components in this library are tested the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please define appropriate labels for the Github issue.
+Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please define appropriate labels for the Github issue.
 
 ### Contributing Code
 
