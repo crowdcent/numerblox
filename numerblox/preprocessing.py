@@ -94,10 +94,8 @@ class TargetSelectionPreProcessor(BaseProcessor):
 # Cell
 class GroupStatsPreProcessor(BaseProcessor):
     """
-    WARNING: Only supported for Version 1 (legacy) data.
-
-    Calculate group statistics for all data groups.
-
+    WARNING: Only supported for Version 1 (legacy) data. \n
+    Calculate group statistics for all data groups. \n
     | :param groups: Groups to create features for. All groups by default.
     """
     def __init__(self, groups: list = None):
@@ -202,9 +200,7 @@ class TalibFeatureGenerator(BaseProcessor):
 
 # Cell
 class AwesomePreProcessor(BaseProcessor):
-    """
-    TEMPLATE - Do some awesome preprocessing.
-    """
+    """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self, *args, **kwargs):
         super().__init__()
 

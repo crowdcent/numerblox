@@ -1,10 +1,10 @@
-# Numerai Blocks
+# NumerBlox
 > Tools for solid Numerai pipelines
 
 
 ## 1. Install
 
-`pip install`
+`pip install numerblox`
 
 ## 2. How to use
 
@@ -101,7 +101,7 @@ submittor.remove_base_directory()
 
 ## Contributing
 
-Below are a few guidelines to smooth out development of `numerai_blocks`.
+Below are a few guidelines for development of `numerblox`.
 
 Thanks a lot for wanting to help us out with this project! We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
 

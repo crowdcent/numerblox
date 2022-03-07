@@ -21,11 +21,11 @@ class ModelPipeline:
     """
     Execute all preprocessing, prediction and postprocessing for a given setup.
 
-    | :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel) \
-    | :param preprocessors: List of initialized Preprocessors. \
-    | :param postprocessors: List of initialized Postprocessors. \
-    | :param copy_first: Whether to copy the NumerFrame as a first preprocessing step.
-    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset. \
+    | :param models: Initiliazed numerai-blocks Models (Objects inheriting from BaseModel) \n
+    | :param preprocessors: List of initialized Preprocessors. \n
+    | :param postprocessors: List of initialized Postprocessors. \n
+    | :param copy_first: Whether to copy the NumerFrame as a first preprocessing step. \n
+    Highly recommended in order to avoid surprise behaviour by manipulating the original dataset. \n
     | :param pipeline_name: Unique name for pipeline. Only used for display purposes.
     """
     def __init__(self,
