@@ -64,8 +64,8 @@ modules = ["misc.py",
            "submission.py",
            "staking.py"]
 
-doc_url = "https://crowdcent.github.io/numerai-blocks/"
+doc_url = "https://crowdcent.github.io/numerai_blocks/"
 
-git_url = "https://github.com/crowdcent/numerai-blocks/tree/main/"
+git_url = "https://github.com/crowdcent/numerai_blocks/tree/main/"
 
 def custom_doc_links(name): return None

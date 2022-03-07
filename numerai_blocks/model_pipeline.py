@@ -10,10 +10,10 @@ from typeguard import typechecked
 from typing import List, Union, Dict
 from rich import print as rich_print
 
-from numerai_blocks.numerframe import NumerFrame, create_numerframe
-from numerai_blocks.preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
-from numerai_blocks.model import BaseModel, ConstantModel, RandomModel
-from numerai_blocks.postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
+from .numerframe import NumerFrame, create_numerframe
+from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
+from .model import BaseModel, ConstantModel, RandomModel
+from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
 
 # Cell
 @typechecked

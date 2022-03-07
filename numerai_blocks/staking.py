@@ -10,7 +10,7 @@ from numerapi import NumerAPI
 from typeguard import typechecked
 from rich import print as rich_print
 
-from numerai_blocks.key import Key, load_key_from_json
+from .key import Key, load_key_from_json
 
 # Cell
 @typechecked
