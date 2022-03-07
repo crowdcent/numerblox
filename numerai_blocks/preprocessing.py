@@ -90,8 +90,10 @@ class TargetSelectionPreProcessor(BaseProcessor):
 class GroupStatsPreProcessor(BaseProcessor):
     """
     WARNING: Only supported for Version 1 (legacy) data.
+
     Calculate group statistics for all data groups.
-    :param groups: Groups to create features for. All groups by default.
+
+    | :param groups: Groups to create features for. All groups by default.
     """
     def __init__(self, groups: list = None):
         super().__init__()
@@ -128,16 +130,16 @@ except ImportError:
 
 class TalibFeatureGenerator(BaseProcessor):
     """
-    Generate relevant features available in TA-Lib.
-    More info: https://mrjbq7.github.io/ta-lib
+    | Generate relevant features available in TA-Lib.
+    | More info: https://mrjbq7.github.io/ta-lib
 
-    Input DataFrames for these functions should have the following columns defined:
+    | Input DataFrames for these functions should have the following columns defined:
     ['open', 'high', 'low', 'close', 'volume']
-    Make sure that all values are sorted in chronological order (by ticker).
+    | Make sure that all values are sorted in chronological order (by ticker).
 
-    :param windows: List of ranges for window features.
-    Windows will be applied for all features specified in self.window_features.
-    :param ticker_col: Which column to groupby for feature generation.
+    | :param windows: List of ranges for window features.
+    | Windows will be applied for all features specified in self.window_features.
+    | :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
         super().__init__()

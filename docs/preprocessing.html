@@ -6,8 +6,8 @@ title: Preprocessing
 keywords: fastai
 sidebar: home_sidebar
 
-
-
+summary: "Feature/target selection, engineering and manipulation."
+description: "Feature/target selection, engineering and manipulation."
 nb_path: "nbs/03_preprocessing.ipynb"
 ---
 <!--
@@ -32,62 +32,6 @@ nb_path: "nbs/03_preprocessing.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
-<span class="o">%</span><span class="k">autoreload</span> 2
-<span class="o">%</span><span class="k">load_ext</span> nb_black
-<span class="o">%</span><span class="k">load_ext</span> lab_black
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="b5f092da-129e-430c-9bbd-2e3752a5469e"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#b5f092da-129e-430c-9bbd-2e3752a5469e');
-
-            setTimeout(function() {
-                var nbb_cell_id = 1;
-                var nbb_unformatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
-                var nbb_formatted_code = "%load_ext autoreload\n%autoreload 2\n%load_ext nb_black\n%load_ext lab_black";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
 
 </div>
     {% endraw %}
@@ -100,7 +44,7 @@ var element = $('#b5f092da-129e-430c-9bbd-2e3752a5469e');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This objects will provide a solid base for all processing (pre and post) and log relevant information regarding the data pipeline.</p>
+<p>These objects will provide a base for all pre- and post-processing functionality and log relevant information.</p>
 
 </div>
 </div>
@@ -113,7 +57,7 @@ var element = $('#b5f092da-129e-430c-9bbd-2e3752a5469e');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> defines common functionality for Preprocessors and Postprocessors (Section 5).</p>
+<p><a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> defines common functionality for <code>preprocessing</code> and <code>postprocessing</code> (Section 5).</p>
 <p>Every Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement the <code>.transform</code> method.</p>
 
 </div>
@@ -156,10 +100,10 @@ var element = $('#b5f092da-129e-430c-9bbd-2e3752a5469e');
 
 
 
-<div id="ff7b9179-34d0-4129-a158-4e46e447f1cf"></div>
+<div id="722da5c0-2b3a-405e-bf0a-829aea44bf47"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ff7b9179-34d0-4129-a158-4e46e447f1cf');
+var element = $('#722da5c0-2b3a-405e-bf0a-829aea44bf47');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -189,21 +133,21 @@ var element = $('#ff7b9179-34d0-4129-a158-4e46e447f1cf');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="0.3.-Logging">0.3. Logging<a class="anchor-link" href="#0.3.-Logging"> </a></h3>
+<h3 id="0.2.-Logging">0.2. Logging<a class="anchor-link" href="#0.2.-Logging"> </a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We would like to keep an overview of which steps are done in a data pipeline and where processing bottlenecks occur.
-The decorator below will display:</p>
+The decorator below will display for a given function/method:</p>
 <ol>
-<li>When a step has finished.</li>
+<li>When it has finished.</li>
 <li>What the output shape of the data is.</li>
-<li>How long the step took to finish.</li>
+<li>How long it took to finish.</li>
 </ol>
 <p>To use this functionality, simply add <code>@display_processor_info</code> as a decorator to the function/method you want to track.</p>
-<p>We will use this decorator throughout the pipeline (preprocessing, model and postprocessing).</p>
+<p>We will use this decorator throughout the pipeline (<code>preprocessing</code>, <code>model</code> and <code>postprocessing</code>).</p>
 <p>Inspiration for this decorator: <a href="https://calmcode.io/pandas-pipe/logs.html">Calmcode Pandas Pipe Logs</a></p>
 
 </div>
@@ -246,10 +190,10 @@ The decorator below will display:</p>
 
 
 
-<div id="ee239825-ae69-43f1-92f5-d6ffbaaba6ee"></div>
+<div id="53f6690b-6034-4700-8df1-165107639efc"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ee239825-ae69-43f1-92f5-d6ffbaaba6ee');
+var element = $('#53f6690b-6034-4700-8df1-165107639efc');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -313,7 +257,7 @@ var element = $('#ee239825-ae69-43f1-92f5-d6ffbaaba6ee');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">001995</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TestDisplay</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">008226</span>. ✅
 </pre>
 
 </div>
@@ -325,10 +269,10 @@ var element = $('#ee239825-ae69-43f1-92f5-d6ffbaaba6ee');
 
 
 
-<div id="66b2d77f-e5df-44a7-be0d-c5d9171413b9"></div>
+<div id="0fa3c9f2-7b4a-4635-9e50-9624dfa22a72"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#66b2d77f-e5df-44a7-be0d-c5d9171413b9');
+var element = $('#0fa3c9f2-7b4a-4635-9e50-9624dfa22a72');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -364,7 +308,7 @@ var element = $('#66b2d77f-e5df-44a7-be0d-c5d9171413b9');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We invite the Numerai community to develop new preprocessors. This section implements commonly used preprocessing for Numerai.</p>
+<p>This section implements commonly used preprocessing for Numerai. We invite the Numerai community to develop new preprocessors.</p>
 
 </div>
 </div>
@@ -377,14 +321,14 @@ var element = $('#66b2d77f-e5df-44a7-be0d-c5d9171413b9');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This section cover all the available Preprocessors that can be applied for both Numerai Classic and Numerai Signals.</p>
+<p>Preprocessors that can be applied for both Numerai Classic and Numerai Signals.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="1.0.1.-CopyPreProcessor">1.0.1. CopyPreProcessor<a class="anchor-link" href="#1.0.1.-CopyPreProcessor"> </a></h4><p>The first and obvious preprocessor is copying, which is implemented as a default in <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> (Section 4) to avoid manipulation of the original Dataset that you load in.</p>
+<h4 id="1.0.1.-CopyPreProcessor">1.0.1. CopyPreProcessor<a class="anchor-link" href="#1.0.1.-CopyPreProcessor"> </a></h4><p>The first and obvious preprocessor is copying, which is implemented as a default in <a href="/numerai_blocks/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> (Section 4) to avoid manipulation of the original DataFrame or <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> that you load in.</p>
 
 </div>
 </div>
@@ -426,10 +370,10 @@ var element = $('#66b2d77f-e5df-44a7-be0d-c5d9171413b9');
 
 
 
-<div id="2def70f5-71bf-4c03-9428-7e9164c3d95d"></div>
+<div id="cb80171a-231e-4882-9154-18810bba1741"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2def70f5-71bf-4c03-9428-7e9164c3d95d');
+var element = $('#cb80171a-231e-4882-9154-18810bba1741');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -482,7 +426,7 @@ var element = $('#2def70f5-71bf-4c03-9428-7e9164c3d95d');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">CopyPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">314</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002092</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002063</span>. ✅
 </pre>
 
 </div>
@@ -494,10 +438,10 @@ var element = $('#2def70f5-71bf-4c03-9428-7e9164c3d95d');
 
 
 
-<div id="50bad3dc-756a-4324-b709-64af5a5ce7ed"></div>
+<div id="59268d94-fc59-491f-9b05-532425fdc2e0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#50bad3dc-756a-4324-b709-64af5a5ce7ed');
+var element = $('#59268d94-fc59-491f-9b05-532425fdc2e0');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -569,10 +513,10 @@ var element = $('#50bad3dc-756a-4324-b709-64af5a5ce7ed');
 
 
 
-<div id="1c486ae3-898c-4fe7-9bbd-b1709e4edc07"></div>
+<div id="e7f2b5d9-d979-4ae8-b5fb-773b5b041620"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1c486ae3-898c-4fe7-9bbd-b1709e4edc07');
+var element = $('#e7f2b5d9-d979-4ae8-b5fb-773b5b041620');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -624,7 +568,7 @@ var element = $('#1c486ae3-898c-4fe7-9bbd-b1709e4edc07');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002267</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">002730</span>. ✅
 </pre>
 
 </div>
@@ -636,10 +580,10 @@ var element = $('#1c486ae3-898c-4fe7-9bbd-b1709e4edc07');
 
 
 
-<div id="55a37bff-7536-4f87-bdef-7cd71b9f4633"></div>
+<div id="ead4273f-fcfd-4d87-9fbc-3c5a1eb96c47"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#55a37bff-7536-4f87-bdef-7cd71b9f4633');
+var element = $('#ead4273f-fcfd-4d87-9fbc-3c5a1eb96c47');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -742,10 +686,10 @@ var element = $('#55a37bff-7536-4f87-bdef-7cd71b9f4633');
 
 
 
-<div id="d373f9af-14da-4468-b3b5-c3a583131688"></div>
+<div id="c2ceefb2-4f9f-4b85-95e4-96fcc76bb80a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d373f9af-14da-4468-b3b5-c3a583131688');
+var element = $('#c2ceefb2-4f9f-4b85-95e4-96fcc76bb80a');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -776,7 +720,7 @@ var element = $('#d373f9af-14da-4468-b3b5-c3a583131688');
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="1.0.2.-TargetSelectionPreProcessor">1.0.2. TargetSelectionPreProcessor<a class="anchor-link" href="#1.0.2.-TargetSelectionPreProcessor"> </a></h4><p><a href="/numerai_blocks/preprocessing.html#TargetSelectionPreProcessor"><code>TargetSelectionPreProcessor</code></a> will keep all targets that you pass + all other columns that are not targets.</p>
-<p>Not relevant for an inference pipeline, but especially convenient for Numerai Classic training if you train on a subset of the available targets. Can also be applied to Signals if you are using multiple engineered targets in your pipeline.</p>
+<p>Not relevant for an inference pipeline, but especially convenient for Numerai Classic training if you train on a subset of the available targets. Can also be applied to Signals if you are using engineered targets in your pipeline.</p>
 
 </div>
 </div>
@@ -818,10 +762,10 @@ var element = $('#d373f9af-14da-4468-b3b5-c3a583131688');
 
 
 
-<div id="d0dc2f24-ea32-456f-b9dc-537eeaa54cb3"></div>
+<div id="6fefea68-a931-42fe-8a54-04f801b8df39"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d0dc2f24-ea32-456f-b9dc-537eeaa54cb3');
+var element = $('#6fefea68-a931-42fe-8a54-04f801b8df39');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -875,7 +819,7 @@ var element = $('#d0dc2f24-ea32-456f-b9dc-537eeaa54cb3');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">TargetSelectionPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1055</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">017315</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">016967</span>. ✅
 </pre>
 
 </div>
@@ -1013,10 +957,10 @@ var element = $('#d0dc2f24-ea32-456f-b9dc-537eeaa54cb3');
 
 
 
-<div id="0c3758dd-486e-4ca4-b2a1-5526aed55e0d"></div>
+<div id="d89f0073-bc1c-4506-be23-24360cfcfde6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0c3758dd-486e-4ca4-b2a1-5526aed55e0d');
+var element = $('#d89f0073-bc1c-4506-be23-24360cfcfde6');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -1065,13 +1009,66 @@ Therefore, this section has all preprocessors that can only be applied to Numera
 </div>
 </div>
 </div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="dfab6f86-ada4-41ab-999f-c937a685e985"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#dfab6f86-ada4-41ab-999f-c937a685e985');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "# No version agnostic Numerai Classic preprocessors implemented yet.";
+                var nbb_formatted_code = "# No version agnostic Numerai Classic preprocessors implemented yet.";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="1.1.1.-Numerai-Classic:-Version-1-specific">1.1.1. Numerai Classic: Version 1 specific<a class="anchor-link" href="#1.1.1.-Numerai-Classic:-Version-1-specific"> </a></h4><p>Preprocessors that only work for version 1 (legacy data).
 When using version 1 preprocessor it is recommended that the input <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> has <code>version</code> in its metadata.
-This avoids using version 1 preprocessors on version 2 data and confusing error messages.</p>
+This avoids using version 1 preprocessors on version 2 data and encountering confusing error messages.</p>
 <p>As a new user we recommend to start modeling the version 2 data and avoid version 1.
-The preprocessors below are there for legacy and compatibility reasons.</p>
+The preprocessors below are only there for legacy and compatibility reasons.</p>
 
 </div>
 </div>
@@ -1102,9 +1099,9 @@ The preprocessors below are there for legacy and compatibility reasons.</p>
 <div class="output_markdown rendered_html output_subarea ">
 <h2 id="GroupStatsPreProcessor" class="doc_header"><code>class</code> <code>GroupStatsPreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L90" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GroupStatsPreProcessor</code>(<strong><code>groups</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
-<p>WARNING: Only supported for Version 1 (legacy) data.
-Calculate group statistics for all data groups.
-:param groups: Groups to create features for. All groups by default.</p>
+<p>WARNING: Only supported for Version 1 (legacy) data.</p>
+<p>Calculate group statistics for all data groups.</p>
+<p>| :param groups: Groups to create features for. All groups by default.</p>
 
 </div>
 
@@ -1128,15 +1125,15 @@ Calculate group statistics for all data groups.
 
 
 
-<div id="0b1c0608-ffe4-4a03-95bd-d2ed0fe0938d"></div>
+<div id="666be830-7c9a-4be0-bbc6-bc5ae5999746"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0b1c0608-ffe4-4a03-95bd-d2ed0fe0938d');
+var element = $('#666be830-7c9a-4be0-bbc6-bc5ae5999746');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
-                var nbb_unformatted_code = "#export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\"intelligence\", \"wisdom\", \"charisma\",\n                           \"dexterity\", \"strength\", \"constitution\"]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\" Check validity and add group features. \"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\" Make sure this is only used for version 1 data. \"\"\"\n        assert hasattr(dataf.meta, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataf.meta, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
-                var nbb_formatted_code = "# export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n    Calculate group statistics for all data groups.\n    :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\"Check validity and add group features.\"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\"Make sure this is only used for version 1 data.\"\"\"\n        assert hasattr(\n            dataf.meta, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataf.meta, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
+                var nbb_cell_id = 16;
+                var nbb_unformatted_code = "#export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n\n    Calculate group statistics for all data groups.\n\n    | :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\"intelligence\", \"wisdom\", \"charisma\",\n                           \"dexterity\", \"strength\", \"constitution\"]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\" Check validity and add group features. \"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\" Mean, standard deviation and skew for each group. \"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\" Make sure this is only used for version 1 data. \"\"\"\n        assert hasattr(dataf.meta, 'version'), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert getattr(dataf.meta, 'version') == 1, f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
+                var nbb_formatted_code = "# export\nclass GroupStatsPreProcessor(BaseProcessor):\n    \"\"\"\n    WARNING: Only supported for Version 1 (legacy) data.\n\n    Calculate group statistics for all data groups.\n\n    | :param groups: Groups to create features for. All groups by default.\n    \"\"\"\n\n    def __init__(self, groups: list = None):\n        super().__init__()\n        self.all_groups = [\n            \"intelligence\",\n            \"wisdom\",\n            \"charisma\",\n            \"dexterity\",\n            \"strength\",\n            \"constitution\",\n        ]\n        self.group_names = groups if groups else self.all_groups\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        \"\"\"Check validity and add group features.\"\"\"\n        self._check_data_validity(dataf=dataf)\n        dataf = dataf.pipe(self._add_group_features)\n        return NumerFrame(dataf)\n\n    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        \"\"\"Mean, standard deviation and skew for each group.\"\"\"\n        for group in self.group_names:\n            cols = [col for col in dataf.columns if group in col]\n            dataf[f\"feature_{group}_mean\"] = dataf[cols].mean(axis=1)\n            dataf[f\"feature_{group}_std\"] = dataf[cols].std(axis=1)\n            dataf[f\"feature_{group}_skew\"] = dataf[cols].skew(axis=1)\n        return dataf\n\n    def _check_data_validity(self, dataf: NumerFrame):\n        \"\"\"Make sure this is only used for version 1 data.\"\"\"\n        assert hasattr(\n            dataf.meta, \"version\"\n        ), f\"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data.\"\n        assert (\n            getattr(dataf.meta, \"version\") == 1\n        ), f\"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'.\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1184,7 +1181,7 @@ var element = $('#0b1c0608-ffe4-4a03-95bd-d2ed0fe0938d');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">031761</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">024890</span>. ✅
 </pre>
 
 </div>
@@ -1196,167 +1193,15 @@ var element = $('#0b1c0608-ffe4-4a03-95bd-d2ed0fe0938d');
 
 
 
-<div id="0c950c29-6e20-4b64-8f5a-a3a988875a72"></div>
+<div id="0ad74367-732e-446f-9691-50bcbe788191"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0c950c29-6e20-4b64-8f5a-a3a988875a72');
-
-            setTimeout(function() {
-                var nbb_cell_id = 16;
-                var nbb_unformatted_code = "dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1})\ngroup_features_dataset = GroupStatsPreProcessor().transform(dataset)\ngroup_features_dataset.head(2)\nassert group_features_dataset.meta.version == 1";
-                var nbb_formatted_code = "dataset = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1}\n)\ngroup_features_dataset = GroupStatsPreProcessor().transform(dataset)\ngroup_features_dataset.head(2)\nassert group_features_dataset.meta.version == 1";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_cols</span> <span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;feature_intelligence_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_intelligence_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_intelligence_skew&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;feature_wisdom_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_wisdom_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_wisdom_skew&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;feature_charisma_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_charisma_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_charisma_skew&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;feature_dexterity_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_dexterity_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_dexterity_skew&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;feature_strength_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_strength_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_strength_skew&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;feature_constitution_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_constitution_std&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_constitution_skew&#39;</span><span class="p">]</span>
-<span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_features_dataset</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">new_cols</span><span class="p">)</span>
-<span class="n">group_features_dataset</span><span class="o">.</span><span class="n">get_feature_data</span><span class="p">[</span><span class="n">new_cols</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>feature_intelligence_mean</th>
-      <th>feature_intelligence_std</th>
-      <th>feature_intelligence_skew</th>
-      <th>feature_wisdom_mean</th>
-      <th>feature_wisdom_std</th>
-      <th>feature_wisdom_skew</th>
-      <th>feature_charisma_mean</th>
-      <th>feature_charisma_std</th>
-      <th>feature_charisma_skew</th>
-      <th>feature_dexterity_mean</th>
-      <th>feature_dexterity_std</th>
-      <th>feature_dexterity_skew</th>
-      <th>feature_strength_mean</th>
-      <th>feature_strength_std</th>
-      <th>feature_strength_skew</th>
-      <th>feature_constitution_mean</th>
-      <th>feature_constitution_std</th>
-      <th>feature_constitution_skew</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.333333</td>
-      <td>0.246183</td>
-      <td>0.558528</td>
-      <td>0.668478</td>
-      <td>0.236022</td>
-      <td>-0.115082</td>
-      <td>0.438953</td>
-      <td>0.259910</td>
-      <td>-0.004783</td>
-      <td>0.696429</td>
-      <td>0.200446</td>
-      <td>-0.607620</td>
-      <td>0.480263</td>
-      <td>0.292829</td>
-      <td>-0.372064</td>
-      <td>0.427632</td>
-      <td>0.27572</td>
-      <td>0.276155</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>0.208333</td>
-      <td>0.234359</td>
-      <td>0.382554</td>
-      <td>0.559783</td>
-      <td>0.358177</td>
-      <td>-0.062362</td>
-      <td>0.485465</td>
-      <td>0.252501</td>
-      <td>-0.021737</td>
-      <td>0.267857</td>
-      <td>0.249312</td>
-      <td>0.382267</td>
-      <td>0.407895</td>
-      <td>0.309866</td>
-      <td>0.220625</td>
-      <td>0.644737</td>
-      <td>0.33408</td>
-      <td>-0.794938</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="6dbf5ae3-2c1b-4d9b-87ed-a09a55a060d7"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#6dbf5ae3-2c1b-4d9b-87ed-a09a55a060d7');
+var element = $('#0ad74367-732e-446f-9691-50bcbe788191');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
-                var nbb_unformatted_code = "new_cols =  ['feature_intelligence_mean', 'feature_intelligence_std', 'feature_intelligence_skew',\n             'feature_wisdom_mean', 'feature_wisdom_std', 'feature_wisdom_skew',\n             'feature_charisma_mean', 'feature_charisma_std', 'feature_charisma_skew',\n             'feature_dexterity_mean', 'feature_dexterity_std', 'feature_dexterity_skew',\n             'feature_strength_mean', 'feature_strength_std', 'feature_strength_skew',\n             'feature_constitution_mean', 'feature_constitution_std', 'feature_constitution_skew']\nassert set(group_features_dataset.columns).intersection(new_cols)\ngroup_features_dataset.get_feature_data[new_cols].head(2)";
-                var nbb_formatted_code = "new_cols = [\n    \"feature_intelligence_mean\",\n    \"feature_intelligence_std\",\n    \"feature_intelligence_skew\",\n    \"feature_wisdom_mean\",\n    \"feature_wisdom_std\",\n    \"feature_wisdom_skew\",\n    \"feature_charisma_mean\",\n    \"feature_charisma_std\",\n    \"feature_charisma_skew\",\n    \"feature_dexterity_mean\",\n    \"feature_dexterity_std\",\n    \"feature_dexterity_skew\",\n    \"feature_strength_mean\",\n    \"feature_strength_std\",\n    \"feature_strength_skew\",\n    \"feature_constitution_mean\",\n    \"feature_constitution_std\",\n    \"feature_constitution_skew\",\n]\nassert set(group_features_dataset.columns).intersection(new_cols)\ngroup_features_dataset.get_feature_data[new_cols].head(2)";
+                var nbb_unformatted_code = "dataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1})\ngroup_features_dataset = GroupStatsPreProcessor().transform(dataset)\ngroup_features_dataset.head(2)\nassert group_features_dataset.meta.version == 1";
+                var nbb_formatted_code = "dataset = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata={\"version\": 1}\n)\ngroup_features_dataset = GroupStatsPreProcessor().transform(dataset)\ngroup_features_dataset.head(2)\nassert group_features_dataset.meta.version == 1";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1386,6 +1231,13 @@ var element = $('#6dbf5ae3-2c1b-4d9b-87ed-a09a55a060d7');
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="1.1.2.-Numerai-Classic:-Version-2-specific">1.1.2. Numerai Classic: Version 2 specific<a class="anchor-link" href="#1.1.2.-Numerai-Classic:-Version-2-specific"> </a></h4><p>Preprocessors that are only compatible with version 2 data. If the preprocessor is agnostic to Numerai Classic version implement under heading 1.1.0.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1393,16 +1245,7 @@ var element = $('#6dbf5ae3-2c1b-4d9b-87ed-a09a55a060d7');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_invalid_version</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">NumerFrame</span><span class="p">):</span>
-    <span class="n">copied_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">copied_dataset</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">GroupStatsPreProcessor</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">copied_dataset</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="kc">False</span>
-
-<span class="n">test_invalid_version</span><span class="p">(</span><span class="n">dataset</span><span class="p">);</span>
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
     </div>
@@ -1415,29 +1258,17 @@ var element = $('#6dbf5ae3-2c1b-4d9b-87ed-a09a55a060d7');
 <div class="output_area">
 
 
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GroupStatsPreProcessor</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">332</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">017486</span>. ✅
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
 
 
-
-
-<div id="7a65b51e-414c-46b8-9545-267dc268561d"></div>
+<div id="5860701f-df82-4b02-a6d6-67f960f0bda0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7a65b51e-414c-46b8-9545-267dc268561d');
+var element = $('#5860701f-df82-4b02-a6d6-67f960f0bda0');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
-                var nbb_unformatted_code = "def test_invalid_version(dataset: NumerFrame):\n    copied_dataset = dataset.copy()\n    copied_dataset.version = 2\n    try:\n        GroupStatsPreProcessor().transform(copied_dataset)\n    except AssertionError:\n        return True\n    return False\n\ntest_invalid_version(dataset);";
-                var nbb_formatted_code = "def test_invalid_version(dataset: NumerFrame):\n    copied_dataset = dataset.copy()\n    copied_dataset.version = 2\n    try:\n        GroupStatsPreProcessor().transform(copied_dataset)\n    except AssertionError:\n        return True\n    return False\n\n\ntest_invalid_version(dataset)";
+                var nbb_cell_id = 20;
+                var nbb_unformatted_code = "# No version 2 specific Numerai Classic preprocessors implemented yet.";
+                var nbb_formatted_code = "# No version 2 specific Numerai Classic preprocessors implemented yet.";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1462,13 +1293,6 @@ var element = $('#7a65b51e-414c-46b8-9545-267dc268561d');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="1.1.2.-Numerai-Classic:-Version-2-specific">1.1.2. Numerai Classic: Version 2 specific<a class="anchor-link" href="#1.1.2.-Numerai-Classic:-Version-2-specific"> </a></h4><p>Preprocessors that are only compatible with version 2 data. If the preprocessor is agnostic to Numerai Classic version implement under heading 1.1.0.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="1.2.-Signals">1.2. Signals<a class="anchor-link" href="#1.2.-Signals"> </a></h3><p>Preprocessors that are specific to Numerai Signals.</p>
 
 </div>
@@ -1476,8 +1300,8 @@ var element = $('#7a65b51e-414c-46b8-9545-267dc268561d');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="1.2.1.1.-TA-Lib-Features">1.2.1.1. TA-Lib Features<a class="anchor-link" href="#1.2.1.1.-TA-Lib-Features"> </a></h4><p><a href="https://mrjbq7.github.io/ta-lib">TA-Lib</a> is a technical analysis library. It is based on Cython and includes 150+ indicators. We have selected features based on feature importances, SHAP and correlation with the Numerai Signals target. If you want to implement other features check out <a href="https://mrjbq7.github.io/ta-lib/index.html">the TA-Lib documentation</a>.</p>
-<p>Installation of TA-Lib is a bit more involved than just a pip install and is an optional dependency for <code>numerai-blocks</code>. Visit <a href="https://mrjbq7.github.io/ta-lib/install.html">the installation documentation</a> for instructions.</p>
+<h4 id="1.2.1.-TA-Lib-Features">1.2.1. TA-Lib Features<a class="anchor-link" href="#1.2.1.-TA-Lib-Features"> </a></h4><p><a href="https://mrjbq7.github.io/ta-lib">TA-Lib</a> is an optimized technical analysis library. It is based on Cython and includes 150+ indicators. We have selected features based on feature importances, SHAP and correlation with the Numerai Signals target. If you want to implement other features check out the <a href="https://mrjbq7.github.io/ta-lib/index.html">TA-Lib documentation</a>.</p>
+<p>Installation of TA-Lib is a bit more involved than just a pip install and is an optional dependency for this library. Visit the <a href="https://mrjbq7.github.io/ta-lib/install.html">installation documentation</a> for instructions.</p>
 
 </div>
 </div>
@@ -1493,16 +1317,16 @@ var element = $('#7a65b51e-414c-46b8-9545-267dc268561d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="TalibFeatureGenerator" class="doc_header"><code>class</code> <code>TalibFeatureGenerator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L129" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>TalibFeatureGenerator</code>(<strong><code>windows</code></strong>:<code>List</code>[<code>int</code>], <strong><code>ticker_col</code></strong>:<code>str</code>=<em><code>'bloomberg_ticker'</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="TalibFeatureGenerator" class="doc_header"><code>class</code> <code>TalibFeatureGenerator</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L131" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>TalibFeatureGenerator</code>(<strong><code>windows</code></strong>:<code>List</code>[<code>int</code>], <strong><code>ticker_col</code></strong>:<code>str</code>=<em><code>'bloomberg_ticker'</code></em>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
-<p>Generate relevant features available in TA-Lib.
-More info: <a href="https://mrjbq7.github.io/ta-lib">https://mrjbq7.github.io/ta-lib</a></p>
-<p>Input DataFrames for these functions should have the following columns defined:
+<p>| Generate relevant features available in TA-Lib.
+| More info: <a href="https://mrjbq7.github.io/ta-lib">https://mrjbq7.github.io/ta-lib</a></p>
+<p>| Input DataFrames for these functions should have the following columns defined:
 ['open', 'high', 'low', 'close', 'volume']
-Make sure that all values are sorted in chronological order (by ticker).</p>
-<p>:param windows: List of ranges for window features.
-Windows will be applied for all features specified in self.window_features.
-:param ticker_col: Which column to groupby for feature generation.</p>
+| Make sure that all values are sorted in chronological order (by ticker).</p>
+<p>| :param windows: List of ranges for window features.
+| Windows will be applied for all features specified in self.window_features.
+| :param ticker_col: Which column to groupby for feature generation.</p>
 
 </div>
 
@@ -1526,71 +1350,15 @@ Windows will be applied for all features specified in self.window_features.
 
 
 
-<div id="621e5b4d-3be7-4124-a828-0bcc5bad5330"></div>
+<div id="d1a4ea3b-1ad6-4a5e-9d86-b7e61ef164c2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#621e5b4d-3be7-4124-a828-0bcc5bad5330');
+var element = $('#d1a4ea3b-1ad6-4a5e-9d86-b7e61ef164c2');
 
             setTimeout(function() {
-                var nbb_cell_id = 19;
-                var nbb_unformatted_code = "#export\ntry:\n    from talib import abstract as tab\nexcept ImportError:\n    print(\"WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.\")\n\nclass TalibFeatureGenerator(BaseProcessor):\n    \"\"\"\n    Generate relevant features available in TA-Lib.\n    More info: https://mrjbq7.github.io/ta-lib\n\n    Input DataFrames for these functions should have the following columns defined:\n    ['open', 'high', 'low', 'close', 'volume']\n    Make sure that all values are sorted in chronological order (by ticker).\n\n    :param windows: List of ranges for window features.\n    Windows will be applied for all features specified in self.window_features.\n    :param ticker_col: Which column to groupby for feature generation.\n    \"\"\"\n    def __init__(self, windows: List[int], ticker_col: str = \"bloomberg_ticker\"):\n        super().__init__()\n        self.windows = windows\n        self.ticker_col = ticker_col\n        self.window_features = [\"NATR\", \"ADXR\", \"AROONOSC\", \"DX\", \"MFI\",\n                                \"MINUS_DI\", \"MINUS_DM\", \"MOM\", \"ROCP\", \"ROCR100\",\n                                \"PLUS_DI\", \"PLUS_DM\", \"BETA\", \"RSI\",\n                                \"ULTOSC\", \"TRIX\", \"ADXR\", \"CCI\",\n                                \"CMO\", \"WILLR\"]\n        self.no_window_features = [\"AD\", \"OBV\", \"APO\", \"MACD\", \"PPO\"]\n\n    def get_no_window_features(self, dataf: pd.DataFrame):\n        for func in tqdm(self.no_window_features, desc=\"No window features\"):\n            dataf.loc[:, f\"feature_{func}\"] = dataf.groupby(self.ticker_col)\\\n                .apply(lambda x: pd.Series(self._no_window(x, func)).bfill())\\\n                .values.astype(np.float32)\n        return dataf\n\n    def get_window_features(self, dataf: pd.DataFrame):\n        for win in tqdm(self.windows, position=0, desc=\"Window features\"):\n            for func in tqdm(self.window_features, position=1):\n                dataf.loc[:, f\"feature_{func}_{win}\"] = dataf.groupby(self.ticker_col)\\\n                    .apply(lambda x: pd.Series(self._window(x, func, win)).bfill())\\\n                    .values.astype(np.float32)\n        return dataf\n\n    def get_all_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        dataf = self.get_no_window_features(dataf)\n        dataf = self.get_window_features(dataf)\n        return dataf\n\n    def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:\n        return NumerFrame(self.get_all_features(dataf=dataf))\n\n    def _no_window(self, dataf: pd.DataFrame, func) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in ['MACD']:\n            # MACD outputs tuple of 3 elements (value, signal and hist)\n            return tab.Function(func)(inputs['close'])[0]\n        else:\n            return tab.Function(func)(inputs)\n\n    def _window(self, dataf: pd.DataFrame, func, window: int) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in ['ULTOSC']:\n            # ULTOSC requires 3 timeperiods as input\n            return tab.Function(func)(inputs['high'], inputs['low'], inputs['close'],\n                                      timeperiod1=window, timeperiod2=window*2,\n                                      timeperiod3=window*4)\n        else:\n            return tab.Function(func)(inputs, timeperiod=window)\n\n    @staticmethod\n    def __get_inputs(dataf: pd.DataFrame) -> dict:\n        cols = ['open', 'high', 'low', 'close', 'volume']\n        return {col: dataf[col].values.astype(np.float64) for col in cols}";
-                var nbb_formatted_code = "# export\ntry:\n    from talib import abstract as tab\nexcept ImportError:\n    print(\n        \"WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.\"\n    )\n\n\nclass TalibFeatureGenerator(BaseProcessor):\n    \"\"\"\n    Generate relevant features available in TA-Lib.\n    More info: https://mrjbq7.github.io/ta-lib\n\n    Input DataFrames for these functions should have the following columns defined:\n    ['open', 'high', 'low', 'close', 'volume']\n    Make sure that all values are sorted in chronological order (by ticker).\n\n    :param windows: List of ranges for window features.\n    Windows will be applied for all features specified in self.window_features.\n    :param ticker_col: Which column to groupby for feature generation.\n    \"\"\"\n\n    def __init__(self, windows: List[int], ticker_col: str = \"bloomberg_ticker\"):\n        super().__init__()\n        self.windows = windows\n        self.ticker_col = ticker_col\n        self.window_features = [\n            \"NATR\",\n            \"ADXR\",\n            \"AROONOSC\",\n            \"DX\",\n            \"MFI\",\n            \"MINUS_DI\",\n            \"MINUS_DM\",\n            \"MOM\",\n            \"ROCP\",\n            \"ROCR100\",\n            \"PLUS_DI\",\n            \"PLUS_DM\",\n            \"BETA\",\n            \"RSI\",\n            \"ULTOSC\",\n            \"TRIX\",\n            \"ADXR\",\n            \"CCI\",\n            \"CMO\",\n            \"WILLR\",\n        ]\n        self.no_window_features = [\"AD\", \"OBV\", \"APO\", \"MACD\", \"PPO\"]\n\n    def get_no_window_features(self, dataf: pd.DataFrame):\n        for func in tqdm(self.no_window_features, desc=\"No window features\"):\n            dataf.loc[:, f\"feature_{func}\"] = (\n                dataf.groupby(self.ticker_col)\n                .apply(lambda x: pd.Series(self._no_window(x, func)).bfill())\n                .values.astype(np.float32)\n            )\n        return dataf\n\n    def get_window_features(self, dataf: pd.DataFrame):\n        for win in tqdm(self.windows, position=0, desc=\"Window features\"):\n            for func in tqdm(self.window_features, position=1):\n                dataf.loc[:, f\"feature_{func}_{win}\"] = (\n                    dataf.groupby(self.ticker_col)\n                    .apply(lambda x: pd.Series(self._window(x, func, win)).bfill())\n                    .values.astype(np.float32)\n                )\n        return dataf\n\n    def get_all_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        dataf = self.get_no_window_features(dataf)\n        dataf = self.get_window_features(dataf)\n        return dataf\n\n    def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:\n        return NumerFrame(self.get_all_features(dataf=dataf))\n\n    def _no_window(self, dataf: pd.DataFrame, func) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in [\"MACD\"]:\n            # MACD outputs tuple of 3 elements (value, signal and hist)\n            return tab.Function(func)(inputs[\"close\"])[0]\n        else:\n            return tab.Function(func)(inputs)\n\n    def _window(self, dataf: pd.DataFrame, func, window: int) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in [\"ULTOSC\"]:\n            # ULTOSC requires 3 timeperiods as input\n            return tab.Function(func)(\n                inputs[\"high\"],\n                inputs[\"low\"],\n                inputs[\"close\"],\n                timeperiod1=window,\n                timeperiod2=window * 2,\n                timeperiod3=window * 4,\n            )\n        else:\n            return tab.Function(func)(inputs, timeperiod=window)\n\n    @staticmethod\n    def __get_inputs(dataf: pd.DataFrame) -> dict:\n        cols = [\"open\", \"high\", \"low\", \"close\", \"volume\"]\n        return {col: dataf[col].values.astype(np.float64) for col in cols}";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># dataf = pd.DataFrame() # Your Signals DataFrame here.</span>
-<span class="c1"># tfg = TalibFeatureGenerator(windows=[10, 20, 40], ticker_col=&quot;bloomberg_ticker&quot;)</span>
-<span class="c1"># ta_dataf = tfg.transform(dataf=dataf)</span>
-<span class="c1"># ta_dataf.head(2)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="20890dd3-ab62-4e95-beb2-ddb78242654d"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#20890dd3-ab62-4e95-beb2-ddb78242654d');
-
-            setTimeout(function() {
-                var nbb_cell_id = 20;
-                var nbb_unformatted_code = "# Example usage\n# dataf = pd.DataFrame() # Your Signals DataFrame here.\n# tfg = TalibFeatureGenerator(windows=[10, 20, 40], ticker_col=\"bloomberg_ticker\")\n# ta_dataf = tfg.transform(dataf=dataf)\n# ta_dataf.head(2)";
-                var nbb_formatted_code = "# Example usage\n# dataf = pd.DataFrame() # Your Signals DataFrame here.\n# tfg = TalibFeatureGenerator(windows=[10, 20, 40], ticker_col=\"bloomberg_ticker\")\n# ta_dataf = tfg.transform(dataf=dataf)\n# ta_dataf.head(2)";
+                var nbb_cell_id = 21;
+                var nbb_unformatted_code = "#export\ntry:\n    from talib import abstract as tab\nexcept ImportError:\n    print(\"WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.\")\n\nclass TalibFeatureGenerator(BaseProcessor):\n    \"\"\"\n    | Generate relevant features available in TA-Lib.\n    | More info: https://mrjbq7.github.io/ta-lib\n\n    | Input DataFrames for these functions should have the following columns defined:\n    ['open', 'high', 'low', 'close', 'volume']\n    | Make sure that all values are sorted in chronological order (by ticker).\n\n    | :param windows: List of ranges for window features.\n    | Windows will be applied for all features specified in self.window_features.\n    | :param ticker_col: Which column to groupby for feature generation.\n    \"\"\"\n    def __init__(self, windows: List[int], ticker_col: str = \"bloomberg_ticker\"):\n        super().__init__()\n        self.windows = windows\n        self.ticker_col = ticker_col\n        self.window_features = [\"NATR\", \"ADXR\", \"AROONOSC\", \"DX\", \"MFI\",\n                                \"MINUS_DI\", \"MINUS_DM\", \"MOM\", \"ROCP\", \"ROCR100\",\n                                \"PLUS_DI\", \"PLUS_DM\", \"BETA\", \"RSI\",\n                                \"ULTOSC\", \"TRIX\", \"ADXR\", \"CCI\",\n                                \"CMO\", \"WILLR\"]\n        self.no_window_features = [\"AD\", \"OBV\", \"APO\", \"MACD\", \"PPO\"]\n\n    def get_no_window_features(self, dataf: pd.DataFrame):\n        for func in tqdm(self.no_window_features, desc=\"No window features\"):\n            dataf.loc[:, f\"feature_{func}\"] = dataf.groupby(self.ticker_col)\\\n                .apply(lambda x: pd.Series(self._no_window(x, func)).bfill())\\\n                .values.astype(np.float32)\n        return dataf\n\n    def get_window_features(self, dataf: pd.DataFrame):\n        for win in tqdm(self.windows, position=0, desc=\"Window features\"):\n            for func in tqdm(self.window_features, position=1):\n                dataf.loc[:, f\"feature_{func}_{win}\"] = dataf.groupby(self.ticker_col)\\\n                    .apply(lambda x: pd.Series(self._window(x, func, win)).bfill())\\\n                    .values.astype(np.float32)\n        return dataf\n\n    def get_all_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        dataf = self.get_no_window_features(dataf)\n        dataf = self.get_window_features(dataf)\n        return dataf\n\n    def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:\n        return NumerFrame(self.get_all_features(dataf=dataf))\n\n    def _no_window(self, dataf: pd.DataFrame, func) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in ['MACD']:\n            # MACD outputs tuple of 3 elements (value, signal and hist)\n            return tab.Function(func)(inputs['close'])[0]\n        else:\n            return tab.Function(func)(inputs)\n\n    def _window(self, dataf: pd.DataFrame, func, window: int) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in ['ULTOSC']:\n            # ULTOSC requires 3 timeperiods as input\n            return tab.Function(func)(inputs['high'], inputs['low'], inputs['close'],\n                                      timeperiod1=window, timeperiod2=window*2,\n                                      timeperiod3=window*4)\n        else:\n            return tab.Function(func)(inputs, timeperiod=window)\n\n    @staticmethod\n    def __get_inputs(dataf: pd.DataFrame) -> dict:\n        cols = ['open', 'high', 'low', 'close', 'volume']\n        return {col: dataf[col].values.astype(np.float64) for col in cols}";
+                var nbb_formatted_code = "# export\ntry:\n    from talib import abstract as tab\nexcept ImportError:\n    print(\n        \"WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.\"\n    )\n\n\nclass TalibFeatureGenerator(BaseProcessor):\n    \"\"\"\n    | Generate relevant features available in TA-Lib.\n    | More info: https://mrjbq7.github.io/ta-lib\n\n    | Input DataFrames for these functions should have the following columns defined:\n    ['open', 'high', 'low', 'close', 'volume']\n    | Make sure that all values are sorted in chronological order (by ticker).\n\n    | :param windows: List of ranges for window features.\n    | Windows will be applied for all features specified in self.window_features.\n    | :param ticker_col: Which column to groupby for feature generation.\n    \"\"\"\n\n    def __init__(self, windows: List[int], ticker_col: str = \"bloomberg_ticker\"):\n        super().__init__()\n        self.windows = windows\n        self.ticker_col = ticker_col\n        self.window_features = [\n            \"NATR\",\n            \"ADXR\",\n            \"AROONOSC\",\n            \"DX\",\n            \"MFI\",\n            \"MINUS_DI\",\n            \"MINUS_DM\",\n            \"MOM\",\n            \"ROCP\",\n            \"ROCR100\",\n            \"PLUS_DI\",\n            \"PLUS_DM\",\n            \"BETA\",\n            \"RSI\",\n            \"ULTOSC\",\n            \"TRIX\",\n            \"ADXR\",\n            \"CCI\",\n            \"CMO\",\n            \"WILLR\",\n        ]\n        self.no_window_features = [\"AD\", \"OBV\", \"APO\", \"MACD\", \"PPO\"]\n\n    def get_no_window_features(self, dataf: pd.DataFrame):\n        for func in tqdm(self.no_window_features, desc=\"No window features\"):\n            dataf.loc[:, f\"feature_{func}\"] = (\n                dataf.groupby(self.ticker_col)\n                .apply(lambda x: pd.Series(self._no_window(x, func)).bfill())\n                .values.astype(np.float32)\n            )\n        return dataf\n\n    def get_window_features(self, dataf: pd.DataFrame):\n        for win in tqdm(self.windows, position=0, desc=\"Window features\"):\n            for func in tqdm(self.window_features, position=1):\n                dataf.loc[:, f\"feature_{func}_{win}\"] = (\n                    dataf.groupby(self.ticker_col)\n                    .apply(lambda x: pd.Series(self._window(x, func, win)).bfill())\n                    .values.astype(np.float32)\n                )\n        return dataf\n\n    def get_all_features(self, dataf: pd.DataFrame) -> pd.DataFrame:\n        dataf = self.get_no_window_features(dataf)\n        dataf = self.get_window_features(dataf)\n        return dataf\n\n    def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:\n        return NumerFrame(self.get_all_features(dataf=dataf))\n\n    def _no_window(self, dataf: pd.DataFrame, func) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in [\"MACD\"]:\n            # MACD outputs tuple of 3 elements (value, signal and hist)\n            return tab.Function(func)(inputs[\"close\"])[0]\n        else:\n            return tab.Function(func)(inputs)\n\n    def _window(self, dataf: pd.DataFrame, func, window: int) -> pd.Series:\n        inputs = self.__get_inputs(dataf)\n        if func in [\"ULTOSC\"]:\n            # ULTOSC requires 3 timeperiods as input\n            return tab.Function(func)(\n                inputs[\"high\"],\n                inputs[\"low\"],\n                inputs[\"close\"],\n                timeperiod1=window,\n                timeperiod2=window * 2,\n                timeperiod3=window * 4,\n            )\n        else:\n            return tab.Function(func)(inputs, timeperiod=window)\n\n    @staticmethod\n    def __get_inputs(dataf: pd.DataFrame) -> dict:\n        cols = [\"open\", \"high\", \"low\", \"close\", \"volume\"]\n        return {col: dataf[col].values.astype(np.float64) for col in cols}";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1621,8 +1389,8 @@ var element = $('#20890dd3-ab62-4e95-beb2-ddb78242654d');
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>There are an almost unlimited number of ways to preprocess (selection, engineering and manipulation). We have only scratched the surface with the preprocessors currently implemented in <code>numerai-blocks</code>. We invite the Numerai community to develop Numerai Classic and Signals preprocessors for <code>numerai-blocks</code>.</p>
-<p>A new Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement a <code>transform</code> method. For efficient implementation, we recommend you use <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> functionality for preprocessing. You can also support Pandas DataFrame input as long as the <code>transform</code> method returns a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a>. This ensures that the Preprocessor still works within a full <code>numerai-blocks</code> pipeline. A template for new Preprocessors is given below.</p>
+<p>There are an almost unlimited number of ways to preprocess (selection, engineering and manipulation). We have only scratched the surface with the preprocessors currently implemented. We invite the Numerai community to develop Numerai Classic and Numerai Signals preprocessors.</p>
+<p>A new Preprocessor should inherit from <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a> and implement a <code>transform</code> method. For efficient implementation, we recommend you use <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a> functionality for preprocessing. You can also support Pandas DataFrame input as long as the <code>transform</code> method returns a <a href="/numerai_blocks/numerframe.html#NumerFrame"><code>NumerFrame</code></a>. This ensures that the Preprocessor still works within a full <code>numerai-blocks</code> pipeline. A template for new preprocessors is given below.</p>
 <p>To enable fancy logging output. Add the <code>@display_processor_info</code> decorator to the <code>transform</code> method.</p>
 
 </div>
@@ -1639,7 +1407,7 @@ var element = $('#20890dd3-ab62-4e95-beb2-ddb78242654d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomePreProcessor" class="doc_header"><code>class</code> <code>AwesomePreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L200" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePreProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
+<h2 id="AwesomePreProcessor" class="doc_header"><code>class</code> <code>AwesomePreProcessor</code><a href="https://github.com/crowdcent/numerai_blocks/tree/main/numerai_blocks/preprocessing.py#L202" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePreProcessor</code>(<strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerai_blocks/preprocessing.html#BaseProcessor"><code>BaseProcessor</code></a></p>
 </blockquote>
 <ul>
 <li>TEMPLATE -
@@ -1668,13 +1436,13 @@ Do some awesome preprocessing.</li>
 
 
 
-<div id="811c5a83-e7de-46eb-ac5f-dc88b493e227"></div>
+<div id="d6199854-d8d0-47c0-9a83-d4fb954a5194"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#811c5a83-e7de-46eb-ac5f-dc88b493e227');
+var element = $('#d6199854-d8d0-47c0-9a83-d4fb954a5194');
 
             setTimeout(function() {
-                var nbb_cell_id = 21;
+                var nbb_cell_id = 23;
                 var nbb_unformatted_code = "# export\nclass AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n    def __init__(self, *args, **kwargs):\n        super().__init__()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Parse all contents of NumerFrame to the next pipeline step\n        return NumerFrame(dataf)";
                 var nbb_formatted_code = "# export\nclass AwesomePreProcessor(BaseProcessor):\n    \"\"\"\n    - TEMPLATE -\n    Do some awesome preprocessing.\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super().__init__()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Parse all contents of NumerFrame to the next pipeline step\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
