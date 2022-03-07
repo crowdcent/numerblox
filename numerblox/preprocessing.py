@@ -134,7 +134,7 @@ class TalibFeatureGenerator(BaseProcessor):
     ['open', 'high', 'low', 'close', 'volume'] \n
     | Make sure that all values are sorted in chronological order (by ticker). \n
     | :param windows: List of ranges for window features.
-    | Windows will be applied for all features specified in self.window_features. \n
+    Windows will be applied for all features specified in self.window_features. \n
     | :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
