@@ -60,7 +60,7 @@ nb_path: "nbs/01_download.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseIO" class="doc_header"><code>class</code> <code>BaseIO</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L22" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseIO</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <code>ABC</code></p>
+<h2 id="BaseIO" class="doc_header"><code>class</code> <code>BaseIO</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L28" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseIO</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <code>ABC</code></p>
 </blockquote>
 <p>Basic functionality for IO (downloading and uploading).</p>
 <p>| :param directory_path: Base folder for IO. Will be created if it does not exist.</p>
@@ -87,15 +87,15 @@ nb_path: "nbs/01_download.ipynb"
 
 
 
-<div id="4bcf1c12-9d29-445a-b019-3e11945ceb2b"></div>
+<div id="fa56ecd5-33db-4cab-963d-2ca53a800872"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4bcf1c12-9d29-445a-b019-3e11945ceb2b');
+var element = $('#fa56ecd5-33db-4cab-963d-2ca53a800872');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n    | :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\" Create blob that interacts with Google Cloud Storage (GCS). \"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\" Create base directory if it does not exist. \"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\" Return all paths of contents in directory. \"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\" Check if directory is empty. \"\"\"\n        return not bool(self.get_all_files)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n    | :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\"Create blob that interacts with Google Cloud Storage (GCS).\"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\"Create base directory if it does not exist.\"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\"Return all paths of contents in directory.\"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\"Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    | :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\" Create blob that interacts with Google Cloud Storage (GCS). \"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\" Create base directory if it does not exist. \"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\" Return all paths of contents in directory. \"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\" Check if directory is empty. \"\"\"\n        return not bool(self.get_all_files)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    | :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\"Create blob that interacts with Google Cloud Storage (GCS).\"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\"Create base directory if it does not exist.\"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\"Return all paths of contents in directory.\"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\"Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -137,7 +137,7 @@ var element = $('#4bcf1c12-9d29-445a-b019-3e11945ceb2b');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="BaseDownloader" class="doc_header"><code>class</code> <code>BaseDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L127" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerblox/download.html#BaseIO"><code>BaseIO</code></a></p>
+<h2 id="BaseDownloader" class="doc_header"><code>class</code> <code>BaseDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L133" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerblox/download.html#BaseIO"><code>BaseIO</code></a></p>
 </blockquote>
 <p>Abstract base class for downloaders.</p>
 <p>| :param directory_path: Base folder to download files to.</p>
@@ -164,15 +164,15 @@ var element = $('#4bcf1c12-9d29-445a-b019-3e11945ceb2b');
 
 
 
-<div id="4f7bd45e-07af-4ef5-be37-22e75f03c489"></div>
+<div id="12057048-bdbd-4aef-b687-678799e922a4"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4f7bd45e-07af-4ef5-be37-22e75f03c489');
+var element = $('#12057048-bdbd-4aef-b687-678799e922a4');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Download all necessary files needed for training. \"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" Download minimal amount of files needed for weekly inference. \"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\" Load JSON from file and return as dictionary. \"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Download all necessary files needed for training.\"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"Download minimal amount of files needed for weekly inference.\"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\"Load JSON from file and return as dictionary.\"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Download all necessary files needed for training. \"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" Download minimal amount of files needed for weekly inference. \"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\" Load JSON from file and return as dictionary. \"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Download all necessary files needed for training.\"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"Download minimal amount of files needed for weekly inference.\"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\"Load JSON from file and return as dictionary.\"\"\"\n        with open(file_path) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -212,7 +212,7 @@ var element = $('#4f7bd45e-07af-4ef5-be37-22e75f03c489');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiClassicDownloader" class="doc_header"><code>class</code> <code>NumeraiClassicDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L162" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerblox/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="NumeraiClassicDownloader" class="doc_header"><code>class</code> <code>NumeraiClassicDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L168" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerblox/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.</p>
 <p>| Downloading from NumerAPI for Numerai Classic data.     | :param directory_path: Base folder to download files to.     | All *args, **kwargs will be passed to NumerAPI initialization.</p>
@@ -239,15 +239,15 @@ var element = $('#4f7bd45e-07af-4ef5-be37-22e75f03c489');
 
 
 
-<div id="08d5928f-aecd-4a9c-aa88-67c01b6e939b"></div>
+<div id="6e900c1f-08ae-48ef-8434-55da8f67d496"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#08d5928f-aecd-4a9c-aa88-67c01b6e939b');
+var element = $('#6e900c1f-08ae-48ef-8434-55da8f67d496');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.\n\n    | Downloading from NumerAPI for Numerai Classic data.\n    | :param directory_path: Base folder to download files to.\n    | All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            2: {\n                \"train\": {\n                    \"int8\": [\n                        \"numerai_training_data_int8.parquet\",\n                        \"numerai_validation_data_int8.parquet\"\n                    ],\n                    \"float\": [\n                        \"numerai_training_data.parquet\",\n                        \"numerai_validation_data.parquet\"\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"numerai_tournament_data.parquet\"]\n                },\n                \"live\": {\n                    \"int8\": ['numerai_live_data_int8.parquet'],\n                    \"float\": ['numerai_live_data.parquet']\n                },\n                \"example\": [\n                    \"example_predictions.parquet\",\n                    \"example_validation_predictions.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 2, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file))\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        assert (\n            filename in self.napi.list_datasets()\n        ), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n            self,\n            subfolder: str = \"\",\n            version: int = 2,\n            int8: bool = False,\n            round_num: int = None\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 2, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def get_classic_features(self, subfolder: str = \"\", filename=\"features.json\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\" Check if data version is supported and return file mapping for version. \"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary";
-                var nbb_formatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.\n\n    | Downloading from NumerAPI for Numerai Classic data.\n    | :param directory_path: Base folder to download files to.\n    | All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            2: {\n                \"train\": {\n                    \"int8\": [\n                        \"numerai_training_data_int8.parquet\",\n                        \"numerai_validation_data_int8.parquet\",\n                    ],\n                    \"float\": [\n                        \"numerai_training_data.parquet\",\n                        \"numerai_validation_data.parquet\",\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"numerai_tournament_data.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"numerai_live_data_int8.parquet\"],\n                    \"float\": [\"numerai_live_data.parquet\"],\n                },\n                \"example\": [\n                    \"example_predictions.parquet\",\n                    \"example_validation_predictions.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 2, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file))\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        assert (\n            filename in self.napi.list_datasets()\n        ), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 2, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def get_classic_features(\n        self, subfolder: str = \"\", filename=\"features.json\", *args, **kwargs\n    ) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\"Check if data version is supported and return file mapping for version.\"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary";
+                var nbb_unformatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.\n\n    | Downloading from NumerAPI for Numerai Classic data. \\\n    | :param directory_path: Base folder to download files to. \\\n    | All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            2: {\n                \"train\": {\n                    \"int8\": [\n                        \"numerai_training_data_int8.parquet\",\n                        \"numerai_validation_data_int8.parquet\"\n                    ],\n                    \"float\": [\n                        \"numerai_training_data.parquet\",\n                        \"numerai_validation_data.parquet\"\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"numerai_tournament_data.parquet\"]\n                },\n                \"live\": {\n                    \"int8\": ['numerai_live_data_int8.parquet'],\n                    \"float\": ['numerai_live_data.parquet']\n                },\n                \"example\": [\n                    \"example_predictions.parquet\",\n                    \"example_validation_predictions.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 2, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file))\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        assert (\n            filename in self.napi.list_datasets()\n        ), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n            self,\n            subfolder: str = \"\",\n            version: int = 2,\n            int8: bool = False,\n            round_num: int = None\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 2, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def get_classic_features(self, subfolder: str = \"\", filename=\"features.json\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\" Check if data version is supported and return file mapping for version. \"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary";
+                var nbb_formatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.\n\n    | Downloading from NumerAPI for Numerai Classic data. \\\n    | :param directory_path: Base folder to download files to. \\\n    | All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            2: {\n                \"train\": {\n                    \"int8\": [\n                        \"numerai_training_data_int8.parquet\",\n                        \"numerai_validation_data_int8.parquet\",\n                    ],\n                    \"float\": [\n                        \"numerai_training_data.parquet\",\n                        \"numerai_validation_data.parquet\",\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"numerai_tournament_data.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"numerai_live_data_int8.parquet\"],\n                    \"float\": [\"numerai_live_data.parquet\"],\n                },\n                \"example\": [\n                    \"example_predictions.parquet\",\n                    \"example_validation_predictions.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 2, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file))\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        assert (\n            filename in self.napi.list_datasets()\n        ), f\"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}.\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 2,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 2, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            self.download_single_dataset(\n                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num\n            )\n\n    def get_classic_features(\n        self, subfolder: str = \"\", filename=\"features.json\", *args, **kwargs\n    ) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename))\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\"Check if data version is supported and return file mapping for version.\"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[version]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -351,8 +351,8 @@ Feature stats and overview can be downloaded with <code>.get_classic_features()<
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-07 14:11:59,619 INFO numerapi.utils: starting download
-test_numclassic_train/features.json: 441kB [00:00, 677kB/s]                            
+<pre>2022-03-08 14:54:58,160 INFO numerapi.utils: starting download
+test_numclassic_train/features.json: 441kB [00:01, 252kB/s]                             
 </pre>
 </div>
 </div>
@@ -375,10 +375,10 @@ Path:
 
 
 
-<div id="405cf78c-1e45-4e63-b2d7-d38896b7f85c"></div>
+<div id="708ae5fa-9962-461c-a210-de3a2f586d0a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#405cf78c-1e45-4e63-b2d7-d38896b7f85c');
+var element = $('#708ae5fa-9962-461c-a210-de3a2f586d0a');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -440,10 +440,10 @@ var element = $('#405cf78c-1e45-4e63-b2d7-d38896b7f85c');
 
 
 
-<div id="ebee1ec3-10a6-4ed6-bcd6-b833cef42aa9"></div>
+<div id="9d1ca159-8170-49be-9f7d-2970fb664725"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ebee1ec3-10a6-4ed6-bcd6-b833cef42aa9');
+var element = $('#9d1ca159-8170-49be-9f7d-2970fb664725');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -535,8 +535,8 @@ It can also easily be deleted after you are done with inference by calling <code
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-07 14:12:02,150 INFO numerapi.utils: starting download
-test_numclassic_inference/inference/numerai_tournament_data.parquet: 582MB [02:47, 3.48MB/s]                              
+<pre>2022-03-08 14:55:01,958 INFO numerapi.utils: starting download
+test_numclassic_inference/inference/numerai_tournament_data.parquet: 582MB [02:24, 4.02MB/s]                              
 </pre>
 </div>
 </div>
@@ -559,10 +559,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="87e2f794-ff22-46ce-a9ef-8b6418f0a118"></div>
+<div id="6eb3639e-38c7-4f48-9db4-a22de591c562"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#87e2f794-ff22-46ce-a9ef-8b6418f0a118');
+var element = $('#6eb3639e-38c7-4f48-9db4-a22de591c562');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -622,10 +622,10 @@ var element = $('#87e2f794-ff22-46ce-a9ef-8b6418f0a118');
 
 
 
-<div id="19ecd4a3-2ece-4f74-aeba-865460877f69"></div>
+<div id="b0dd1c7a-b6d5-4281-9b54-3358c5949a84"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#19ecd4a3-2ece-4f74-aeba-865460877f69');
+var element = $('#b0dd1c7a-b6d5-4281-9b54-3358c5949a84');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -655,7 +655,428 @@ var element = $('#19ecd4a3-2ece-4f74-aeba-865460877f69');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="3.-Custom-Downloader">3. Custom Downloader<a class="anchor-link" href="#3.-Custom-Downloader"> </a></h2>
+<h2 id="3.-KaggleDownloader-(Numerai-Signals)">3. KaggleDownloader (Numerai Signals)<a class="anchor-link" href="#3.-KaggleDownloader-(Numerai-Signals)"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The Numerai community maintains some excellent datasets on Kaggle for Numerai Signals.</p>
+<p>For example, <a href="https://www.kaggle.com/code1110">Katsu1110</a> maintains a <a href="https://www.kaggle.com/code1110/yfinance-stock-price-data-for-numerai-signals">dataset with yfinance price data</a> on Kaggle that is updated daily. <a href="/numerblox/download.html#KaggleDownloader"><code>KaggleDownloader</code></a> allows you to easily pull data through the Kaggle API. We will be using this dataset in an example below.</p>
+<p>In this case, <code>download_inference_data</code> and <code>download_training_data</code> have the same functionality as we can't make the distinction beforehand for an arbitrary dataset on Kaggle.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="KaggleDownloader" class="doc_header"><code>class</code> <code>KaggleDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L338" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>KaggleDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerblox/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+</blockquote>
+<p>Download awesome financial data from Kaggle.</p>
+<p>For authentication, make sure you have a directory called .kaggle in your home directory
+with therein a kaggle.json file. kaggle.json should have the following structure:</p>
+<p><code>{"username": USERNAME, "key": KAGGLE_API_KEY}</code></p>
+<p>More info on authentication: <a href="https://github.com/Kaggle/kaggle-api#api-credentials">https://github.com/Kaggle/kaggle-api#api-credentials</a></p>
+<p>More info on the Kaggle Python API: <a href="https://www.kaggle.com/donkeys/kaggle-python-api">https://www.kaggle.com/donkeys/kaggle-python-api</a></p>
+<p>| :param directory_path: Base folder to download files to.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="c3161122-e2be-4fee-aa0f-ee54308eae09"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#c3161122-e2be-4fee-aa0f-ee54308eae09');
+
+            setTimeout(function() {
+                var nbb_cell_id = 13;
+                var nbb_unformatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: https://github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: https://www.kaggle.com/donkeys/kaggle-python-api \\n\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        kaggle.api.dataset_download_files(kaggle_dataset_path,\n                                          path=self.dir, unzip=True)";
+                var nbb_formatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: https://github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: https://www.kaggle.com/donkeys/kaggle-python-api \\n\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        kaggle.api.dataset_download_files(\n            kaggle_dataset_path, path=self.dir, unzip=True\n        )";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The link to Katsu1110's yfinance price dataset is <a href="https://www.kaggle.com/code1110/yfinance-stock-price-data-for-numerai-signals">https://www.kaggle.com/code1110/yfinance-stock-price-data-for-numerai-signals</a>. In <code>.download_training_data</code> we define the slug after kaggle.com (<code>code1110/yfinance-stock-price-data-for-numerai-signals</code>) as an argument. The full Kaggle dataset is downloaded and unzipped.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">home_directory</span> <span class="o">=</span> <span class="s2">&quot;test_kaggle_downloader&quot;</span>
+<span class="n">kd</span> <span class="o">=</span> <span class="n">KaggleDownloader</span><span class="p">(</span><span class="n">home_directory</span><span class="p">)</span>
+<span class="n">kd</span><span class="o">.</span><span class="n">download_training_data</span><span class="p">(</span><span class="s2">&quot;code1110/yfinance-stock-price-data-for-numerai-signals&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">test_kaggle_downloader</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="8b5c8a2a-3523-49a7-a8d4-5798582f8a40"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#8b5c8a2a-3523-49a7-a8d4-5798582f8a40');
+
+            setTimeout(function() {
+                var nbb_cell_id = 14;
+                var nbb_unformatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
+                var nbb_formatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This Kaggle dataset contains one file called <code>"full_data.parquet"</code>.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">kd</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[Path(&#39;test_kaggle_downloader/full_data.parquet&#39;)]</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="3cad2ddd-d01f-4d0e-bc7b-70c1a39ffbb8"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#3cad2ddd-d01f-4d0e-bc7b-70c1a39ffbb8');
+
+            setTimeout(function() {
+                var nbb_cell_id = 15;
+                var nbb_unformatted_code = "# other\nlist(kd.dir.iterdir())";
+                var nbb_formatted_code = "# other\nlist(kd.dir.iterdir())";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">home_directory</span><span class="si">}</span><span class="s2">/full_data.parquet&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ticker</th>
+      <th>date</th>
+      <th>close</th>
+      <th>raw_close</th>
+      <th>high</th>
+      <th>low</th>
+      <th>open</th>
+      <th>volume</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>000060 KS</td>
+      <td>20021202</td>
+      <td>4.553156</td>
+      <td>1327.944214</td>
+      <td>1327.944214</td>
+      <td>1327.944214</td>
+      <td>1327.944214</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>000060 KS</td>
+      <td>20021203</td>
+      <td>4.643617</td>
+      <td>1354.327148</td>
+      <td>1354.327148</td>
+      <td>1301.561157</td>
+      <td>1310.355469</td>
+      <td>1319031.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="9d13c5d9-0510-4178-b457-6a1261ff304f"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#9d13c5d9-0510-4178-b457-6a1261ff304f');
+
+            setTimeout(function() {
+                var nbb_cell_id = 16;
+                var nbb_unformatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
+                var nbb_formatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Folder can be cleaned up when done with inference.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">kd</span><span class="o">.</span><span class="n">remove_base_directory</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'KaggleDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
+Path: 
+<span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/test_kaggle_downloader'</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="f8b6cffc-2701-43db-9501-0d7252575324"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#f8b6cffc-2701-43db-9501-0d7252575324');
+
+            setTimeout(function() {
+                var nbb_cell_id = 17;
+                var nbb_unformatted_code = "# other\nkd.remove_base_directory()";
+                var nbb_formatted_code = "# other\nkd.remove_base_directory()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="4.-Custom-Downloader">4. Custom Downloader<a class="anchor-link" href="#4.-Custom-Downloader"> </a></h2>
 </div>
 </div>
 </div>
@@ -679,7 +1100,7 @@ var element = $('#19ecd4a3-2ece-4f74-aeba-865460877f69');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L332" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerblox/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/download.py#L370" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerblox/download.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>TEMPLATE -
 Download awesome financial data from who knows where.</p>
@@ -707,15 +1128,15 @@ Download awesome financial data from who knows where.</p>
 
 
 
-<div id="47d4ef41-2913-4a25-a410-6c655009b4a9"></div>
+<div id="6dd8f0e2-275b-4f17-aa7e-ab1c2e6f7293"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#47d4ef41-2913-4a25-a410-6c655009b4a9');
+var element = $('#6dd8f0e2-275b-4f17-aa7e-ab1c2e6f7293');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
-                var nbb_unformatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    - TEMPLATE -\n    Download awesome financial data from who knows where.\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" (minimal) weekly inference downloading here. \"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Training + validation dataset downloading here. \"\"\"\n        ...";
-                var nbb_formatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    - TEMPLATE -\n    Download awesome financial data from who knows where.\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"(minimal) weekly inference downloading here.\"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Training + validation dataset downloading here.\"\"\"\n        ...";
+                var nbb_cell_id = 18;
+                var nbb_unformatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" (minimal) weekly inference downloading here. \"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Training + validation dataset downloading here. \"\"\"\n        ...";
+                var nbb_formatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    | :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"(minimal) weekly inference downloading here.\"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Training + validation dataset downloading here.\"\"\"\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
