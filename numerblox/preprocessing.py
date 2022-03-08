@@ -229,13 +229,14 @@ class KatsuFeatureGenerator(BaseProcessor):
         self.num_cores = num_cores if num_cores else os.cpu_count()
 
     @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """ Multiprocessing feature engineering. """
+        dataf_copy = deepcopy(dataf)
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
         rich_print(f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores.")
         with Pool(self.num_cores) as p:
             feature_dfs = list(tqdm(p.imap(partial(self.feature_engineering,
-                                                   dataf=deepcopy(dataf)), tickers),
+                                                   dataf=dataf_copy), tickers),
                                     total=len(tickers)))
         dataf = pd.concat(feature_dfs)
         return NumerFrame(dataf)
@@ -256,8 +257,8 @@ class KatsuFeatureGenerator(BaseProcessor):
 
             feature_df.loc[:, f"feature_{self.close_col}_MA_gap_{x}days"] = close_series / close_series.rolling(x).mean()
 
-        feature_df.loc[:, 'feature_RSI'] = self._rsi(close_series, 14)
-        macd, macd_signal = self._macd(close_series, 12, 26, 9)
+        feature_df.loc[:, 'feature_RSI'] = self._rsi(close_series)
+        macd, macd_signal = self._macd(close_series)
         feature_df.loc[:, 'feature_MACD'], feature_df.loc[:, 'feature_MACD_signal'] = macd, macd_signal
         return feature_df.ffill().bfill()
 
