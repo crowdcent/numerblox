@@ -7,17 +7,17 @@ __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'Featu
 # Cell
 import os
 import time
+import warnings
 import numpy as np
 import pandas as pd
 import datetime as dt
-from copy import deepcopy
 from tqdm.auto import tqdm
-from functools import wraps, partial
-from typing import Union, List, Tuple
-from multiprocessing import Pool
+from functools import wraps
 from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
+from typing import Union, List, Tuple
+from multiprocessing.pool import ThreadPool, Pool
 
 from .numerframe import NumerFrame, create_numerframe
 
@@ -25,9 +25,6 @@ try:
     from talib import abstract as tab
 except ImportError:
     print("WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.")
-
-# Ignore Pandas SettingWithCopyWarning
-pd.options.mode.chained_assignment = None
 
 # Cell
 class BaseProcessor(ABC):
@@ -218,7 +215,8 @@ class KatsuFeatureGenerator(BaseProcessor):
     :param ticker_col: Columns with tickers to iterate over. \n
     :param close_col: Column name where you have closing price stored.
     """
-    def __init__(self, windows: list = [20, 40, 60],
+    warnings.filterwarnings('ignore')
+    def __init__(self, windows: list,
                  ticker_col: str = 'ticker',
                  close_col: str = 'close',
                  num_cores: int = None):
@@ -231,36 +229,51 @@ class KatsuFeatureGenerator(BaseProcessor):
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """ Multiprocessing feature engineering. """
-        dataf_copy = deepcopy(dataf)
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
         rich_print(f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores.")
-        with Pool(self.num_cores) as p:
-            feature_dfs = list(tqdm(p.imap(partial(self.feature_engineering,
-                                                   dataf=dataf_copy), tickers),
-                                    total=len(tickers)))
-        dataf = pd.concat(feature_dfs)
+        dataf_list = self._prepare_ticker_datafs(dataf=dataf, tickers=tickers)
+        feature_datafs = self._generate_features(dataf_list=dataf_list)
+        dataf = pd.concat(feature_datafs)
         return NumerFrame(dataf)
 
-    def feature_engineering(self, ticker: str, dataf: pd.DataFrame) -> pd.DataFrame:
+    def feature_engineering(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """ Feature engineering for single ticker. """
-        feature_df = dataf.query(f"{self.ticker_col} == '{ticker}'")
-        close_series = feature_df.loc[:, 'close']
+        close_series = dataf.loc[:, 'close']
         for x in self.windows:
-            feature_df.loc[:, f"feature_{self.close_col}_ROCP_{x}"] = close_series.pct_change(x)
+            dataf.loc[:, f"feature_{self.close_col}_ROCP_{x}"] = close_series.pct_change(x)
 
-            feature_df.loc[:, f"feature_{self.close_col}_VOL_{x}"] = (
+            dataf.loc[:, f"feature_{self.close_col}_VOL_{x}"] = (
                     np.log1p(close_series)
                         .pct_change()
                         .rolling(x)
                         .std()
                 )
 
-            feature_df.loc[:, f"feature_{self.close_col}_MA_gap_{x}days"] = close_series / close_series.rolling(x).mean()
+            dataf.loc[:, f"feature_{self.close_col}_MA_gap_{x}"] = close_series / close_series.rolling(x).mean()
 
-        feature_df.loc[:, 'feature_RSI'] = self._rsi(close_series)
+        dataf.loc[:, 'feature_RSI'] = self._rsi(close_series)
         macd, macd_signal = self._macd(close_series)
-        feature_df.loc[:, 'feature_MACD'], feature_df.loc[:, 'feature_MACD_signal'] = macd, macd_signal
-        return feature_df.ffill().bfill()
+        dataf.loc[:, 'feature_MACD'] = macd
+        dataf.loc[:, 'feature_MACD_signal'] = macd_signal
+        return dataf.ffill().bfill()
+
+    def _prepare_ticker_datafs(self, dataf: pd.DataFrame, tickers: list) -> list:
+        """ Split up DataFrame in list of DataFrame for each ticker. """
+        with ThreadPool(self.num_cores) as p:
+            def __get_ticker_dataf(ticker: str):
+                return dataf.query(f"{self.ticker_col} == '{ticker}'")
+            df_list = list(tqdm(p.imap(__get_ticker_dataf, tickers),
+                                desc="Preparing ticker DataFrames",
+                                total=len(tickers)))
+        return df_list
+
+    def _generate_features(self, dataf_list: list) -> list:
+        """ Add features for list of ticker DataFrames. """
+        with Pool(self.num_cores) as p:
+            feature_datafs = list(tqdm(p.imap(self.feature_engineering, dataf_list),
+                                       desc="Generating features",
+                                       total=len(dataf_list)))
+        return feature_datafs
 
     @staticmethod
     def _rsi(close: pd.Series, period: int = 14) -> pd.Series:
