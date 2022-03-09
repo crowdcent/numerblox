@@ -232,13 +232,12 @@ class KatsuFeatureGenerator(BaseProcessor):
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
         rich_print(f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores.")
         dataf_list =  [x for _, x in tqdm(dataf.groupby(self.ticker_col), desc="Generating ticker DataFrames")]
-        feature_datafs = self._generate_features(dataf_list=dataf_list)
-        dataf = pd.concat(feature_datafs)
+        dataf = self._generate_features(dataf_list=dataf_list)
         return NumerFrame(dataf)
 
     def feature_engineering(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """ Feature engineering for single ticker. """
-        close_series = dataf.loc[:, 'close']
+        close_series = dataf.loc[:, self.close_col]
         for x in self.windows:
             dataf.loc[:, f"feature_{self.close_col}_ROCP_{x}"] = close_series.pct_change(x)
 
@@ -257,13 +256,13 @@ class KatsuFeatureGenerator(BaseProcessor):
         dataf.loc[:, 'feature_MACD_signal'] = macd_signal
         return dataf.ffill().bfill()
 
-    def _generate_features(self, dataf_list: list) -> list:
-        """ Add features for list of ticker DataFrames. """
+    def _generate_features(self, dataf_list: list) -> pd.DataFrame:
+        """ Add features for list of ticker DataFrames and concatenate. """
         with Pool(self.num_cores) as p:
             feature_datafs = list(tqdm(p.imap(self.feature_engineering, dataf_list),
                                        desc="Generating features",
                                        total=len(dataf_list)))
-        return feature_datafs
+        return pd.concat(feature_datafs)
 
     @staticmethod
     def _rsi(close: pd.Series, period: int = 14) -> pd.Series:
