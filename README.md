@@ -22,7 +22,7 @@ The library features the following tools to build your Numerai pipelines:
 6. `ModelPipeline` (and `ModelPipelineCollection`)
 7. `evaluation`
 8. `Key` (containing authentication info)
-9. `NumeraiClassicSubmittor` and `NumeraiSignalsSubmittor`
+9. `NumeraiClassicSubmitter` and `NumeraiSignalsSubmitter`
 10. `staking`
 
 ### 2.2. Examples
@@ -65,9 +65,9 @@ dataset = pipeline(dataf)
 # --- 4. Submit ---
 # Random credentials
 key = load_key_from_json(dataf.meta.key_path)
-submittor = NumeraiClassicSubmittor(directory_path="sub_current_round", key=key)
+submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
 # Only works with valid key credentials
-submittor.full_submission(dataf=dataf,
+submitter.full_submission(dataf=dataf,
                           cols=f"prediction_{dataf.meta.joblib_model_name}_neutralized_0.5",
                           file_name=f"{dataf.meta.numerai_model_name}.csv",
                           model_name=dataf.meta.numerai_model_name,
@@ -76,7 +76,7 @@ submittor.full_submission(dataf=dataf,
 
 # --- 5. Clean up environment (optional) ---
 downloader.remove_base_directory()
-submittor.remove_base_directory()
+submitter.remove_base_directory()
 ```
 
 
