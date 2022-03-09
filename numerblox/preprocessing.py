@@ -231,7 +231,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         """ Multiprocessing feature engineering. """
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
         rich_print(f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores.")
-        dataf_list = self._prepare_ticker_datafs(dataf=dataf, tickers=tickers)
+        dataf_list =  [x for _, x in tqdm(dataf.groupby(self.ticker_col), desc="Generating ticker DataFrames")]
         feature_datafs = self._generate_features(dataf_list=dataf_list)
         dataf = pd.concat(feature_datafs)
         return NumerFrame(dataf)
@@ -256,16 +256,6 @@ class KatsuFeatureGenerator(BaseProcessor):
         dataf.loc[:, 'feature_MACD'] = macd
         dataf.loc[:, 'feature_MACD_signal'] = macd_signal
         return dataf.ffill().bfill()
-
-    def _prepare_ticker_datafs(self, dataf: pd.DataFrame, tickers: list) -> list:
-        """ Split up DataFrame in list of DataFrame for each ticker. """
-        with ThreadPool(self.num_cores) as p:
-            def __get_ticker_dataf(ticker: str):
-                return dataf.query(f"{self.ticker_col} == '{ticker}'")
-            df_list = list(tqdm(p.imap(__get_ticker_dataf, tickers),
-                                desc="Preparing ticker DataFrames",
-                                total=len(tickers)))
-        return df_list
 
     def _generate_features(self, dataf_list: list) -> list:
         """ Add features for list of ticker DataFrames. """
