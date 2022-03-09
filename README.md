@@ -99,9 +99,11 @@ submittor.remove_base_directory()
 
 
 
-## Contributing
+## 3. Contributing
 
-Below are a few guidelines for development of `numerblox`.
+### 3.1. Overview
+
+Below are a few guidelines for development of `numerblox`. Also be sure to read `CONTRIBUTING.md` for more detailed instruction on contributing.
 
 Thanks a lot for wanting to help us out with this project! We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
 
@@ -118,11 +120,11 @@ nbdev live coding example with Hamel Husain:
 
 
 
-### Bugs / Issues / Enhancements.
+### 3.2. Bugs / Issues / Enhancements.
 
 Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please define appropriate labels for the Github issue.
 
-### Contributing Code
+### 3.3. Contributing Code
 
 There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
 
@@ -130,7 +132,7 @@ Before pushing code to the branch you are working in, be sure to run `nbdev_buil
 
 
 
-### Branch structure
+### 3.4. Branch structure
 
 
 Every new feature should be implemented in a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`. Explicit bugfixes should be names `bugfix/{FIX_DESCRIPTION}`. An example structure is given below.
@@ -146,3 +148,9 @@ Every new feature should be implemented in a branch that branches from `dev` and
 </pre>
 
 
+
+## 4. Crediting sources
+
+Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code.
+
+If you are contributing to `numerblox` and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in documentation.
