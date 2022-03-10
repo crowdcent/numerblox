@@ -254,7 +254,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         macd, macd_signal = self._macd(close_series)
         dataf.loc[:, 'feature_MACD'] = macd
         dataf.loc[:, 'feature_MACD_signal'] = macd_signal
-        return dataf.ffill().bfill()
+        return dataf.bfill()
 
     def _generate_features(self, dataf_list: list) -> pd.DataFrame:
         """ Add features for list of ticker DataFrames and concatenate. """
