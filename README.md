@@ -151,6 +151,6 @@ Every new feature should be implemented in a branch that branches from `dev` and
 
 ## 4. Crediting sources
 
-Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code.
+Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code. 
 
 If you are contributing to `numerblox` and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in documentation.
