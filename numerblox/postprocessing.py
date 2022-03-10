@@ -158,9 +158,13 @@ class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
 
-    | :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \n
-    | :param pred_name: Prediction column to neutralize. \n
-    | :param proportion: Number in range [0...1] indicating how much to neutralize.
+    :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \n
+    :param pred_name: Prediction column to neutralize. \n
+    :param proportion: Number in range [0...1] indicating how much to neutralize. \n
+    :param suffix: Optional suffix that is added to new column name. \n
+    :param cuda: Do neutralization on the GPU \n
+    Make sure you have CuPy installed when setting cuda to True. \n
+    Installation docs: docs.cupy.dev/en/stable/install.html
     """
     def __init__(
         self,
@@ -168,6 +172,7 @@ class FeatureNeutralizer(BasePostProcessor):
         pred_name: str = "prediction",
         proportion: float = 0.5,
         suffix: str = None,
+        cuda = False
     ):
         self.pred_name = pred_name
         self.proportion = proportion
@@ -182,6 +187,7 @@ class FeatureNeutralizer(BasePostProcessor):
         super().__init__(final_col_name=self.new_col_name)
 
         self.feature_names = feature_names
+        self.cuda = cuda
 
     @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
@@ -201,12 +207,26 @@ class FeatureNeutralizer(BasePostProcessor):
         return NumerFrame(dataf)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
+        """ Neutralize on CPU. """
         scores = dataf[columns]
         exposures = dataf[by].values
         scores = scores - self.proportion * exposures.dot(
             np.linalg.pinv(exposures).dot(scores)
         )
         return scores / scores.std()
+
+    def neutralize_cuda(self, dataf: pd.DataFrame, columns: list, by: list) -> np.ndarray:
+        """ Neutralize on GPU. """
+        try:
+            import cupy
+        except ImportError:
+            raise ImportError("CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html")
+        scores = cupy.array(dataf[columns].values)
+        exposures = cupy.array(dataf[by].values)
+        scores = scores - self.proportion * exposures.dot(
+            cupy.linalg.pinv(exposures).dot(scores)
+        )
+        return cupy.asnumpy(scores / scores.std())
 
     @staticmethod
     def normalize(dataf: pd.DataFrame) -> np.ndarray:
@@ -216,9 +236,9 @@ class FeatureNeutralizer(BasePostProcessor):
     def normalize_and_neutralize(
         self, dataf: pd.DataFrame, columns: list, by: list
     ) -> pd.DataFrame:
-        # Convert the scores to a normal distribution
         dataf[columns] = self.normalize(dataf[columns])
-        dataf[columns] = self.neutralize(dataf, columns, by)
+        neutralization_func = self.neutralize if not self.cuda else self.neutralize_cuda
+        dataf[columns] = neutralization_func(dataf, columns, by)
         return dataf[columns]
 
 # Cell
@@ -229,11 +249,11 @@ class FeaturePenalizer(BasePostProcessor):
 
     Source (by jrb): https://github.com/jonrtaylor/twitch/blob/master/FE_Clipping_Script.ipynb
 
-    Source of first PyTorch implementation (by mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
+    Source of first PyTorch implementation (by Michael Oliver / mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
 
-    | :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \n
-    | :param pred_name: Prediction column to neutralize. \n
-    | :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
+    :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \n
+    :param pred_name: Prediction column to neutralize. \n
+    :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
     """
     def __init__(
         self,
