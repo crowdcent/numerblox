@@ -119,6 +119,8 @@ submitter.remove_base_directory()
 ### 2.2.2. Numerai Signals
 
 ```
+# other
+# hide_output
 from numerblox.download import KaggleDownloader
 from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import KatsuFeatureGenerator
