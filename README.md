@@ -66,8 +66,7 @@ metadata = {"version": 2,
             "joblib_model_name": "test",
             "joblib_model_path": "test_assets/joblib_v2_example_model.joblib",
             "numerai_model_name": "test_model1",
-            "key_path": "test_assets/test_credentials.json"
-            }
+            "key_path": "test_assets/test_credentials.json"}
 dataf = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet",
                           metadata=metadata)
 
@@ -130,8 +129,7 @@ kd = KaggleDownloader("data")
 kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 
 metadata = {"numerai_model_name": "test_model1",
-            "key_path": "test_assets/test_credentials.json"
-            }
+            "key_path": "test_assets/test_credentials.json"}
 dataf = create_numerframe("data/full_data.parquet", metadata=metadata)
 
 # --- 3. Define and run pipeline ---
@@ -214,7 +212,7 @@ Before pushing code to the branch you are working in, be sure to run `nbdev_buil
 ### 3.4. Branch structure
 
 
-Every new feature should be implemented in a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`. Explicit bugfixes should be names `bugfix/{FIX_DESCRIPTION}`. An example structure is given below.
+Every new feature should be implemented in a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`. Explicit bugfixes should be named `bugfix/{FIX_DESCRIPTION}`. An example structure is given below.
 
 
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    
