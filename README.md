@@ -49,6 +49,8 @@ Below we will illustrate a common use case for inference pipelines. To learn mor
 ```
 #other
 #hide_output
+
+# --- 0. Numerblox dependencies ---
 from numerblox.download import NumeraiClassicDownloader
 from numerblox.numerframe import create_numerframe
 from numerblox.postprocessing import FeatureNeutralizer
@@ -121,34 +123,38 @@ submitter.remove_base_directory()
 ```
 # other
 # hide_output
+
+# --- 0. Numerblox dependencies ---
 from numerblox.download import KaggleDownloader
 from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import KatsuFeatureGenerator
 from numerblox.submission import NumeraiSignalsSubmitter
 
-# Download Katsu1110 yfinance dataset from Kaggle
+# --- 1. Download Katsu1110 yfinance dataset from Kaggle ---
 kd = KaggleDownloader("data")
 kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 
+# --- 2. Initialize NumerFrame with metadata ---
 metadata = {"numerai_model_name": "test_model1",
             "key_path": "test_assets/test_credentials.json"}
 dataf = create_numerframe("data/full_data.parquet", metadata=metadata)
 
 # --- 3. Define and run pipeline ---
 models = [SingleModel("models/signals_model.cbm", model_name="cb")]
-# Simple feature generator based on Katsu Signals starter notebook
+# Simple and fast feature generator based on Katsu Signals starter notebook
 # https://www.kaggle.com/code1110/numeraisignals-starter-for-beginners
-# No postprocessing
 pipeline = ModelPipeline(preprocessors=[KatsuFeatureGenerator(windows=[20, 40, 60])],
                          models=models,
                          postprocessors=[])
 dataf = pipeline(dataf)
-dataf['signal'] = dataf['prediction_cb']
+
 # --- 4. Submit ---
 # Load credentials from .json (random credentials in this example)
 key = load_key_from_json(dataf.meta.key_path)
 submitter = NumeraiSignalsSubmitter(directory_path="sub_current_round", key=key)
 # full_submission checks contents, saves as csv and submits.
+# cols selection must at least contain 1 ticker column and a signal column.
+dataf['signal'] = dataf['prediction_cb']
 submitter.full_submission(dataf=dataf,
                           cols=['bloomberg_ticker', 'signal'],
                           model_name=dataf.meta.numerai_model_name)
@@ -201,13 +207,13 @@ nbdev live coding example with Hamel Husain:
 
 ### 3.2. Bugs / Issues / Enhancements.
 
-Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please define appropriate labels for the Github issue.
+Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
 
 ### 3.3. Contributing Code
 
 There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
 
-Before pushing code to the branch you are working in, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so all code is synced.
+When adding a new feature, only change code in the `nbs/` directory. Then, before pushing code, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically handles the parsing of notebook code into source code and automatically generates documentation from these notebooks.
 
 
 
