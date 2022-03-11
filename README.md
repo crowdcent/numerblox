@@ -2,6 +2,12 @@
 > Solid Numerai pipelines
 
 
+`numerblox` offers Numerai specific functionality, so you have to worry less about software/data engineering and can focus more on building great models!
+
+Most of the components in this library are designed for solid weekly inference pipelines, but tools like `NumerFrame` can also greatly simplify the training process.
+
+Documentation: [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
+
 ## 1. Install
 
 `pip install numerblox`
