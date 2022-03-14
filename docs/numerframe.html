@@ -49,7 +49,7 @@ nb_path: "nbs/02_numerframe.ipynb"
 <li>Automatically track features, targets, prediction and other columns + easily retrieve these data slices.</li>
 <li>Add, export and import metadata. Furthermore, dynamically update or manipulate metadata within your Numerai data pipeline.</li>
 <li>Other library functionality automatically recognizes era column (<code>era</code> or <code>friday_date</code>).</li>
-<li>Integrations with other library components (i.e. <code>preprocessing</code>, <code>model</code>, <code>modelpipeline</code>, <code>postprocessing</code>, <code>evaluation</code> and <code>submission</code>) to create more solid and increase reliability of Numerai inference pipelines.</li>
+<li>Integrations with other library components (i.e. <code>preprocessing</code>, <code>model</code>, <code>modelpipeline</code>, <code>postprocessing</code>, <code>evaluation</code> and <code>submission</code>) to create more solid inference pipelines and increase reliability.</li>
 </ol>
 <p>Besides, all functionality of Pandas DataFrames is still available in the <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a>. You therefore don't have to create new pipelines to process your data when using <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a>.</p>
 
@@ -108,15 +108,15 @@ allows for additional Numerai specific functionality.</p>
 
 
 
-<div id="f0cb4364-1aca-4bbd-b2b7-3183958ba401"></div>
+<div id="a1be1513-d86c-409c-a26e-1af2527d47c9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f0cb4364-1aca-4bbd-b2b7-3183958ba401');
+var element = $('#a1be1513-d86c-409c-a26e-1af2527d47c9');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\" Dynamically track column groups. \"\"\"\n        self.feature_cols = [col for col in self.columns if str(col).startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if str(col).startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def __set_era_col(self):\n        \"\"\" Each NumerFrame should have an era column to benefit from all functionality. \"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\"NumerFrame must contain either an 'era' or 'friday_date' column.\")\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\" Parse arbitrary metadata (i.e. Python objects) to the meta attribute. \"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\" Return NumerFrame from selection of columns. \"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\" Column with name 'target' (Main Numerai target column). \"\"\"\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\" All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\" All columns that are not features, targets or predictions. \"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(self, eras: List[Any],\n                      convert_to_tf = False,\n                      aemlp_batch = False,\n                      features: list = None,\n                      targets: list = None,\n                      *args, **kwargs) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: Selection of era names that should be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        :param features: List of features to select. All by default\n        :param targets: List of targets to select. All by default.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert era in self[self.meta.era_col].unique(), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        features = features if features else self.feature_cols\n        targets = targets if targets else self.target_cols\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][features].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
-                var nbb_formatted_code = "# export\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\"Dynamically track column groups.\"\"\"\n        self.feature_cols = [\n            col for col in self.columns if str(col).startswith(\"feature\")\n        ]\n        self.target_cols = [\n            col for col in self.columns if str(col).startswith(\"target\")\n        ]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def __set_era_col(self):\n        \"\"\"Each NumerFrame should have an era column to benefit from all functionality.\"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\n                \"NumerFrame must contain either an 'era' or 'friday_date' column.\"\n            )\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\"Parse arbitrary metadata (i.e. Python objects) to the meta attribute.\"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\"Return NumerFrame from selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\"Column with name 'target' (Main Numerai target column).\"\"\"\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\"All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(\n        self,\n        eras: List[Any],\n        convert_to_tf=False,\n        aemlp_batch=False,\n        features: list = None,\n        targets: list = None,\n        *args,\n        **kwargs,\n    ) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras.\n        :param eras: Selection of era names that should be present in era_col.\n        :param convert_to_tf: Convert to tf.Tensor.\n        :param aemlp_batch: Specific target batch for autoencoder training.\n        y will contain three components: features, targets and targets.\n        :param features: List of features to select. All by default\n        :param targets: List of targets to select. All by default.\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert (\n                era in self[self.meta.era_col].unique()\n            ), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        features = features if features else self.feature_cols\n        targets = targets if targets else self.target_cols\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][features].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
+                var nbb_unformatted_code = "# export\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n    _metadata = [\"meta\", \"feature_cols\", \"target_cols\",\n                 \"prediction_cols\", \"not_aux_cols\", \"aux_cols\"]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\" Dynamically track column groups. \"\"\"\n        self.feature_cols = [col for col in self.columns if str(col).startswith(\"feature\")]\n        self.target_cols = [col for col in self.columns if str(col).startswith(\"target\")]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [\n            col for col in self.columns if col not in self.not_aux_cols\n        ]\n\n    def __set_era_col(self):\n        \"\"\" Each NumerFrame should have an era column to benefit from all functionality. \"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\"NumerFrame must contain either an 'era' or 'friday_date' column.\")\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\" Parse arbitrary metadata (i.e. Python objects) to the meta attribute. \"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\" Return NumerFrame from selection of columns. \"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\" All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\" Column with name 'target' (Main Numerai target column). \"\"\"\n        return self.get_column_selection(cols=['target'])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\" All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\" All columns that are not features, targets or predictions. \"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[Any, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(self, eras: List[Any],\n                      convert_to_tf = False,\n                      aemlp_batch = False,\n                      features: list = None,\n                      targets: list = None,\n                      *args, **kwargs) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras. \\n\n        :param eras: Selection of era names that should be present in era_col. \\n\n        :param convert_to_tf: Convert to tf.Tensor. \\n\n        :param aemlp_batch: Specific target batch for autoencoder training. \\n\n        `y` output will contain three components: features, targets and targets. \\n\n        :param features: List of features to select. All by default \\n\n        :param targets: List of targets to select. All by default. \\n\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert era in self[self.meta.era_col].unique(), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        features = features if features else self.feature_cols\n        targets = targets if targets else self.target_cols\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][features].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
+                var nbb_formatted_code = "# export\nclass NumerFrame(pd.DataFrame):\n    \"\"\"\n    Data structure which extends Pandas DataFrames and\n    allows for additional Numerai specific functionality.\n    \"\"\"\n\n    _metadata = [\n        \"meta\",\n        \"feature_cols\",\n        \"target_cols\",\n        \"prediction_cols\",\n        \"not_aux_cols\",\n        \"aux_cols\",\n    ]\n    meta = AttrDict()\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.__init_meta_attrs()\n        if not \"era_col_verified\" in self.meta:\n            self.__set_era_col()\n\n    @property\n    def _constructor(self):\n        return NumerFrame\n\n    def __init_meta_attrs(self):\n        \"\"\"Dynamically track column groups.\"\"\"\n        self.feature_cols = [\n            col for col in self.columns if str(col).startswith(\"feature\")\n        ]\n        self.target_cols = [\n            col for col in self.columns if str(col).startswith(\"target\")\n        ]\n        self.prediction_cols = [\n            col for col in self.columns if str(col).startswith(\"prediction\")\n        ]\n        self.not_aux_cols = self.feature_cols + self.target_cols + self.prediction_cols\n        self.aux_cols = [col for col in self.columns if col not in self.not_aux_cols]\n\n    def __set_era_col(self):\n        \"\"\"Each NumerFrame should have an era column to benefit from all functionality.\"\"\"\n        if \"era\" in self.columns:\n            self.meta.era_col = \"era\"\n        elif \"friday_date\" in self.columns:\n            self.meta.era_col = \"friday_date\"\n        else:\n            raise AttributeError(\n                \"NumerFrame must contain either an 'era' or 'friday_date' column.\"\n            )\n        self.meta.era_col_verified = True\n\n    def add_metadata(self, *args, **kwargs):\n        \"\"\"Parse arbitrary metadata (i.e. Python objects) to the meta attribute.\"\"\"\n        self.meta.update(*args, **kwargs)\n\n    def export_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Export all attributes in NumerFrame that can be serialized to json file.\"\"\"\n        rich_print(f\":file_folder: Exporting metadata to {file} :file_folder:\")\n        json_txt = json.dumps(\n            self.meta.__dict__, default=lambda o: \"<not serializable>\", **kwargs\n        )\n        if verbose:\n            rich_print(json_txt)\n        Path(file).write_text(json_txt)\n\n    def import_json_metadata(self, file=\"config.json\", verbose=False, **kwargs):\n        \"\"\"Load arbitrary data into NumerFrame object from json file.\"\"\"\n        rich_print(f\":file_folder: Importing metadata from {file} :file_folder:\")\n        with open(file) as json_file:\n            json_data = json.load(json_file, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        self.meta.__dict__.update(json_data)\n\n    def get_column_selection(self, cols: Union[str, list]):\n        \"\"\"Return NumerFrame from selection of columns.\"\"\"\n        return self.loc[:, cols if isinstance(cols, list) else [cols]]\n\n    @property\n    def get_feature_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.feature_cols)\n\n    @property\n    def get_target_data(self):\n        \"\"\"All columns for which name starts with 'target'.\"\"\"\n        return self.get_column_selection(cols=self.target_cols)\n\n    @property\n    def get_single_target_data(self):\n        \"\"\"Column with name 'target' (Main Numerai target column).\"\"\"\n        return self.get_column_selection(cols=[\"target\"])\n\n    @property\n    def get_prediction_data(self):\n        \"\"\"All columns for which name starts with 'prediction'.\"\"\"\n        return self.get_column_selection(cols=self.prediction_cols)\n\n    @property\n    def get_aux_data(self):\n        \"\"\"All columns that are not features, targets or predictions.\"\"\"\n        return self.get_column_selection(cols=self.aux_cols)\n\n    def get_feature_target_pair(self, multi_target=False) -> Tuple[Any, Any]:\n        \"\"\"\n        Get split of feature and target columns.\n        :param multi_target: Returns only 'target' column by default.\n        Returns all target columns when set to True.\n        \"\"\"\n        X = self.get_feature_data\n        y = self.get_target_data if multi_target else self.get_single_target_data\n        return X, y\n\n    def get_era_batch(\n        self,\n        eras: List[Any],\n        convert_to_tf=False,\n        aemlp_batch=False,\n        features: list = None,\n        targets: list = None,\n        *args,\n        **kwargs,\n    ) -> tuple:\n        \"\"\"\n        Get feature target pair batch of 1 or multiple eras. \\n\n        :param eras: Selection of era names that should be present in era_col. \\n\n        :param convert_to_tf: Convert to tf.Tensor. \\n\n        :param aemlp_batch: Specific target batch for autoencoder training. \\n\n        `y` output will contain three components: features, targets and targets. \\n\n        :param features: List of features to select. All by default \\n\n        :param targets: List of targets to select. All by default. \\n\n        *args, **kwargs are passed to initialization of Tensor.\n        \"\"\"\n        valid_eras = []\n        for era in eras:\n            assert (\n                era in self[self.meta.era_col].unique()\n            ), f\"Era '{era}' not found in era column ({self.meta.era_col})\"\n            valid_eras.append(era)\n        features = features if features else self.feature_cols\n        targets = targets if targets else self.target_cols\n        X = self.loc[self[self.meta.era_col].isin(valid_eras)][features].values\n        y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values\n        if aemlp_batch:\n            y = [X.copy(), y.copy(), y.copy()]\n\n        if convert_to_tf:\n            X = tf.convert_to_tensor(X, *args, **kwargs)\n            if aemlp_batch:\n                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]\n            else:\n                y = tf.convert_to_tensor(y, *args, **kwargs)\n        return X, y\n\n    def profile_report(self, *args, **kwargs) -> ProfileReport:\n        \"\"\"\n        DataFrame profiling. Might take a while to generate for large datasets.\n        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html\n        *args, **kwargs will be passed to ProfileReport initialization.\n        \"\"\"\n        return ProfileReport(self, *args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -163,9 +163,9 @@ var element = $('#f0cb4364-1aca-4bbd-b2b7-3183958ba401');
 <p>Convenient function to initialize NumerFrame.
 Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).
 For more details check <a href="https://pandas.pydata.org/docs/reference/io.html">https://pandas.pydata.org/docs/reference/io.html</a></p>
-<p>| :param file_path: Relative or absolute path to data file.</p>
-<p>| :param metadata: Metadata to be stored in NumerFrame.meta.</p>
-<p>| *args, **kwargs will be passed to Pandas loading function.</p>
+<p>:param file_path: Relative or absolute path to data file.</p>
+<p>:param metadata: Metadata to be stored in NumerFrame.meta.</p>
+<p>*args, **kwargs will be passed to Pandas loading function.</p>
 
 </div>
 
@@ -189,15 +189,15 @@ For more details check <a href="https://pandas.pydata.org/docs/reference/io.html
 
 
 
-<div id="717b5551-84f5-4ce0-9f51-2055baf64906"></div>
+<div id="793b3079-8e47-4196-8953-d35eedb6bbb7"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#717b5551-84f5-4ce0-9f51-2055baf64906');
+var element = $('#793b3079-8e47-4196-8953-d35eedb6bbb7');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "#export\ndef create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) -> NumerFrame:\n    \"\"\"\n    Convenient function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    | :param file_path: Relative or absolute path to data file.\n    | :param metadata: Metadata to be stored in NumerFrame.meta.\n    | *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix\n    if suffix in [\".csv\"]:\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix in [\".parquet\"]:\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    elif suffix in [\".json\"]:\n        dataf = pd.read_json(file_path, *args, **kwargs)\n    elif suffix in [\".xls\", \".xlsx\", \".xlsm\", \"xlsb\", \".odf\", \".ods\", \".odt\"]:\n        dataf = pd.read_excel(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
-                var nbb_formatted_code = "# export\ndef create_numerframe(\n    file_path: str, metadata: dict = None, *args, **kwargs\n) -> NumerFrame:\n    \"\"\"\n    Convenient function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    | :param file_path: Relative or absolute path to data file.\n    | :param metadata: Metadata to be stored in NumerFrame.meta.\n    | *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix\n    if suffix in [\".csv\"]:\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix in [\".parquet\"]:\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    elif suffix in [\".json\"]:\n        dataf = pd.read_json(file_path, *args, **kwargs)\n    elif suffix in [\".xls\", \".xlsx\", \".xlsm\", \"xlsb\", \".odf\", \".ods\", \".odt\"]:\n        dataf = pd.read_excel(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
+                var nbb_unformatted_code = "#export\ndef create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) -> NumerFrame:\n    \"\"\"\n    Convenient function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    :param file_path: Relative or absolute path to data file. \\n\n    :param metadata: Metadata to be stored in NumerFrame.meta. \\n\n    *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix\n    if suffix in [\".csv\"]:\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix in [\".parquet\"]:\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    elif suffix in [\".json\"]:\n        dataf = pd.read_json(file_path, *args, **kwargs)\n    elif suffix in [\".xls\", \".xlsx\", \".xlsm\", \"xlsb\", \".odf\", \".ods\", \".odt\"]:\n        dataf = pd.read_excel(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError(f\"Suffix '{suffix}' is not supported.\")\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
+                var nbb_formatted_code = "# export\ndef create_numerframe(\n    file_path: str, metadata: dict = None, *args, **kwargs\n) -> NumerFrame:\n    \"\"\"\n    Convenient function to initialize NumerFrame.\n    Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).\n    For more details check https://pandas.pydata.org/docs/reference/io.html\n\n    :param file_path: Relative or absolute path to data file. \\n\n    :param metadata: Metadata to be stored in NumerFrame.meta. \\n\n    *args, **kwargs will be passed to Pandas loading function.\n    \"\"\"\n    assert Path(file_path).is_file(), f\"{file_path} does not point to file.\"\n    suffix = Path(file_path).suffix\n    if suffix in [\".csv\"]:\n        dataf = pd.read_csv(file_path, *args, **kwargs)\n    elif suffix in [\".parquet\"]:\n        dataf = pd.read_parquet(file_path, *args, **kwargs)\n    elif suffix in [\".pkl\", \".pickle\"]:\n        dataf = pd.read_pickle(file_path, *args, **kwargs)\n    elif suffix in [\".json\"]:\n        dataf = pd.read_json(file_path, *args, **kwargs)\n    elif suffix in [\".xls\", \".xlsx\", \".xlsm\", \"xlsb\", \".odf\", \".ods\", \".odt\"]:\n        dataf = pd.read_excel(file_path, *args, **kwargs)\n    else:\n        raise NotImplementedError(f\"Suffix '{suffix}' is not supported.\")\n    num_frame = NumerFrame(dataf)\n    if metadata:\n        num_frame.add_metadata(metadata)\n    return num_frame";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -251,10 +251,10 @@ You then have the option to add metadata with <code>.add_metadata</code>. All me
 <span class="n">id_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
 
 <span class="c1"># Random DataFrame</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">test_features</span><span class="p">)</span>
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_col</span>
-<span class="n">df</span><span class="p">[[</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;target_1&quot;</span><span class="p">,</span> <span class="s2">&quot;target_2&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;era&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">dataf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">test_features</span><span class="p">)</span>
+<span class="n">dataf</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_col</span>
+<span class="n">dataf</span><span class="p">[[</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;target_1&quot;</span><span class="p">,</span> <span class="s2">&quot;target_2&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">dataf</span><span class="p">[</span><span class="s2">&quot;era&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -269,15 +269,15 @@ You then have the option to add metadata with <code>.add_metadata</code>. All me
 
 
 
-<div id="ab531fc9-5532-48ea-9e45-9dcbc3a42618"></div>
+<div id="c41594f2-6bdc-4750-8ebd-5a837fc83488"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ab531fc9-5532-48ea-9e45-9dcbc3a42618');
+var element = $('#c41594f2-6bdc-4750-8ebd-5a837fc83488');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
-                var nbb_unformatted_code = "test_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\n# Random DataFrame\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
-                var nbb_formatted_code = "test_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\n# Random DataFrame\ndf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndf[\"id\"] = id_col\ndf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndf[\"era\"] = range(100)";
+                var nbb_unformatted_code = "test_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\n# Random DataFrame\ndataf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndataf[\"id\"] = id_col\ndataf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndataf[\"era\"] = range(100)";
+                var nbb_formatted_code = "test_features = [f\"feature_{l}\" for l in \"ABCDEFGHIK\"]\nid_col = [uuid.uuid4().hex for _ in range(100)]\n\n# Random DataFrame\ndataf = pd.DataFrame(np.random.uniform(size=(100, 10)), columns=test_features)\ndataf[\"id\"] = id_col\ndataf[[\"target\", \"target_1\", \"target_2\"]] = np.random.normal(size=(100, 3))\ndataf[\"era\"] = range(100)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -313,10 +313,10 @@ var element = $('#ab531fc9-5532-48ea-9e45-9dcbc3a42618');
     <span class="s2">&quot;multi_target&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="n">memory_dataset</span> <span class="o">=</span> <span class="n">NumerFrame</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-<span class="n">memory_dataset</span><span class="o">.</span><span class="n">add_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">42</span>
-<span class="k">assert</span> <span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">tournament_type</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span>
+<span class="n">memory_dataf</span> <span class="o">=</span> <span class="n">NumerFrame</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
+<span class="n">memory_dataf</span><span class="o">.</span><span class="n">add_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="k">assert</span> <span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">tournament_type</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span>
 </pre></div>
 
     </div>
@@ -331,15 +331,15 @@ var element = $('#ab531fc9-5532-48ea-9e45-9dcbc3a42618');
 
 
 
-<div id="0ee49687-e0d7-4f6a-9765-69b9c01b4565"></div>
+<div id="961e46dc-4fea-40a0-a141-af4d7afddcda"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0ee49687-e0d7-4f6a-9765-69b9c01b4565');
+var element = $('#961e46dc-4fea-40a0-a141-af4d7afddcda');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
-                var nbb_unformatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataset = NumerFrame(df)\nmemory_dataset.add_metadata(metadata)\nassert memory_dataset.meta.version == 42\nassert memory_dataset.meta.tournament_type == \"random\"";
-                var nbb_formatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataset = NumerFrame(df)\nmemory_dataset.add_metadata(metadata)\nassert memory_dataset.meta.version == 42\nassert memory_dataset.meta.tournament_type == \"random\"";
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataf = NumerFrame(dataf)\nmemory_dataf.add_metadata(metadata)\nassert memory_dataf.meta.version == 42\nassert memory_dataf.meta.tournament_type == \"random\"";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 42,\n    \"additional_info\": \"test_model\",\n    \"multi_target\": False,\n    \"tournament_type\": \"random\",\n}\nmemory_dataf = NumerFrame(dataf)\nmemory_dataf.add_metadata(metadata)\nassert memory_dataf.meta.version == 42\nassert memory_dataf.meta.tournament_type == \"random\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -376,7 +376,7 @@ var element = $('#0ee49687-e0d7-4f6a-9765-69b9c01b4565');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span>
 </pre></div>
 
     </div>
@@ -406,15 +406,15 @@ var element = $('#0ee49687-e0d7-4f6a-9765-69b9c01b4565');
 
 
 
-<div id="a2bf6dab-8fdd-4119-8988-e3325da80fa4"></div>
+<div id="ac479168-a693-4ee3-8bb9-0b10a62d3d2f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a2bf6dab-8fdd-4119-8988-e3325da80fa4');
+var element = $('#ac479168-a693-4ee3-8bb9-0b10a62d3d2f');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
-                var nbb_unformatted_code = "memory_dataset.meta";
-                var nbb_formatted_code = "memory_dataset.meta";
+                var nbb_unformatted_code = "memory_dataf.meta";
+                var nbb_formatted_code = "memory_dataf.meta";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -444,7 +444,7 @@ var element = $('#a2bf6dab-8fdd-4119-8988-e3325da80fa4');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span>
 </pre></div>
 
     </div>
@@ -469,15 +469,15 @@ var element = $('#a2bf6dab-8fdd-4119-8988-e3325da80fa4');
 
 
 
-<div id="2dc55288-6965-4672-ba7f-e588b2530af2"></div>
+<div id="1529b7ff-6330-4115-9b65-6e894fd862ca"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2dc55288-6965-4672-ba7f-e588b2530af2');
+var element = $('#1529b7ff-6330-4115-9b65-6e894fd862ca');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "memory_dataset.meta.version";
-                var nbb_formatted_code = "memory_dataset.meta.version";
+                var nbb_unformatted_code = "memory_dataf.meta.version";
+                var nbb_formatted_code = "memory_dataf.meta.version";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -507,7 +507,7 @@ var element = $('#2dc55288-6965-4672-ba7f-e588b2530af2');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
 </pre></div>
 
     </div>
@@ -532,15 +532,15 @@ var element = $('#2dc55288-6965-4672-ba7f-e588b2530af2');
 
 
 
-<div id="cab69703-ac83-4cc6-98eb-237affcb2930"></div>
+<div id="f4371516-2e70-402a-b835-2f44f65930bd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cab69703-ac83-4cc6-98eb-237affcb2930');
+var element = $('#f4371516-2e70-402a-b835-2f44f65930bd');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
-                var nbb_unformatted_code = "memory_dataset.meta['version']";
-                var nbb_formatted_code = "memory_dataset.meta[\"version\"]";
+                var nbb_unformatted_code = "memory_dataf.meta['version']";
+                var nbb_formatted_code = "memory_dataf.meta[\"version\"]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -570,7 +570,7 @@ var element = $('#cab69703-ac83-4cc6-98eb-237affcb2930');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="n">memory_dataset</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="n">memory_dataf</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
 </pre></div>
 
     </div>
@@ -585,15 +585,15 @@ var element = $('#cab69703-ac83-4cc6-98eb-237affcb2930');
 
 
 
-<div id="adf47633-4d9a-495e-838f-c951b60e418f"></div>
+<div id="c59e33ec-6d52-48d3-98ff-1716e2d6e783"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#adf47633-4d9a-495e-838f-c951b60e418f');
+var element = $('#c59e33ec-6d52-48d3-98ff-1716e2d6e783');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
-                var nbb_unformatted_code = "assert memory_dataset.meta.version == memory_dataset.meta['version']";
-                var nbb_formatted_code = "assert memory_dataset.meta.version == memory_dataset.meta[\"version\"]";
+                var nbb_unformatted_code = "assert memory_dataf.meta.version == memory_dataf.meta['version']";
+                var nbb_formatted_code = "assert memory_dataf.meta.version == memory_dataf.meta[\"version\"]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -642,12 +642,12 @@ var element = $('#adf47633-4d9a-495e-838f-c951b60e418f');
     <span class="s2">&quot;tournament_type&quot;</span><span class="p">:</span> <span class="s2">&quot;classic&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span>
-                            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span>
-                            <span class="p">)</span>
-<span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
-<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">multi_target</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">dataf</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="s2">&quot;test_assets/mini_numerai_version_1_data.csv&quot;</span><span class="p">,</span>
+                          <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span>
+                          <span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">multi_target</span>
+<span class="n">dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -764,15 +764,15 @@ var element = $('#adf47633-4d9a-495e-838f-c951b60e418f');
 
 
 
-<div id="ab135b4e-f5f3-4126-86ac-5ebf5fd4364f"></div>
+<div id="8bf3ef92-e671-4fab-92b8-80cbdc27833a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ab135b4e-f5f3-4126-86ac-5ebf5fd4364f');
+var element = $('#8bf3ef92-e671-4fab-92b8-80cbdc27833a');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
-                var nbb_unformatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\",\n                            metadata=metadata\n                            )\nassert dataset.meta.version == 1\nassert not dataset.meta.multi_target\ndataset.head(2)";
-                var nbb_formatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataset = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata=metadata\n)\nassert dataset.meta.version == 1\nassert not dataset.meta.multi_target\ndataset.head(2)";
+                var nbb_unformatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataf = create_numerframe(\"test_assets/mini_numerai_version_1_data.csv\",\n                          metadata=metadata\n                          )\nassert dataf.meta.version == 1\nassert not dataf.meta.multi_target\ndataf.head(2)";
+                var nbb_formatted_code = "metadata = {\n    \"version\": 1,\n    \"multi_target\": False,\n    \"tournament_type\": \"classic\",\n}\n\ndataf = create_numerframe(\n    \"test_assets/mini_numerai_version_1_data.csv\", metadata=metadata\n)\nassert dataf.meta.version == 1\nassert not dataf.meta.multi_target\ndataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -808,7 +808,7 @@ var element = $('#ab135b4e-f5f3-4126-86ac-5ebf5fd4364f');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">meta</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">meta</span>
 </pre></div>
 
     </div>
@@ -838,15 +838,15 @@ var element = $('#ab135b4e-f5f3-4126-86ac-5ebf5fd4364f');
 
 
 
-<div id="1c339886-1005-4eb3-8f4b-0d75f6832f3c"></div>
+<div id="c314b4b0-ebbe-48c9-8904-6a5bcb10a37b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#1c339886-1005-4eb3-8f4b-0d75f6832f3c');
+var element = $('#c314b4b0-ebbe-48c9-8904-6a5bcb10a37b');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
-                var nbb_unformatted_code = "dataset.meta";
-                var nbb_formatted_code = "dataset.meta";
+                var nbb_unformatted_code = "dataf.meta";
+                var nbb_formatted_code = "dataf.meta";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -883,7 +883,7 @@ var element = $('#1c339886-1005-4eb3-8f4b-0d75f6832f3c');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_feature_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">get_feature_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1000,15 +1000,15 @@ var element = $('#1c339886-1005-4eb3-8f4b-0d75f6832f3c');
 
 
 
-<div id="41bc2a53-1f21-4c09-9993-ef9b65aba96d"></div>
+<div id="24ae2d86-fd5d-4564-bf7c-d33e7da6e7d0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#41bc2a53-1f21-4c09-9993-ef9b65aba96d');
+var element = $('#24ae2d86-fd5d-4564-bf7c-d33e7da6e7d0');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
-                var nbb_unformatted_code = "dataset.get_feature_data.head(2)";
-                var nbb_formatted_code = "dataset.get_feature_data.head(2)";
+                var nbb_unformatted_code = "dataf.get_feature_data.head(2)";
+                var nbb_formatted_code = "dataf.get_feature_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1045,7 +1045,7 @@ var element = $('#41bc2a53-1f21-4c09-9993-ef9b65aba96d');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">get_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1101,15 +1101,15 @@ var element = $('#41bc2a53-1f21-4c09-9993-ef9b65aba96d');
 
 
 
-<div id="94672ddf-62c5-4f23-803a-d4fd03ba1b6e"></div>
+<div id="8c988fd4-4321-4df2-992d-9ae5f05a2038"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#94672ddf-62c5-4f23-803a-d4fd03ba1b6e');
+var element = $('#8c988fd4-4321-4df2-992d-9ae5f05a2038');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
-                var nbb_unformatted_code = "dataset.get_target_data.head(2)";
-                var nbb_formatted_code = "dataset.get_target_data.head(2)";
+                var nbb_unformatted_code = "dataf.get_target_data.head(2)";
+                var nbb_formatted_code = "dataf.get_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1146,7 +1146,7 @@ var element = $('#94672ddf-62c5-4f23-803a-d4fd03ba1b6e');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_single_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">get_single_target_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1202,15 +1202,15 @@ var element = $('#94672ddf-62c5-4f23-803a-d4fd03ba1b6e');
 
 
 
-<div id="3e194806-594a-42fd-8185-570abd6de001"></div>
+<div id="2952623d-2a1c-4191-afe1-96f626979005"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3e194806-594a-42fd-8185-570abd6de001');
+var element = $('#2952623d-2a1c-4191-afe1-96f626979005');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
-                var nbb_unformatted_code = "dataset.get_single_target_data.head(2)";
-                var nbb_formatted_code = "dataset.get_single_target_data.head(2)";
+                var nbb_unformatted_code = "dataf.get_single_target_data.head(2)";
+                var nbb_formatted_code = "dataf.get_single_target_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1235,7 +1235,7 @@ var element = $('#3e194806-594a-42fd-8185-570abd6de001');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><code>.get_era_batch</code> will return a <code>tf.Tensor</code> or <code>np.ndarray</code> with feature data and target data for one or more eras. Convenient for creating neural network DataGenerators.</p>
+<p><code>.get_era_batch</code> will return a <code>tf.Tensor</code> or <code>np.array</code> with feature data and target data for one or more eras. Convenient for creating neural network DataGenerators.</p>
 
 </div>
 </div>
@@ -1247,8 +1247,8 @@ var element = $('#3e194806-594a-42fd-8185-570abd6de001');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_era_batch</span><span class="p">([</span><span class="s1">&#39;era1&#39;</span><span class="p">],</span> <span class="n">convert_to_tf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-<span class="n">X</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X_era</span><span class="p">,</span> <span class="n">y_era</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">get_era_batch</span><span class="p">([</span><span class="s1">&#39;era1&#39;</span><span class="p">],</span> <span class="n">convert_to_tf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+<span class="n">X_era</span>
 </pre></div>
 
     </div>
@@ -1261,7 +1261,7 @@ var element = $('#3e194806-594a-42fd-8185-570abd6de001');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-07 14:51:23.801251: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+<pre>2022-03-14 15:27:09.402539: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 </pre>
 </div>
@@ -1289,15 +1289,15 @@ array([[0.  , 0.5 , 0.25, ..., 1.  , 0.5 , 0.75],
 
 
 
-<div id="763f80f6-3487-4606-83fb-8e9bbe81edb7"></div>
+<div id="75c16fd2-8adc-4e5b-8b91-6b42b52dffb6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#763f80f6-3487-4606-83fb-8e9bbe81edb7');
+var element = $('#75c16fd2-8adc-4e5b-8b91-6b42b52dffb6');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
-                var nbb_unformatted_code = "X, y = dataset.get_era_batch(['era1'], convert_to_tf=True, dtype=tf.float16)\nX";
-                var nbb_formatted_code = "X, y = dataset.get_era_batch([\"era1\"], convert_to_tf=True, dtype=tf.float16)\nX";
+                var nbb_unformatted_code = "X_era, y_era = dataf.get_era_batch(['era1'], convert_to_tf=True, dtype=tf.float16)\nX_era";
+                var nbb_formatted_code = "X_era, y_era = dataf.get_era_batch([\"era1\"], convert_to_tf=True, dtype=tf.float16)\nX_era";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1335,8 +1335,8 @@ More info on this setup: <a href="https://forum.numer.ai/t/autoencoder-and-multi
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_era_batch</span><span class="p">([</span><span class="s1">&#39;era1&#39;</span><span class="p">],</span> <span class="n">convert_to_tf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">aemlp_batch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-<span class="n">y</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">y_era_aemlp</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">get_era_batch</span><span class="p">([</span><span class="s1">&#39;era1&#39;</span><span class="p">],</span> <span class="n">convert_to_tf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">aemlp_batch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+<span class="n">y_era_aemlp</span>
 </pre></div>
 
     </div>
@@ -1390,15 +1390,15 @@ More info on this setup: <a href="https://forum.numer.ai/t/autoencoder-and-multi
 
 
 
-<div id="e9657fb2-8aa4-416a-b210-6d713af2d764"></div>
+<div id="1bf23cf3-21b9-4fa1-844b-e7ed0e4d9bab"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e9657fb2-8aa4-416a-b210-6d713af2d764');
+var element = $('#1bf23cf3-21b9-4fa1-844b-e7ed0e4d9bab');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
-                var nbb_unformatted_code = "X, y = dataset.get_era_batch(['era1'], convert_to_tf=True, aemlp_batch=True, dtype=tf.float16)\ny";
-                var nbb_formatted_code = "X, y = dataset.get_era_batch(\n    [\"era1\"], convert_to_tf=True, aemlp_batch=True, dtype=tf.float16\n)\ny";
+                var nbb_unformatted_code = "_, y_era_aemlp = dataf.get_era_batch(['era1'], convert_to_tf=True, aemlp_batch=True, dtype=tf.float16)\ny_era_aemlp";
+                var nbb_formatted_code = "_, y_era_aemlp = dataf.get_era_batch(\n    [\"era1\"], convert_to_tf=True, aemlp_batch=True, dtype=tf.float16\n)\ny_era_aemlp";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1435,7 +1435,7 @@ var element = $('#e9657fb2-8aa4-416a-b210-6d713af2d764');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">aux_cols</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">aux_cols</span>
 </pre></div>
 
     </div>
@@ -1460,15 +1460,15 @@ var element = $('#e9657fb2-8aa4-416a-b210-6d713af2d764');
 
 
 
-<div id="3901ee59-936b-4efe-8eac-bfb5ed669ecc"></div>
+<div id="89cb242a-8328-4119-b256-a716519fe33f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3901ee59-936b-4efe-8eac-bfb5ed669ecc');
+var element = $('#89cb242a-8328-4119-b256-a716519fe33f');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
-                var nbb_unformatted_code = "dataset.aux_cols";
-                var nbb_formatted_code = "dataset.aux_cols";
+                var nbb_unformatted_code = "dataf.aux_cols";
+                var nbb_formatted_code = "dataf.aux_cols";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1498,7 +1498,7 @@ var element = $('#3901ee59-936b-4efe-8eac-bfb5ed669ecc');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_aux_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">get_aux_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1560,15 +1560,15 @@ var element = $('#3901ee59-936b-4efe-8eac-bfb5ed669ecc');
 
 
 
-<div id="0369d5dd-2c39-4365-97d7-7f1b4d267573"></div>
+<div id="cfdd6165-5ec2-4a38-86e1-74a1b4971804"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0369d5dd-2c39-4365-97d7-7f1b4d267573');
+var element = $('#cfdd6165-5ec2-4a38-86e1-74a1b4971804');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
-                var nbb_unformatted_code = "dataset.get_aux_data.head(2)";
-                var nbb_formatted_code = "dataset.get_aux_data.head(2)";
+                var nbb_unformatted_code = "dataf.get_aux_data.head(2)";
+                var nbb_formatted_code = "dataf.get_aux_data.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1605,7 +1605,7 @@ var element = $('#0369d5dd-2c39-4365-97d7-7f1b4d267573');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">export_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">export_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1631,15 +1631,15 @@ var element = $('#0369d5dd-2c39-4365-97d7-7f1b4d267573');
 
 
 
-<div id="56e752c0-d22f-47e2-94b5-56a5b86e53aa"></div>
+<div id="8def57bd-d4d3-4877-9b2a-40c34e6872f1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#56e752c0-d22f-47e2-94b5-56a5b86e53aa');
+var element = $('#8def57bd-d4d3-4877-9b2a-40c34e6872f1');
 
             setTimeout(function() {
                 var nbb_cell_id = 22;
-                var nbb_unformatted_code = "dataset.export_json_metadata(\"config.json\")";
-                var nbb_formatted_code = "dataset.export_json_metadata(\"config.json\")";
+                var nbb_unformatted_code = "dataf.export_json_metadata(\"config.json\")";
+                var nbb_formatted_code = "dataf.export_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1669,7 +1669,7 @@ var element = $('#56e752c0-d22f-47e2-94b5-56a5b86e53aa');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">import_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">import_json_metadata</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1695,15 +1695,15 @@ var element = $('#56e752c0-d22f-47e2-94b5-56a5b86e53aa');
 
 
 
-<div id="7415c8d6-2169-4bb3-b683-fa71ab4d3139"></div>
+<div id="4db816bb-8e5b-4c08-8466-aa86482cac42"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7415c8d6-2169-4bb3-b683-fa71ab4d3139');
+var element = $('#4db816bb-8e5b-4c08-8466-aa86482cac42');
 
             setTimeout(function() {
                 var nbb_cell_id = 23;
-                var nbb_unformatted_code = "dataset.import_json_metadata(\"config.json\")";
-                var nbb_formatted_code = "dataset.import_json_metadata(\"config.json\")";
+                var nbb_unformatted_code = "dataf.import_json_metadata(\"config.json\")";
+                var nbb_formatted_code = "dataf.import_json_metadata(\"config.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1733,8 +1733,8 @@ var element = $('#7415c8d6-2169-4bb3-b683-fa71ab4d3139');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
-<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">multi_target</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">dataf</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">multi_target</span>
 </pre></div>
 
     </div>
@@ -1749,15 +1749,15 @@ var element = $('#7415c8d6-2169-4bb3-b683-fa71ab4d3139');
 
 
 
-<div id="c2590ac4-ab45-4586-9da3-e324b1b0aab2"></div>
+<div id="581873be-844e-47d9-b08c-ccba39c466c1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c2590ac4-ab45-4586-9da3-e324b1b0aab2');
+var element = $('#581873be-844e-47d9-b08c-ccba39c466c1');
 
             setTimeout(function() {
                 var nbb_cell_id = 24;
-                var nbb_unformatted_code = "assert dataset.meta.version == 1\nassert not dataset.meta.multi_target";
-                var nbb_formatted_code = "assert dataset.meta.version == 1\nassert not dataset.meta.multi_target";
+                var nbb_unformatted_code = "assert dataf.meta.version == 1\nassert not dataf.meta.multi_target";
+                var nbb_formatted_code = "assert dataf.meta.version == 1\nassert not dataf.meta.multi_target";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1794,8 +1794,8 @@ var element = $('#c2590ac4-ab45-4586-9da3-e324b1b0aab2');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf2</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">dataf2</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf2</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">dataf2</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -1810,15 +1810,15 @@ var element = $('#c2590ac4-ab45-4586-9da3-e324b1b0aab2');
 
 
 
-<div id="11fe18ea-ee85-4626-b4b8-3dfb43a3a892"></div>
+<div id="cf1a3f5c-4e3f-447f-920a-7bac7690f579"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#11fe18ea-ee85-4626-b4b8-3dfb43a3a892');
+var element = $('#cf1a3f5c-4e3f-447f-920a-7bac7690f579');
 
             setTimeout(function() {
                 var nbb_cell_id = 25;
-                var nbb_unformatted_code = "dataf2 = dataset.copy()\nassert dataf2.equals(dataset)";
-                var nbb_formatted_code = "dataf2 = dataset.copy()\nassert dataf2.equals(dataset)";
+                var nbb_unformatted_code = "dataf2 = dataf.copy()\nassert dataf2.equals(dataf)";
+                var nbb_formatted_code = "dataf2 = dataf.copy()\nassert dataf2.equals(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1855,8 +1855,8 @@ var element = $('#11fe18ea-ee85-4626-b4b8-3dfb43a3a892');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">))</span>
-<span class="n">new_dataset</span> <span class="o">=</span> <span class="n">NumerFrame</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dataf</span><span class="p">))</span>
+<span class="n">new_dataset</span> <span class="o">=</span> <span class="n">NumerFrame</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">prediction_cols</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;prediction_test_1&quot;</span><span class="p">]</span>
 <span class="k">assert</span> <span class="n">new_dataset</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span>
 </pre></div>
@@ -1873,15 +1873,15 @@ var element = $('#11fe18ea-ee85-4626-b4b8-3dfb43a3a892');
 
 
 
-<div id="6e4c50ba-94e5-40ea-8261-10aaa2a9182d"></div>
+<div id="27085fbd-511b-4f1e-85db-0399fe9c0e30"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6e4c50ba-94e5-40ea-8261-10aaa2a9182d');
+var element = $('#27085fbd-511b-4f1e-85db-0399fe9c0e30');
 
             setTimeout(function() {
                 var nbb_cell_id = 26;
-                var nbb_unformatted_code = "dataset.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset))\nnew_dataset = NumerFrame(dataset)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
-                var nbb_formatted_code = "dataset.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataset))\nnew_dataset = NumerFrame(dataset)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
+                var nbb_unformatted_code = "dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataf))\nnew_dataset = NumerFrame(dataf)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
+                var nbb_formatted_code = "dataf.loc[:, \"prediction_test_1\"] = np.random.uniform(size=len(dataf))\nnew_dataset = NumerFrame(dataf)\nassert new_dataset.prediction_cols == [\"prediction_test_1\"]\nassert new_dataset.meta.version == 1";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1918,7 +1918,7 @@ var element = $('#6e4c50ba-94e5-40ea-8261-10aaa2a9182d');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">selection1</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">selection1</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
 <span class="n">selection1</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
@@ -1975,15 +1975,15 @@ var element = $('#6e4c50ba-94e5-40ea-8261-10aaa2a9182d');
 
 
 
-<div id="13df7bbc-8ace-4313-93ce-9647b89abf59"></div>
+<div id="3a855de6-8048-4d63-a68d-4003086bc5c6"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#13df7bbc-8ace-4313-93ce-9647b89abf59');
+var element = $('#3a855de6-8048-4d63-a68d-4003086bc5c6');
 
             setTimeout(function() {
                 var nbb_cell_id = 27;
-                var nbb_unformatted_code = "selection1 = dataset.get_column_selection(\"id\")\nselection1.head(2)";
-                var nbb_formatted_code = "selection1 = dataset.get_column_selection(\"id\")\nselection1.head(2)";
+                var nbb_unformatted_code = "selection1 = dataf.get_column_selection(\"id\")\nselection1.head(2)";
+                var nbb_formatted_code = "selection1 = dataf.get_column_selection(\"id\")\nselection1.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -2013,7 +2013,7 @@ var element = $('#13df7bbc-8ace-4313-93ce-9647b89abf59');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">selection2</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">([</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">selection2</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">get_column_selection</span><span class="p">([</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_test_1&quot;</span><span class="p">])</span>
 <span class="n">selection2</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
@@ -2054,12 +2054,12 @@ var element = $('#13df7bbc-8ace-4313-93ce-9647b89abf59');
     <tr>
       <th>0</th>
       <td>n000315175b67977</td>
-      <td>0.101446</td>
+      <td>0.192099</td>
     </tr>
     <tr>
       <th>1</th>
       <td>n0014af834a96cdd</td>
-      <td>0.144647</td>
+      <td>0.337739</td>
     </tr>
   </tbody>
 </table>
@@ -2073,15 +2073,15 @@ var element = $('#13df7bbc-8ace-4313-93ce-9647b89abf59');
 
 
 
-<div id="19b31735-26a9-467d-966a-d019c06c4e19"></div>
+<div id="7936e288-40e2-4cb9-b5a0-75cf7336285f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#19b31735-26a9-467d-966a-d019c06c4e19');
+var element = $('#7936e288-40e2-4cb9-b5a0-75cf7336285f');
 
             setTimeout(function() {
                 var nbb_cell_id = 28;
-                var nbb_unformatted_code = "selection2 = dataset.get_column_selection([\"id\", \"prediction_test_1\"])\nselection2.head(2)";
-                var nbb_formatted_code = "selection2 = dataset.get_column_selection([\"id\", \"prediction_test_1\"])\nselection2.head(2)";
+                var nbb_unformatted_code = "selection2 = dataf.get_column_selection([\"id\", \"prediction_test_1\"])\nselection2.head(2)";
+                var nbb_formatted_code = "selection2 = dataf.get_column_selection([\"id\", \"prediction_test_1\"])\nselection2.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -2106,7 +2106,7 @@ var element = $('#19b31735-26a9-467d-966a-d019c06c4e19');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>For convenience we can get a feature, target pair with one method. <code>X</code> will have all feature data and <code>y</code> all target data.</p>
+<p>For convenience we can get a feature, target pair with one method. If <code>multi_target=True</code> all columns where the column name starts with <code>target</code> will be retrieved.</p>
 
 </div>
 </div>
@@ -2118,8 +2118,8 @@ var element = $('#19b31735-26a9-467d-966a-d019c06c4e19');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_feature_target_pair</span><span class="p">(</span><span class="n">multi_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">X</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span><span class="p">,</span> <span class="n">single_target</span> <span class="o">=</span> <span class="n">dataf</span><span class="o">.</span><span class="n">get_feature_target_pair</span><span class="p">(</span><span class="n">multi_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">features</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -2236,15 +2236,15 @@ var element = $('#19b31735-26a9-467d-966a-d019c06c4e19');
 
 
 
-<div id="c3254018-9ef2-4191-bea2-bc9baff72484"></div>
+<div id="4d0e9cd4-fe7f-4c13-a9a9-5b81b4ba5061"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c3254018-9ef2-4191-bea2-bc9baff72484');
+var element = $('#4d0e9cd4-fe7f-4c13-a9a9-5b81b4ba5061');
 
             setTimeout(function() {
                 var nbb_cell_id = 30;
-                var nbb_unformatted_code = "X, y = dataset.get_feature_target_pair(multi_target=False)\nX.head(2)";
-                var nbb_formatted_code = "X, y = dataset.get_feature_target_pair(multi_target=False)\nX.head(2)";
+                var nbb_unformatted_code = "features, single_target = dataf.get_feature_target_pair(multi_target=False)\nfeatures.head(2)";
+                var nbb_formatted_code = "features, single_target = dataf.get_feature_target_pair(multi_target=False)\nfeatures.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -2274,7 +2274,7 @@ var element = $('#c3254018-9ef2-4191-bea2-bc9baff72484');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">single_target</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -2330,15 +2330,15 @@ var element = $('#c3254018-9ef2-4191-bea2-bc9baff72484');
 
 
 
-<div id="736496b0-7695-4cab-9efb-6054b5b93975"></div>
+<div id="c2ee719d-6610-4ecc-a216-caba2da1de4f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#736496b0-7695-4cab-9efb-6054b5b93975');
+var element = $('#c2ee719d-6610-4ecc-a216-caba2da1de4f');
 
             setTimeout(function() {
                 var nbb_cell_id = 31;
-                var nbb_unformatted_code = "y.head(2)";
-                var nbb_formatted_code = "y.head(2)";
+                var nbb_unformatted_code = "single_target.head(2)";
+                var nbb_formatted_code = "single_target.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -2363,7 +2363,7 @@ var element = $('#736496b0-7695-4cab-9efb-6054b5b93975');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>You can directly generate a <a href="https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html">pandas-profiling</a> report with the same arguments that are available for <code>ProfileReport</code>.</p>
+<p>You can directly generate a <a href="https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html">pandas-profiling</a> report from a <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a>.</p>
 
 </div>
 </div>
@@ -2375,7 +2375,7 @@ var element = $('#736496b0-7695-4cab-9efb-6054b5b93975');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">report</span> <span class="o">=</span> <span class="n">memory_dataset</span><span class="o">.</span><span class="n">profile_report</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mini Numerai V1 report&quot;</span><span class="p">,</span> <span class="n">explorative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">report</span> <span class="o">=</span> <span class="n">memory_dataf</span><span class="o">.</span><span class="n">profile_report</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mini Numerai V1 report&quot;</span><span class="p">,</span> <span class="n">explorative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">ProfileReport</span><span class="p">)</span>
 </pre></div>
 
@@ -2391,15 +2391,15 @@ var element = $('#736496b0-7695-4cab-9efb-6054b5b93975');
 
 
 
-<div id="9b19bb3a-b5c3-4950-9b6f-03df4784609c"></div>
+<div id="93cea38a-6041-49dc-af7d-5dcc3939c9a1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9b19bb3a-b5c3-4950-9b6f-03df4784609c');
+var element = $('#93cea38a-6041-49dc-af7d-5dcc3939c9a1');
 
             setTimeout(function() {
                 var nbb_cell_id = 32;
-                var nbb_unformatted_code = "# slow\nreport = memory_dataset.profile_report(title=\"Mini Numerai V1 report\", explorative=True)\nassert isinstance(report, ProfileReport)";
-                var nbb_formatted_code = "# slow\nreport = memory_dataset.profile_report(title=\"Mini Numerai V1 report\", explorative=True)\nassert isinstance(report, ProfileReport)";
+                var nbb_unformatted_code = "# slow\nreport = memory_dataf.profile_report(title=\"Mini Numerai V1 report\", explorative=True)\nassert isinstance(report, ProfileReport)";
+                var nbb_formatted_code = "# slow\nreport = memory_dataf.profile_report(title=\"Mini Numerai V1 report\", explorative=True)\nassert isinstance(report, ProfileReport)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {

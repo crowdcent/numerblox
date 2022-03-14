@@ -18,7 +18,7 @@ Most of the components in this library are designed for solid weekly inference p
 
 ### 2.1. Contents
 
-### 2.1.1. Core functionality
+#### 2.1.1. Core functionality
 
 `numerblox` features the following functionality:
 
@@ -33,7 +33,7 @@ Most of the components in this library are designed for solid weekly inference p
 9. Submitting (`NumeraiClassicSubmitter` and `NumeraiSignalsSubmitter`)
 10. Automated staking (`NumeraiClassicStaker` and `NumeraiSignalsStaker`)
 
-### 2.1.2. Educational notebooks
+#### 2.1.2. Educational notebooks
 
 Example notebooks can be found in the `nbs/edu_nbs` directory.
 
@@ -125,13 +125,16 @@ submitter.remove_base_directory()
 
 
 
-### 2.2.2. Numerai Signals
+#### 2.2.2. Numerai Signals
 
 ```python
 # --- 0. Numerblox dependencies ---
 from numerblox.download import KaggleDownloader
 from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import KatsuFeatureGenerator
+from numerblox.model import SingleModel
+from numerblox.model_pipeline import ModelPipeline
+from numerblox.key import load_key_from_json
 from numerblox.submission import NumeraiSignalsSubmitter
 
 # --- 1. Download Katsu1110 yfinance dataset from Kaggle ---

@@ -30,8 +30,8 @@ class BaseSubmitter(BaseIO):
     Uses numerapi under the hood.
     More info: https://numerapi.readthedocs.io/ \n
 
-    | :param directory_path: Directory to store and read submissions from. \n
-    | :param api: NumerAPI or SignalsAPI
+    :param directory_path: Directory to store and read submissions from. \n
+    :param api: NumerAPI or SignalsAPI
     """
     def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
         super().__init__(directory_path)
@@ -103,14 +103,13 @@ class BaseSubmitter(BaseIO):
                      era_col: str = None,
                      pred_col: str = 'prediction') -> pd.DataFrame:
         """
-        Read in csv files and combine all predictions with a rank mean.
-        Multi-target predictions will be averaged out.
-        :param csv_paths: List of full paths to .csv prediction files.
-        :param aux_cols: ['id'] for Numerai Classic and
-        For example ['ticker', 'last_friday', 'data_type'] for Numerai Signals.
-        All aux_cols will be stored as index.
-        :param era_col: Column indicating era ('era' or 'last_friday').
-        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided.
+        Read in csv files and combine all predictions with a rank mean. \n
+        Multi-target predictions will be averaged out. \n
+        :param csv_paths: List of full paths to .csv prediction files. \n
+        :param aux_cols: ['id'] for Numerai Classic. \n
+        ['ticker', 'last_friday', 'data_type'], for example, with Numerai Signals. \n
+        :param era_col: Column indicating era ('era' or 'last_friday'). \n
+        Will be used for Grouping the rank mean if given. Skip groupby if no era_col provided. \n
         :param pred_col: 'prediction' for Numerai Classic and 'signal' for Numerai Signals.
         """
         all_datafs = [pd.read_csv(path, index_col=aux_cols) for path in tqdm(csv_paths)]
@@ -179,9 +178,9 @@ class NumeraiClassicSubmitter(BaseSubmitter):
     """
     Submit for Numerai Classic.
 
-    | :param directory_path: Base directory to save and read prediction files from. \n
-    | :param key: Key object containing valid credentials for Numerai Classic. \n
-    | *args, **kwargs will be passed to NumerAPI initialization.
+    :param directory_path: Base directory to save and read prediction files from. \n
+    :param key: Key object containing valid credentials for Numerai Classic. \n
+    *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
@@ -221,9 +220,9 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
     """
     Submit for Numerai Signals.
 
-    | :param directory_path: Base directory to save and read prediction files from. \n
-    | :param key: Key object containing valid credentials for Numerai Signals. \n
-    | *args, **kwargs will be passed to SignalsAPI initialization.
+    :param directory_path: Base directory to save and read prediction files from. \n
+    :param key: Key object containing valid credentials for Numerai Signals. \n
+    *args, **kwargs will be passed to SignalsAPI initialization.
     """
 
     def __init__(self, directory_path: str, key: Key, *args, **kwargs):

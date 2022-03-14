@@ -18,18 +18,13 @@ from numerapi import NumerAPI
 
 from google.cloud import storage
 
-try:
-    import kaggle
-except OSError:
-    print("WARNING: You will not be able to use KaggleDownloader currently. Could not find kaggle.json. Make sure it's located in /home/runner/.kaggle. Or use the environment method.")
-
 # Cell
 @typechecked
 class BaseIO(ABC):
     """
     Basic functionality for IO (downloading and uploading).
 
-    | :param directory_path: Base folder for IO. Will be created if it does not exist.
+    :param directory_path: Base folder for IO. Will be created if it does not exist.
     """
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
@@ -134,7 +129,7 @@ class BaseDownloader(BaseIO):
     """
     Abstract base class for downloaders.
 
-    | :param directory_path: Base folder to download files to.
+    :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
@@ -169,9 +164,9 @@ class NumeraiClassicDownloader(BaseDownloader):
     """
     WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.
 
-    | Downloading from NumerAPI for Numerai Classic data. \
-    | :param directory_path: Base folder to download files to. \
-    | All *args, **kwargs will be passed to NumerAPI initialization.
+    Downloading from NumerAPI for Numerai Classic data. \n
+    :param directory_path: Base folder to download files to. \n
+    All *args, **kwargs will be passed to NumerAPI initialization.
     """
     def __init__(self, directory_path: str, *args, **kwargs):
         super().__init__(directory_path=directory_path)
@@ -342,13 +337,14 @@ class KaggleDownloader(BaseDownloader):
     For authentication, make sure you have a directory called .kaggle in your home directory
     with therein a kaggle.json file. kaggle.json should have the following structure: \n
     `{"username": USERNAME, "key": KAGGLE_API_KEY}` \n
-    More info on authentication: https://github.com/Kaggle/kaggle-api#api-credentials \n
+    More info on authentication: github.com/Kaggle/kaggle-api#api-credentials \n
 
-    More info on the Kaggle Python API: https://www.kaggle.com/donkeys/kaggle-python-api \n
+    More info on the Kaggle Python API: kaggle.com/donkeys/kaggle-python-api \n
 
-    | :param directory_path: Base folder to download files to.
+    :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
+        self.__check_kaggle_import()
         super().__init__(directory_path=directory_path)
 
     def download_inference_data(self, kaggle_dataset_path: str):
@@ -363,8 +359,16 @@ class KaggleDownloader(BaseDownloader):
         Download arbitrary Kaggle dataset.
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
         """
+        import kaggle
         kaggle.api.dataset_download_files(kaggle_dataset_path,
                                           path=self.dir, unzip=True)
+
+    @staticmethod
+    def __check_kaggle_import():
+        try:
+            import kaggle
+        except OSError:
+            raise OSError("Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.")
 
 # Cell
 class AwesomeCustomDownloader(BaseDownloader):
@@ -372,7 +376,7 @@ class AwesomeCustomDownloader(BaseDownloader):
     TEMPLATE -
     Download awesome financial data from who knows where.
 
-    | :param directory_path: Base folder to download files to.
+    :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)

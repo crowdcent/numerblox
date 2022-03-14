@@ -18,8 +18,8 @@ class BaseStaker:
     """
     Base class for staking functionality which holds in both Numerai Classic and Signals.
 
-    | :param key: a numerai-blocks Key object \
-    | :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).
+    :param key: a `Key` object \n
+    :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).
     """
     def __init__(self, key: Key, tournament_number: int, *args, **kwargs):
         self.tournament_number = tournament_number
@@ -81,7 +81,10 @@ class BaseStaker:
 
 # Cell
 class NumeraiClassicStaker(BaseStaker):
-    """ Staking functionality specific to Numerai Classic (tournament number 8). """
+    """
+    Staking functionality specific to Numerai Classic (tournament number 8). \n
+    :param key: a `Key` object.
+    """
     CLASSIC_TOURNAMENT_NUMBER = 8
     def __init__(self, key: Key, *args, **kwargs):
         super().__init__(key=key, tournament_number=self.CLASSIC_TOURNAMENT_NUMBER,
@@ -107,7 +110,10 @@ class NumeraiClassicStaker(BaseStaker):
 
 # Cell
 class NumeraiSignalsStaker(BaseStaker):
-    """ Staking functionality specific to Numerai Signals (tournament number 11). """
+    """
+    Staking functionality specific to Numerai Signals (tournament number 11). \n
+    :param key: a `Key` object.
+    """
     SIGNALS_TOURNAMENT_NUMBER = 11
     def __init__(self, key: Key, *args, **kwargs):
         super().__init__(key=key,

@@ -18,9 +18,9 @@ class BaseEvaluator:
     Evaluation functionality that is relevant for both
     Numerai Classic and Numerai Signals.
 
-    | :param era_col: Column name pointing to eras. \n
+    :param era_col: Column name pointing to eras. \n
     Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
-    | :param fast_mode: Will skip compute intensive metrics if set to True,
+    :param fast_mode: Will skip compute intensive metrics if set to True,
     namely max_exposure, feature neutral mean, TB200 and TB500.
     """
     def __init__(self, era_col: str = "era", fast_mode=False):

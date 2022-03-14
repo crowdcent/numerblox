@@ -17,14 +17,9 @@ from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 from typing import Union, List, Tuple
-from multiprocessing.pool import ThreadPool, Pool
+from multiprocessing.pool import Pool
 
 from .numerframe import NumerFrame, create_numerframe
-
-try:
-    from talib import abstract as tab
-except ImportError:
-    print("WARNING: TA-Lib is not installed for this environment. If you are using TA-Lib check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.")
 
 # Cell
 class BaseProcessor(ABC):
@@ -55,7 +50,7 @@ def display_processor_info(func):
 # Cell
 @typechecked
 class CopyPreProcessor(BaseProcessor):
-    """Copy DataFrame to avoid manipulation of original DataFrame. """
+    """ Copy DataFrame to avoid manipulation of original DataFrame. """
     def __init__(self):
         super().__init__()
 
@@ -136,17 +131,14 @@ class TalibFeatureGenerator(BaseProcessor):
     More info: https://mrjbq7.github.io/ta-lib \n
     Input DataFrames for these functions should have the following columns defined:
     ['open', 'high', 'low', 'close', 'volume'] \n
-    | Make sure that all values are sorted in chronological order (by ticker). \n
-    | :param windows: List of ranges for window features.
+    Make sure that all values are sorted in chronological order (by ticker). \n
+    :param windows: List of ranges for window features.
     Windows will be applied for all features specified in self.window_features. \n
-    | :param ticker_col: Which column to groupby for feature generation.
+    :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
+        self.__check_talib_import()
         super().__init__()
-        try:
-            import talib
-        except ImportError:
-            raise ImportError("TA-Lib is not installed and required to use TalibFeatureGenerator. Check https://mrjbq7.github.io/ta-lib/install.html for more info on installation.")
 
         self.windows = windows
         self.ticker_col = ticker_col
@@ -182,6 +174,7 @@ class TalibFeatureGenerator(BaseProcessor):
         return NumerFrame(self.get_all_features(dataf=dataf))
 
     def _no_window(self, dataf: pd.DataFrame, func) -> pd.Series:
+        from talib import abstract as tab
         inputs = self.__get_inputs(dataf)
         if func in ['MACD']:
             # MACD outputs tuple of 3 elements (value, signal and hist)
@@ -190,6 +183,7 @@ class TalibFeatureGenerator(BaseProcessor):
             return tab.Function(func)(inputs)
 
     def _window(self, dataf: pd.DataFrame, func, window: int) -> pd.Series:
+        from talib import abstract as tab
         inputs = self.__get_inputs(dataf)
         if func in ['ULTOSC']:
             # ULTOSC requires 3 timeperiods as input
@@ -201,6 +195,13 @@ class TalibFeatureGenerator(BaseProcessor):
 
     def __get_inputs(self, dataf: pd.DataFrame) -> dict:
         return {col: dataf[col].values.astype(np.float64) for col in self.hlocv_cols}
+
+    @staticmethod
+    def __check_talib_import():
+        try:
+            from talib import abstract as tab
+        except ImportError:
+            raise ImportError("TA-Lib is not installed for this environment. If you are using this class make sure to have TA-Lib installed. check https://mrjbq7.github.io/ta-lib/install.html for instructions on installation.")
 
 # Cell
 class KatsuFeatureGenerator(BaseProcessor):
@@ -275,11 +276,11 @@ class KatsuFeatureGenerator(BaseProcessor):
         up[up < 0] = 0
         down[down > 0] = 0
 
-        _gain = up.ewm(com=(period - 1), min_periods=period).mean()
-        _loss = down.abs().ewm(com=(period - 1), min_periods=period).mean()
+        gain = up.ewm(com=(period - 1), min_periods=period).mean()
+        loss = down.abs().ewm(com=(period - 1), min_periods=period).mean()
 
-        RS = _gain / _loss
-        return pd.Series(100 - (100 / (1 + RS)))
+        rs = gain / loss
+        return pd.Series(100 - (100 / (1 + rs)))
 
     def _macd(self, close: pd.Series, span1=12, span2=26, span3=9) -> Tuple[pd.Series, pd.Series]:
         """ Compute MACD and MACD signal. """
@@ -298,7 +299,7 @@ class KatsuFeatureGenerator(BaseProcessor):
 # Cell
 class AwesomePreProcessor(BaseProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super().__init__()
 
     @display_processor_info

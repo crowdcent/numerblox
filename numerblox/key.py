@@ -28,12 +28,9 @@ class Key:
 
 def load_key_from_json(file_path: str, *args, **kwargs):
     """
-    Initialize Key object from JSON file.
-    Credentials file must have the following format:
-    {
-    "pub_id": "PUBLIC_ID",
-    "secret_key": "SECRET_KEY"
-    }
+    Initialize Key object from JSON file. \n
+    Credentials file must have the following format: \n
+    `{"pub_id": "PUBLIC_ID", "secret_key": "SECRET_KEY"}`
     """
     with open(file_path) as json_file:
         json_data = json.load(json_file, *args, **kwargs)
