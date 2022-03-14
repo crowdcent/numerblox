@@ -190,7 +190,9 @@ submitter.remove_base_directory()
 
 ## 3. Contributing
 
-Be sure to read `CONTRIBUTING.md` for more detailed instruction on contributing.
+Be sure to read `CONTRIBUTING.md` for detailed instructions on contributing.
+
+If you have questions or want to discuss new ideas for `numerblox`, check out [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox).
 
 
 
