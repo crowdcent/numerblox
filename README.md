@@ -6,6 +6,8 @@
 
 Most of the components in this library are designed for solid weekly inference pipelines, but tools like `NumerFrame`, preprocessors and evaluators also greatly simplify the training process.
 
+Questions and discussion: [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
+
 Documentation: [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
 ## 1. Install
@@ -44,6 +46,8 @@ Example notebooks can be found in the `edu_nbs` directory.
 
 Development notebooks are in the `nbs` directory. These notebooks are also used to generate the documentation.
 
+Question or ideas for educational notebooks? Do not hesitate to post them in [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
+
 **Full documentation:** [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
 ### 2.2. Examples
@@ -52,10 +56,7 @@ Below we will illustrate a common use case for inference pipelines. To learn mor
 
 #### 2.2.1. Numerai Classic
 
-```
-#other
-#hide_output
-
+```python
 # --- 0. Numerblox dependencies ---
 from numerblox.download import NumeraiClassicDownloader
 from numerblox.numerframe import create_numerframe
@@ -126,10 +127,7 @@ submitter.remove_base_directory()
 
 ### 2.2.2. Numerai Signals
 
-```
-# other
-# hide_output
-
+```python
 # --- 0. Numerblox dependencies ---
 from numerblox.download import KaggleDownloader
 from numerblox.numerframe import create_numerframe
@@ -192,38 +190,11 @@ submitter.remove_base_directory()
 
 ## 3. Contributing
 
-### 3.1. Overview
-
-Below are a few guidelines for development of `numerblox`. Also be sure to read `CONTRIBUTING.md` for more detailed instruction on contributing.
-
-Thanks a lot for wanting to help us out with this project! We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are only using the library you don't have to worry about this. Just pip install and you are good to go!
-
-If you are thinking of contributing and are not familiar with nbdev, it may take some time to learn nbdev development. We are happy to help out and point you to documentation or videos to learn more.
-
-If you are interested in the full scope of what nbdev has to offer, check out this tutorial with Jeremy Howard:
- [https://youtu.be/Hrs7iEYmRmg](https://youtu.be/Hrs7iEYmRmg).
-
-Why are we using nbdev? To learn more about the rationale behind nbdev:
-[https://youtu.be/9Q6sLbz37gk](https://youtu.be/9Q6sLbz37gk)
-
-nbdev live coding example with Hamel Husain:
-[https://youtu.be/ZJTop5uqC2U](https://youtu.be/ZJTop5uqC2U)
+Be sure to read `CONTRIBUTING.md` for more detailed instruction on contributing.
 
 
 
-### 3.2. Bugs / Issues / Enhancements.
-
-Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
-
-### 3.3. Contributing Code
-
-There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
-
-When adding a new feature, only change code in the `nbs/` directory. Then, before pushing code, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically handles the parsing of notebook code into source code and automatically generates documentation from these notebooks.
-
-
-
-### 3.4. Branch structure
+## 4. Branch structure
 
 
 Every new feature should be implemented in a branch that branches from `dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`. Explicit bugfixes should be named `bugfix/{FIX_DESCRIPTION}`. An example structure is given below.
@@ -240,7 +211,7 @@ Every new feature should be implemented in a branch that branches from `dev` and
 
 
 
-## 4. Crediting sources
+## 5. Crediting sources
 
 Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code.
 
