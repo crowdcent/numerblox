@@ -18,11 +18,6 @@ from numerapi import NumerAPI
 
 from google.cloud import storage
 
-try:
-    import kaggle
-except OSError:
-    print("WARNING: You will not be able to use KaggleDownloader currently. Could not find kaggle.json. Make sure it's located in /home/runner/.kaggle. Or use the environment method.")
-
 # Cell
 @typechecked
 class BaseIO(ABC):
@@ -349,6 +344,7 @@ class KaggleDownloader(BaseDownloader):
     | :param directory_path: Base folder to download files to.
     """
     def __init__(self, directory_path: str):
+        self.__check_kaggle_import()
         super().__init__(directory_path=directory_path)
 
     def download_inference_data(self, kaggle_dataset_path: str):
@@ -363,8 +359,16 @@ class KaggleDownloader(BaseDownloader):
         Download arbitrary Kaggle dataset.
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
         """
+        import kaggle
         kaggle.api.dataset_download_files(kaggle_dataset_path,
                                           path=self.dir, unzip=True)
+
+    @staticmethod
+    def __check_kaggle_import():
+        try:
+            import kaggle
+        except OSError:
+            raise ImportError("Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check https://www.kaggle.com/docs/api#getting-started-installation-&-authentication for more information.")
 
 # Cell
 class AwesomeCustomDownloader(BaseDownloader):
