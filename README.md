@@ -132,6 +132,9 @@ submitter.remove_base_directory()
 from numerblox.download import KaggleDownloader
 from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import KatsuFeatureGenerator
+from numerblox.model import SingleModel
+from numerblox.model_pipeline import ModelPipeline
+from numerblox.key import load_key_from_json
 from numerblox.submission import NumeraiSignalsSubmitter
 
 # --- 1. Download Katsu1110 yfinance dataset from Kaggle ---
