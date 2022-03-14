@@ -6,9 +6,9 @@
 
 Most of the components in this library are designed for solid weekly inference pipelines, but tools like `NumerFrame`, preprocessors and evaluators also greatly simplify the training process.
 
-Questions and discussion: [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
+**Questions and discussion:** [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
 
-Documentation: [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
+**Documentation:** [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
 ## 1. Install
 
@@ -46,7 +46,7 @@ Example notebooks can be found in the `nbs/edu_nbs` directory.
 
 Development notebooks are also in the `nbs` directory. These notebooks are also used to generate the documentation.
 
-Question or ideas for educational notebooks? Do not hesitate to post them in [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
+**Questions or idea discussion for educational notebooks:** [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
 
 **Full documentation:** [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
