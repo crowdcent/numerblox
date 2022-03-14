@@ -109,7 +109,7 @@ class NumerFrame(pd.DataFrame):
         """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
 
-    def get_feature_target_pair(self, multi_target=False) -> Tuple[pd.DataFrame, Any]:
+    def get_feature_target_pair(self, multi_target=False) -> Tuple[Any, Any]:
         """
         Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
@@ -186,7 +186,7 @@ def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) ->
     elif suffix in [".xls", ".xlsx", ".xlsm", "xlsb", ".odf", ".ods", ".odt"]:
         dataf = pd.read_excel(file_path, *args, **kwargs)
     else:
-        raise NotImplementedError
+        raise NotImplementedError(f"Suffix '{suffix}' is not supported.")
     num_frame = NumerFrame(dataf)
     if metadata:
         num_frame.add_metadata(metadata)
