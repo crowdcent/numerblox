@@ -309,7 +309,7 @@ class BaseEvaluator:
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
         for pred_col in pred_cols:
             per_era_corrs = self.per_era_corrs(
-                dataf, pred_col=pred_col, target_col="target"
+                dataf, pred_col=pred_col, target_col=target_col
             )
             validation_by_eras.loc[:, pred_col] = per_era_corrs
 

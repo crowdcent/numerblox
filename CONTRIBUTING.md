@@ -47,15 +47,17 @@ Even though most of the components in this library are tested, the project is st
 * Do not turn an already submitted PR into your development playground. If after you submitted PR, you discovered that more work is needed - close the PR, do the required work and then submit a new PR. Otherwise each of your commits requires attention from maintainers of the project.
 * If, however, you submitted a PR and received a request for changes, you should proceed with commits inside that PR, so that the maintainer can see the incremental fixes and won't need to review the whole PR again. In the exception case where you realize it'll take many many commits to complete the requests, then it's probably best to close the PR, do the work and then submit it again. Use common sense where you'd choose one way over another.
 
-## Contributing code
+## Contributing Code
 
 There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
 
 When adding a new feature, only change code in the `nbs/` directory. Then, before pushing code, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically handles the parsing of notebook code into source code and automatically generates documentation from these notebooks.
 
+## Do you want to contribute example notebooks?
+
+Same guidelines as "Contributing Code" section. New notebooks should be created in the `nbs/edu_nbs` directory.
 
 ## Do you want to contribute to the documentation?
 
 * Docs are automatically created from the notebooks in the nbs folder.
 * Therefore, to change the documentation, only change files in the `nbs/` folder. Then, before pushing new documentation, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically generates documentation from these notebooks.
-

@@ -71,8 +71,8 @@ nb_path: "nbs/04_model.ipynb"
 <h2 id="BaseModel" class="doc_header"><code>class</code> <code>BaseModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L33" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>BaseModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <code>ABC</code></p>
 </blockquote>
 <p>Setup for model prediction on a Dataset.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
 
 </div>
 
@@ -96,10 +96,10 @@ nb_path: "nbs/04_model.ipynb"
 
 
 
-<div id="28928a9e-cf01-42f9-89f4-c8587cfc436d"></div>
+<div id="0414d6a4-f49c-4c35-aae8-6498cec25873"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#28928a9e-cf01-42f9-89f4-c8587cfc436d');
+var element = $('#0414d6a4-f49c-4c35-aae8-6498cec25873');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
@@ -156,11 +156,11 @@ var element = $('#28928a9e-cf01-42f9-89f4-c8587cfc436d');
 <h2 id="DirectoryModel" class="doc_header"><code>class</code> <code>DirectoryModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L66" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DirectoryModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>file_suffix</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>True</code></em>) :: <a href="/numerblox/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Base class implementation where predictions are averaged out from a directory of models. Walks through every file with given file_suffix in a directory.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
-<p>| :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param file_suffix: File format to load (For example, .joblib, .pkl, .cbm or .lgb)</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.</p>
 <p>Convenient when you want to predict the main target by averaging a multi-target model.</p>
 
 </div>
@@ -185,10 +185,10 @@ var element = $('#28928a9e-cf01-42f9-89f4-c8587cfc436d');
 
 
 
-<div id="3974f4b2-0172-4e87-b3d8-fb0d8c6205cb"></div>
+<div id="353ec9bc-b773-4714-ac28-311a0adac2af"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3974f4b2-0172-4e87-b3d8-fb0d8c6205cb');
+var element = $('#353ec9bc-b773-4714-ac28-311a0adac2af');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -242,7 +242,7 @@ var element = $('#3974f4b2-0172-4e87-b3d8-fb0d8c6205cb');
 Currently, <code>.joblib</code>, <code>.cbm</code>, <code>.pkl</code>, <code>.pickle</code> and <code>.h5</code> (keras) format are supported.</p>
 <p><strong>Things to keep in mind</strong></p>
 <ul>
-<li>This model will use all available features in the <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> and use them for prediction by default. Define <code>feature_cols</code> in <a href="/numerblox/model.html#SingleModel"><code>SingleModel</code></a> or implement a <code>FeatureSelectionPreprocessor</code> if you are using a subset of features.</li>
+<li>This model will use all available features in the <a href="/numerblox/numerframe.html#NumerFrame"><code>NumerFrame</code></a> and use them for prediction by default. Define <code>feature_cols</code> in <a href="/numerblox/model.html#SingleModel"><code>SingleModel</code></a> or implement a <a href="/numerblox/preprocessing.html#FeatureSelectionPreProcessor"><code>FeatureSelectionPreProcessor</code></a> as part of your <a href="/numerblox/modelpipeline.html#ModelPipeline"><code>ModelPipeline</code></a> if you are using a subset of features.</li>
 <li>If you have XGBoost models we recommend saving them as <code>.joblib</code>.</li>
 <li>The added prediction column will have the column name <code>prediction_{MODEL_NAME}</code> if 1 target is predicted.
 For multiple targets the new column names will be <code>prediction_{MODEL_NAME}_{i}</code> for each target number i (starting with 0).</li>
@@ -266,15 +266,15 @@ For multiple targets the new column names will be <code>prediction_{MODEL_NAME}_
 <h2 id="SingleModel" class="doc_header"><code>class</code> <code>SingleModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L121" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SingleModel</code>(<strong><code>model_file_path</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>combine_preds</code></strong>=<em><code>False</code></em>, <strong><code>autoencoder_mlp</code></strong>=<em><code>False</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerblox/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Load single model from file and perform prediction logic.</p>
-<p>| :param model_file_path: Full path to model file.</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
-<p>| :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.
+<p>:param model_file_path: Full path to model file.</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.
 Convenient when you want to predict the main target by averaging a multi-target model.</p>
-<p>| :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
+<p>:param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
 Will take the 3rd of tuple output in this case. Only relevant for NN models.
 More info on autoencoders:
 <a href="https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338">https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338</a></p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -298,10 +298,10 @@ More info on autoencoders:
 
 
 
-<div id="438f5c29-bc57-41cd-9047-270bf897ff3e"></div>
+<div id="482506c7-a45d-488e-83b7-a23a7c7f3091"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#438f5c29-bc57-41cd-9047-270bf897ff3e');
+var element = $('#482506c7-a45d-488e-83b7-a23a7c7f3091');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -366,10 +366,10 @@ n9d39dea58c9e3cf         0.492578
 
 
 
-<div id="b9e0905e-d8ef-4879-acc3-6dde8f4848e8"></div>
+<div id="172474bf-b671-4d38-a9a4-ae3dda222df1"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b9e0905e-d8ef-4879-acc3-6dde8f4848e8');
+var element = $('#172474bf-b671-4d38-a9a4-ae3dda222df1');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -434,10 +434,10 @@ var element = $('#b9e0905e-d8ef-4879-acc3-6dde8f4848e8');
 
 
 
-<div id="99a983ca-d464-4957-b734-955a4fc0954e"></div>
+<div id="e3f27fa9-e8ec-4f98-9cfc-5b5fd012220d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#99a983ca-d464-4957-b734-955a4fc0954e');
+var element = $('#e3f27fa9-e8ec-4f98-9cfc-5b5fd012220d');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -500,19 +500,19 @@ pass API key from <a href="https://wandb.ai/authorize">https://wandb.ai/authoriz
 </blockquote>
 <p>Download best .h5 model from Weights &amp; Biases (W&amp;B) run in local directory and make predictions.
 More info on W&amp;B: <a href="https://wandb.ai/site">https://wandb.ai/site</a></p>
-<p>| :param run_path: W&amp;B path structured as entity/project/run_id.
+<p>:param run_path: W&amp;B path structured as entity/project/run_id.
 Can be copied from the Overview tab of a W&amp;B run.
 For more info: <a href="https://docs.wandb.ai/ref/app/pages/run-page#overview-tab">https://docs.wandb.ai/ref/app/pages/run-page#overview-tab</a></p>
-<p>| :param file_name: Name of .h5 file as saved in W&amp;B run.
+<p>:param file_name: Name of .h5 file as saved in W&amp;B run.
 'model-best.h5' by default.
 File name can be found under files tab of W&amp;B run.</p>
-<p>| :param combine_preds: Whether to average predictions along column axis. Convenient when you want to predict the main target by averaging a multi-target model.</p>
-<p>| :param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
+<p>:param combine_preds: Whether to average predictions along column axis. Convenient when you want to predict the main target by averaging a multi-target model.</p>
+<p>:param autoencoder_mlp: Whether your model is an autoencoder + MLP model.
 Will take the 3rd of tuple output in this case. Only relevant for NN models.</p>
 <p>More info on autoencoders:
 <a href="https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338">https://forum.numer.ai/t/autoencoder-and-multitask-mlp-on-new-dataset-from-kaggle-jane-street/4338</a></p>
-<p>| :param replace: Replace any model files saved under the same file name with downloaded W&amp;B run model. WARNING: Setting to True may overwrite models in your local environment.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param replace: Replace any model files saved under the same file name with downloaded W&amp;B run model. WARNING: Setting to True may overwrite models in your local environment.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -536,10 +536,10 @@ Will take the 3rd of tuple output in this case. Only relevant for NN models.</p>
 
 
 
-<div id="bdbbc8a5-9f7c-46ef-b0f0-d72c47a32607"></div>
+<div id="a311840d-f115-43bd-9dca-0d1c4ee03583"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#bdbbc8a5-9f7c-46ef-b0f0-d72c47a32607');
+var element = $('#a311840d-f115-43bd-9dca-0d1c4ee03583');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -590,7 +590,7 @@ var element = $('#bdbbc8a5-9f7c-46ef-b0f0-d72c47a32607');
 <p>Load external submissions and add to NumerFrame.</p>
 <p>All csv files in this directory will be added to NumerFrame.
 Make sure all external predictions are prepared and ready for submission. i.e. IDs lining up and one column named 'prediction'.</p>
-<p>| :param data_directory: Directory path for retrieving external submission.</p>
+<p>:param data_directory: Directory path for retrieving external submission.</p>
 
 </div>
 
@@ -614,10 +614,10 @@ Make sure all external predictions are prepared and ready for submission. i.e. I
 
 
 
-<div id="0e6ebd00-716f-4f69-bb0d-9d5347f3b1b8"></div>
+<div id="25fe409f-b34c-48f2-8567-b12d2cae70b5"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0e6ebd00-716f-4f69-bb0d-9d5347f3b1b8');
+var element = $('#25fe409f-b34c-48f2-8567-b12d2cae70b5');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -722,10 +722,10 @@ var element = $('#0e6ebd00-716f-4f69-bb0d-9d5347f3b1b8');
 
 
 
-<div id="ea8ef0f3-ebc8-44c4-b632-a722808eac48"></div>
+<div id="9baa8938-2f09-4866-9744-03cc7f7c1a02"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ea8ef0f3-ebc8-44c4-b632-a722808eac48');
+var element = $('#9baa8938-2f09-4866-9744-03cc7f7c1a02');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
@@ -793,10 +793,10 @@ var element = $('#ea8ef0f3-ebc8-44c4-b632-a722808eac48');
 
 
 
-<div id="65805064-c195-4d4f-a082-67eb9caa63f5"></div>
+<div id="8692a4fa-2f9e-44e9-82b7-9ae934cb0870"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#65805064-c195-4d4f-a082-67eb9caa63f5');
+var element = $('#8692a4fa-2f9e-44e9-82b7-9ae934cb0870');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
@@ -858,9 +858,9 @@ var element = $('#65805064-c195-4d4f-a082-67eb9caa63f5');
 </blockquote>
 <p>Load and predict for arbitrary models in directory saved as .joblib.</p>
 <p>All loaded models should have a .predict method and accept the features present in the data.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -884,10 +884,10 @@ var element = $('#65805064-c195-4d4f-a082-67eb9caa63f5');
 
 
 
-<div id="75f75040-9432-4cdf-aaa9-d163d1846576"></div>
+<div id="a35f6ff2-a6a5-4cde-b0d5-dbd3850042e0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#75f75040-9432-4cdf-aaa9-d163d1846576');
+var element = $('#a35f6ff2-a6a5-4cde-b0d5-dbd3850042e0');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -998,10 +998,10 @@ var element = $('#75f75040-9432-4cdf-aaa9-d163d1846576');
 
 
 
-<div id="f34e068f-4864-4f30-b157-65b811441e69"></div>
+<div id="17307ad0-2a97-4cf2-a2ac-6a6359462220"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f34e068f-4864-4f30-b157-65b811441e69');
+var element = $('#17307ad0-2a97-4cf2-a2ac-6a6359462220');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1056,9 +1056,9 @@ var element = $('#f34e068f-4864-4f30-b157-65b811441e69');
 <h2 id="CatBoostModel" class="doc_header"><code>class</code> <code>CatBoostModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L297" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CatBoostModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerblox/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <p>Load and predict with all .cbm models (CatBoostRegressor) in directory.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param model_name: Name that will be used to define column names and for display purposes.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param model_name: Name that will be used to define column names and for display purposes.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -1082,10 +1082,10 @@ var element = $('#f34e068f-4864-4f30-b157-65b811441e69');
 
 
 
-<div id="d4de96d5-b6ea-4973-82e1-62d6dcc301d9"></div>
+<div id="46791a4c-f4ca-47dd-81ba-073df2b92d1c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d4de96d5-b6ea-4973-82e1-62d6dcc301d9');
+var element = $('#46791a4c-f4ca-47dd-81ba-073df2b92d1c');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1206,10 +1206,10 @@ var element = $('#d4de96d5-b6ea-4973-82e1-62d6dcc301d9');
 
 
 
-<div id="c60e8faa-3a41-485b-a683-3ee7e9e164ec"></div>
+<div id="6acbc81c-99fa-41d4-915c-5b85c91ee1cd"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#c60e8faa-3a41-485b-a683-3ee7e9e164ec');
+var element = $('#6acbc81c-99fa-41d4-915c-5b85c91ee1cd');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1264,9 +1264,9 @@ var element = $('#c60e8faa-3a41-485b-a683-3ee7e9e164ec');
 <h2 id="LGBMModel" class="doc_header"><code>class</code> <code>LGBMModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L322" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>LGBMModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerblox/model.html#DirectoryModel"><code>DirectoryModel</code></a></p>
 </blockquote>
 <p>Load and predict with all .lgb models (LightGBM) in directory.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param model_name: Name that will be used to define column names and for display purposes.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param model_name: Name that will be used to define column names and for display purposes.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -1290,10 +1290,10 @@ var element = $('#c60e8faa-3a41-485b-a683-3ee7e9e164ec');
 
 
 
-<div id="2f8f576d-1848-4bff-a2b4-ec0cf6ee3710"></div>
+<div id="613efe39-c75b-4fa4-8439-9e41fdb0bfb0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2f8f576d-1848-4bff-a2b4-ec0cf6ee3710');
+var element = $('#613efe39-c75b-4fa4-8439-9e41fdb0bfb0');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1404,10 +1404,10 @@ var element = $('#2f8f576d-1848-4bff-a2b4-ec0cf6ee3710');
 
 
 
-<div id="43713919-3ffa-460d-b7d1-e9dbd3e777a7"></div>
+<div id="0b0c1680-91fd-436f-a211-9d46ab8ae53d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#43713919-3ffa-460d-b7d1-e9dbd3e777a7');
+var element = $('#0b0c1680-91fd-436f-a211-9d46ab8ae53d');
 
             setTimeout(function() {
                 var nbb_cell_id = 21;
@@ -1476,8 +1476,8 @@ var element = $('#43713919-3ffa-460d-b7d1-e9dbd3e777a7');
 </blockquote>
 <p>WARNING: Only use this Model for testing purposes.</p>
 <p>Create constant prediction.</p>
-<p>| :param constant: Value for constant prediction.</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param constant: Value for constant prediction.</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
 
 </div>
 
@@ -1501,10 +1501,10 @@ var element = $('#43713919-3ffa-460d-b7d1-e9dbd3e777a7');
 
 
 
-<div id="5f66039c-8f2f-4f44-8b9d-17cb618ced91"></div>
+<div id="ab0cc9fc-a390-4a38-9139-493e6c809685"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5f66039c-8f2f-4f44-8b9d-17cb618ced91');
+var element = $('#ab0cc9fc-a390-4a38-9139-493e6c809685');
 
             setTimeout(function() {
                 var nbb_cell_id = 22;
@@ -1600,10 +1600,10 @@ var element = $('#5f66039c-8f2f-4f44-8b9d-17cb618ced91');
 
 
 
-<div id="b3a99518-e057-403d-8ffa-a3cc2020f7c3"></div>
+<div id="ec790435-e72b-420b-a923-9e8e4622bdb2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b3a99518-e057-403d-8ffa-a3cc2020f7c3');
+var element = $('#ec790435-e72b-420b-a923-9e8e4622bdb2');
 
             setTimeout(function() {
                 var nbb_cell_id = 23;
@@ -1659,7 +1659,7 @@ var element = $('#b3a99518-e057-403d-8ffa-a3cc2020f7c3');
 </blockquote>
 <p>WARNING: Only use this Model for testing purposes.</p>
 <p>Create uniformly distributed predictions.</p>
-<p>| :param model_name: Name that will be used to create column names and for display purposes.</p>
+<p>:param model_name: Name that will be used to create column names and for display purposes.</p>
 
 </div>
 
@@ -1683,10 +1683,10 @@ var element = $('#b3a99518-e057-403d-8ffa-a3cc2020f7c3');
 
 
 
-<div id="eac96f03-f143-4e82-8c94-8aa9e3aaa80d"></div>
+<div id="961f8985-cf78-421a-9410-da6499638c2f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#eac96f03-f143-4e82-8c94-8aa9e3aaa80d');
+var element = $('#961f8985-cf78-421a-9410-da6499638c2f');
 
             setTimeout(function() {
                 var nbb_cell_id = 24;
@@ -1781,10 +1781,10 @@ var element = $('#eac96f03-f143-4e82-8c94-8aa9e3aaa80d');
 
 
 
-<div id="cddd2623-ce09-4c6a-b536-f3e1358fe96b"></div>
+<div id="99e33184-4cd9-496c-aa58-d70f1ec33ef8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cddd2623-ce09-4c6a-b536-f3e1358fe96b');
+var element = $('#99e33184-4cd9-496c-aa58-d70f1ec33ef8');
 
             setTimeout(function() {
                 var nbb_cell_id = 25;
@@ -1839,10 +1839,10 @@ var element = $('#cddd2623-ce09-4c6a-b536-f3e1358fe96b');
 <h2 id="ExamplePredictionsModel" class="doc_header"><code>class</code> <code>ExamplePredictionsModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L386" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExamplePredictionsModel</code>(<strong><code>file_name</code></strong>:<code>str</code>=<em><code>'example_validation_predictions.parquet'</code></em>, <strong><code>data_directory</code></strong>:<code>str</code>=<em><code>'example_predictions_model'</code></em>, <strong><code>round_num</code></strong>:<code>int</code>=<em><code>None</code></em>) :: <a href="/numerblox/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>Load example predictions and add to NumerFrame.</p>
-<p>| :param file_name: File to download from NumerAPI.
+<p>:param file_name: File to download from NumerAPI.
 'example_validation_predictions.parquet' by default.</p>
-<p>| :param data_directory: Directory path to download example predictions to or directory where example data already exists.</p>
-<p>| :param round_num: Optional round number. Downloads most recent round by default.</p>
+<p>:param data_directory: Directory path to download example predictions to or directory where example data already exists.</p>
+<p>:param round_num: Optional round number. Downloads most recent round by default.</p>
 
 </div>
 
@@ -1866,10 +1866,10 @@ var element = $('#cddd2623-ce09-4c6a-b536-f3e1358fe96b');
 
 
 
-<div id="2503e6f8-997f-4927-a236-4cdd4c6261d6"></div>
+<div id="212a9ec8-2610-4dcc-8b0e-06b0073634ac"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2503e6f8-997f-4927-a236-4cdd4c6261d6');
+var element = $('#212a9ec8-2610-4dcc-8b0e-06b0073634ac');
 
             setTimeout(function() {
                 var nbb_cell_id = 26;
@@ -1985,9 +1985,9 @@ The model should be able to typecheck by adding the <code>@typeguard.typechecked
 <h2 id="AwesomeModel" class="doc_header"><code>class</code> <code>AwesomeModel</code><a href="https://github.com/crowdcent/numerblox/tree/main/numerblox/model.py#L425" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeModel</code>(<strong><code>model_directory</code></strong>:<code>str</code>, <strong><code>model_name</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>feature_cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerblox/model.html#BaseModel"><code>BaseModel</code></a></p>
 </blockquote>
 <p>TEMPLATE - Predict with arbitrary prediction logic and model formats.</p>
-<p>| :param model_directory: Main directory from which to read in models.</p>
-<p>| :param model_name: Name that will be used to define column names and for display purposes.</p>
-<p>| :param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
+<p>:param model_directory: Main directory from which to read in models.</p>
+<p>:param model_name: Name that will be used to define column names and for display purposes.</p>
+<p>:param feature_cols: optional list of features to use for prediction. Selects all feature columns (i.e. column names with prefix 'feature') by default.</p>
 
 </div>
 
@@ -2011,10 +2011,10 @@ The model should be able to typecheck by adding the <code>@typeguard.typechecked
 
 
 
-<div id="111fbea0-e8a1-4a54-9b14-47541742dcc3"></div>
+<div id="335a7efa-938c-4356-9ab6-1b3bdd7ebb69"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#111fbea0-e8a1-4a54-9b14-47541742dcc3');
+var element = $('#335a7efa-938c-4356-9ab6-1b3bdd7ebb69');
 
             setTimeout(function() {
                 var nbb_cell_id = 28;
@@ -2098,10 +2098,10 @@ var element = $('#111fbea0-e8a1-4a54-9b14-47541742dcc3');
 
 
 
-<div id="8e186a60-b607-4c8b-9af2-915987230a8d"></div>
+<div id="8b9c3488-5e06-45a9-a4cb-a1a492fb0720"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8e186a60-b607-4c8b-9af2-915987230a8d');
+var element = $('#8b9c3488-5e06-45a9-a4cb-a1a492fb0720');
 
             setTimeout(function() {
                 var nbb_cell_id = 29;
