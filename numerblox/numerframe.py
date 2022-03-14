@@ -126,13 +126,13 @@ class NumerFrame(pd.DataFrame):
                       targets: list = None,
                       *args, **kwargs) -> tuple:
         """
-        Get feature target pair batch of 1 or multiple eras.
-        :param eras: Selection of era names that should be present in era_col.
-        :param convert_to_tf: Convert to tf.Tensor.
-        :param aemlp_batch: Specific target batch for autoencoder training.
-        y will contain three components: features, targets and targets.
-        :param features: List of features to select. All by default
-        :param targets: List of targets to select. All by default.
+        Get feature target pair batch of 1 or multiple eras. \n
+        :param eras: Selection of era names that should be present in era_col. \n
+        :param convert_to_tf: Convert to tf.Tensor. \n
+        :param aemlp_batch: Specific target batch for autoencoder training. \n
+        `y` output will contain three components: features, targets and targets. \n
+        :param features: List of features to select. All by default \n
+        :param targets: List of targets to select. All by default. \n
         *args, **kwargs are passed to initialization of Tensor.
         """
         valid_eras = []
@@ -169,9 +169,9 @@ def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) ->
     Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
-    | :param file_path: Relative or absolute path to data file. \n
-    | :param metadata: Metadata to be stored in NumerFrame.meta. \n
-    | *args, **kwargs will be passed to Pandas loading function.
+    :param file_path: Relative or absolute path to data file. \n
+    :param metadata: Metadata to be stored in NumerFrame.meta. \n
+    *args, **kwargs will be passed to Pandas loading function.
     """
     assert Path(file_path).is_file(), f"{file_path} does not point to file."
     suffix = Path(file_path).suffix
