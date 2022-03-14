@@ -18,8 +18,8 @@ class BaseStaker:
     """
     Base class for staking functionality which holds in both Numerai Classic and Signals.
 
-    | :param key: a numerai-blocks Key object \
-    | :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).
+    :param key: a numerai-blocks Key object \n
+    :param tournament_number: ID of the tournament (8 for Numerai Classic and 11 for Numerai Signals).
     """
     def __init__(self, key: Key, tournament_number: int, *args, **kwargs):
         self.tournament_number = tournament_number

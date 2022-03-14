@@ -43,7 +43,7 @@ class Standardizer(BasePostProcessor):
     Uniform standardization of prediction columns.
     All values should only contain values in the range [0...1].
 
-    | :param cols: All prediction columns that should be standardized. Use all prediction columns by default.
+    :param cols: All prediction columns that should be standardized. Use all prediction columns by default.
     """
 
     def __init__(self, cols: list = None):
@@ -62,10 +62,10 @@ class MeanEnsembler(BasePostProcessor):
     """
     Take simple mean of multiple cols and store in new col.
 
-    | :param final_col_name: Name of new averaged column.
+    :param final_col_name: Name of new averaged column.
     final_col_name should start with "prediction". \n
-    | :param cols: Column names to average. \n
-    | :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.
+    :param cols: Column names to average. \n
+    :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.
     """
 
     def __init__(
@@ -98,9 +98,9 @@ class DonateWeightedEnsembler(BasePostProcessor):
 
     Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
 
-    | :param cols: Prediction columns to ensemble.
+    :param cols: Prediction columns to ensemble.
     Uses all prediction columns by default. \n
-    | :param final_col_name: New column name for ensembled values.
+    :param final_col_name: New column name for ensembled values.
     """
     def __init__(self, final_col_name: str, cols: list = None):
         super().__init__(final_col_name=final_col_name)
@@ -133,9 +133,9 @@ class GeometricMeanEnsembler(BasePostProcessor):
     """
     Calculate the weighted Geometric mean.
 
-    | :param cols: Prediction columns to ensemble.
+    :param cols: Prediction columns to ensemble.
     Uses all prediction columns by default. \n
-    | :param final_col_name: New column name for ensembled values.
+    :param final_col_name: New column name for ensembled values.
     """
 
     def __init__(self, final_col_name: str, cols: list = None):
@@ -379,7 +379,7 @@ class AwesomePostProcessor(BasePostProcessor):
     """
     TEMPLATE - Do some awesome postprocessing.
 
-    | :param final_col_name: Column name to store manipulated or ensembled predictions in.
+    :param final_col_name: Column name to store manipulated or ensembled predictions in.
     """
 
     def __init__(self, final_col_name: str, *args, **kwargs):

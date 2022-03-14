@@ -50,7 +50,7 @@ def display_processor_info(func):
 # Cell
 @typechecked
 class CopyPreProcessor(BaseProcessor):
-    """Copy DataFrame to avoid manipulation of original DataFrame. """
+    """ Copy DataFrame to avoid manipulation of original DataFrame. """
     def __init__(self):
         super().__init__()
 
@@ -131,10 +131,10 @@ class TalibFeatureGenerator(BaseProcessor):
     More info: https://mrjbq7.github.io/ta-lib \n
     Input DataFrames for these functions should have the following columns defined:
     ['open', 'high', 'low', 'close', 'volume'] \n
-    | Make sure that all values are sorted in chronological order (by ticker). \n
-    | :param windows: List of ranges for window features.
+    Make sure that all values are sorted in chronological order (by ticker). \n
+    :param windows: List of ranges for window features.
     Windows will be applied for all features specified in self.window_features. \n
-    | :param ticker_col: Which column to groupby for feature generation.
+    :param ticker_col: Which column to groupby for feature generation.
     """
     def __init__(self, windows: List[int], ticker_col: str = "bloomberg_ticker"):
         self.__check_talib_import()
