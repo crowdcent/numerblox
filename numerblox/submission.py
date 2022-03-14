@@ -74,19 +74,28 @@ class BaseSubmitter(BaseIO):
     def full_submission(
         self,
         dataf: pd.DataFrame,
-        file_name: str,
         model_name: str,
         cols: Union[str, list],
+        file_name: str = 'submission.csv',
         *args,
         **kwargs,
     ):
         """
         Save DataFrame to csv and upload predictions through API.
+
+        :param dataf: Main DataFrame containing `cols`.
+        :param model_name: Lowercase Numerai model name.
+        :param file_name: path to save model to relative to base directory.
+        :param cols: Columns to be saved in submission file.
+        1 prediction column for Numerai Classic.
+        At least 1 prediction column and 1 ticker column for Numerai Signals.
         *args, **kwargs are passed to numerapi API.
+        For example `version` argument in Numerai Classic submissions.
         """
         self.save_csv(dataf=dataf, file_name=file_name, cols=cols)
         self.upload_predictions(
-            file_name=file_name, model_name=model_name, *args, **kwargs
+            file_name=file_name, model_name=model_name,
+            *args, **kwargs
         )
 
     def combine_csvs(self, csv_paths: list,
@@ -144,9 +153,9 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
     def __call__(
             self,
             dataf: pd.DataFrame,
-            file_name: str,
             model_name: str,
-            cols: Union[str, list],
+            file_name: str = "submission.csv",
+            cols: Union[str, list] = "prediction",
             *args,
             **kwargs,
     ):
@@ -183,15 +192,15 @@ class NumeraiClassicSubmitter(BaseSubmitter):
     def save_csv(
             self,
             dataf: pd.DataFrame,
-            file_name: str,
-            cols: str = "prediction",
+            file_name: str = "submission.csv",
+            cols: str = 'prediction',
             *args,
             **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
         1. id (as index column)
-        2. cols (for example, 'prediction_mymodel').
+        2. cols (for example, 'prediction_mymodel'). Will be saved in 'prediction' column
         :param file_name: .csv file path.
         :param cols: Prediction column name.
         For example, 'prediction' or 'prediction_mymodel'.
@@ -233,7 +242,11 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
         ]
 
     def save_csv(
-        self, dataf: pd.DataFrame, file_name: str, cols: list = None, *args, **kwargs
+            self,
+            dataf: pd.DataFrame,
+            cols: list,
+            file_name: str = "submission.csv",
+            *args, **kwargs
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
@@ -243,13 +256,11 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
          3. friday_date (YYYYMMDD format date indication)
          4. data_type ('val' and 'live' partitions)
 
+         :param cols: All cols that are saved in CSV.
+         cols should contain at least 1 ticker column and a 'signal' column.
+         For example: ['bloomberg_ticker', 'signal']
          :param file_name: .csv file path.
-         :param cols: All cols that should be passed to CSV. Defaults to 2 standard columns.
-          ('bloomberg_ticker', 'signal')
         """
-        if not cols:
-            cols = ["bloomberg_ticker", "signal"]
-
         self._check_ticker_format(cols=cols)
         self._check_value_range(dataf=dataf, cols="signal")
 
