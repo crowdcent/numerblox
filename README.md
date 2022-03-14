@@ -35,16 +35,16 @@ Documentation: [crowdcent.github.io/numerblox](https://crowdcent.github.io/numer
 
 ### 2.1.2. Educational notebooks
 
-Example notebooks can be found in the `edu_nbs` directory.
+Example notebooks can be found in the `nbs/edu_nbs` directory.
 
-`edu_nbs` currently contains the following examples:
+`nbs/edu_nbs` currently contains the following examples:
 - `numerframe_tutorial.ipynb`: A deep dive into what `NumerFrame` has to offer.
 - `pipeline_construction.ipynb`: How to use `numerblox` tools for efficient Numerai inference.
 - `submitting.ipynb`: How to use Submitters for safe and easy Numerai submissions.
 - `google_cloud_storage.ipynb`: How to use Downloaders and Submitters to interact with Google Cloud Storage (GCS).
 - `load_model_from_wandb.ipynb`: For [Weights & Biases](https://wandb.ai/) users. Easily pull a model from W&B for inference.
 
-Development notebooks are in the `nbs` directory. These notebooks are also used to generate the documentation.
+Development notebooks are also in the `nbs` directory. These notebooks are also used to generate the documentation.
 
 Question or ideas for educational notebooks? Do not hesitate to post them in [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
 
@@ -52,7 +52,7 @@ Question or ideas for educational notebooks? Do not hesitate to post them in [ro
 
 ### 2.2. Examples
 
-Below we will illustrate a common use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in `edu_nbs`.
+Below we will illustrate a common use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in `nbs/edu_nbs`.
 
 #### 2.2.1. Numerai Classic
 
