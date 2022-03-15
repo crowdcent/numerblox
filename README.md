@@ -223,6 +223,6 @@ Some of the components in this library may be based on forum posts, notebooks or
 
 If you are contributing to `numerblox` and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in documentation.
 
-<img src="nbs/assets/crowdcent_logo.png" width="300" height="300" style="max-width: 300px">
+<img src="nbs/assets/company_logo.png" width="300" height="300" style="max-width: 300px">
 
 **- CrowdCent**
