@@ -1,6 +1,6 @@
 # How to contribute
 
-We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are using the library and have to interest in contributing, don't worry about this. Just `pip install numerblox` and you are good to go!
+We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are using the library and have no interest in contributing, don't worry about this. Just `pip install numerblox` and you are good to go!
 
 Else, thanks a lot for wanting to help us out with this project! If you are thinking of contributing and are not familiar with `nbdev`, it may take some time to learn nbdev development. 
 We are happy to help out and point you to documentation or videos to learn more. You can also always ask questions in [the numerblox Rocketchat channel](https://rocketchat.numer.ai/channel/numerblox).
