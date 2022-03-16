@@ -68,6 +68,6 @@ modules = ["misc.py",
 
 doc_url = "https://crowdcent.github.io/numerblox/"
 
-git_url = "https://github.com/crowdcent/numerblox/tree/main/"
+git_url = "https://github.com/crowdcent/numerblox"
 
 def custom_doc_links(name): return None
