@@ -1,13 +1,11 @@
 # How to contribute
 
-We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are using the library and do not want to contribute, don't worry about this. Just pip install and you are good to go!
+We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are using the library and have to interest in contributing, don't worry about this. Just `pip install numerblox` and you are good to go!
 
-Else, thanks a lot for wanting to help us out with this project! If you are thinking of contributing and are not familiar with nbdev, it may take some time to learn nbdev development. 
-We are happy to help out and point you to documentation or videos to learn more.
+Else, thanks a lot for wanting to help us out with this project! If you are thinking of contributing and are not familiar with `nbdev`, it may take some time to learn nbdev development. 
+We are happy to help out and point you to documentation or videos to learn more. You can also always ask questions in [the numerblox Rocketchat channel](https://rocketchat.numer.ai/channel/numerblox).
 
-
-
-If you are interested in the full scope of what nbdev has to offer, check out this tutorial with Jeremy Howard:
+If you are interested in the full scope of what nbdev has to offer, check out this tutorial by Jeremy Howard:
 [https://youtu.be/Hrs7iEYmRmg](https://youtu.be/Hrs7iEYmRmg).
 
 Why are we using nbdev? To learn more about the rationale behind nbdev:
@@ -27,7 +25,7 @@ Questions about contributing? Please post these in [rocketchat.numer.ai/channel/
 
 ## Did you find a bug?
 
-Even though most of the components in this library are tested, the project is still in an early stage of development. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
+Even though most of the components in this library are tested, users will still likely run into issues. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
 
 * Ensure the bug was not already reported by searching on GitHub under Issues.
 * If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.
