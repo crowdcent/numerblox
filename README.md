@@ -10,7 +10,7 @@ Most of the components in this library are designed for solid weekly inference p
 
 **Documentation:** [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
-![](https://img.shields.io/pypi/v/numerblox) ![](https://img.shields.io/pypi/pyversions/numerblox) ![](https://img.shields.io/github/contributors/crowdcent/numerblox) ![](https://img.shields.io/github/issues-raw/crowdcent/numerblox) ![](https://img.shields.io/github/repo-size/crowdcent/numerblox)
+![](https://img.shields.io/pypi/v/numerblox) ![](https://img.shields.io/pypi/pyversions/numerblox) ![](https://img.shields.io/github/contributors/crowdcent/numerblox) ![](https://img.shields.io/github/issues-raw/crowdcent/numerblox) ![](https://img.shields.io/github/repo-size/crowdcent/numerblox) ![](https://img.shields.io/github/workflow/status/crowdcent/numerblox/CI)
 
 ## 1. Install
 
