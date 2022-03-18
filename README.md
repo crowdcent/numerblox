@@ -12,9 +12,28 @@ Most of the components in this library are designed for solid weekly inference p
 
 ![](https://img.shields.io/pypi/v/numerblox) ![](https://img.shields.io/pypi/pyversions/numerblox) ![](https://img.shields.io/github/contributors/crowdcent/numerblox) ![](https://img.shields.io/github/issues-raw/crowdcent/numerblox) ![](https://img.shields.io/github/repo-size/crowdcent/numerblox)
 
-## 1. Install
+## 1. Getting Started
+
+### 1.1 Installation
+
+Install numerblox from PyPi by running:
 
 `pip install numerblox`
+
+Alternatively you can clone this repository and install it in development mode
+running the following from the root of the repository:
+
+`pip install -e .`
+
+### 1.2 Running Notebooks
+
+Start by spinning up your favorite Jupyter Notebook environment. Here we'll use:
+
+`jupyter notebook`
+
+Test your installation using one of the education notebooks in `nbs/edu_nbs`.
+A good example is `numerframe_tutorial`. Run it in your Notebook environment to
+quickly test if your installation has succeeded.
 
 ## 2. How to use
 
