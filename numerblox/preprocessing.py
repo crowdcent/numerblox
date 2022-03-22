@@ -427,7 +427,7 @@ class EraQuantileProcessor(BaseProcessor):
             results = list(
                 tqdm(
                     p.imap(self._process_eras, groupby_objects),
-                    total=len(self.features),
+                    total=len(groupby_objects),
                 )
             )
 
