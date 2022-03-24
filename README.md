@@ -229,7 +229,7 @@ Every new feature should be implemented in a branch that branches from `dev` and
 
 
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 main (release)                                                                               
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)                                                                             
 <span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev                                                                                    
 <span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features                                                          
 <span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader                                                          
