@@ -3,6 +3,7 @@
 __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator']
 
 # Cell
+import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -79,6 +80,9 @@ class BaseEvaluator:
             target_col=target_col,
             example_col=example_col,
         )
+        ex_diss = self.exposure_dissimilarity(
+            dataf=dataf, pred_col=pred_col, example_col=example_col
+        )
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -90,6 +94,7 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "mmc_std"] = mmc_std
         col_stats.loc[pred_col, "mmc_sharpe"] = mmc_sharpe
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
+        col_stats.loc[pred_col, "exposure_dissimilarity"] = ex_diss
 
         # Compute intensive stats
         if not self.fast_mode:
@@ -105,6 +110,7 @@ class BaseEvaluator:
             tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
             )
+
             col_stats.loc[pred_col, "max_feature_exposure"] = max_feature_exposure
             col_stats.loc[pred_col, "feature_neutral_mean"] = fn_mean
             col_stats.loc[pred_col, "feature_neutral_std"] = fn_std
@@ -189,13 +195,15 @@ class BaseEvaluator:
         return max_feature_exposure
 
     def feature_neutral_mean_std_sharpe(
-        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, target_col: str
+        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, target_col: str, feature_names: list = None
     ) -> Tuple[np.float64, np.float64, np.float64]:
         """
         Feature neutralized mean performance.
         More info: https://docs.numer.ai/tournament/feature-neutral-correlation
         """
-        fn = FeatureNeutralizer(pred_name=pred_col, proportion=1.0)
+        fn = FeatureNeutralizer(pred_name=pred_col,
+                                feature_names=feature_names,
+                                proportion=1.0)
         neutralized_dataf = fn(dataf=dataf)
         neutral_corrs = self.per_era_corrs(
             dataf=neutralized_dataf,
@@ -240,6 +248,24 @@ class BaseEvaluator:
         corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]
         corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)
         return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe
+
+    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, example_col: str) -> np.float32:
+        """
+        Model pattern of feature exposure to the example column.
+        See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
+
+       1. Calculate the correlation of a user’s prediction and the example prediction with each of the features to form two vectors U and E.
+       2. Take the dot product of U and E divided by the dot product of E with E. This measures how similar the pattern of exposures are and is normalized to be 1 if U is identical to E.
+       3. Subtract from 1 to form a dissimilarity metric where 0 means the same exposure pattern as example predictions, positive values indicate differing patterns of exposure and negative values indicate similar patterns but even higher exposures. Note that models with 0 feature exposure will have a dissimilarity value of 1.
+        Exposure Dissimilarity: 1 - U•E/E•E
+        """
+        # TODO Add step 1
+        U, E = np.ones(len(dataf)), np.ones(len(dataf))
+
+        exp_dis = 1 - (U @ E) / (E @ E)
+        assert 0. <= exp_dis <= 1., "Check formula. Exposure dissimilarity should be between 0 and 1."
+        return exp_dis
+
 
     @staticmethod
     def _neutralize_series(series, by, proportion=1.0):
@@ -349,6 +375,48 @@ class NumeraiClassicEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Classic."""
     def __init__(self, era_col: str = "era", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
+        # 420 features in medium feature set for FNC v3 calculation
+        self.v3_features = self.__load_json("assets/feature_sets/v3_features.json")['medium']
+
+    def full_evaluation(
+        self,
+        dataf: NumerFrame,
+        example_col: str,
+        pred_cols: list = None,
+        target_col: str = "target",
+    ) -> pd.DataFrame:
+        val_stats = pd.DataFrame()
+        dataf = dataf.fillna(0.5)
+        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
+
+        # V3 feature check
+        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))
+        if not valid_v3_features:
+            print("WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.")
+        for col in tqdm(pred_cols, desc="Evaluation: "):
+            # Metrics that can be calculated for both Numerai Classic and Signals
+            col_stats = self.evaluation_one_col(
+                dataf=dataf,
+                pred_col=col,
+                target_col=target_col,
+                example_col=example_col,
+            )
+            # Numerai Classic specific metrics
+            if not self.fast_mode and valid_v3_features:
+                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
+                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=self.v3_features
+                )
+                col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
+                col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
+                col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
+                col_stats.loc[col, "fncv3 x exposure dissimilarity"] = fnc_v3 * col_stats["exposure_dissimilarity"]
+            val_stats = pd.concat([val_stats, col_stats], axis=0)
+        return val_stats
+
+    def __load_json(self, json_path: str) -> dict:
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+        return data
 
 # Cell
 class NumeraiSignalsEvaluator(BaseEvaluator):
