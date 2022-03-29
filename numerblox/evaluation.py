@@ -54,7 +54,7 @@ class BaseEvaluator:
 
     def evaluation_one_col(
         self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        dataf: NumerFrame,
         pred_col: str,
         target_col: str,
         example_col: str,
@@ -80,9 +80,6 @@ class BaseEvaluator:
             target_col=target_col,
             example_col=example_col,
         )
-        ex_diss = self.exposure_dissimilarity(
-            dataf=dataf, pred_col=pred_col, example_col=example_col
-        )
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -94,7 +91,6 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "mmc_std"] = mmc_std
         col_stats.loc[pred_col, "mmc_sharpe"] = mmc_sharpe
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
-        col_stats.loc[pred_col, "exposure_dissimilarity"] = ex_diss
 
         # Compute intensive stats
         if not self.fast_mode:
@@ -110,6 +106,9 @@ class BaseEvaluator:
             tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
             )
+            ex_diss = self.exposure_dissimilarity(
+                dataf=dataf, pred_col=pred_col, example_col=example_col
+            )
 
             col_stats.loc[pred_col, "max_feature_exposure"] = max_feature_exposure
             col_stats.loc[pred_col, "feature_neutral_mean"] = fn_mean
@@ -121,6 +120,7 @@ class BaseEvaluator:
             col_stats.loc[pred_col, "tb500_mean"] = tb500_mean
             col_stats.loc[pred_col, "tb500_std"] = tb500_std
             col_stats.loc[pred_col, "tb500_sharpe"] = tb500_sharpe
+            col_stats.loc[pred_col, "exposure_dissimilarity"] = ex_diss
         return col_stats
 
     def per_era_corrs(
@@ -249,20 +249,14 @@ class BaseEvaluator:
         corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)
         return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe
 
-    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, example_col: str) -> np.float32:
+    def exposure_dissimilarity(self, dataf: NumerFrame, pred_col: str, example_col: str) -> np.float32:
         """
         Model pattern of feature exposure to the example column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
         """
-        U = []
-        E = []
-        for feat in tqdm(dataf.feature_cols, desc="Exposure Dissimilarity correlations"):
-            corr_pred = dataf[feat].corr(dataf[pred_col], method='spearman')
-            corr_example = dataf[feat].corr(dataf[example_col], method='spearman')
-            U.append(corr_pred)
-            E.append(corr_example)
-        exp_dis = 1 - (U @ E) / (E @ E)
-        assert 0. <= exp_dis <= 1., "Check formula. Exposure dissimilarity should be between 0 and 1."
+        U = dataf.get_feature_data.corrwith(dataf[pred_col]).values
+        E = dataf.get_feature_data.corrwith(dataf[example_col]).values
+        exp_dis = 1 - np.dot(U, E) / np.dot(E, E)
         return exp_dis
 
 
