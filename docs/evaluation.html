@@ -111,13 +111,13 @@ namely max_exposure, feature neutral mean, TB200 and TB500.</p>
 
 
 
-<div id="edceff27-abc5-4515-b118-37facbe54650"></div>
+<div id="36df5e85-3e63-42ec-8a79-1812e68c0b4d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#edceff27-abc5-4515-b118-37facbe54650');
+var element = $('#36df5e85-3e63-42ec-8a79-1812e68c0b4d');
 
             setTimeout(function() {
-                var nbb_cell_id = 22;
+                var nbb_cell_id = 4;
                 var nbb_unformatted_code = "# export\nclass BaseEvaluator:\n    \"\"\"\n    Evaluation functionality that is relevant for both\n    Numerai Classic and Numerai Signals.\n\n    :param era_col: Column name pointing to eras. \\n\n    Most commonly \"era\" for Numerai Classic and \"friday_date\" for Numerai Signals. \\n\n    :param fast_mode: Will skip compute intensive metrics if set to True,\n    namely max_exposure, feature neutral mean, TB200 and TB500.\n    \"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        self.era_col = era_col\n        self.fast_mode = fast_mode\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        \"\"\"\n        Perform evaluation for each prediction column in the NumerFrame\n        against give target and example prediction column.\n        \"\"\"\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def evaluation_one_col(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        pred_col: str,\n        target_col: str,\n        example_col: str,\n    ):\n        \"\"\"\n        Perform evaluation for one prediction column\n        against given target and example prediction column.\n        \"\"\"\n        col_stats = pd.DataFrame()\n        # Compute stats\n        val_corrs = self.per_era_corrs(\n            dataf=dataf, pred_col=pred_col, target_col=target_col\n        )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)\n        max_drawdown = self.max_drawdown(era_corrs=val_corrs)\n        apy = self.apy(era_corrs=val_corrs)\n        example_corr = self.example_correlation(\n            dataf=dataf, pred_col=pred_col, example_col=example_col\n        )\n        mmc_mean, mmc_std, mmc_sharpe = self.mmc(\n            dataf=dataf,\n            pred_col=pred_col,\n            target_col=target_col,\n            example_col=example_col,\n        )\n        ex_diss = self.exposure_dissimilarity(\n            dataf=dataf, pred_col=pred_col, example_col=example_col\n        )\n\n        col_stats.loc[pred_col, \"target\"] = target_col\n        col_stats.loc[pred_col, \"mean\"] = mean\n        col_stats.loc[pred_col, \"std\"] = std\n        col_stats.loc[pred_col, \"sharpe\"] = sharpe\n        col_stats.loc[pred_col, \"max_drawdown\"] = max_drawdown\n        col_stats.loc[pred_col, \"apy\"] = apy\n        col_stats.loc[pred_col, \"mmc_mean\"] = mmc_mean\n        col_stats.loc[pred_col, \"mmc_std\"] = mmc_std\n        col_stats.loc[pred_col, \"mmc_sharpe\"] = mmc_sharpe\n        col_stats.loc[pred_col, \"corr_with_example_preds\"] = example_corr\n        col_stats.loc[pred_col, \"exposure_dissimilarity\"] = ex_diss\n\n        # Compute intensive stats\n        if not self.fast_mode:\n            max_feature_exposure = self.max_feature_exposure(\n                dataf=dataf, pred_col=pred_col\n            )\n            fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col\n            )\n            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200\n            )\n            tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500\n            )\n\n            col_stats.loc[pred_col, \"max_feature_exposure\"] = max_feature_exposure\n            col_stats.loc[pred_col, \"feature_neutral_mean\"] = fn_mean\n            col_stats.loc[pred_col, \"feature_neutral_std\"] = fn_std\n            col_stats.loc[pred_col, \"feature_neutral_sharpe\"] = fn_sharpe\n            col_stats.loc[pred_col, \"tb200_mean\"] = tb200_mean\n            col_stats.loc[pred_col, \"tb200_std\"] = tb200_std\n            col_stats.loc[pred_col, \"tb200_sharpe\"] = tb200_sharpe\n            col_stats.loc[pred_col, \"tb500_mean\"] = tb500_mean\n            col_stats.loc[pred_col, \"tb500_std\"] = tb500_std\n            col_stats.loc[pred_col, \"tb500_sharpe\"] = tb500_sharpe\n        return col_stats\n\n    def per_era_corrs(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str\n    ) -> pd.Series:\n        \"\"\"Correlation between prediction and target for each era.\"\"\"\n        return dataf.groupby(dataf[self.era_col]).apply(\n            lambda d: self._normalize_uniform(d[pred_col].fillna(0.5)).corr(\n                d[target_col]\n            )\n        )\n\n    def mean_std_sharpe(\n        self, era_corrs: pd.Series\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Average, standard deviation and Sharpe ratio for\n        correlations per era.\n        \"\"\"\n        mean = pd.Series(era_corrs.mean()).item()\n        std = pd.Series(era_corrs.std(ddof=0)).item()\n        sharpe = mean / std\n        return mean, std, sharpe\n\n    @staticmethod\n    def max_drawdown(era_corrs: pd.Series) -> np.float64:\n        \"\"\"Maximum drawdown per era.\"\"\"\n        # Arbitrarily large window\n        rolling_max = (\n            (era_corrs + 1).cumprod().rolling(window=9000, min_periods=1).max()\n        )\n        daily_value = (era_corrs + 1).cumprod()\n        max_drawdown = -((rolling_max - daily_value) / rolling_max).max()\n        return max_drawdown\n\n    @staticmethod\n    def apy(era_corrs: pd.Series, stake_compounding_lag: int = 4) -> np.float64:\n        \"\"\"\n        Annual percentage yield.\n        :param era_corrs: Correlation scores by era\n        :param stake_compounding_lag: Compounding lag for Numerai rounds (4 for Numerai Classic)\n        \"\"\"\n        payout_scores = era_corrs.clip(-0.25, 0.25)\n        payout_daily_value = (payout_scores + 1).cumprod()\n        apy = (\n            ((payout_daily_value.dropna().iloc[-1]) ** (1 / len(payout_scores)))\n            ** (\n                52 - stake_compounding_lag\n            )  # 52 weeks of compounding minus n for stake compounding lag\n            - 1\n        ) * 100\n        return apy\n\n    def example_correlation(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, example_col: str\n    ):\n        \"\"\"Correlations with example predictions.\"\"\"\n        return self.per_era_corrs(\n            dataf=dataf,\n            pred_col=pred_col,\n            target_col=example_col,\n        ).mean()\n\n    def max_feature_exposure(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str\n    ) -> np.float64:\n        \"\"\"Maximum exposure over all features.\"\"\"\n        max_per_era = dataf.groupby(self.era_col).apply(\n            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max()\n        )\n        max_feature_exposure = max_per_era.mean(skipna=True)\n        return max_feature_exposure\n\n    def feature_neutral_mean_std_sharpe(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, target_col: str, feature_names: list = None\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Feature neutralized mean performance.\n        More info: https://docs.numer.ai/tournament/feature-neutral-correlation\n        \"\"\"\n        fn = FeatureNeutralizer(pred_name=pred_col,\n                                feature_names=feature_names,\n                                proportion=1.0)\n        neutralized_dataf = fn(dataf=dataf)\n        neutral_corrs = self.per_era_corrs(\n            dataf=neutralized_dataf,\n            pred_col=f\"{pred_col}_neutralized_1.0\",\n            target_col=target_col,\n        )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=neutral_corrs)\n        return mean, std, sharpe\n\n    def tbx_mean_std_sharpe(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, tb: int = 200\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Calculate Mean, Standard deviation and Sharpe ratio\n        when we focus on the x top and x bottom predictions.\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 and TB500 are the most common situations.\n        \"\"\"\n        tb_val_corrs = self._score_by_date(\n            dataf=dataf, columns=[pred_col], target=target_col, tb=tb\n        )\n        return self.mean_std_sharpe(era_corrs=tb_val_corrs)\n\n    def mmc(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, example_col: str\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        MMC Mean, standard deviation and Sharpe ratio.\n        More info: https://docs.numer.ai/tournament/metamodel-contribution\n        \"\"\"\n        mmc_scores = []\n        corr_scores = []\n        for _, x in dataf.groupby(self.era_col):\n            series = self._neutralize_series(\n                self._normalize_uniform(x[pred_col]), (x[example_col])\n            )\n            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))\n            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))\n\n        val_mmc_mean = np.mean(mmc_scores)\n        val_mmc_std = np.std(mmc_scores)\n        corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]\n        corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)\n        return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe\n\n    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, example_col: str) -> np.float32:\n        \"\"\"\n        Model pattern of feature exposure to the example column.\n        See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4\n\n       1. Calculate the correlation of a user\u2019s prediction and the example prediction with each of the features to form two vectors U and E.\n       2. Take the dot product of U and E divided by the dot product of E with E. This measures how similar the pattern of exposures are and is normalized to be 1 if U is identical to E.\n       3. Subtract from 1 to form a dissimilarity metric where 0 means the same exposure pattern as example predictions, positive values indicate differing patterns of exposure and negative values indicate similar patterns but even higher exposures. Note that models with 0 feature exposure will have a dissimilarity value of 1.\n        Exposure Dissimilarity: 1 - U\u2022E/E\u2022E\n        \"\"\"\n        # TODO Add step 1\n        U, E = np.ones(len(dataf)), np.ones(len(dataf))\n\n        exp_dis = 1 - (U @ E) / (E @ E)\n        assert 0. <= exp_dis <= 1., \"Check formula. Exposure dissimilarity should be between 0 and 1.\"\n        return exp_dis\n\n\n    @staticmethod\n    def _neutralize_series(series, by, proportion=1.0):\n        scores = series.values.reshape(-1, 1)\n        exposures = by.values.reshape(-1, 1)\n\n        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures\n        exposures = np.hstack(\n            (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))\n        )\n\n        correction = proportion * (\n            exposures.dot(np.linalg.lstsq(exposures, scores, rcond=None)[0])\n        )\n        corrected_scores = scores - correction\n        neutralized = pd.Series(corrected_scores.ravel(), index=series.index)\n        return neutralized\n\n    def _score_by_date(\n        self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None\n    ):\n        \"\"\"\n        Get era correlation based on given TB (x top and bottom predictions).\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        unique_eras = dataf[self.era_col].unique()\n        computed = []\n        for u in unique_eras:\n            df_era = dataf[dataf[self.era_col] == u]\n            era_pred = np.float64(df_era[columns].values.T)\n            era_target = np.float64(df_era[target].values.T)\n\n            if tb is None:\n                ccs = np.corrcoef(era_target, era_pred)[0, 1:]\n            else:\n                tbidx = np.argsort(era_pred, axis=1)\n                tbidx = np.concatenate([tbidx[:, :tb], tbidx[:, -tb:]], axis=1)\n                ccs = [\n                    np.corrcoef(era_target[idx], pred[idx])[0, 1]\n                    for idx, pred in zip(tbidx, era_pred)\n                ]\n                ccs = np.array(ccs)\n            computed.append(ccs)\n        return pd.DataFrame(\n            np.array(computed), columns=columns, index=dataf[self.era_col].unique()\n        )\n\n    @staticmethod\n    def _normalize_uniform(df: pd.DataFrame) -> pd.Series:\n        \"\"\"Normalize predictions uniformly using ranks.\"\"\"\n        x = (df.rank(method=\"first\") - 0.5) / len(df)\n        return pd.Series(x, index=df.index)\n\n    def plot_correlations(\n        self,\n        dataf: NumerFrame,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n        roll_mean: int = 20,\n    ):\n        \"\"\"\n        Plot per era correlations over time.\n        :param roll_mean: How many eras should be averaged to compute a rolling score.\n        \"\"\"\n        validation_by_eras = pd.DataFrame()\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n        for pred_col in pred_cols:\n            per_era_corrs = self.per_era_corrs(\n                dataf, pred_col=pred_col, target_col=target_col\n            )\n            validation_by_eras.loc[:, pred_col] = per_era_corrs\n\n        validation_by_eras.rolling(roll_mean).mean().plot(\n            kind=\"line\",\n            marker=\"o\",\n            ms=4,\n            title=f\"Rolling Per Era Correlation Mean (rolling window size: {roll_mean})\",\n            figsize=(15, 5),\n        )\n        plt.legend(\n            loc=\"upper center\",\n            bbox_to_anchor=(0.5, -0.05),\n            fancybox=True,\n            shadow=True,\n            ncol=1,\n        )\n        plt.axhline(y=0.0, color=\"r\", linestyle=\"--\")\n        plt.show()\n\n        validation_by_eras.cumsum().plot(\n            title=\"Cumulative Sum of Era Correlations\", figsize=(15, 5)\n        )\n        plt.legend(\n            loc=\"upper center\",\n            bbox_to_anchor=(0.5, -0.05),\n            fancybox=True,\n            shadow=True,\n            ncol=1,\n        )\n        plt.axhline(y=0.0, color=\"r\", linestyle=\"--\")\n        plt.show()\n        return None";
                 var nbb_formatted_code = "# export\nclass BaseEvaluator:\n    \"\"\"\n    Evaluation functionality that is relevant for both\n    Numerai Classic and Numerai Signals.\n\n    :param era_col: Column name pointing to eras. \\n\n    Most commonly \"era\" for Numerai Classic and \"friday_date\" for Numerai Signals. \\n\n    :param fast_mode: Will skip compute intensive metrics if set to True,\n    namely max_exposure, feature neutral mean, TB200 and TB500.\n    \"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        self.era_col = era_col\n        self.fast_mode = fast_mode\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        \"\"\"\n        Perform evaluation for each prediction column in the NumerFrame\n        against give target and example prediction column.\n        \"\"\"\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def evaluation_one_col(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        pred_col: str,\n        target_col: str,\n        example_col: str,\n    ):\n        \"\"\"\n        Perform evaluation for one prediction column\n        against given target and example prediction column.\n        \"\"\"\n        col_stats = pd.DataFrame()\n        # Compute stats\n        val_corrs = self.per_era_corrs(\n            dataf=dataf, pred_col=pred_col, target_col=target_col\n        )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)\n        max_drawdown = self.max_drawdown(era_corrs=val_corrs)\n        apy = self.apy(era_corrs=val_corrs)\n        example_corr = self.example_correlation(\n            dataf=dataf, pred_col=pred_col, example_col=example_col\n        )\n        mmc_mean, mmc_std, mmc_sharpe = self.mmc(\n            dataf=dataf,\n            pred_col=pred_col,\n            target_col=target_col,\n            example_col=example_col,\n        )\n        ex_diss = self.exposure_dissimilarity(\n            dataf=dataf, pred_col=pred_col, example_col=example_col\n        )\n\n        col_stats.loc[pred_col, \"target\"] = target_col\n        col_stats.loc[pred_col, \"mean\"] = mean\n        col_stats.loc[pred_col, \"std\"] = std\n        col_stats.loc[pred_col, \"sharpe\"] = sharpe\n        col_stats.loc[pred_col, \"max_drawdown\"] = max_drawdown\n        col_stats.loc[pred_col, \"apy\"] = apy\n        col_stats.loc[pred_col, \"mmc_mean\"] = mmc_mean\n        col_stats.loc[pred_col, \"mmc_std\"] = mmc_std\n        col_stats.loc[pred_col, \"mmc_sharpe\"] = mmc_sharpe\n        col_stats.loc[pred_col, \"corr_with_example_preds\"] = example_corr\n        col_stats.loc[pred_col, \"exposure_dissimilarity\"] = ex_diss\n\n        # Compute intensive stats\n        if not self.fast_mode:\n            max_feature_exposure = self.max_feature_exposure(\n                dataf=dataf, pred_col=pred_col\n            )\n            fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col\n            )\n            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200\n            )\n            tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(\n                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500\n            )\n\n            col_stats.loc[pred_col, \"max_feature_exposure\"] = max_feature_exposure\n            col_stats.loc[pred_col, \"feature_neutral_mean\"] = fn_mean\n            col_stats.loc[pred_col, \"feature_neutral_std\"] = fn_std\n            col_stats.loc[pred_col, \"feature_neutral_sharpe\"] = fn_sharpe\n            col_stats.loc[pred_col, \"tb200_mean\"] = tb200_mean\n            col_stats.loc[pred_col, \"tb200_std\"] = tb200_std\n            col_stats.loc[pred_col, \"tb200_sharpe\"] = tb200_sharpe\n            col_stats.loc[pred_col, \"tb500_mean\"] = tb500_mean\n            col_stats.loc[pred_col, \"tb500_std\"] = tb500_std\n            col_stats.loc[pred_col, \"tb500_sharpe\"] = tb500_sharpe\n        return col_stats\n\n    def per_era_corrs(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str\n    ) -> pd.Series:\n        \"\"\"Correlation between prediction and target for each era.\"\"\"\n        return dataf.groupby(dataf[self.era_col]).apply(\n            lambda d: self._normalize_uniform(d[pred_col].fillna(0.5)).corr(\n                d[target_col]\n            )\n        )\n\n    def mean_std_sharpe(\n        self, era_corrs: pd.Series\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Average, standard deviation and Sharpe ratio for\n        correlations per era.\n        \"\"\"\n        mean = pd.Series(era_corrs.mean()).item()\n        std = pd.Series(era_corrs.std(ddof=0)).item()\n        sharpe = mean / std\n        return mean, std, sharpe\n\n    @staticmethod\n    def max_drawdown(era_corrs: pd.Series) -> np.float64:\n        \"\"\"Maximum drawdown per era.\"\"\"\n        # Arbitrarily large window\n        rolling_max = (\n            (era_corrs + 1).cumprod().rolling(window=9000, min_periods=1).max()\n        )\n        daily_value = (era_corrs + 1).cumprod()\n        max_drawdown = -((rolling_max - daily_value) / rolling_max).max()\n        return max_drawdown\n\n    @staticmethod\n    def apy(era_corrs: pd.Series, stake_compounding_lag: int = 4) -> np.float64:\n        \"\"\"\n        Annual percentage yield.\n        :param era_corrs: Correlation scores by era\n        :param stake_compounding_lag: Compounding lag for Numerai rounds (4 for Numerai Classic)\n        \"\"\"\n        payout_scores = era_corrs.clip(-0.25, 0.25)\n        payout_daily_value = (payout_scores + 1).cumprod()\n        apy = (\n            ((payout_daily_value.dropna().iloc[-1]) ** (1 / len(payout_scores)))\n            ** (\n                52 - stake_compounding_lag\n            )  # 52 weeks of compounding minus n for stake compounding lag\n            - 1\n        ) * 100\n        return apy\n\n    def example_correlation(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, example_col: str\n    ):\n        \"\"\"Correlations with example predictions.\"\"\"\n        return self.per_era_corrs(\n            dataf=dataf,\n            pred_col=pred_col,\n            target_col=example_col,\n        ).mean()\n\n    def max_feature_exposure(\n        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str\n    ) -> np.float64:\n        \"\"\"Maximum exposure over all features.\"\"\"\n        max_per_era = dataf.groupby(self.era_col).apply(\n            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max()\n        )\n        max_feature_exposure = max_per_era.mean(skipna=True)\n        return max_feature_exposure\n\n    def feature_neutral_mean_std_sharpe(\n        self,\n        dataf: Union[pd.DataFrame, NumerFrame],\n        pred_col: str,\n        target_col: str,\n        feature_names: list = None,\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Feature neutralized mean performance.\n        More info: https://docs.numer.ai/tournament/feature-neutral-correlation\n        \"\"\"\n        fn = FeatureNeutralizer(\n            pred_name=pred_col, feature_names=feature_names, proportion=1.0\n        )\n        neutralized_dataf = fn(dataf=dataf)\n        neutral_corrs = self.per_era_corrs(\n            dataf=neutralized_dataf,\n            pred_col=f\"{pred_col}_neutralized_1.0\",\n            target_col=target_col,\n        )\n        mean, std, sharpe = self.mean_std_sharpe(era_corrs=neutral_corrs)\n        return mean, std, sharpe\n\n    def tbx_mean_std_sharpe(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, tb: int = 200\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        Calculate Mean, Standard deviation and Sharpe ratio\n        when we focus on the x top and x bottom predictions.\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 and TB500 are the most common situations.\n        \"\"\"\n        tb_val_corrs = self._score_by_date(\n            dataf=dataf, columns=[pred_col], target=target_col, tb=tb\n        )\n        return self.mean_std_sharpe(era_corrs=tb_val_corrs)\n\n    def mmc(\n        self, dataf: pd.DataFrame, pred_col: str, target_col: str, example_col: str\n    ) -> Tuple[np.float64, np.float64, np.float64]:\n        \"\"\"\n        MMC Mean, standard deviation and Sharpe ratio.\n        More info: https://docs.numer.ai/tournament/metamodel-contribution\n        \"\"\"\n        mmc_scores = []\n        corr_scores = []\n        for _, x in dataf.groupby(self.era_col):\n            series = self._neutralize_series(\n                self._normalize_uniform(x[pred_col]), (x[example_col])\n            )\n            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / (0.29 ** 2))\n            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))\n\n        val_mmc_mean = np.mean(mmc_scores)\n        val_mmc_std = np.std(mmc_scores)\n        corr_plus_mmcs = [c + m for c, m in zip(corr_scores, mmc_scores)]\n        corr_plus_mmc_sharpe = np.mean(corr_plus_mmcs) / np.std(corr_plus_mmcs)\n        return val_mmc_mean, val_mmc_std, corr_plus_mmc_sharpe\n\n    def exposure_dissimilarity(\n        self, dataf: pd.DataFrame, pred_col: str, example_col: str\n    ) -> np.float32:\n        \"\"\"\n         Model pattern of feature exposure to the example column.\n         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4\n\n        1. Calculate the correlation of a user\u2019s prediction and the example prediction with each of the features to form two vectors U and E.\n        2. Take the dot product of U and E divided by the dot product of E with E. This measures how similar the pattern of exposures are and is normalized to be 1 if U is identical to E.\n        3. Subtract from 1 to form a dissimilarity metric where 0 means the same exposure pattern as example predictions, positive values indicate differing patterns of exposure and negative values indicate similar patterns but even higher exposures. Note that models with 0 feature exposure will have a dissimilarity value of 1.\n         Exposure Dissimilarity: 1 - U\u2022E/E\u2022E\n        \"\"\"\n        # TODO Add step 1\n        U, E = np.ones(len(dataf)), np.ones(len(dataf))\n\n        exp_dis = 1 - (U @ E) / (E @ E)\n        assert (\n            0.0 <= exp_dis <= 1.0\n        ), \"Check formula. Exposure dissimilarity should be between 0 and 1.\"\n        return exp_dis\n\n    @staticmethod\n    def _neutralize_series(series, by, proportion=1.0):\n        scores = series.values.reshape(-1, 1)\n        exposures = by.values.reshape(-1, 1)\n\n        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures\n        exposures = np.hstack(\n            (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))\n        )\n\n        correction = proportion * (\n            exposures.dot(np.linalg.lstsq(exposures, scores, rcond=None)[0])\n        )\n        corrected_scores = scores - correction\n        neutralized = pd.Series(corrected_scores.ravel(), index=series.index)\n        return neutralized\n\n    def _score_by_date(\n        self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None\n    ):\n        \"\"\"\n        Get era correlation based on given TB (x top and bottom predictions).\n        :param tb: How many of top and bottom predictions to focus on.\n        TB200 is the most common situation.\n        \"\"\"\n        unique_eras = dataf[self.era_col].unique()\n        computed = []\n        for u in unique_eras:\n            df_era = dataf[dataf[self.era_col] == u]\n            era_pred = np.float64(df_era[columns].values.T)\n            era_target = np.float64(df_era[target].values.T)\n\n            if tb is None:\n                ccs = np.corrcoef(era_target, era_pred)[0, 1:]\n            else:\n                tbidx = np.argsort(era_pred, axis=1)\n                tbidx = np.concatenate([tbidx[:, :tb], tbidx[:, -tb:]], axis=1)\n                ccs = [\n                    np.corrcoef(era_target[idx], pred[idx])[0, 1]\n                    for idx, pred in zip(tbidx, era_pred)\n                ]\n                ccs = np.array(ccs)\n            computed.append(ccs)\n        return pd.DataFrame(\n            np.array(computed), columns=columns, index=dataf[self.era_col].unique()\n        )\n\n    @staticmethod\n    def _normalize_uniform(df: pd.DataFrame) -> pd.Series:\n        \"\"\"Normalize predictions uniformly using ranks.\"\"\"\n        x = (df.rank(method=\"first\") - 0.5) / len(df)\n        return pd.Series(x, index=df.index)\n\n    def plot_correlations(\n        self,\n        dataf: NumerFrame,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n        roll_mean: int = 20,\n    ):\n        \"\"\"\n        Plot per era correlations over time.\n        :param roll_mean: How many eras should be averaged to compute a rolling score.\n        \"\"\"\n        validation_by_eras = pd.DataFrame()\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n        for pred_col in pred_cols:\n            per_era_corrs = self.per_era_corrs(\n                dataf, pred_col=pred_col, target_col=target_col\n            )\n            validation_by_eras.loc[:, pred_col] = per_era_corrs\n\n        validation_by_eras.rolling(roll_mean).mean().plot(\n            kind=\"line\",\n            marker=\"o\",\n            ms=4,\n            title=f\"Rolling Per Era Correlation Mean (rolling window size: {roll_mean})\",\n            figsize=(15, 5),\n        )\n        plt.legend(\n            loc=\"upper center\",\n            bbox_to_anchor=(0.5, -0.05),\n            fancybox=True,\n            shadow=True,\n            ncol=1,\n        )\n        plt.axhline(y=0.0, color=\"r\", linestyle=\"--\")\n        plt.show()\n\n        validation_by_eras.cumsum().plot(\n            title=\"Cumulative Sum of Era Correlations\", figsize=(15, 5)\n        )\n        plt.legend(\n            loc=\"upper center\",\n            bbox_to_anchor=(0.5, -0.05),\n            fancybox=True,\n            shadow=True,\n            ncol=1,\n        )\n        plt.axhline(y=0.0, color=\"r\", linestyle=\"--\")\n        plt.show()\n        return None";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -197,15 +197,15 @@ var element = $('#edceff27-abc5-4515-b118-37facbe54650');
 
 
 
-<div id="5c1ee7a2-7fa9-41a1-83b3-6fd084573ff1"></div>
+<div id="cc0ad081-ba2f-460b-88d5-ba832cca441f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5c1ee7a2-7fa9-41a1-83b3-6fd084573ff1');
+var element = $('#cc0ad081-ba2f-460b-88d5-ba832cca441f');
 
             setTimeout(function() {
-                var nbb_cell_id = 23;
-                var nbb_unformatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features = self.__load_json(\"assets/feature_sets/v3_features.json\")['medium']\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\")\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=self.v3_features\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n                col_stats.loc[col, \"fncv3 x exposure dissimilarity\"] = fnc_v3 * col_stats[\"exposure_dissimilarity\"]\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, 'r') as f:\n            data = json.load(f)\n        return data";
-                var nbb_formatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features = self.__load_json(\"assets/feature_sets/v3_features.json\")[\n            \"medium\"\n        ]\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\n                \"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\"\n            )\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf,\n                    pred_col=col,\n                    target_col=target_col,\n                    feature_names=self.v3_features,\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n                col_stats.loc[col, \"fncv3 x exposure dissimilarity\"] = (\n                    fnc_v3 * col_stats[\"exposure_dissimilarity\"]\n                )\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, \"r\") as f:\n            data = json.load(f)\n        return data";
+                var nbb_cell_id = 5;
+                var nbb_unformatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features = self.__load_json(\"assets/feature_sets/v3_features.json\")['medium']\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\")\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=self.v3_features\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, 'r') as f:\n            data = json.load(f)\n        return data";
+                var nbb_formatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features = self.__load_json(\"assets/feature_sets/v3_features.json\")[\n            \"medium\"\n        ]\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\n                \"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\"\n            )\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf,\n                    pred_col=col,\n                    target_col=target_col,\n                    feature_names=self.v3_features,\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, \"r\") as f:\n            data = json.load(f)\n        return data";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -252,7 +252,7 @@ var element = $('#5c1ee7a2-7fa9-41a1-83b3-6fd084573ff1');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/evaluation.py#L422" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'friday_date'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxevaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/evaluation.py#L421" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'friday_date'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxevaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
 </blockquote>
 <p>Evaluator for all metrics that are relevant in Numerai Signals.</p>
 
@@ -278,13 +278,13 @@ var element = $('#5c1ee7a2-7fa9-41a1-83b3-6fd084573ff1');
 
 
 
-<div id="5347b529-9140-4a02-beca-4bc08cb99fd6"></div>
+<div id="8f3d0d19-0b6c-4af9-bd32-1b382ee06bb0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
+var element = $('#8f3d0d19-0b6c-4af9-bd32-1b382ee06bb0');
 
             setTimeout(function() {
-                var nbb_cell_id = 24;
+                var nbb_cell_id = 6;
                 var nbb_unformatted_code = "# export\nclass NumeraiSignalsEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Signals.\"\"\"\n    def __init__(self, era_col: str = \"friday_date\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
                 var nbb_formatted_code = "# export\nclass NumeraiSignalsEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Signals.\"\"\"\n\n    def __init__(self, era_col: str = \"friday_date\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -332,11 +332,11 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numerblox.download</span> <span class="kn">import</span> <span class="n">NumeraiClassicDownloader</span>
 
 <span class="n">directory</span> <span class="o">=</span> <span class="s2">&quot;eval_test_1234321/&quot;</span>
-<span class="n">val_filename</span> <span class="o">=</span> <span class="s2">&quot;numerai_validation_data.parquet&quot;</span>
-<span class="n">full_val_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="n">val_filename</span>
 <span class="n">downloader</span> <span class="o">=</span> <span class="n">NumeraiClassicDownloader</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="n">directory</span><span class="p">)</span>
-<span class="n">downloader</span><span class="o">.</span><span class="n">download_example_data</span><span class="p">()</span>
-<span class="n">downloader</span><span class="o">.</span><span class="n">download_single_dataset</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">val_filename</span><span class="p">,</span> <span class="n">dest_path</span><span class="o">=</span><span class="n">full_val_path</span><span class="p">)</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">download_single_dataset</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;v3/example_validation_predictions.parquet&quot;</span><span class="p">,</span>
+                                   <span class="n">dest_path</span><span class="o">=</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;example_validation_predictions.parquet&quot;</span><span class="p">)</span>
+<span class="n">downloader</span><span class="o">.</span><span class="n">download_single_dataset</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;v3/numerai_validation_data.parquet&quot;</span><span class="p">,</span>
+                                   <span class="n">dest_path</span><span class="o">=</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;numerai_validation_data.parquet&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -350,7 +350,18 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'example_predictions.parquet'</span> 📁
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">eval_test_1234321</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'v3/example_validation_predictions.parquet'</span> 📁
 </pre>
 
 </div>
@@ -360,8 +371,8 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-28 19:21:48,609 INFO numerapi.utils: target file already exists
-2022-03-28 19:21:48,610 INFO numerapi.utils: download complete
+<pre>2022-03-29 12:20:17,626 INFO numerapi.utils: starting download
+eval_test_1234321/example_validation_predictions.parquet: 13.0MB [00:02, 6.08MB/s]                            
 </pre>
 </div>
 </div>
@@ -370,7 +381,7 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'example_validation_predictions.parquet'</span> 📁
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'v3/numerai_validation_data.parquet'</span> 📁
 </pre>
 
 </div>
@@ -380,28 +391,8 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-28 19:21:49,988 INFO numerapi.utils: target file already exists
-2022-03-28 19:21:49,989 INFO numerapi.utils: download complete
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'numerai_validation_data.parquet'</span> 📁
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-28 19:21:51,410 INFO numerapi.utils: target file already exists
-2022-03-28 19:21:51,411 INFO numerapi.utils: download complete
+<pre>2022-03-29 12:20:21,304 INFO numerapi.utils: starting download
+eval_test_1234321/numerai_validation_data.parquet: 228MB [00:43, 5.24MB/s]                            
 </pre>
 </div>
 </div>
@@ -411,15 +402,15 @@ var element = $('#5347b529-9140-4a02-beca-4bc08cb99fd6');
 
 
 
-<div id="7cf1c442-1714-46b4-8849-a9f3c0773ad4"></div>
+<div id="1fa7ae28-0c68-4d21-8864-08b5f672decb"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
+var element = $('#1fa7ae28-0c68-4d21-8864-08b5f672decb');
 
             setTimeout(function() {
-                var nbb_cell_id = 25;
-                var nbb_unformatted_code = "from numerblox.download import NumeraiClassicDownloader\n\ndirectory = \"eval_test_1234321/\"\nval_filename = \"numerai_validation_data.parquet\"\nfull_val_path = directory + val_filename\ndownloader = NumeraiClassicDownloader(directory_path=directory)\ndownloader.download_example_data()\ndownloader.download_single_dataset(filename=val_filename, dest_path=full_val_path)";
-                var nbb_formatted_code = "from numerblox.download import NumeraiClassicDownloader\n\ndirectory = \"eval_test_1234321/\"\nval_filename = \"numerai_validation_data.parquet\"\nfull_val_path = directory + val_filename\ndownloader = NumeraiClassicDownloader(directory_path=directory)\ndownloader.download_example_data()\ndownloader.download_single_dataset(filename=val_filename, dest_path=full_val_path)";
+                var nbb_cell_id = 7;
+                var nbb_unformatted_code = "from numerblox.download import NumeraiClassicDownloader\n\ndirectory = \"eval_test_1234321/\"\ndownloader = NumeraiClassicDownloader(directory_path=directory)\ndownloader.download_single_dataset(filename=\"v3/example_validation_predictions.parquet\",\n                                   dest_path=directory + \"example_validation_predictions.parquet\",\n                                   # round_num=304\n                                   )\ndownloader.download_single_dataset(filename=\"v3/numerai_validation_data.parquet\",\n                                   dest_path=directory + \"numerai_validation_data.parquet\",\n                                   # round_num=304\n                                   )";
+                var nbb_formatted_code = "from numerblox.download import NumeraiClassicDownloader\n\ndirectory = \"eval_test_1234321/\"\ndownloader = NumeraiClassicDownloader(directory_path=directory)\ndownloader.download_single_dataset(\n    filename=\"v3/example_validation_predictions.parquet\",\n    dest_path=directory + \"example_validation_predictions.parquet\",\n    # round_num=304\n)\ndownloader.download_single_dataset(\n    filename=\"v3/numerai_validation_data.parquet\",\n    dest_path=directory + \"numerai_validation_data.parquet\",\n    # round_num=304\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -450,18 +441,10 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
-<span class="n">test_dataf</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="n">full_val_path</span><span class="p">)</span>
-<span class="n">example_preds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;/example_validation_predictions.parquet&quot;</span><span class="p">)</span>
+<span class="n">test_dataf</span> <span class="o">=</span> <span class="n">create_numerframe</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;numerai_validation_data.parquet&quot;</span><span class="p">)</span>
+<span class="n">example_preds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;example_validation_predictions.parquet&quot;</span><span class="p">)</span>
 <span class="n">test_dataf</span> <span class="o">=</span> <span class="n">test_dataf</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">example_preds</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
-<span class="c1"># Take only first 5 feature to speed up example (feature neutralization)</span>
-<span class="n">test_dataf</span> <span class="o">=</span> <span class="n">NumerFrame</span><span class="p">(</span>
-    <span class="n">test_dataf</span><span class="p">[</span>
-        <span class="n">test_dataf</span><span class="o">.</span><span class="n">feature_cols</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
-        <span class="o">+</span> <span class="n">test_dataf</span><span class="o">.</span><span class="n">target_cols</span>
-        <span class="o">+</span> <span class="n">test_dataf</span><span class="o">.</span><span class="n">prediction_cols</span>
-        <span class="o">+</span> <span class="n">test_dataf</span><span class="o">.</span><span class="n">aux_cols</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+
 <span class="n">test_dataf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;prediction_random&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">test_dataf</span><span class="p">))</span>
 <span class="n">test_dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
@@ -495,17 +478,19 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>era</th>
+      <th>data_type</th>
       <th>feature_dichasial_hammier_spawner</th>
       <th>feature_rheumy_epistemic_prancer</th>
       <th>feature_pert_performative_hormuz</th>
       <th>feature_hillier_unpitied_theobromine</th>
       <th>feature_perigean_bewitching_thruster</th>
-      <th>target</th>
-      <th>target_nomi_20</th>
-      <th>target_nomi_60</th>
-      <th>target_jerome_20</th>
-      <th>target_jerome_60</th>
+      <th>feature_renegade_undomestic_milord</th>
+      <th>feature_koranic_rude_corf</th>
+      <th>feature_demisable_expiring_millepede</th>
       <th>...</th>
+      <th>target_george_20</th>
+      <th>target_george_60</th>
       <th>target_william_20</th>
       <th>target_william_60</th>
       <th>target_arthur_20</th>
@@ -513,8 +498,6 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
       <th>target_thomas_20</th>
       <th>target_thomas_60</th>
       <th>prediction</th>
-      <th>era</th>
-      <th>data_type</th>
       <th>prediction_random</th>
     </tr>
     <tr>
@@ -545,17 +528,19 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
   <tbody>
     <tr>
       <th>n000777698096000</th>
+      <td>0857</td>
+      <td>validation</td>
       <td>0.50</td>
       <td>0.50</td>
       <td>0.25</td>
       <td>0.25</td>
       <td>0.0</td>
-      <td>0.25</td>
-      <td>0.25</td>
-      <td>0.50</td>
-      <td>0.25</td>
-      <td>0.50</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.75</td>
       <td>...</td>
+      <td>0.25</td>
+      <td>0.5</td>
       <td>0.166667</td>
       <td>0.500000</td>
       <td>0.166667</td>
@@ -563,23 +548,23 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
       <td>0.166667</td>
       <td>0.5</td>
       <td>0.228263</td>
-      <td>0857</td>
-      <td>validation</td>
       <td>0.191519</td>
     </tr>
     <tr>
       <th>n0009793a3b91c27</th>
+      <td>0857</td>
+      <td>validation</td>
       <td>0.75</td>
       <td>0.25</td>
       <td>0.50</td>
       <td>0.75</td>
       <td>1.0</td>
-      <td>0.50</td>
-      <td>0.50</td>
-      <td>0.75</td>
-      <td>0.50</td>
-      <td>0.75</td>
+      <td>0.0</td>
+      <td>0.25</td>
+      <td>0.25</td>
       <td>...</td>
+      <td>0.50</td>
+      <td>0.5</td>
       <td>0.666667</td>
       <td>0.833333</td>
       <td>0.666667</td>
@@ -587,13 +572,11 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
       <td>0.500000</td>
       <td>0.5</td>
       <td>0.731198</td>
-      <td>0857</td>
-      <td>validation</td>
       <td>0.622109</td>
     </tr>
   </tbody>
 </table>
-<p>2 rows × 30 columns</p>
+<p>2 rows × 1075 columns</p>
 </div>
 </div>
 
@@ -604,15 +587,15 @@ var element = $('#7cf1c442-1714-46b4-8849-a9f3c0773ad4');
 
 
 
-<div id="0543d728-4844-44c9-9d1f-647c095c8fe9"></div>
+<div id="308c7b34-e163-43bc-a842-11a6215dd061"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
+var element = $('#308c7b34-e163-43bc-a842-11a6215dd061');
 
             setTimeout(function() {
-                var nbb_cell_id = 26;
-                var nbb_unformatted_code = "np.random.seed(1234)\ntest_dataf = create_numerframe(full_val_path)\nexample_preds = pd.read_parquet(directory + \"/example_validation_predictions.parquet\")\ntest_dataf = test_dataf.merge(example_preds, on=\"id\", how=\"left\")\n# Take only first 5 feature to speed up example (feature neutralization)\ntest_dataf = NumerFrame(\n    test_dataf[\n        test_dataf.feature_cols[:5]\n        + test_dataf.target_cols\n        + test_dataf.prediction_cols\n        + test_dataf.aux_cols\n    ]\n)\ntest_dataf.loc[:, \"prediction_random\"] = np.random.uniform(size=len(test_dataf))\ntest_dataf.head(2)";
-                var nbb_formatted_code = "np.random.seed(1234)\ntest_dataf = create_numerframe(full_val_path)\nexample_preds = pd.read_parquet(directory + \"/example_validation_predictions.parquet\")\ntest_dataf = test_dataf.merge(example_preds, on=\"id\", how=\"left\")\n# Take only first 5 feature to speed up example (feature neutralization)\ntest_dataf = NumerFrame(\n    test_dataf[\n        test_dataf.feature_cols[:5]\n        + test_dataf.target_cols\n        + test_dataf.prediction_cols\n        + test_dataf.aux_cols\n    ]\n)\ntest_dataf.loc[:, \"prediction_random\"] = np.random.uniform(size=len(test_dataf))\ntest_dataf.head(2)";
+                var nbb_cell_id = 8;
+                var nbb_unformatted_code = "np.random.seed(1234)\ntest_dataf = create_numerframe(directory + \"numerai_validation_data.parquet\")\nexample_preds = pd.read_parquet(directory + \"example_validation_predictions.parquet\")\ntest_dataf = test_dataf.merge(example_preds, on=\"id\", how=\"left\")\n# Take only first 5 feature to speed up example (feature neutralization)\n# test_dataf = NumerFrame(\n#     test_dataf[\n#         test_dataf.feature_cols[:5]\n#         + test_dataf.target_cols\n#         + test_dataf.prediction_cols\n#         + test_dataf.aux_cols\n#     ]\n# )\ntest_dataf.loc[:, \"prediction_random\"] = np.random.uniform(size=len(test_dataf))\ntest_dataf.head(2)";
+                var nbb_formatted_code = "np.random.seed(1234)\ntest_dataf = create_numerframe(directory + \"numerai_validation_data.parquet\")\nexample_preds = pd.read_parquet(directory + \"example_validation_predictions.parquet\")\ntest_dataf = test_dataf.merge(example_preds, on=\"id\", how=\"left\")\n# Take only first 5 feature to speed up example (feature neutralization)\n# test_dataf = NumerFrame(\n#     test_dataf[\n#         test_dataf.feature_cols[:5]\n#         + test_dataf.target_cols\n#         + test_dataf.prediction_cols\n#         + test_dataf.aux_cols\n#     ]\n# )\ntest_dataf.loc[:, \"prediction_random\"] = np.random.uniform(size=len(test_dataf))\ntest_dataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -667,8 +650,9 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
 
 <div class="output_area">
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-03-29 12:21:14,475 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-03-29 12:21:14,476 INFO numexpr.utils: NumExpr defaulting to 8 threads.
 </pre>
 </div>
 </div>
@@ -699,8 +683,42 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">31</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:01</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">666370</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1076</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:03</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">784086</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🤖 Neutralized <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'prediction'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> with proportion </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'1.0'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> 🤖</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">New neutralized column = <span style="color: #008000; text-decoration-color: #008000; font-weight: bold">'prediction_neutralized_1.0'</span>.
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1076</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:20</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">244985</span>. ✅
 </pre>
 
 </div>
@@ -733,8 +751,42 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
 
 
 <div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">32</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:01</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">508737</span>. ✅
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1077</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:02</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">200459</span>. ✅
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🤖 Neutralized <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'prediction_random'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> with proportion </span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">'1.0'</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold"> 🤖</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">New neutralized column = <span style="color: #008000; text-decoration-color: #008000; font-weight: bold">'prediction_random_neutralized_1.0'</span>.
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1077</span><span style="font-weight: bold">)</span>. Time taken for step: 
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:19</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">182195</span>. ✅
 </pre>
 
 </div>
@@ -774,9 +826,6 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
       <th>mmc_sharpe</th>
       <th>corr_with_example_preds</th>
       <th>...</th>
-      <th>max_feature_exposure</th>
-      <th>feature_neutral_mean</th>
-      <th>feature_neutral_std</th>
       <th>feature_neutral_sharpe</th>
       <th>tb200_mean</th>
       <th>tb200_std</th>
@@ -784,6 +833,9 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
       <th>tb500_mean</th>
       <th>tb500_std</th>
       <th>tb500_sharpe</th>
+      <th>feature_neutral_mean_v3</th>
+      <th>feature_neutral_std_v3</th>
+      <th>feature_neutral_sharpe_v3</th>
     </tr>
   </thead>
   <tbody>
@@ -800,16 +852,16 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
       <td>0.956887</td>
       <td>-0.000807</td>
       <td>...</td>
-      <td>0.099629</td>
-      <td>0.025627</td>
-      <td>0.026719</td>
-      <td>0.959144</td>
+      <td>1.250211</td>
       <td>0.045748</td>
       <td>0.058146</td>
       <td>0.786766</td>
       <td>0.041661</td>
       <td>0.042485</td>
       <td>0.980604</td>
+      <td>0.020386</td>
+      <td>0.016227</td>
+      <td>1.256331</td>
     </tr>
     <tr>
       <th>prediction_random</th>
@@ -824,20 +876,20 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
       <td>0.094133</td>
       <td>0.999930</td>
       <td>...</td>
-      <td>0.021222</td>
-      <td>0.001239</td>
-      <td>0.013326</td>
-      <td>0.092986</td>
+      <td>0.150141</td>
       <td>-0.007608</td>
       <td>0.053580</td>
       <td>-0.141986</td>
       <td>-0.004470</td>
       <td>0.028103</td>
       <td>-0.159062</td>
+      <td>0.001593</td>
+      <td>0.012717</td>
+      <td>0.125255</td>
     </tr>
   </tbody>
 </table>
-<p>2 rows × 21 columns</p>
+<p>2 rows × 24 columns</p>
 </div>
 </div>
 
@@ -848,13 +900,13 @@ var element = $('#0543d728-4844-44c9-9d1f-647c095c8fe9');
 
 
 
-<div id="603d93cf-c0d6-441e-8059-be5b711b6b1b"></div>
+<div id="62bef0bc-1b56-41d5-bac4-bba7bebf58d3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#603d93cf-c0d6-441e-8059-be5b711b6b1b');
+var element = $('#62bef0bc-1b56-41d5-bac4-bba7bebf58d3');
 
             setTimeout(function() {
-                var nbb_cell_id = 27;
+                var nbb_cell_id = 9;
                 var nbb_unformatted_code = "# slow\nevaluator = NumeraiClassicEvaluator()\nval_stats = evaluator.full_evaluation(\n    dataf=test_dataf,\n    target_col=\"target\",\n    pred_cols=[\"prediction\", \"prediction_random\"],\n    example_col=\"prediction_random\",\n)\nval_stats";
                 var nbb_formatted_code = "# slow\nevaluator = NumeraiClassicEvaluator()\nval_stats = evaluator.full_evaluation(\n    dataf=test_dataf,\n    target_col=\"target\",\n    pred_cols=[\"prediction\", \"prediction_random\"],\n    example_col=\"prediction_random\",\n)\nval_stats";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -917,14 +969,6 @@ Note that any column can be used as example prediction. For practical use cases 
 
 <div class="output_wrapper">
 <div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.
-</pre>
-</div>
-</div>
 
 <div class="output_area">
 
@@ -1002,13 +1046,13 @@ Note that any column can be used as example prediction. For practical use cases 
 
 
 
-<div id="da5f2b79-d208-4ef9-9671-cda4b2f1151e"></div>
+<div id="64f5286e-62d6-4e7a-bf93-f300e1ded461"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#da5f2b79-d208-4ef9-9671-cda4b2f1151e');
+var element = $('#64f5286e-62d6-4e7a-bf93-f300e1ded461');
 
             setTimeout(function() {
-                var nbb_cell_id = 28;
+                var nbb_cell_id = 10;
                 var nbb_unformatted_code = "evaluator = NumeraiClassicEvaluator(fast_mode=True)\nval_stats_fast = evaluator.full_evaluation(\n    dataf=test_dataf,\n    target_col=\"target\",\n    pred_cols=[\"prediction\", \"prediction_random\"],\n    example_col=\"prediction_random\",\n)\nval_stats_fast";
                 var nbb_formatted_code = "evaluator = NumeraiClassicEvaluator(fast_mode=True)\nval_stats_fast = evaluator.full_evaluation(\n    dataf=test_dataf,\n    target_col=\"target\",\n    pred_cols=[\"prediction\", \"prediction_random\"],\n    example_col=\"prediction_random\",\n)\nval_stats_fast";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1094,13 +1138,13 @@ var element = $('#da5f2b79-d208-4ef9-9671-cda4b2f1151e');
 
 
 
-<div id="459dffd0-2ecd-4b13-ae35-eafe8d1e4c5b"></div>
+<div id="bc2d3473-0204-4675-89aa-ebf56eebdd17"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#459dffd0-2ecd-4b13-ae35-eafe8d1e4c5b');
+var element = $('#bc2d3473-0204-4675-89aa-ebf56eebdd17');
 
             setTimeout(function() {
-                var nbb_cell_id = 29;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "evaluator.plot_correlations(\n    test_dataf, pred_cols=[\"prediction\", \"prediction_random\"], roll_mean=20\n)";
                 var nbb_formatted_code = "evaluator.plot_correlations(\n    test_dataf, pred_cols=[\"prediction\", \"prediction_random\"], roll_mean=20\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1159,13 +1203,13 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="7ab25ae7-364b-4780-b669-baadc7b9cbd1"></div>
+<div id="7c29f6a6-55c2-4ef3-a638-d3aabac52d36"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7ab25ae7-364b-4780-b669-baadc7b9cbd1');
+var element = $('#7c29f6a6-55c2-4ef3-a638-d3aabac52d36');
 
             setTimeout(function() {
-                var nbb_cell_id = 30;
+                var nbb_cell_id = 12;
                 var nbb_unformatted_code = "# Clean up environment\ndownloader.remove_base_directory()";
                 var nbb_formatted_code = "# Clean up environment\ndownloader.remove_base_directory()";
                 var nbb_cells = Jupyter.notebook.get_cells();

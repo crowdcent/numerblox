@@ -409,7 +409,6 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
                 col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
-                col_stats.loc[col, "fncv3 x exposure dissimilarity"] = fnc_v3 * col_stats["exposure_dissimilarity"]
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
