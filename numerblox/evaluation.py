@@ -253,15 +253,14 @@ class BaseEvaluator:
         """
         Model pattern of feature exposure to the example column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
-
-       1. Calculate the correlation of a user’s prediction and the example prediction with each of the features to form two vectors U and E.
-       2. Take the dot product of U and E divided by the dot product of E with E. This measures how similar the pattern of exposures are and is normalized to be 1 if U is identical to E.
-       3. Subtract from 1 to form a dissimilarity metric where 0 means the same exposure pattern as example predictions, positive values indicate differing patterns of exposure and negative values indicate similar patterns but even higher exposures. Note that models with 0 feature exposure will have a dissimilarity value of 1.
-        Exposure Dissimilarity: 1 - U•E/E•E
         """
-        # TODO Add step 1
-        U, E = np.ones(len(dataf)), np.ones(len(dataf))
-
+        U = []
+        E = []
+        for feat in tqdm(dataf.feature_cols, desc="Exposure Dissimilarity correlations"):
+            corr_pred = dataf[feat].corr(dataf[pred_col], method='spearman')
+            corr_example = dataf[feat].corr(dataf[example_col], method='spearman')
+            U.append(corr_pred)
+            E.append(corr_example)
         exp_dis = 1 - (U @ E) / (E @ E)
         assert 0. <= exp_dis <= 1., "Check formula. Exposure dissimilarity should be between 0 and 1."
         return exp_dis
