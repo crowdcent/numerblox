@@ -162,7 +162,7 @@ class BaseDownloader(BaseIO):
 # Cell
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    WARNING: Version 1 (legacy data) is deprecated. Only supporting version 2+.
+    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.
 
     Downloading from NumerAPI for Numerai Classic data. \n
     :param directory_path: Base folder to download files to. \n
@@ -174,7 +174,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
         self.version_mapping = {
-            2: {
+            3: {
                 "train": {
                     "int8": [
                         "numerai_training_data_int8.parquet",
@@ -201,13 +201,13 @@ class NumeraiClassicDownloader(BaseDownloader):
         }
 
     def download_training_data(
-        self, subfolder: str = "", version: int = 2, int8: bool = False
+        self, subfolder: str = "", version: int = 3, int8: bool = False
     ):
         """
         Get Numerai classic training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (2=super massive dataset (parquet))
+        :param version: Numerai dataset version (3=1050+ features dataset (parquet))
         :param int8: Integer version of data
         """
         dir = self._append_folder(subfolder)
@@ -221,7 +221,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_inference_data(
         self,
         subfolder: str = "",
-        version: int = 2,
+        version: int = 3,
         int8: bool = False,
         round_num: int = None,
     ):
@@ -252,9 +252,6 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param dest_path: Full path where file will be saved.
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        assert (
-            filename in self.napi.list_datasets()
-        ), f"Dataset '{filename}' not available in NumerAPI. Available datasets are {self.napi.list_datasets()}."
         rich_print(
             f":file_folder: [green]Downloading[/green] '{filename}' :file_folder:"
         )
@@ -265,7 +262,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_live_data(
             self,
             subfolder: str = "",
-            version: int = 2,
+            version: int = 3,
             int8: bool = False,
             round_num: int = None
     ):
@@ -287,7 +284,7 @@ class NumeraiClassicDownloader(BaseDownloader):
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: int = 2, round_num: int = None
+        self, subfolder: str = "", version: int = 3, round_num: int = None
     ):
         """
         Download all example prediction data in specified folder for given version.
