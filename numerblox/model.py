@@ -277,30 +277,36 @@ class NumerBayCSVs(BaseModel):
     :param numerbay_username: NumerBay username
     :param numerbay_password: NumerBay password
     :param numerbay_key_path: NumerBay encryption key json file path (exported from the profile page)
+
     """
     def __init__(self,
                  data_directory: str = "numerbay_submissions",
                  numerbay_product_full_names: list = None,
                  numerbay_username: str = None,
                  numerbay_password: str = None,
-                 numerbay_key_path: str = None):
+                 numerbay_key_path: str = None,
+                 ticker_col: str = 'bloomberg_ticker'):
         super().__init__(model_directory=data_directory)
         self.data_directory = Path(data_directory)
         self.numerbay_product_full_names = numerbay_product_full_names
         self.numerbay_key_path = numerbay_key_path
         self._api = None
         self._get_api_func = lambda: NumerBay(username=numerbay_username, password=numerbay_password)
+        self.ticker_col = ticker_col
+        self.classic_number = 8
+        self.signals_number = 11
 
     def predict(self, dataf: NumerFrame) -> NumerFrame:
         """ Return NumerFrame with added NumerBay predictions. """
         for numerbay_product_full_name in tqdm(self.numerbay_product_full_names, desc="NumerBay submissions"):
-            if "era" in dataf.columns:
-                dataf.loc[:, f"prediction_{numerbay_product_full_name}"] = \
-                    self._get_preds(numerbay_product_full_name, tournament=8)
+            pred_name = f"prediction_{numerbay_product_full_name}"
+            if dataf.meta.era_col == "era":
+                dataf.loc[:, pred_name] = \
+                    self._get_preds(numerbay_product_full_name, tournament=self.classic_number)
             else:
-                dataf.loc[:, f"prediction_{numerbay_product_full_name}"] = \
-                    dataf.merge(self._get_preds(numerbay_product_full_name, tournament=11),
-                                on=['bloomberg_ticker', 'friday_date'], how='left')['signal']
+                dataf.loc[:, pred_name] = \
+                    dataf.merge(self._get_preds(numerbay_product_full_name, tournament=self.signals_number),
+                                on=[self.ticker_col, dataf.meta.era_col], how='left')['signal']
         return NumerFrame(dataf)
 
     @property
@@ -310,33 +316,33 @@ class NumerBayCSVs(BaseModel):
         return self._api
 
     def _get_preds(self, numerbay_product_full_name: str, tournament: int) -> pd.Series:
-        if tournament==11: # Temporarily disable Signals
+        if tournament == self.signals_number: # Temporarily disable Signals
             raise NotImplementedError("NumerBay Signals predictions not yet supported.")
 
-        # scan for already downloaded files, allows arbitray ext just in case (e.g. csv.zip)
+        # Scan for already downloaded files, allows arbitrary ext just in case (e.g. csv.zip)
         file_paths = list(self.data_directory.glob(f"{numerbay_product_full_name}.*"))
         if len(file_paths) > 0:
             file_path = file_paths[0]
         else:
             file_path = Path.joinpath(self.data_directory, f"{numerbay_product_full_name}.csv")
 
-        # download file if needed
+        # Download file if needed
         if not file_path.is_file():
-            # download to a tmp file
+            # Download to a tmp file
             tmp_path = Path.joinpath(self.data_directory, f".{numerbay_product_full_name}.tmp")
             self.api.download_artifact(
                 dest_path=str(tmp_path),
                 product_full_name=numerbay_product_full_name,
                 key_path=self.numerbay_key_path
             )
-            # rename file after successful download (and decryption)
+            # Rename file after successful download (and decryption)
             os.rename(tmp_path, file_path)
 
-        # read downloaded file
+        # Read downloaded file
         if file_path.is_file():
-            if tournament == 8:
+            if tournament == self.classic_number:
                 pred_col = pd.read_csv(file_path, index_col=0, header=0)['prediction']
-            elif tournament == 11:
+            elif tournament == self.signals_number:
                 pass
             else:
                 raise ValueError(f"Invalid tournament '{tournament}'.")
