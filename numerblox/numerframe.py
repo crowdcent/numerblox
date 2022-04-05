@@ -163,28 +163,25 @@ class NumerFrame(pd.DataFrame):
         return ProfileReport(self, *args, **kwargs)
 
 # Cell
-def create_numerframe(file_path: str, metadata: dict = None, *args, **kwargs) -> NumerFrame:
+def create_numerframe(file_path: str, metadata: dict = None, columns: list = None, *args, **kwargs) -> NumerFrame:
     """
     Convenient function to initialize NumerFrame.
-    Support most used file formats for Pandas DataFrames (.csv, .parquet, .pkl, .json, .xls, etc.).
+    Support most used file formats for Pandas DataFrames (.csv, .parquet, .xls, etc.).
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
     :param file_path: Relative or absolute path to data file. \n
     :param metadata: Metadata to be stored in NumerFrame.meta. \n
+    :param columns: Which columns to read (All by default). \n
     *args, **kwargs will be passed to Pandas loading function.
     """
     assert Path(file_path).is_file(), f"{file_path} does not point to file."
     suffix = Path(file_path).suffix
     if suffix in [".csv"]:
-        dataf = pd.read_csv(file_path, *args, **kwargs)
+        dataf = pd.read_csv(file_path, usecols=columns, *args, **kwargs)
     elif suffix in [".parquet"]:
-        dataf = pd.read_parquet(file_path, *args, **kwargs)
-    elif suffix in [".pkl", ".pickle"]:
-        dataf = pd.read_pickle(file_path, *args, **kwargs)
-    elif suffix in [".json"]:
-        dataf = pd.read_json(file_path, *args, **kwargs)
+        dataf = pd.read_parquet(file_path, columns=columns, *args, **kwargs)
     elif suffix in [".xls", ".xlsx", ".xlsm", "xlsb", ".odf", ".ods", ".odt"]:
-        dataf = pd.read_excel(file_path, *args, **kwargs)
+        dataf = pd.read_excel(file_path, usecols=columns, *args, **kwargs)
     else:
         raise NotImplementedError(f"Suffix '{suffix}' is not supported.")
     num_frame = NumerFrame(dataf)
