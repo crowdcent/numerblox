@@ -89,17 +89,17 @@ from numerblox.model_pipeline import ModelPipeline
 from numerblox.key import load_key_from_json
 from numerblox.submission import NumeraiClassicSubmitter
 
-# --- 1. Download version 2 data ---
+# --- 1. Download version 4 data ---
 downloader = NumeraiClassicDownloader("data")
 downloader.download_inference_data("current_round")
 
 # --- 2. Initialize NumerFrame ---
-metadata = {"version": 2,
+metadata = {"version": 4,
             "joblib_model_name": "test",
             "joblib_model_path": "test_assets/joblib_v2_example_model.joblib",
             "numerai_model_name": "test_model1",
             "key_path": "test_assets/test_credentials.json"}
-dataf = create_numerframe(file_path="data/current_round/numerai_tournament_data.parquet",
+dataf = create_numerframe(file_path="data/current_round/live.parquet",
                           metadata=metadata)
 
 # --- 3. Define and run pipeline ---
