@@ -123,6 +123,7 @@ class BaseIO(ABC):
         """ Check if directory is empty. """
         return not bool(self.get_all_files)
 
+
 # Cell
 @typechecked
 class BaseDownloader(BaseIO):
@@ -173,35 +174,10 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
-        self.version_mapping = {
-            3: {
-                "train": {
-                    "int8": [
-                        "numerai_training_data_int8.parquet",
-                        "numerai_validation_data_int8.parquet"
-                    ],
-                    "float": [
-                        "numerai_training_data.parquet",
-                        "numerai_validation_data.parquet"
-                    ],
-                },
-                "inference": {
-                    "int8": ["numerai_tournament_data_int8.parquet"],
-                    "float": ["numerai_tournament_data.parquet"]
-                },
-                "live": {
-                    "int8": ['numerai_live_data_int8.parquet'],
-                    "float": ['numerai_live_data.parquet']
-                },
-                "example": [
-                    "example_predictions.parquet",
-                    "example_validation_predictions.parquet",
-                ],
-            },
-        }
+        self.version_mapping = self._load_json("assets/downloader_mappings/numerai_classic_downloader_mapping.json")
 
     def download_training_data(
-        self, subfolder: str = "", version: int = 3, int8: bool = False
+        self, subfolder: str = "", version: int = 4, int8: bool = False
     ):
         """
         Get Numerai classic training and validation data.
@@ -210,18 +186,19 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param version: Numerai dataset version (3=1050+ features dataset (parquet))
         :param int8: Integer version of data
         """
-        dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         train_val_files = self._get_version_mapping(version)["train"][data_type]
         for file in train_val_files:
+            dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
-                filename=file, dest_path=str(dir.joinpath(file))
+                filename=file,
+                dest_path=dest_path
             )
 
     def download_inference_data(
         self,
         subfolder: str = "",
-        version: int = 3,
+        version: int = 4,
         int8: bool = False,
         round_num: int = None,
     ):
@@ -234,12 +211,14 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         inference_files = self._get_version_mapping(version)["inference"][data_type]
         for file in inference_files:
+            dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
-                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
+                filename=file,
+                dest_path=dest_path,
+                round_num=round_num
             )
 
     def download_single_dataset(
@@ -256,13 +235,15 @@ class NumeraiClassicDownloader(BaseDownloader):
             f":file_folder: [green]Downloading[/green] '{filename}' :file_folder:"
         )
         self.napi.download_dataset(
-            filename=filename, dest_path=dest_path, round_num=round_num
+            filename=filename,
+            dest_path=dest_path,
+            round_num=round_num
         )
 
     def download_live_data(
             self,
             subfolder: str = "",
-            version: int = 3,
+            version: int = 4,
             int8: bool = False,
             round_num: int = None
     ):
@@ -275,16 +256,18 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        dir = self._append_folder(subfolder)
         data_type = "int8" if int8 else "float"
         live_files = self._get_version_mapping(version)["live"][data_type]
         for file in live_files:
+            dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
-                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
+                filename=file,
+                dest_path=dest_path,
+                round_num=round_num
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: int = 3, round_num: int = None
+        self, subfolder: str = "", version: int = 4, round_num: int = None
     ):
         """
         Download all example prediction data in specified folder for given version.
@@ -294,14 +277,16 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param version: Numerai dataset version (2=super massive dataset (parquet))
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        dir = self._append_folder(subfolder)
         example_files = self._get_version_mapping(version)["example"]
         for file in example_files:
+            dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
-                filename=file, dest_path=str(dir.joinpath(file)), round_num=round_num
+                filename=file,
+                dest_path=dest_path,
+                round_num=round_num
             )
 
-    def get_classic_features(self, subfolder: str = "", filename="features.json", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", filename="v4/features.json", *args, **kwargs) -> dict:
         """
         Download feature overview (stats and feature sets) through NumerAPI and load as dict.
         :param subfolder: Specify folder to create folder within base directory root.
@@ -310,21 +295,27 @@ class NumeraiClassicDownloader(BaseDownloader):
         Currently defined as 'features.json' in NumerAPI and used as default.
         *args, **kwargs will be passed to the JSON loader.
         """
-        dir = self._append_folder(subfolder)
-        dest_path = str(dir.joinpath(filename))
-        self.download_single_dataset(filename=filename, dest_path=dest_path)
+        dest_path = self.__get_dest_path(subfolder, filename)
+        self.download_single_dataset(filename=filename,
+                                     dest_path=dest_path)
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
     def _get_version_mapping(self, version: int) -> dict:
         """ Check if data version is supported and return file mapping for version. """
         try:
-            mapping_dictionary = self.version_mapping[version]
+            mapping_dictionary = self.version_mapping[str(version)]
         except KeyError:
             raise NotImplementedError(
                 f"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}"
             )
         return mapping_dictionary
+
+    def __get_dest_path(self, subfolder: str, filename: str) -> str:
+        """ Prepare destination path for downloading. """
+        dir = self._append_folder(subfolder)
+        dest_path = str(dir.joinpath(filename.split("/")[-1]))
+        return dest_path
 
 # Cell
 class KaggleDownloader(BaseDownloader):
