@@ -148,7 +148,7 @@ class BaseDownloader(BaseIO):
     @staticmethod
     def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:
         """ Load JSON from file and return as dictionary. """
-        with open(file_path) as json_file:
+        with open(Path(file_path)) as json_file:
             json_data = json.load(json_file, *args, **kwargs)
         if verbose:
             rich_print(json_data)
@@ -174,7 +174,55 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
-        self.version_mapping = self._load_json("assets/downloader_mappings/numerai_classic_downloader_mapping.json")
+        self.version_mapping = {"3": {
+            "train": {
+                "int8": [
+                    "v3/numerai_training_data_int8.parquet",
+                    "v3/numerai_validation_data_int8.parquet"
+                ],
+                "float": [
+                    "v3/numerai_training_data.parquet",
+                    "v3/numerai_validation_data.parquet"
+                ]
+            },
+            "inference": {
+                "int8": ["v3/numerai_tournament_data_int8.parquet"],
+                "float": ["v3/numerai_tournament_data.parquet"]
+            },
+            "live": {
+                "int8": ["v3/numerai_live_data_int8.parquet"],
+                "float": ["v3/numerai_live_data.parquet"]
+            },
+            "example": [
+                "v3/example_predictions.parquet",
+                "v3/example_validation_predictions.parquet"
+            ]
+        },
+            "4": {
+                "train": {
+                    "int8": [
+                        "v4/train_int8.parquet",
+                        "v4/validation_int8.parquet"
+                    ],
+                    "float": [
+                        "v4/train.parquet",
+                        "v4/validation.parquet"
+                    ]
+                },
+                "inference": {
+                    "int8": ["v4/live_int8.parquet"],
+                    "float": ["v4/live.parquet"]
+                },
+                "live": {
+                    "int8": ["v4/live_int8.parquet"],
+                    "float": ["v4/live.parquet"]
+                },
+                "example": [
+                    "v4/live_example_preds.parquet",
+                    "v4/validation_example_preds.parquet"
+                ]
+            }
+        }
 
     def download_training_data(
         self, subfolder: str = "", version: int = 4, int8: bool = False
