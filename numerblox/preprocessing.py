@@ -179,57 +179,54 @@ class ReduceMemoryProcessor(BaseProcessor):
 # Cell
 class SyntheticDataGenerator(BaseProcessor):
     """
-    Generate synthetic eras of data.
-    Uses SDV (sdv.dev) under the hood.
+    Generate synthetic eras. Uses SDV (sdv.dev) under the hood.
 
-    :param model_name: Exact class name of a model supported on sdv.
-    :param model_path: Path to trained model if you have so.
-    By default, initializes and fits a new model.
+    :param model_name: Exact class name of a model supported on sdv. \n
+    :param model_path: Either: \n
+    1. Path to trained model. \n
+    2. Path to where you want to save the fitted model. \n
+    If model_path does not point to a valid file, a new model will be initialized, fitted and saved.
     """
-    SUPPORTED_MODELS = ["GaussianCopula", "CTGAN", "CopulaGAN"]
-    def __init__(self,
-                 model_path: str,
-                 model_name = "GaussianCopula",
+    SUPPORTED_MODELS = ["GaussianCopula", "CTGAN", "CopulaGAN", "TVAE"]
+    def __init__(self, model_path: str,
+                 model_name = "CTGAN",
+                 rows_per_era: int = 5400,
                  eras_to_add: int = 1):
         super().__init__()
         self.model_name = model_name
         assert self.model_name in self.SUPPORTED_MODELS,\
             f"Only models '{self.SUPPORTED_MODELS}' are supported. Got '{self.model_name}'."
         self.model_path = Path(model_path)
+        self.rows_per_era = rows_per_era
         self.eras_to_add = eras_to_add
 
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         model = self.prepare_model(dataf=dataf)
         synth_datafs = []
-        for era_n in range(self.eras_to_add):
+        for era_n in tqdm(range(self.eras_to_add), desc="Generating synthetic eras"):
             synth_era_data = self.get_synthetic_batch(model=model)
-            synth_era_data[dataf.meta.era_col] = f"synth_{era_n.zfill(4)}"
+            synth_era_data.loc[:, dataf.meta.era_col] = f"synth_{str(era_n).zfill(4)}"
             synth_datafs.append(synth_era_data)
 
         synth_dataf = pd.concat(synth_datafs)
-
-
-        # Parse all contents of NumerFrame to the next pipeline step
+        dataf = pd.concat([dataf, synth_dataf])
         return NumerFrame(dataf)
 
-    def prepare_model(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Union[SUPPORTED_MODELS]:
+    def prepare_model(self, dataf: Union[pd.DataFrame, NumerFrame]):
         if self.model_path.is_file():
+            rich_print(f"Loading '{self.model_name}' model from '{self.model_path}'.")
             model = getattr(sdv.tabular, self.model_name).load(self.model_path)
         else:
             rich_print(f":warning: Model path '{self.model_path}' does not point to a file. Initializing, fitting and saving new model. :warning:")
             model = getattr(sdv.tabular, self.model_name)()
-            model.fit(dataf=dataf)
+            model.fit(dataf)
             model.save(self.model_path)
         return model
 
-    @staticmethod
-    def get_synthetic_batch(model: Union[SUPPORTED_MODELS],
-                            num_rows: int = 200) -> pd.DataFrame:
-        synthetic_dataf = model.sample(num_rows=num_rows)
+    def get_synthetic_batch(self, model) -> pd.DataFrame:
+        synthetic_dataf = model.sample(num_rows=self.rows_per_era)
         return synthetic_dataf
-
-
 
 # Cell
 class BayesianGMMTargetProcessor(BaseProcessor):
