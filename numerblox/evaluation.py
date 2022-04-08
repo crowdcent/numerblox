@@ -6,8 +6,9 @@ __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator'
 import json
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from pathlib import Path
 from tqdm.auto import tqdm
+import matplotlib.pyplot as plt
 from typing import Tuple, Union
 
 from .numerframe import NumerFrame, create_numerframe
@@ -369,7 +370,8 @@ class NumeraiClassicEvaluator(BaseEvaluator):
     def __init__(self, era_col: str = "era", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
         # 420 features in medium feature set for FNC v3 calculation
-        self.v3_features = self.__load_json("assets/feature_sets/v3_features.json")['medium']
+        self.v3_features_path = Path("../assets/feature_sets/v3_features.json")
+        self.v3_features = self.__load_json(self.v3_features_path)['medium']
 
     def full_evaluation(
         self,
