@@ -166,7 +166,8 @@ class NumerFrame(pd.DataFrame):
 def create_numerframe(file_path: str, metadata: dict = None, columns: list = None, *args, **kwargs) -> NumerFrame:
     """
     Convenient function to initialize NumerFrame.
-    Support most used file formats for Pandas DataFrames (.csv, .parquet, .xls, etc.).
+    Support most used file formats for Pandas DataFrames \n
+    (.csv, .parquet, .xls, .pkl, etc.).
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
     :param file_path: Relative or absolute path to data file. \n
@@ -182,6 +183,9 @@ def create_numerframe(file_path: str, metadata: dict = None, columns: list = Non
         dataf = pd.read_parquet(file_path, columns=columns, *args, **kwargs)
     elif suffix in [".xls", ".xlsx", ".xlsm", "xlsb", ".odf", ".ods", ".odt"]:
         dataf = pd.read_excel(file_path, usecols=columns, *args, **kwargs)
+    elif suffix in ['.pkl', '.pickle']:
+        dataf = pd.read_pickle(file_path, *args, **kwargs)
+        dataf = dataf.loc[:, columns] if columns else dataf
     else:
         raise NotImplementedError(f"Suffix '{suffix}' is not supported.")
     num_frame = NumerFrame(dataf)
