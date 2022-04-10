@@ -53,7 +53,7 @@ quickly test if your installation has succeeded
 6. Pipelines handling processing and prediction (`ModelPipeline` and `ModelPipelineCollection`)
 7. Evaluation (`NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`)
 8. Authentication (`Key` and `load_key_from_json`)
-9. Submitting (`NumeraiClassicSubmitter` and `NumeraiSignalsSubmitter`)
+9. Submitting (`NumeraiClassicSubmitter`, `NumeraiSignalsSubmitter` and `NumerBaySubmitter`)
 10. Automated staking (`NumeraiClassicStaker` and `NumeraiSignalsStaker`)
 
 #### 2.1.2. Educational notebooks
@@ -66,6 +66,7 @@ Example notebooks can be found in the `nbs/edu_nbs` directory.
 - `submitting.ipynb`: How to use Submitters for safe and easy Numerai submissions.
 - `google_cloud_storage.ipynb`: How to use Downloaders and Submitters to interact with Google Cloud Storage (GCS).
 - `load_model_from_wandb.ipynb`: For [Weights & Biases](https://wandb.ai/) users. Easily pull a model from W&B for inference.
+- `numerbay_integration.ipynb`: How to use `NumerBlox` to download and upload predictions listed on [NumerBay](https://numerbay.ai).
 
 Development notebooks are also in the `nbs` directory. These notebooks are also used to generate the documentation.
 
