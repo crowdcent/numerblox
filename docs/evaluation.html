@@ -111,10 +111,10 @@ namely max_exposure, feature neutral mean, TB200 and TB500.</p>
 
 
 
-<div id="e07c84c3-02d3-40b9-af3c-fe301bd88fc6"></div>
+<div id="39b4ac4d-5b31-4fa0-a2b2-bb2fedb5e767"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e07c84c3-02d3-40b9-af3c-fe301bd88fc6');
+var element = $('#39b4ac4d-5b31-4fa0-a2b2-bb2fedb5e767');
 
             setTimeout(function() {
                 var nbb_cell_id = 4;
@@ -196,15 +196,15 @@ var element = $('#e07c84c3-02d3-40b9-af3c-fe301bd88fc6');
 
 
 
-<div id="cd39407d-460a-4436-ad16-b2e06c6b4926"></div>
+<div id="f76d4bae-a047-45c7-9568-f48a51ee838c"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#cd39407d-460a-4436-ad16-b2e06c6b4926');
+var element = $('#f76d4bae-a047-45c7-9568-f48a51ee838c');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features_path = Path(\"../assets/feature_sets/v3_features.json\")\n        self.v3_features = self.__load_json(self.v3_features_path)['medium']\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\")\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=self.v3_features\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, 'r') as f:\n            data = json.load(f)\n        return data";
-                var nbb_formatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        # 420 features in medium feature set for FNC v3 calculation\n        self.v3_features_path = Path(\"../assets/feature_sets/v3_features.json\")\n        self.v3_features = self.__load_json(self.v3_features_path)[\"medium\"]\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # V3 feature check\n        valid_v3_features = set(self.v3_features).issubset(set(dataf.columns))\n        if not valid_v3_features:\n            print(\n                \"WARNING: Not all features needed for v3 metrics are defined in DataFrame. Skipping calculation of v3 metrics.\"\n            )\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_v3_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf,\n                    pred_col=col,\n                    target_col=target_col,\n                    feature_names=self.v3_features,\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, \"r\") as f:\n            data = json.load(f)\n        return data";
+                var nbb_unformatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        self.features = self.__load_json(\"../assets/feature_sets/features.json\")\n        self.fncv3_features = self.features['fncv3_features']\n        self.medium_features = self.features['medium']\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # Check if sufficient columns are present in dataf to compute FNCv3\n        if set(self.fncv3_features).issubset(set(dataf.columns)):\n            valid_features = self.fncv3_features\n        elif set(self.medium_features).issubset(set(dataf.columns)):\n            print(\"WARNING: 'v4/fncv3_features' are not present in the DataFrame. Falling back on 'v3/medium' features.\")\n            valid_features = self.medium_features  \n        else:\n            print(\"WARNING: neither 'v4/fncv3_features' nor 'v3/medium' features are defined in DataFrame. Skipping calculation of v3 metrics.\")\n            valid_features = []\n\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=valid_features\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n        \n        \n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, 'r') as f:\n            data = json.load(f)\n        return data";
+                var nbb_formatted_code = "# export\nclass NumeraiClassicEvaluator(BaseEvaluator):\n    \"\"\"Evaluator for all metrics that are relevant in Numerai Classic.\"\"\"\n\n    def __init__(self, era_col: str = \"era\", fast_mode=False):\n        super().__init__(era_col=era_col, fast_mode=fast_mode)\n        self.features = self.__load_json(\"../assets/feature_sets/features.json\")\n        self.fncv3_features = self.features[\"fncv3_features\"]\n        self.medium_features = self.features[\"medium\"]\n\n    def full_evaluation(\n        self,\n        dataf: NumerFrame,\n        example_col: str,\n        pred_cols: list = None,\n        target_col: str = \"target\",\n    ) -> pd.DataFrame:\n        val_stats = pd.DataFrame()\n        dataf = dataf.fillna(0.5)\n        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols\n\n        # Check if sufficient columns are present in dataf to compute FNCv3\n        if set(self.fncv3_features).issubset(set(dataf.columns)):\n            valid_features = self.fncv3_features\n        elif set(self.medium_features).issubset(set(dataf.columns)):\n            print(\n                \"WARNING: 'v4/fncv3_features' are not present in the DataFrame. Falling back on 'v3/medium' features.\"\n            )\n            valid_features = self.medium_features\n        else:\n            print(\n                \"WARNING: neither 'v4/fncv3_features' nor 'v3/medium' features are defined in DataFrame. Skipping calculation of v3 metrics.\"\n            )\n            valid_features = []\n\n        for col in tqdm(pred_cols, desc=\"Evaluation: \"):\n            # Metrics that can be calculated for both Numerai Classic and Signals\n            col_stats = self.evaluation_one_col(\n                dataf=dataf,\n                pred_col=col,\n                target_col=target_col,\n                example_col=example_col,\n            )\n            # Numerai Classic specific metrics\n            if not self.fast_mode and valid_features:\n                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(\n                    dataf=dataf,\n                    pred_col=col,\n                    target_col=target_col,\n                    feature_names=valid_features,\n                )\n                col_stats.loc[col, \"feature_neutral_mean_v3\"] = fnc_v3\n                col_stats.loc[col, \"feature_neutral_std_v3\"] = fn_std_v3\n                col_stats.loc[col, \"feature_neutral_sharpe_v3\"] = fn_sharpe_v3\n            val_stats = pd.concat([val_stats, col_stats], axis=0)\n        return val_stats\n\n    def __load_json(self, json_path: str) -> dict:\n        with open(json_path, \"r\") as f:\n            data = json.load(f)\n        return data";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -251,7 +251,7 @@ var element = $('#cd39407d-460a-4436-ad16-b2e06c6b4926');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/evaluation.py#L416" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'friday_date'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxevaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
+<h2 id="NumeraiSignalsEvaluator" class="doc_header"><code>class</code> <code>NumeraiSignalsEvaluator</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/evaluation.py#L422" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiSignalsEvaluator</code>(<strong><code>era_col</code></strong>:<code>str</code>=<em><code>'friday_date'</code></em>, <strong><code>fast_mode</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxevaluation.html#BaseEvaluator"><code>BaseEvaluator</code></a></p>
 </blockquote>
 <p>Evaluator for all metrics that are relevant in Numerai Signals.</p>
 
@@ -277,10 +277,10 @@ var element = $('#cd39407d-460a-4436-ad16-b2e06c6b4926');
 
 
 
-<div id="402e2371-21dd-4d21-8c46-3ddd59e48490"></div>
+<div id="54b6272b-bde4-49fe-ac0a-07d99720a039"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#402e2371-21dd-4d21-8c46-3ddd59e48490');
+var element = $('#54b6272b-bde4-49fe-ac0a-07d99720a039');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -349,6 +349,17 @@ var element = $('#402e2371-21dd-4d21-8c46-3ddd59e48490');
 
 
 <div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">eval_test_1234321</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">📁 <span style="color: #008000; text-decoration-color: #008000">Downloading</span> <span style="color: #008000; text-decoration-color: #008000">'example_validation_predictions.parquet'</span> 📁
 </pre>
 
@@ -359,8 +370,8 @@ var element = $('#402e2371-21dd-4d21-8c46-3ddd59e48490');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-04-07 18:13:36,605 INFO numerapi.utils: target file already exists
-2022-04-07 18:13:36,606 INFO numerapi.utils: download complete
+<pre>2022-04-12 21:15:52,981 INFO numerapi.utils: starting download
+eval_test_1234321/example_validation_predictions.parquet: 13.0MB [00:04, 2.89MB/s]                            
 </pre>
 </div>
 </div>
@@ -379,8 +390,8 @@ var element = $('#402e2371-21dd-4d21-8c46-3ddd59e48490');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-04-07 18:13:37,153 INFO numerapi.utils: target file already exists
-2022-04-07 18:13:37,153 INFO numerapi.utils: download complete
+<pre>2022-04-12 21:15:57,980 INFO numerapi.utils: starting download
+eval_test_1234321/numerai_validation_data.parquet: 228MB [01:19, 2.85MB/s]                            
 </pre>
 </div>
 </div>
@@ -390,10 +401,10 @@ var element = $('#402e2371-21dd-4d21-8c46-3ddd59e48490');
 
 
 
-<div id="5ddfcaf0-bf5d-4dd0-b61b-4084a54ebf37"></div>
+<div id="361d6ce5-80a5-4591-ab64-1c1930fb4f0f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5ddfcaf0-bf5d-4dd0-b61b-4084a54ebf37');
+var element = $('#361d6ce5-80a5-4591-ab64-1c1930fb4f0f');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -575,10 +586,10 @@ var element = $('#5ddfcaf0-bf5d-4dd0-b61b-4084a54ebf37');
 
 
 
-<div id="3070c62a-11b4-43f4-bf88-42fbed5d3cdb"></div>
+<div id="6e7c21e3-25a3-4d6c-8e30-18c364ee4a90"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
+var element = $('#6e7c21e3-25a3-4d6c-8e30-18c364ee4a90');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -638,9 +649,17 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 <div class="output_area">
 
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>WARNING: &#39;v4/fncv3_features&#39; are not present in the DataFrame. Falling back on &#39;v3/medium&#39; features.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-04-07 18:13:47,146 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
-2022-04-07 18:13:47,147 INFO numexpr.utils: NumExpr defaulting to 8 threads.
+<pre>2022-04-12 21:17:27,387 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-04-12 21:17:27,387 INFO numexpr.utils: NumExpr defaulting to 8 threads.
 </pre>
 </div>
 </div>
@@ -672,7 +691,7 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1076</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:46</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">959725</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:35</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">067767</span>. ✅
 </pre>
 
 </div>
@@ -706,7 +725,7 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1076</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:22</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">630693</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:20</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">850359</span>. ✅
 </pre>
 
 </div>
@@ -740,7 +759,7 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1077</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:40</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">286508</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:01:27</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">916898</span>. ✅
 </pre>
 
 </div>
@@ -774,7 +793,7 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 <div class="output_html rendered_html output_subarea ">
 <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">539658</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1077</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:21</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">984637</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:21</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">715511</span>. ✅
 </pre>
 
 </div>
@@ -888,10 +907,10 @@ var element = $('#3070c62a-11b4-43f4-bf88-42fbed5d3cdb');
 
 
 
-<div id="989f6333-9623-4ce2-a37a-272d84395128"></div>
+<div id="d6e966b6-18e0-495e-8f2f-3e3dbcff731b"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#989f6333-9623-4ce2-a37a-272d84395128');
+var element = $('#d6e966b6-18e0-495e-8f2f-3e3dbcff731b');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
@@ -957,6 +976,14 @@ Note that any column can be used as example prediction. For practical use cases 
 
 <div class="output_wrapper">
 <div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>WARNING: &#39;v4/fncv3_features&#39; are not present in the DataFrame. Falling back on &#39;v3/medium&#39; features.
+</pre>
+</div>
+</div>
 
 <div class="output_area">
 
@@ -1031,10 +1058,10 @@ Note that any column can be used as example prediction. For practical use cases 
 
 
 
-<div id="56bd68f5-c323-4657-9fb3-e3ccad9c8ea7"></div>
+<div id="0b882da7-0070-441f-835a-a5902f17024f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#56bd68f5-c323-4657-9fb3-e3ccad9c8ea7');
+var element = $('#0b882da7-0070-441f-835a-a5902f17024f');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
@@ -1123,10 +1150,10 @@ var element = $('#56bd68f5-c323-4657-9fb3-e3ccad9c8ea7');
 
 
 
-<div id="63b2471f-966a-4516-b4e4-601e32cbc5c5"></div>
+<div id="86fc4f7c-c2bf-4f6d-8c7d-33ab435e6935"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#63b2471f-966a-4516-b4e4-601e32cbc5c5');
+var element = $('#86fc4f7c-c2bf-4f6d-8c7d-33ab435e6935');
 
             setTimeout(function() {
                 var nbb_cell_id = 11;
@@ -1188,10 +1215,10 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="04fe3e24-29cb-4052-98ef-98941e0ff490"></div>
+<div id="e1a9b5b1-36c0-46c2-8e94-4bf63b150bee"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#04fe3e24-29cb-4052-98ef-98941e0ff490');
+var element = $('#e1a9b5b1-36c0-46c2-8e94-4bf63b150bee');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
