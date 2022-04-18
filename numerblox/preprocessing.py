@@ -253,7 +253,7 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         fake_target = self._generate_target(dataf=dataf,
                                             bgmm=bgmm,
                                             all_eras=all_eras)
-        dataf[f"fake_{self.target_col}"] = fake_target
+        dataf[f"{self.target_col}_fake"] = fake_target
         return NumerFrame(dataf)
 
     def _get_coefs(self, dataf: NumerFrame, all_eras: list) -> np.ndarray:
