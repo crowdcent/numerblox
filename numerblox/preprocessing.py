@@ -205,12 +205,13 @@ class DeepDreamGenerator(BaseProcessor):
         dataf = pd.concat([dataf, dream_dataf])
         return NumerFrame(dataf)
 
-    def get_synthetic_batch(self, dataf: NumerFrame) -> pd.DataFrame:
+    def get_synthetic_batch(self, dataf: NumerFrame) -> NumerFrame:
         features = self.feature_names if self.feature_names else dataf.feature_cols
         targets = dataf.target_cols
 
         dream_dataf = pd.DataFrame(columns=features)
-        for i in np.arange(0, len(dataf), self.batch_size):
+        for i in tqdm(np.arange(0, len(dataf), self.batch_size),
+                      desc="Deepdreaming Synthetic Batches"):
             start = i
             end = np.minimum(i + self.batch_size - 1, len(dataf) - 1)
             sub_dataf = dataf.reset_index(drop=False).iloc[start:end]
@@ -221,10 +222,10 @@ class DeepDreamGenerator(BaseProcessor):
             batch_dataf[targets] = sub_dataf[targets]
 
             dream_dataf = pd.concat([dream_dataf, batch_dataf])
-        return dream_dataf
+        return NumerFrame(dream_dataf)
 
     def _dream(self, batch: tf.Tensor) -> np.ndarray:
-        for _ in tqdm(tf.range(self.steps), desc="Deepdreaming Synthetic Batches"):
+        for _ in tf.range(self.steps):
             with tf.GradientTape() as tape:
                 # This needs gradients relative to the input row
                 tape.watch(batch)
