@@ -12,6 +12,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import datetime as dt
+from umap import UMAP
 import tensorflow as tf
 from tqdm.auto import tqdm
 from functools import wraps
