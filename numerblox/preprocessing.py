@@ -183,7 +183,12 @@ class DeepDreamGenerator(BaseProcessor):
     https://github.com/nemethpeti/numerai/blob/main/DeepDream/deepdream.py
 
     :param model_path: Path to trained DeepDream model. Example can be downloaded from \n
-    https://github.com/nemethpeti/numerai/blob/main/DeepDream/model.h5
+    https://github.com/nemethpeti/numerai/blob/main/DeepDream/model.h5 \n
+    :param batch_size: How much synthetic data to process in each batch. \n
+    :param steps: Number of gradient ascent steps to perform. More steps will lead to more augmentation. \n
+    :param step_size: How much to augment the batch based on computed gradients. \n
+    Like with the number of steps, a larger step size will lead to more dramatic changes to the input features. \n
+    The default parameters are found to work well in practice, but could be further optimized.
     """
     def __init__(self, model_path: str, batch_size: int = 200_000,
                  steps: int = 5, step_size: float = .01,
@@ -206,6 +211,10 @@ class DeepDreamGenerator(BaseProcessor):
         return NumerFrame(dataf)
 
     def get_synthetic_batch(self, dataf: NumerFrame) -> NumerFrame:
+        """
+        Produce a synthetic version of the full input dataset.
+        Target features will stay the same as in the original input data.
+        """
         features = self.feature_names if self.feature_names else dataf.feature_cols
         targets = dataf.target_cols
 
@@ -225,32 +234,34 @@ class DeepDreamGenerator(BaseProcessor):
         return NumerFrame(dream_dataf)
 
     def _dream(self, batch: tf.Tensor) -> np.ndarray:
+        """
+        Perform gradient ascent on batch of data.
+        This loop perturbs the original features to create synthetic data.
+        """
         for _ in tf.range(self.steps):
             with tf.GradientTape() as tape:
-                # This needs gradients relative to the input row
                 tape.watch(batch)
                 layer_activations = self.model(batch)
-                # calculate loss based on the selected layers (or neurons, like layer_activations[:, 5])
                 loss = tf.math.reduce_mean(layer_activations, -1)
 
-            # Calculate the gradient of the loss with respect to the pixels of the input image.
             gradients = tape.gradient(loss, batch)
-
-            # Normalize the gradients.
             gradients /= tf.expand_dims(tf.math.reduce_std(gradients, -1), 1) + 1e-8
 
             # In gradient ascent, the "loss" is maximized so that the input row increasingly "excites" the layers.
-            # You can update the tow by directly adding the gradients (because they're the same shape!)
             batch = batch + gradients * self.step_size
         batch = tf.clip_by_value(batch, 0, 1)
         return batch.numpy()
 
     @staticmethod
-    def __load_model(model_path: str) -> tf.keras.Model:
+    def __load_model(model_path: str, output_layer_name: str = 'concat') -> tf.keras.Model:
+        """
+        Load in Keras model from given path.
+        output_layer_name will be the layer used to augment data.
+        """
         base_model = tf.keras.models.load_model(model_path)
         base_model.compile(run_eagerly=True)
         # Maximize the activations of these layers
-        layers = base_model.get_layer('concat').output
+        layers = base_model.get_layer(output_layer_name).output
         # Create the feature extraction model
         dream_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
         return dream_model
