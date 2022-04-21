@@ -24,7 +24,7 @@ from typing import Union, List, Tuple
 from multiprocessing.pool import Pool
 from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
-from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import QuantileTransformer, MinMaxScaler
 
 from .download import NumeraiClassicDownloader
 from .numerframe import NumerFrame, create_numerframe
