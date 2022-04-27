@@ -53,8 +53,10 @@ class NumerFrame(pd.DataFrame):
             self.meta.era_col = "era"
         elif "friday_date" in self.columns:
             self.meta.era_col = "friday_date"
+        elif "date" in self.columns:
+            self.meta.era_col = "date"
         else:
-            raise AttributeError("NumerFrame must contain either an 'era' or 'friday_date' column.")
+            raise AttributeError("NumerFrame must contain either an 'era', 'friday_date' or 'date' column.")
         self.meta.era_col_verified = True
 
     def add_metadata(self, *args, **kwargs):
@@ -178,17 +180,17 @@ def create_numerframe(file_path: str, metadata: dict = None, columns: list = Non
     assert Path(file_path).is_file(), f"{file_path} does not point to file."
     suffix = Path(file_path).suffix
     if suffix in [".csv"]:
-        dataf = pd.read_csv(file_path, usecols=columns, *args, **kwargs)
+        df = pd.read_csv(file_path, usecols=columns, *args, **kwargs)
     elif suffix in [".parquet"]:
-        dataf = pd.read_parquet(file_path, columns=columns, *args, **kwargs)
+        df = pd.read_parquet(file_path, columns=columns, *args, **kwargs)
     elif suffix in [".xls", ".xlsx", ".xlsm", "xlsb", ".odf", ".ods", ".odt"]:
-        dataf = pd.read_excel(file_path, usecols=columns, *args, **kwargs)
+        df = pd.read_excel(file_path, usecols=columns, *args, **kwargs)
     elif suffix in ['.pkl', '.pickle']:
-        dataf = pd.read_pickle(file_path, *args, **kwargs)
-        dataf = dataf.loc[:, columns] if columns else dataf
+        df = pd.read_pickle(file_path, *args, **kwargs)
+        df = df.loc[:, columns] if columns else df
     else:
         raise NotImplementedError(f"Suffix '{suffix}' is not supported.")
-    num_frame = NumerFrame(dataf)
+    num_frame = NumerFrame(df)
     if metadata:
         num_frame.add_metadata(metadata)
     return num_frame
