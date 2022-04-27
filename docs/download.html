@@ -87,13 +87,13 @@ nb_path: "nbs/01_download.ipynb"
 
 
 
-<div id="8a8e6d99-fef6-4692-ad14-7d2b9cb1abe0"></div>
+<div id="e5b4ec09-4122-4fe7-8fc7-b62222ceca63"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8a8e6d99-fef6-4692-ad14-7d2b9cb1abe0');
+var element = $('#e5b4ec09-4122-4fe7-8fc7-b62222ceca63');
 
             setTimeout(function() {
-                var nbb_cell_id = 6;
+                var nbb_cell_id = 5;
                 var nbb_unformatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\" Create blob that interacts with Google Cloud Storage (GCS). \"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\" Create base directory if it does not exist. \"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\" Return all paths of contents in directory. \"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\" Check if directory is empty. \"\"\"\n        return not bool(self.get_all_files)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\"Create blob that interacts with Google Cloud Storage (GCS).\"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\"Create base directory if it does not exist.\"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\"Return all paths of contents in directory.\"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\"Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -164,13 +164,13 @@ var element = $('#8a8e6d99-fef6-4692-ad14-7d2b9cb1abe0');
 
 
 
-<div id="78bdfd93-da6c-40a6-a9c9-422627ada11b"></div>
+<div id="d4746d41-6621-425a-b286-10971f716e3d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#78bdfd93-da6c-40a6-a9c9-422627ada11b');
+var element = $('#d4746d41-6621-425a-b286-10971f716e3d');
 
             setTimeout(function() {
-                var nbb_cell_id = 7;
+                var nbb_cell_id = 6;
                 var nbb_unformatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Download all necessary files needed for training. \"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" Download minimal amount of files needed for weekly inference. \"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\" Load JSON from file and return as dictionary. \"\"\"\n        with open(Path(file_path)) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
                 var nbb_formatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Download all necessary files needed for training.\"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"Download minimal amount of files needed for weekly inference.\"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\"Load JSON from file and return as dictionary.\"\"\"\n        with open(Path(file_path)) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -241,13 +241,13 @@ var element = $('#78bdfd93-da6c-40a6-a9c9-422627ada11b');
 
 
 
-<div id="e9bcd489-e98b-46a1-938c-e2d0414d6af2"></div>
+<div id="27ca444b-6065-406d-8f0a-ead033b36cd0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e9bcd489-e98b-46a1-938c-e2d0414d6af2');
+var element = $('#27ca444b-6065-406d-8f0a-ead033b36cd0');
 
             setTimeout(function() {
-                var nbb_cell_id = 8;
+                var nbb_cell_id = 7;
                 var nbb_unformatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.\n\n    Downloading from NumerAPI for Numerai Classic data. \\n\n    :param directory_path: Base folder to download files to. \\n\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\"3\": {\n            \"train\": {\n                \"int8\": [\n                    \"v3/numerai_training_data_int8.parquet\",\n                    \"v3/numerai_validation_data_int8.parquet\"\n                ],\n                \"float\": [\n                    \"v3/numerai_training_data.parquet\",\n                    \"v3/numerai_validation_data.parquet\"\n                ]\n            },\n            \"inference\": {\n                \"int8\": [\"v3/numerai_tournament_data_int8.parquet\"],\n                \"float\": [\"v3/numerai_tournament_data.parquet\"]\n            },\n            \"live\": {\n                \"int8\": [\"v3/numerai_live_data_int8.parquet\"],\n                \"float\": [\"v3/numerai_live_data.parquet\"]\n            },\n            \"example\": [\n                \"v3/example_predictions.parquet\",\n                \"v3/example_validation_predictions.parquet\"\n            ]\n        },\n            \"4\": {\n                \"train\": {\n                    \"int8\": [\n                        \"v4/train_int8.parquet\",\n                        \"v4/validation_int8.parquet\"\n                    ],\n                    \"float\": [\n                        \"v4/train.parquet\",\n                        \"v4/validation.parquet\"\n                    ]\n                },\n                \"inference\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"]\n                },\n                \"live\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"]\n                },\n                \"example\": [\n                    \"v4/live_example_preds.parquet\",\n                    \"v4/validation_example_preds.parquet\"\n                ]\n            }\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 4, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (3=1050+ features dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename,\n            dest_path=dest_path,\n            round_num=round_num\n        )\n\n    def download_live_data(\n            self,\n            subfolder: str = \"\",\n            version: int = 4,\n            int8: bool = False,\n            round_num: int = None\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 4, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def get_classic_features(self, subfolder: str = \"\", filename=\"v4/features.json\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dest_path = self.__get_dest_path(subfolder, filename)\n        self.download_single_dataset(filename=filename,\n                                     dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\" Check if data version is supported and return file mapping for version. \"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[str(version)]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary\n\n    def __get_dest_path(self, subfolder: str, filename: str) -> str:\n        \"\"\" Prepare destination path for downloading. \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename.split(\"/\")[-1]))\n        return dest_path";
                 var nbb_formatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.\n\n    Downloading from NumerAPI for Numerai Classic data. \\n\n    :param directory_path: Base folder to download files to. \\n\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            \"3\": {\n                \"train\": {\n                    \"int8\": [\n                        \"v3/numerai_training_data_int8.parquet\",\n                        \"v3/numerai_validation_data_int8.parquet\",\n                    ],\n                    \"float\": [\n                        \"v3/numerai_training_data.parquet\",\n                        \"v3/numerai_validation_data.parquet\",\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"v3/numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"v3/numerai_tournament_data.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"v3/numerai_live_data_int8.parquet\"],\n                    \"float\": [\"v3/numerai_live_data.parquet\"],\n                },\n                \"example\": [\n                    \"v3/example_predictions.parquet\",\n                    \"v3/example_validation_predictions.parquet\",\n                ],\n            },\n            \"4\": {\n                \"train\": {\n                    \"int8\": [\"v4/train_int8.parquet\", \"v4/validation_int8.parquet\"],\n                    \"float\": [\"v4/train.parquet\", \"v4/validation.parquet\"],\n                },\n                \"inference\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"],\n                },\n                \"example\": [\n                    \"v4/live_example_preds.parquet\",\n                    \"v4/validation_example_preds.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 4, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (3=1050+ features dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(filename=file, dest_path=dest_path)\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 4, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def get_classic_features(\n        self, subfolder: str = \"\", filename=\"v4/features.json\", *args, **kwargs\n    ) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dest_path = self.__get_dest_path(subfolder, filename)\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\"Check if data version is supported and return file mapping for version.\"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[str(version)]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary\n\n    def __get_dest_path(self, subfolder: str, filename: str) -> str:\n        \"\"\"Prepare destination path for downloading.\"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename.split(\"/\")[-1]))\n        return dest_path";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -353,8 +353,8 @@ Feature stats and overview can be downloaded with <code>.get_classic_features()<
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-04-27 13:42:26,294 INFO numerapi.utils: starting download
-test_numclassic_train/features.json: 562kB [00:00, 745kB/s]                             
+<pre>2022-04-27 15:26:08,666 INFO numerapi.utils: starting download
+test_numclassic_train/features.json: 562kB [00:00, 748kB/s]                             
 </pre>
 </div>
 </div>
@@ -377,13 +377,13 @@ Path:
 
 
 
-<div id="e2b853ec-a6f8-478c-a2ec-e9b3d8302f21"></div>
+<div id="f0f3a54c-4211-4489-bdb6-c5964a8ec24d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e2b853ec-a6f8-478c-a2ec-e9b3d8302f21');
+var element = $('#f0f3a54c-4211-4489-bdb6-c5964a8ec24d');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 9;
                 var nbb_unformatted_code = "# slow\n# Initialization\ntrain_base_directory = \"test_numclassic_train\"\nnumer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Uncomment line below to download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", int8=False)\n\n# Get feature overview (dict)\nnumer_classic_downloader.get_classic_features()\n\n# Remove contents (To clean up environment)\nnumer_classic_downloader.remove_base_directory()";
                 var nbb_formatted_code = "# slow\n# Initialization\ntrain_base_directory = \"test_numclassic_train\"\nnumer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Uncomment line below to download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", int8=False)\n\n# Get feature overview (dict)\nnumer_classic_downloader.get_classic_features()\n\n# Remove contents (To clean up environment)\nnumer_classic_downloader.remove_base_directory()";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -442,13 +442,13 @@ var element = $('#e2b853ec-a6f8-478c-a2ec-e9b3d8302f21');
 
 
 
-<div id="09566188-58ab-49c5-a0bb-e3e54efc5ec4"></div>
+<div id="6c52a80e-b08c-471f-a3a3-b8c962351736"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#09566188-58ab-49c5-a0bb-e3e54efc5ec4');
+var element = $('#6c52a80e-b08c-471f-a3a3-b8c962351736');
 
             setTimeout(function() {
-                var nbb_cell_id = 11;
+                var nbb_cell_id = 10;
                 var nbb_unformatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {train_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(\":page_facing_up: numerai_training_data.parquet\")\ntrain_val_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\n\nconsole.print(tree)";
                 var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {train_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(\":page_facing_up: numerai_training_data.parquet\")\ntrain_val_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\n\nconsole.print(tree)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -537,8 +537,8 @@ It can also easily be deleted after you are done with inference by calling <code
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-04-27 13:42:28,683 INFO numerapi.utils: starting download
-test_numclassic_inference/inference/live_int8.parquet: 3.55MB [00:05, 652kB/s]                             
+<pre>2022-04-27 15:26:11,230 INFO numerapi.utils: starting download
+test_numclassic_inference/inference/live_int8.parquet: 3.55MB [00:03, 1.11MB/s]                            
 </pre>
 </div>
 </div>
@@ -561,13 +561,13 @@ Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepe
 
 
 
-<div id="28d77bdd-7f12-4d7d-bd76-38eb92d0014b"></div>
+<div id="c67728d3-fdc5-4503-8944-cf85011cdb49"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#28d77bdd-7f12-4d7d-bd76-38eb92d0014b');
+var element = $('#c67728d3-fdc5-4503-8944-cf85011cdb49');
 
             setTimeout(function() {
-                var nbb_cell_id = 12;
+                var nbb_cell_id = 11;
                 var nbb_unformatted_code = "# slow\n# Initialization\ninference_base_dir = \"test_numclassic_inference\"\nnumer_classic_downloader = NumeraiClassicDownloader(directory_path=inference_base_dir)\n\n# Download tournament (inference) data\nnumer_classic_downloader.download_inference_data(\"inference\", version=4, int8=True)\n\n# Remove folder when done with inference\nnumer_classic_downloader.remove_base_directory()";
                 var nbb_formatted_code = "# slow\n# Initialization\ninference_base_dir = \"test_numclassic_inference\"\nnumer_classic_downloader = NumeraiClassicDownloader(directory_path=inference_base_dir)\n\n# Download tournament (inference) data\nnumer_classic_downloader.download_inference_data(\"inference\", version=4, int8=True)\n\n# Remove folder when done with inference\nnumer_classic_downloader.remove_base_directory()";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -624,13 +624,13 @@ var element = $('#28d77bdd-7f12-4d7d-bd76-38eb92d0014b');
 
 
 
-<div id="8e9c1f71-2754-4103-a15b-300599cd557c"></div>
+<div id="85dc3ebd-ea7c-4617-bad3-0e59e9c7bc09"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8e9c1f71-2754-4103-a15b-300599cd557c');
+var element = $('#85dc3ebd-ea7c-4617-bad3-0e59e9c7bc09');
 
             setTimeout(function() {
-                var nbb_cell_id = 13;
+                var nbb_cell_id = 12;
                 var nbb_unformatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {inference_base_dir} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\n\nconsole.print(tree)";
                 var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {inference_base_dir} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\n\nconsole.print(tree)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -713,13 +713,13 @@ with therein a kaggle.json file. kaggle.json should have the following structure
 
 
 
-<div id="99b83fcb-d90d-478e-845c-a0e7d01e4926"></div>
+<div id="f64ee3e9-e536-4a82-95ad-566efbfaee8d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#99b83fcb-d90d-478e-845c-a0e7d01e4926');
+var element = $('#f64ee3e9-e536-4a82-95ad-566efbfaee8d');
 
             setTimeout(function() {
-                var nbb_cell_id = 14;
+                var nbb_cell_id = 13;
                 var nbb_unformatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: kaggle.com/donkeys/kaggle-python-api \\n\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.__check_kaggle_import()\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        import kaggle\n        kaggle.api.dataset_download_files(kaggle_dataset_path,\n                                          path=self.dir, unzip=True)\n\n    @staticmethod\n    def __check_kaggle_import():\n        try:\n            import kaggle\n        except OSError:\n            raise OSError(\"Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.\")";
                 var nbb_formatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: kaggle.com/donkeys/kaggle-python-api \\n\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.__check_kaggle_import()\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        import kaggle\n\n        kaggle.api.dataset_download_files(\n            kaggle_dataset_path, path=self.dir, unzip=True\n        )\n\n    @staticmethod\n    def __check_kaggle_import():\n        try:\n            import kaggle\n        except OSError:\n            raise OSError(\n                \"Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.\"\n            )";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -786,13 +786,13 @@ var element = $('#99b83fcb-d90d-478e-845c-a0e7d01e4926');
 
 
 
-<div id="6c753837-73fb-458d-9cbd-47c6f400c70d"></div>
+<div id="593e0b7a-b465-4336-a9ed-bf9207a3c3c0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6c753837-73fb-458d-9cbd-47c6f400c70d');
+var element = $('#593e0b7a-b465-4336-a9ed-bf9207a3c3c0');
 
             setTimeout(function() {
-                var nbb_cell_id = 15;
+                var nbb_cell_id = 14;
                 var nbb_unformatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
                 var nbb_formatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -856,13 +856,13 @@ var element = $('#6c753837-73fb-458d-9cbd-47c6f400c70d');
 
 
 
-<div id="d2f88e90-e541-42cd-8aea-15b09c464fb2"></div>
+<div id="0be3b4a3-922f-4e58-abc1-b45eafffaad8"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d2f88e90-e541-42cd-8aea-15b09c464fb2');
+var element = $('#0be3b4a3-922f-4e58-abc1-b45eafffaad8');
 
             setTimeout(function() {
-                var nbb_cell_id = 16;
+                var nbb_cell_id = 15;
                 var nbb_unformatted_code = "# other\nlist(kd.dir.iterdir())";
                 var nbb_formatted_code = "# other\nlist(kd.dir.iterdir())";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -972,13 +972,13 @@ var element = $('#d2f88e90-e541-42cd-8aea-15b09c464fb2');
 
 
 
-<div id="87e06780-ab9d-4163-bb2a-7d93034a68c7"></div>
+<div id="528e921d-977a-4b8f-94ef-ec31e78c33a2"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#87e06780-ab9d-4163-bb2a-7d93034a68c7');
+var element = $('#528e921d-977a-4b8f-94ef-ec31e78c33a2');
 
             setTimeout(function() {
-                var nbb_cell_id = 17;
+                var nbb_cell_id = 16;
                 var nbb_unformatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
                 var nbb_formatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1045,13 +1045,13 @@ Path:
 
 
 
-<div id="50202a34-6f98-4639-b3ff-1d13e73391c1"></div>
+<div id="62fa071d-8218-4c6f-b18e-964baebb66dc"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#50202a34-6f98-4639-b3ff-1d13e73391c1');
+var element = $('#62fa071d-8218-4c6f-b18e-964baebb66dc');
 
             setTimeout(function() {
-                var nbb_cell_id = 18;
+                var nbb_cell_id = 17;
                 var nbb_unformatted_code = "# other\nkd.remove_base_directory()";
                 var nbb_formatted_code = "# other\nkd.remove_base_directory()";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1082,6 +1082,13 @@ var element = $('#50202a34-6f98-4639-b3ff-1d13e73391c1');
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://pydata.github.io/pandas-datareader/stable/readers/index.html">pandas-datareader</a> is a library maintained by pydata. It offers several backends to directly retrieve data, including <a href="https://finance.yahoo.com/">Yahoo! Finance</a> and <a href="https://fred.stlouisfed.org/">FRED database</a>. Our <a href="/numerbloxdownload.html#PandasDataReader"><code>PandasDataReader</code></a> object simplifies pulling training, inference and live data for Numerai Signals pipelines.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1093,11 +1100,11 @@ var element = $('#50202a34-6f98-4639-b3ff-1d13e73391c1');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="PandasDataReadDownloader" class="doc_header"><code>class</code> <code>PandasDataReadDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L419" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>PandasDataReadDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>backend</code></strong>:<code>str</code>=<em><code>'yahoo'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="PandasDataReader" class="doc_header"><code>class</code> <code>PandasDataReader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L419" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>PandasDataReader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>backend</code></strong>:<code>str</code>=<em><code>'yahoo'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>Download financial data using Pandas Datareader.</p>
 <p>:param directory_path: Base folder to download files to.</p>
-<p>:param tickers: list of tickers used for Numerai Signals.</p>
+<p>:param tickers: list of tickers used for downloading.</p>
 <p>:param backend: Data provider you want to use. Yahoo Finance by default.</p>
 <p>Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.</p>
 
@@ -1123,15 +1130,15 @@ var element = $('#50202a34-6f98-4639-b3ff-1d13e73391c1');
 
 
 
-<div id="02ead682-3efd-4a14-acc8-cdca8472aa9e"></div>
+<div id="8df4988f-8a08-44c5-ae8f-a25253405346"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#02ead682-3efd-4a14-acc8-cdca8472aa9e');
+var element = $('#8df4988f-8a08-44c5-ae8f-a25253405346');
 
             setTimeout(function() {
-                var nbb_cell_id = 71;
-                var nbb_unformatted_code = "# export\nclass PandasDataReadDownloader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for Numerai Signals. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n    def __init__(self, directory_path: str, tickers: list, backend: str = 'yahoo'):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\" Download a year of data. \"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> pd.DataFrame:\n        \"\"\" Get a month of data as DataFrame. \"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return self._get_all_ticker_data(start=start, *args, **kwargs)\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\")\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(self, ticker: str, start: dt, *args, **kwargs) -> pd.DataFrame:\n        dataf = web.DataReader(ticker, self.backend, start, self.current_time, *args, **kwargs)\n        dataf['ticker'] = ticker\n        dataf.index.names = ['date']\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
-                var nbb_formatted_code = "# export\nclass PandasDataReadDownloader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for Numerai Signals. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n\n    def __init__(self, directory_path: str, tickers: list, backend: str = \"yahoo\"):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\"Download a year of data.\"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"Get a month of data as DataFrame.\"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return self._get_all_ticker_data(start=start, *args, **kwargs)\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(\n                    f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\"\n                )\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(\n        self, ticker: str, start: dt, *args, **kwargs\n    ) -> pd.DataFrame:\n        dataf = web.DataReader(\n            ticker, self.backend, start, self.current_time, *args, **kwargs\n        )\n        dataf[\"ticker\"] = ticker\n        dataf.index.names = [\"date\"]\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
+                var nbb_cell_id = 18;
+                var nbb_unformatted_code = "# export\nclass PandasDataReader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for downloading. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n    def __init__(self, directory_path: str, tickers: list, backend: str = 'yahoo'):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\" Download a year of data. \"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_live_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\" Download a month of data. \"\"\"\n        start = self.current_time - relativedelta(months=1)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self.get_live_data(*args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> NumerFrame:\n        \"\"\" Get a month of data as DataFrame. \"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return NumerFrame(self._get_all_ticker_data(start=start, *args, **kwargs))\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\")\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(self, ticker: str, start: dt, *args, **kwargs) -> pd.DataFrame:\n        dataf = web.DataReader(ticker, self.backend, start, self.current_time, *args, **kwargs)\n        dataf['ticker'] = ticker\n        dataf.index.names = ['date']\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
+                var nbb_formatted_code = "# export\nclass PandasDataReader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for downloading. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n\n    def __init__(self, directory_path: str, tickers: list, backend: str = \"yahoo\"):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\"Download a year of data.\"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_live_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\"Download a month of data.\"\"\"\n        start = self.current_time - relativedelta(months=1)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self.get_live_data(*args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> NumerFrame:\n        \"\"\"Get a month of data as DataFrame.\"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return NumerFrame(self._get_all_ticker_data(start=start, *args, **kwargs))\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(\n                    f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\"\n                )\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(\n        self, ticker: str, start: dt, *args, **kwargs\n    ) -> pd.DataFrame:\n        dataf = web.DataReader(\n            ticker, self.backend, start, self.current_time, *args, **kwargs\n        )\n        dataf[\"ticker\"] = ticker\n        dataf.index.names = [\"date\"]\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1161,7 +1168,7 @@ var element = $('#02ead682-3efd-4a14-acc8-cdca8472aa9e');
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pdr</span> <span class="o">=</span> <span class="n">PandasDataReadDownloader</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="s2">&quot;pandas_datareader_test&quot;</span><span class="p">,</span> <span class="n">tickers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;NOTATICKER&#39;</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pdr</span> <span class="o">=</span> <span class="n">PandasDataReader</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="s2">&quot;pandas_datareader_test&quot;</span><span class="p">,</span> <span class="n">tickers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;NOTATICKER&#39;</span><span class="p">])</span>
 </pre></div>
 
     </div>
@@ -1176,83 +1183,15 @@ var element = $('#02ead682-3efd-4a14-acc8-cdca8472aa9e');
 
 
 
-<div id="791bfaad-4fe3-40a8-aeb5-594a69877857"></div>
+<div id="1973d9c6-71ae-4e01-9301-1fc4942d8aad"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#791bfaad-4fe3-40a8-aeb5-594a69877857');
+var element = $('#1973d9c6-71ae-4e01-9301-1fc4942d8aad');
 
             setTimeout(function() {
-                var nbb_cell_id = 72;
-                var nbb_unformatted_code = "pdr = PandasDataReadDownloader(directory_path=\"pandas_datareader_test\", tickers=['AAPL', 'MSFT', 'NOTATICKER'])";
-                var nbb_formatted_code = "pdr = PandasDataReadDownloader(\n    directory_path=\"pandas_datareader_test\", tickers=[\"AAPL\", \"MSFT\", \"NOTATICKER\"]\n)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pdr</span><span class="o">.</span><span class="n">download_training_data</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">dt</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2008</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-<span class="n">pdr</span><span class="o">.</span><span class="n">download_inference_data</span><span class="p">()</span>
-
-<span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;pandas_datareader_test/yahoo_20080101_20220427.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-<span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;pandas_datareader_test/yahoo_20210427_20220427.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No data found for ticker: <span style="color: #800000; text-decoration-color: #800000">'NOTATICKER'</span>. ⚠
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="dea3c6f0-33b3-4488-b04d-1a36e05c66c0"></div>
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#dea3c6f0-33b3-4488-b04d-1a36e05c66c0');
-
-            setTimeout(function() {
-                var nbb_cell_id = 77;
-                var nbb_unformatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))";
-                var nbb_formatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))";
+                var nbb_cell_id = 19;
+                var nbb_unformatted_code = "pdr = PandasDataReader(directory_path=\"pandas_datareader_test\", tickers=['AAPL', 'MSFT', 'NOTATICKER'])";
+                var nbb_formatted_code = "pdr = PandasDataReader(\n    directory_path=\"pandas_datareader_test\", tickers=[\"AAPL\", \"MSFT\", \"NOTATICKER\"]\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1277,7 +1216,115 @@ var element = $('#dea3c6f0-33b3-4488-b04d-1a36e05c66c0');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><code>.get_live_data()</code> returns a <a href="/numerbloxnumerframe.html#NumerFrame"><code>NumerFrame</code></a> directly.</p>
+<p><code>.download_training_data</code> downloads all data from given start date (<code>datetime</code> object).</p>
+<p><code>.download_inference_data</code> downloads data for a year.</p>
+<p><code>.download_live_data</code> downloads data for a month.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pdr</span><span class="o">.</span><span class="n">download_training_data</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">dt</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2008</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">pdr</span><span class="o">.</span><span class="n">download_inference_data</span><span class="p">()</span>
+<span class="n">pdr</span><span class="o">.</span><span class="n">download_live_data</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pandas_datareader_test/yahoo_20080101_</span><span class="si">{</span><span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-04-27 15:27:27,467 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-04-27 15:27:27,468 INFO numexpr.utils: NumExpr defaulting to 8 threads.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No data found for ticker: <span style="color: #800000; text-decoration-color: #800000">'NOTATICKER'</span>. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No data found for ticker: <span style="color: #800000; text-decoration-color: #800000">'NOTATICKER'</span>. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No data found for ticker: <span style="color: #800000; text-decoration-color: #800000">'NOTATICKER'</span>. ⚠
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="cb0ad486-8cef-44ab-b3fd-f54f8ecee7a2"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#cb0ad486-8cef-44ab-b3fd-f54f8ecee7a2');
+
+            setTimeout(function() {
+                var nbb_cell_id = 20;
+                var nbb_unformatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))\npdr.download_inference_data()\npdr.download_live_data()\n\nassert Path(f\"pandas_datareader_test/yahoo_20080101_{dt.now().strftime('%Y%m%d')}.parquet\").is_file()";
+                var nbb_formatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))\npdr.download_inference_data()\npdr.download_live_data()\n\nassert Path(\n    f\"pandas_datareader_test/yahoo_20080101_{dt.now().strftime('%Y%m%d')}.parquet\"\n).is_file()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>.get_live_data()</code> returns a <a href="/numerbloxnumerframe.html#NumerFrame"><code>NumerFrame</code></a> directly with data for a month.</p>
 
 </div>
 </div>
@@ -1315,13 +1362,13 @@ var element = $('#dea3c6f0-33b3-4488-b04d-1a36e05c66c0');
 
 
 
-<div id="58d5789c-a442-497e-a2f3-a6ebacd0cac7"></div>
+<div id="69ea3b36-c761-49c1-9924-cd69fd411fa3"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#58d5789c-a442-497e-a2f3-a6ebacd0cac7');
+var element = $('#69ea3b36-c761-49c1-9924-cd69fd411fa3');
 
             setTimeout(function() {
-                var nbb_cell_id = 73;
+                var nbb_cell_id = 21;
                 var nbb_unformatted_code = "dataf = pdr.get_live_data()";
                 var nbb_formatted_code = "dataf = pdr.get_live_data()";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1439,13 +1486,13 @@ var element = $('#58d5789c-a442-497e-a2f3-a6ebacd0cac7');
 
 
 
-<div id="ef5ed5fb-b78c-4f4c-b831-c59070af610b"></div>
+<div id="5f1a37e4-22c2-4b6c-8a5b-0e29491a386a"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#ef5ed5fb-b78c-4f4c-b831-c59070af610b');
+var element = $('#5f1a37e4-22c2-4b6c-8a5b-0e29491a386a');
 
             setTimeout(function() {
-                var nbb_cell_id = 48;
+                var nbb_cell_id = 22;
                 var nbb_unformatted_code = "print(dataf.shape)\ndataf.head(2)";
                 var nbb_formatted_code = "print(dataf.shape)\ndataf.head(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1554,13 +1601,13 @@ var element = $('#ef5ed5fb-b78c-4f4c-b831-c59070af610b');
 
 
 
-<div id="7c740132-295c-460a-a4b2-39a639b9cf1d"></div>
+<div id="ed9966e8-6a7f-409a-922e-d4d2652eae9d"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#7c740132-295c-460a-a4b2-39a639b9cf1d');
+var element = $('#ed9966e8-6a7f-409a-922e-d4d2652eae9d');
 
             setTimeout(function() {
-                var nbb_cell_id = 49;
+                var nbb_cell_id = 23;
                 var nbb_unformatted_code = "dataf.tail(2)";
                 var nbb_formatted_code = "dataf.tail(2)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1621,13 +1668,13 @@ var element = $('#7c740132-295c-460a-a4b2-39a639b9cf1d');
 
 
 
-<div id="f008883d-3c7b-4517-bfbb-9c9dcdfcc2fc"></div>
+<div id="be97b8aa-ce6b-4e16-800e-0f5f8adcc64f"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f008883d-3c7b-4517-bfbb-9c9dcdfcc2fc');
+var element = $('#be97b8aa-ce6b-4e16-800e-0f5f8adcc64f');
 
             setTimeout(function() {
-                var nbb_cell_id = 51;
+                var nbb_cell_id = 24;
                 var nbb_unformatted_code = "dataf[dataf['ticker']==\"AAPL\"].set_index(\"date\")['Adj Close'].plot()\ndataf[dataf['ticker']==\"MSFT\"].set_index(\"date\")['Adj Close'].plot()\nplt.legend(['AAPL', 'MSFT']);";
                 var nbb_formatted_code = "dataf[dataf[\"ticker\"] == \"AAPL\"].set_index(\"date\")[\"Adj Close\"].plot()\ndataf[dataf[\"ticker\"] == \"MSFT\"].set_index(\"date\")[\"Adj Close\"].plot()\nplt.legend([\"AAPL\", \"MSFT\"])";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -1666,6 +1713,55 @@ var element = $('#f008883d-3c7b-4517-bfbb-9c9dcdfcc2fc');
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'PandasDataReader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
+Path: 
+<span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/pandas_datareader_test'</span>
+</pre>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="662eb933-2639-4750-8d4e-0d381c865649"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#662eb933-2639-4750-8d4e-0d381c865649');
+
+            setTimeout(function() {
+                var nbb_cell_id = 25;
+                var nbb_unformatted_code = "pdr.remove_base_directory()";
+                var nbb_formatted_code = "pdr.remove_base_directory()";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
     {% endraw %}
 
@@ -1695,7 +1791,7 @@ var element = $('#f008883d-3c7b-4517-bfbb-9c9dcdfcc2fc');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L484" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L491" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>TEMPLATE -
 Download awesome financial data from who knows where.</p>
@@ -1723,13 +1819,13 @@ Download awesome financial data from who knows where.</p>
 
 
 
-<div id="69cd9aee-6f96-4c33-9af8-820eba7d0e74"></div>
+<div id="f6998bbc-c1ed-4417-93b4-6bf59484b045"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#69cd9aee-6f96-4c33-9af8-820eba7d0e74');
+var element = $('#f6998bbc-c1ed-4417-93b4-6bf59484b045');
 
             setTimeout(function() {
-                var nbb_cell_id = 24;
+                var nbb_cell_id = 26;
                 var nbb_unformatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" (minimal) weekly inference downloading here. \"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Training + validation dataset downloading here. \"\"\"\n        ...";
                 var nbb_formatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"(minimal) weekly inference downloading here.\"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Training + validation dataset downloading here.\"\"\"\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
