@@ -3,16 +3,18 @@
 __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator']
 
 # Cell
+import time
 import json
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from typing import Tuple, Union
+from numerapi import SignalsAPI
 
 from .numerframe import NumerFrame, create_numerframe
 from .postprocessing import FeatureNeutralizer
+from .key import Key
 
 # Cell
 class BaseEvaluator:
@@ -422,3 +424,30 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
     def __init__(self, era_col: str = "friday_date", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
+
+    def get_diagnostics(self, val_dataf: pd.DataFrame, model_name: str, key: Key, time_out_min: int = 2) -> pd.DataFrame:
+        api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
+        model_id = api.get_models()[model_name]
+        api.upload_diagnostics(df=val_dataf, model_id=model_id)
+        data = self.__await_diagnostics(api, model_id, timeout_min=time_out_min)
+        neutralized_scores = pd.DataFrame(data[0]['perEraDiagnostics'])
+        neutralized_scores['friday_date'] = pd.to_datetime(neutralized_scores.era)
+        return neutralized_scores
+
+    def __await_diagnostics(self, api: SignalsAPI, model_id: str, timeout_min: int, interval_sec: int = 10):
+        """
+        Wait for diagnostics to be uploaded.
+        Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.
+
+        """
+        timeout = time.time() + 60 * timeout_min
+        data = []
+        while time.time() < timeout:
+            data = api.diagnostics(model_id=model_id)
+            if not data:
+                time.sleep(interval_sec)
+            else:
+                break
+        if not data:
+            raise Exception(f"API diagnostics were not uploaded within {timeout_min} minutes. Check if Numerai API is offline.")
+        return data
