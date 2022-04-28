@@ -3,16 +3,18 @@
 __all__ = ['BaseEvaluator', 'NumeraiClassicEvaluator', 'NumeraiSignalsEvaluator']
 
 # Cell
+import time
 import json
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from typing import Tuple, Union
+from numerapi import SignalsAPI
 
 from .numerframe import NumerFrame, create_numerframe
 from .postprocessing import FeatureNeutralizer
+from .key import Key
 
 # Cell
 class BaseEvaluator:
@@ -362,7 +364,7 @@ class BaseEvaluator:
         )
         plt.axhline(y=0.0, color="r", linestyle="--")
         plt.show()
-        return None
+        return
 
 # Cell
 class NumeraiClassicEvaluator(BaseEvaluator):
@@ -422,3 +424,42 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
     def __init__(self, era_col: str = "friday_date", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
+
+    def get_neutralized_corr(self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2) -> pd.Series:
+        """
+        Retrieved neutralized validation correlation by era. \n
+        Calculated on Numerai servers. \n
+        :param val_dataf: A DataFrame containing prediction, friday_date, era and data_type columns. \n
+        data_type column should contain 'validation' instances. \n
+        :param model_name: Any model name for which you have authentication credentials. \n
+        :param key: Key object to authenticate upload of diagnostics. \n
+        :param timeout_min: How many minutes to wait on diagnostics processing on Numerai servers before timing out. \n
+        2 minutes by default. \n
+        :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).
+        """
+        api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
+        model_id = api.get_models()[model_name]
+        api.upload_diagnostics(df=val_dataf, model_id=model_id)
+        data = self.__await_diagnostics(api=api, model_id=model_id, timeout_min=timeout_min)
+        dataf = pd.DataFrame(data['perEraDiagnostics']).set_index("era")['validationCorr']
+        dataf.index = pd.to_datetime(dataf.index)
+        return dataf
+
+    @staticmethod
+    def __await_diagnostics(api: SignalsAPI, model_id: str, timeout_min: int, interval_sec: int = 15):
+        """
+        Wait for diagnostics to be uploaded.
+        Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.
+        """
+        timeout = time.time() + 60 * timeout_min
+        data = {"status": "not_done"}
+        while time.time() < timeout:
+            data = api.diagnostics(model_id=model_id)[0]
+            if data['status'] == 'done':
+                break
+            else:
+                print(f"Diagnostics not processed yet. Sleeping for another {interval_sec} seconds.")
+                time.sleep(interval_sec)
+        if not data['status'] == 'done':
+            raise Exception(f"Diagnostics couldn't be retrieved within {timeout_min} minutes after uploading. Check if Numerai API is offline.")
+        return data
