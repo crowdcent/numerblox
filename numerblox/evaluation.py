@@ -425,7 +425,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
     def __init__(self, era_col: str = "friday_date", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
 
-    def get_neutralized_corr(self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2) -> pd.DataFrame:
+    def get_neutralized_corr(self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2) -> pd.Series:
         """
         Retrieved neutralized validation correlation by era. \n
         Calculated on Numerai servers. \n
@@ -435,7 +435,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         :param key: Key object to authenticate upload of diagnostics. \n
         :param timeout_min: How many minutes to wait on diagnostics processing on Numerai servers before timing out. \n
         2 minutes by default. \n
-        :return: Pandas DataFrame with era as index and neutralized validation correlations (validationCorr).
+        :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).
         """
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
