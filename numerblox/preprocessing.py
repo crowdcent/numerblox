@@ -3,7 +3,7 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'DeepDreamGenerator', 'UMAPFeatureGenerator',
            'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor', 'TalibFeatureGenerator', 'KatsuFeatureGenerator',
-           'EraQuantileProcessor', 'AwesomePreProcessor']
+           'EraQuantileProcessor', 'TickerMapper', 'AwesomePreProcessor']
 
 # Cell
 import os
@@ -696,6 +696,32 @@ class EraQuantileProcessor(BaseProcessor):
 
         quantiles = pd.concat(results, axis=1)
         dataf[[f"{feature}_quantile" for feature in self.features]] = quantiles
+        return NumerFrame(dataf)
+
+# Cell
+class TickerMapper(BaseProcessor):
+    """
+    Map ticker from one format to another. \n
+    :param ticker_col: Column used for mapping. Must already be present in the input data. \n
+    :param target_ticker_format: Format to map tickers to. Must be present in the ticker map. \n
+    Supported ticker formats are: ['ticker', 'bloomberg_ticker', 'yahoo']
+    """
+    def __init__(self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker"):
+        super().__init__()
+        self.ticker_col = ticker_col
+        self.target_ticker_format = target_ticker_format
+
+        self.signals_map_path = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com/signals_ticker_map_w_bbg.csv"
+        self.ticker_map = pd.read_csv(self.signals_map_path)
+
+        assert self.ticker_col in self.ticker_map.columns, f"Ticker column '{self.ticker_col}' is not available in ticker mapping."
+        assert self.target_ticker_format in self.ticker_map.columns, f"Target ticker column '{self.target_ticker_format}' is not available in ticker mapping."
+
+        self.mapping = dict(self.ticker_map[[self.ticker_col, self.target_ticker_format]].values)
+
+    @display_processor_info
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+        dataf["bloomberg_ticker"] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
 # Cell
