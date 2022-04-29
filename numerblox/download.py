@@ -132,7 +132,6 @@ class BaseIO(ABC):
         """ Check if directory is empty. """
         return not bool(self.get_all_files)
 
-
 # Cell
 @typechecked
 class BaseDownloader(BaseIO):

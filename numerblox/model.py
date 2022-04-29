@@ -181,7 +181,6 @@ class SingleModel(BaseModel):
                 f"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}"
             )
 
-
 # Cell
 @typechecked
 class WandbKerasModel(SingleModel):

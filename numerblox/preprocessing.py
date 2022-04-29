@@ -376,7 +376,6 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         target = target.values - .5
         return features, target
 
-
 # Cell
 class GroupStatsPreProcessor(BaseProcessor):
     """
