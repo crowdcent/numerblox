@@ -721,7 +721,7 @@ class TickerMapper(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
-        dataf["bloomberg_ticker"] = dataf[self.ticker_col].map(self.mapping)
+        dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
 # Cell
