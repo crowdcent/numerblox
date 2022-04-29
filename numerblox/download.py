@@ -430,12 +430,12 @@ class PandasDataReader(BaseDownloader):
         self.tickers = tickers
         self.backend = backend
         self.current_time = dt.now()
+        self.year_back_time = self.current_time - relativedelta(years=1)
 
     def download_inference_data(self, save_path: str = None, *args, **kwargs):
         """ Download a year of data. """
-        start = self.current_time - relativedelta(years=1)
-        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)
-        save_path = save_path if save_path else self.__format_default_save_path(start)
+        dataf = self.get_inference_data()
+        save_path = save_path if save_path else self.__format_default_save_path(self.year_back_time)
         dataf.to_parquet(save_path)
 
     def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):
@@ -448,17 +448,9 @@ class PandasDataReader(BaseDownloader):
         save_path = save_path if save_path else self.__format_default_save_path(start)
         dataf.to_parquet(save_path)
 
-    def download_live_data(self, save_path: str = None, *args, **kwargs):
-        """ Download a month of data. """
-        start = self.current_time - relativedelta(months=1)
-        save_path = save_path if save_path else self.__format_default_save_path(start)
-        dataf = self.get_live_data(*args, **kwargs)
-        dataf.to_parquet(save_path)
-
-    def get_live_data(self, *args, **kwargs) -> NumerFrame:
-        """ Get a month of data as DataFrame. """
-        start = self.current_time - relativedelta(months=1)
-        return NumerFrame(self._get_all_ticker_data(start=start, *args, **kwargs))
+    def get_inference_data(self, *args, **kwargs) -> NumerFrame:
+        """ Get a year of data as NumerFrame. """
+        return NumerFrame(self._get_all_ticker_data(start=self.year_back_time, *args, **kwargs))
 
     def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:
         """
