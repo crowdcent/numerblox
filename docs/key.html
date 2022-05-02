@@ -33,7 +33,7 @@ nb_path: "nbs/08_key.ipynb"
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Numerai authentication is done by passing a valid <code>pub_id</code> and <code>secret_key</code> for the <code>numerapi</code> API.</p>
 <p>As stakes get larger we might want additional protection and confidence that credentials are parsed correctly. We might also like to load credentials from a (JSON) file that is stored safely somewhere. This section offers tools to safely load and use Numerai credentials.</p>
-<p>A <a href="/numerblox/key.html#Key"><code>Key</code></a> object is needed to initialize <code>submission</code> objects.</p>
+<p>A <a href="/numerbloxkey.html#Key"><code>Key</code></a> object is needed to initialize <code>submission</code> objects.</p>
 
 </div>
 </div>
@@ -47,8 +47,8 @@ nb_path: "nbs/08_key.ipynb"
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The <a href="/numerblox/key.html#Key"><code>Key</code></a> object ensures immutability of your credentials and allows you to either initialize from Python variables (strings) or load from a JSON file.</p>
-<p>In order to <a href="/numerblox/key.html#load_key_from_json"><code>load_key_from_json</code></a>, the key JSON file must have the following format:</p>
+<p>The <a href="/numerbloxkey.html#Key"><code>Key</code></a> object allows you to either initialize from Python variables (strings) or load from a JSON file.</p>
+<p>In order to <a href="/numerbloxkey.html#load_key_from_json"><code>load_key_from_json</code></a>, the key JSON file must have the following format:</p>
 <div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;pub_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PUBLIC_ID&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;secret_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SECRET_KEY&quot;</span><span class="p">}</span><span class="w"></span>
 </pre></div>
 
@@ -66,9 +66,9 @@ nb_path: "nbs/08_key.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Key" class="doc_header"><code>class</code> <code>Key</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/key.py#L12" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Key</code>(<strong><code>pub_id</code></strong>:<code>str</code>, <strong><code>secret_key</code></strong>:<code>str</code>)</p>
+<h2 id="Key" class="doc_header"><code>class</code> <code>Key</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/key.py#L9" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Key</code>(<strong><code>pub_id</code></strong>:<code>str</code>, <strong><code>secret_key</code></strong>:<code>str</code>)</p>
 </blockquote>
-<p>Immutable Numerai credentials.</p>
+<p>Numerai credentials.</p>
 
 </div>
 
@@ -91,7 +91,7 @@ nb_path: "nbs/08_key.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="load_key_from_json" class="doc_header"><code>load_key_from_json</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/key.py#L29" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>load_key_from_json</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
+<h4 id="load_key_from_json" class="doc_header"><code>load_key_from_json</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/key.py#L22" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>load_key_from_json</code>(<strong><code>file_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>)</p>
 </blockquote>
 <p>Initialize Key object from JSON file.</p>
 <p>Credentials file must have the following format:</p>
@@ -119,15 +119,14 @@ nb_path: "nbs/08_key.ipynb"
 
 
 
-<div id="4822c373-eb22-46d3-9cc3-a0c48ee1d356"></div>
-<div class="output_subarea output_javascript ">
+<div id="648187ac-9ac6-46ab-bd2a-13e6462cf862" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4822c373-eb22-46d3-9cc3-a0c48ee1d356');
+var element = $('#648187ac-9ac6-46ab-bd2a-13e6462cf862');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\n@dataclass(frozen=True)\nclass Key:\n    \"\"\"Immutable Numerai credentials.\"\"\"\n    pub_id: str\n    secret_key: str\n\n    def __post_init__(self):\n        rich_print(\n            f\":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:\"\n        )\n\n    def __repr__(self):\n        return f\"Numerai Auth Key. pub_id = '{self.pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file must have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
-                var nbb_formatted_code = "# export\n@dataclass(frozen=True)\nclass Key:\n    \"\"\"Immutable Numerai credentials.\"\"\"\n\n    pub_id: str\n    secret_key: str\n\n    def __post_init__(self):\n        rich_print(\n            f\":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:\"\n        )\n\n    def __repr__(self):\n        return f\"Numerai Auth Key. pub_id = '{self.pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file.\n    Credentials file must have the following format:\n    {\n    \"pub_id\": \"PUBLIC_ID\",\n    \"secret_key\": \"SECRET_KEY\"\n    }\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_unformatted_code = "# export\nclass Key:\n    \"\"\"Numerai credentials.\"\"\"\n    def __init__(self, pub_id: str, secret_key: str):\n        self.pub_id = pub_id\n        self.secret_key = secret_key\n\n    def __repr__(self):\n        return f\"Numerai Auth Key. pub_id = '{self.pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file. \\n\n    Credentials file must have the following format: \\n\n    `{\"pub_id\": \"PUBLIC_ID\", \"secret_key\": \"SECRET_KEY\"}`\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
+                var nbb_formatted_code = "# export\nclass Key:\n    \"\"\"Numerai credentials.\"\"\"\n\n    def __init__(self, pub_id: str, secret_key: str):\n        self.pub_id = pub_id\n        self.secret_key = secret_key\n\n    def __repr__(self):\n        return f\"Numerai Auth Key. pub_id = '{self.pub_id}'\"\n\n    def __str__(self):\n        return self.__repr__()\n\n\ndef load_key_from_json(file_path: str, *args, **kwargs):\n    \"\"\"\n    Initialize Key object from JSON file. \\n\n    Credentials file must have the following format: \\n\n    `{\"pub_id\": \"PUBLIC_ID\", \"secret_key\": \"SECRET_KEY\"}`\n    \"\"\"\n    with open(file_path) as json_file:\n        json_data = json.load(json_file, *args, **kwargs)\n    pub_id = json_data[\"pub_id\"]\n    secret_key = json_data[\"secret_key\"]\n    return Key(pub_id=pub_id, secret_key=secret_key)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -177,23 +176,11 @@ var element = $('#4822c373-eb22-46d3-9cc3-a0c48ee1d356');
 <div class="output_area">
 
 
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Numerai Auth key initialized with pub_id = <span style="color: #008000; text-decoration-color: #008000">'QVdFU09NRV9QVUJMSUNfSUQ='</span> 🔑
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
 
 
-
-
-<div id="656b1752-e716-48a8-a6c8-26fc4edc5c9e"></div>
-<div class="output_subarea output_javascript ">
+<div id="ffa39841-5e29-40e2-96cf-a1fd722eb684" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#656b1752-e716-48a8-a6c8-26fc4edc5c9e');
+var element = $('#ffa39841-5e29-40e2-96cf-a1fd722eb684');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
@@ -243,10 +230,9 @@ var element = $('#656b1752-e716-48a8-a6c8-26fc4edc5c9e');
 
 
 
-<div id="40d5c662-bea8-47e8-8818-4cd8269b82a0"></div>
-<div class="output_subarea output_javascript ">
+<div id="55b8ad1f-fdb6-4d28-8e5f-1b3a911b2a42" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#40d5c662-bea8-47e8-8818-4cd8269b82a0');
+var element = $('#55b8ad1f-fdb6-4d28-8e5f-1b3a911b2a42');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -276,13 +262,6 @@ var element = $('#40d5c662-bea8-47e8-8818-4cd8269b82a0');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Variables in the <a href="/numerblox/key.html#Key"><code>Key</code></a> class cannot be changed after initialization.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Example-usage-2:--loading-from-JSON">Example usage 2:  loading from JSON<a class="anchor-link" href="#Example-usage-2:--loading-from-JSON"> </a></h3>
 </div>
 </div>
@@ -307,26 +286,14 @@ var element = $('#40d5c662-bea8-47e8-8818-4cd8269b82a0');
 <div class="output_area">
 
 
-<div class="output_html rendered_html output_subarea ">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">🔑 Numerai Auth key initialized with pub_id = <span style="color: #008000; text-decoration-color: #008000">'UFVCTElDX0lE'</span> 🔑
-</pre>
-
-</div>
-
-</div>
-
-<div class="output_area">
 
 
-
-
-<div id="d6611484-2b16-4114-991b-7680ef4ee362"></div>
-<div class="output_subarea output_javascript ">
+<div id="f5d11f32-a962-4ed2-845d-3f3301aa9d0f" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d6611484-2b16-4114-991b-7680ef4ee362');
+var element = $('#f5d11f32-a962-4ed2-845d-3f3301aa9d0f');
 
             setTimeout(function() {
-                var nbb_cell_id = 9;
+                var nbb_cell_id = 8;
                 var nbb_unformatted_code = "example_key2 = load_key_from_json(\"test_assets/test_credentials.json\")";
                 var nbb_formatted_code = "example_key2 = load_key_from_json(\"test_assets/test_credentials.json\")";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -353,7 +320,7 @@ var element = $('#d6611484-2b16-4114-991b-7680ef4ee362');
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This <a href="/numerblox/key.html#Key"><code>Key</code></a> contains the credentials defined in <code>test_assets/test_credentials.json</code>.</p>
+<p>This <a href="/numerbloxkey.html#Key"><code>Key</code></a> contains the credentials defined in <code>test_assets/test_credentials.json</code>.</p>
 
 </div>
 </div>
@@ -383,13 +350,12 @@ var element = $('#d6611484-2b16-4114-991b-7680ef4ee362');
 
 
 
-<div id="9087af11-0803-47f3-a24c-de5018b75381"></div>
-<div class="output_subarea output_javascript ">
+<div id="8575b320-7c69-4785-9d52-0a616521972a" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9087af11-0803-47f3-a24c-de5018b75381');
+var element = $('#8575b320-7c69-4785-9d52-0a616521972a');
 
             setTimeout(function() {
-                var nbb_cell_id = 10;
+                var nbb_cell_id = 9;
                 var nbb_unformatted_code = "assert (example_key2.pub_id, example_key2.secret_key) == (\n    \"UFVCTElDX0lE\",\n    \"U1VQRVJfU0VDUkVUX0tFWQ==\",\n)";
                 var nbb_formatted_code = "assert (example_key2.pub_id, example_key2.secret_key) == (\n    \"UFVCTElDX0lE\",\n    \"U1VQRVJfU0VDUkVUX0tFWQ==\",\n)";
                 var nbb_cells = Jupyter.notebook.get_cells();
@@ -422,5 +388,5 @@ var element = $('#9087af11-0803-47f3-a24c-de5018b75381');
 </div>
 </div>
 </div>
- 
+
 

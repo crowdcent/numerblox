@@ -172,7 +172,6 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
             **kwargs,
         )
 
-
 # Cell
 @typechecked
 class NumeraiClassicSubmitter(BaseSubmitter):
@@ -280,7 +279,6 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
                 f"No supported ticker format in {cols}). \
 Supported: '{self.supported_ticker_formats}'"
             )
-
 
 # Cell
 @typechecked
