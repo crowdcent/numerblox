@@ -4,14 +4,13 @@ __all__ = ['Key', 'load_key_from_json']
 
 # Cell
 import json
-from dataclasses import dataclass, FrozenInstanceError
 
 # Cell
-@dataclass(frozen=True)
 class Key:
-    """Immutable Numerai credentials."""
-    pub_id: str
-    secret_key: str
+    """Numerai credentials."""
+    def __init__(self, pub_id: str, secret_key: str):
+        self.pub_id = pub_id
+        self.secret_key = secret_key
 
     def __repr__(self):
         return f"Numerai Auth Key. pub_id = '{self.pub_id}'"

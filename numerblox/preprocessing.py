@@ -3,7 +3,7 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'DeepDreamGenerator', 'UMAPFeatureGenerator',
            'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor', 'TalibFeatureGenerator', 'KatsuFeatureGenerator',
-           'EraQuantileProcessor', 'TickerMapper', 'AwesomePreProcessor']
+           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'AwesomePreProcessor']
 
 # Cell
 import os
@@ -722,6 +722,46 @@ class TickerMapper(BaseProcessor):
     @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
+        return NumerFrame(dataf)
+
+# Cell
+class SignalsTargetProcessor(BaseProcessor):
+    """
+    Engineer targets for Numerai Signals. \n
+    More information on implements Numerai Signals targets: \n
+    https://forum.numer.ai/t/decoding-the-signals-target/2501
+
+    :param price_col: Column from which target will be derived. \n
+    :param windows: Timeframes to use for engineering targets. 10 and 20-day by default. \n
+    :param bins: Binning used to create group targets. Nomi binning by default. \n
+    :param labels: Scaling for binned target. Must be same length as resulting bins (bins-1). Numerai labels by default.
+    """
+    def __init__(self, price_col: str = 'close', windows: list = None, bins: list = None, labels: list = None):
+        super().__init__()
+        self.price_col = price_col
+        self.windows = windows if windows else [10, 20]
+        self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
+        self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
+
+    @display_processor_info
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
+        for window in tqdm(self.windows, desc="Signals target engineering windows"):
+            dataf.loc[:, f"target_{window}d_raw"] = (
+                dataf[self.price_col].pct_change(periods=window).shift(-window)
+            )
+            era_groups = dataf.groupby(dataf.meta.era_col)
+
+            dataf.loc[:, f"target_{window}d_rank"] = era_groups[f"target_{window}d_raw"].rank(pct=True,
+                                                                                              method="first"
+                                                                                              )
+            dataf.loc[:, f"target_{window}d_group"] = era_groups[f"target_{window}d_rank"].transform(
+                lambda group: pd.cut(
+                    group,
+                    bins=self.bins,
+                    labels=self.labels,
+                    include_lowest=True
+                )
+            )
         return NumerFrame(dataf)
 
 # Cell
