@@ -4,21 +4,14 @@ __all__ = ['Key', 'load_key_from_json']
 
 # Cell
 import json
-from rich import print as rich_print
-from dataclasses import FrozenInstanceError
+from dataclasses import dataclass, FrozenInstanceError
 
 # Cell
+@dataclass(frozen=True)
 class Key:
     """Immutable Numerai credentials."""
-    def __init__(self, pub_id: str, secret_key: str):
-        __slots__ = []
-        self.pub_id = pub_id
-        self.secret_key = secret_key
-
-    def __post_init__(self):
-        rich_print(
-            f":key: Numerai Auth key initialized with pub_id = '{self.pub_id}' :key:"
-        )
+    pub_id: str
+    secret_key: str
 
     def __repr__(self):
         return f"Numerai Auth Key. pub_id = '{self.pub_id}'"
