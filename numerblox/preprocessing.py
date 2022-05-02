@@ -648,25 +648,29 @@ class EraQuantileProcessor(BaseProcessor):
     """
     Transform features into quantiles on a per-era basis
 
-    :param num_quantiles: Number of buckets to split data into: \n
-    :param era_col: Era column name in the dataframe to perform each transformation \n
+    :param num_quantiles: Number of buckets to split data into. \n
+    :param era_col: Era column name in the dataframe to perform each transformation. \n
+    :param features: All features that you want quantized. All feature cols by default. \n
+    :param num_cores: CPU cores to allocate for quantile transforming. All available cores by default. \n
+    :param random_state: Seed for QuantileTransformer.
     """
-
     def __init__(
         self,
         num_quantiles: int = 50,
         era_col: str = "friday_date",
         features: list = None,
         num_cores: int = None,
+        random_state: int = 0
     ):
         super().__init__()
         self.num_quantiles = num_quantiles
         self.era_col = era_col
         self.num_cores = num_cores if num_cores else os.cpu_count()
         self.features = features
+        self.random_state = random_state
 
     def _process_eras(self, groupby_object):
-        quantizer = QuantileTransformer(n_quantiles=self.num_quantiles, random_state=0)
+        quantizer = QuantileTransformer(n_quantiles=self.num_quantiles, random_state=self.random_state)
         qt = lambda x: quantizer.fit_transform(x.values.reshape(-1, 1)).ravel()
 
         column = groupby_object.transform(qt)
@@ -695,7 +699,7 @@ class EraQuantileProcessor(BaseProcessor):
             )
 
         quantiles = pd.concat(results, axis=1)
-        dataf[[f"{feature}_quantile" for feature in self.features]] = quantiles
+        dataf[[f"{feature}_quantile{self.num_quantiles}" for feature in self.features]] = quantiles
         return NumerFrame(dataf)
 
 # Cell
