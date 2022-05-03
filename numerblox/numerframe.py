@@ -111,6 +111,13 @@ class NumerFrame(pd.DataFrame):
         """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
 
+    def get_pattern_data(self, pattern: str):
+        """
+        Get columns based on pattern (for example '_20' to get all 20-day Numerai targets).
+        :param pattern: A 'like' pattern (pattern in column_name == True)
+        """
+        return self.filter(like=pattern)
+
     def get_feature_target_pair(self, multi_target=False) -> Tuple[Any, Any]:
         """
         Get split of feature and target columns.
