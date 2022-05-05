@@ -276,7 +276,7 @@ class UMAPFeatureGenerator(BaseProcessor):
     :param n_neighbors: Number of neighboring points used in local approximations of manifold structure.
     :param min_dist: How tightly the embedding is allows to compress points together.
     :param metric: Metric to measure distance in input space. Correlation by default.
-    :param feature_names: Selection of features used to perform UMAP on. All feature by default.
+    :param feature_names: Selection of features used to perform UMAP on. All features by default.
     *args, **kwargs will be passed to initialization of UMAP.
     """
     def __init__(self, n_components: int = 5, n_neighbors: int = 15, min_dist: float = 0.,
@@ -306,11 +306,13 @@ class BayesianGMMTargetProcessor(BaseProcessor):
     https://gist.github.com/the-moliver/dcdd2862dc2c78dda600f1b449071c93
 
     :param target_col: Column from which to create fake target. \n
+    :param feature_names: Selection of features used for Bayesian GMM. All features by default.
     :param n_components: Number of components for fitting Bayesian Gaussian Mixture Model.
     """
-    def __init__(self, target_col: str = "target", n_components: int = 6):
+    def __init__(self, target_col: str = "target", feature_names: list = None, n_components: int = 6):
         super().__init__()
         self.target_col = target_col
+        self.feature_names = feature_names
         self.n_components = n_components
         self.ridge = Ridge(fit_intercept=False)
         self.bins = [0, 0.05, 0.25, 0.75, 0.95, 1]
@@ -344,11 +346,11 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         """
         Fit Bayesian Gaussian Mixture model on coefficients and normalize.
         """
-        bggm = BayesianGaussianMixture(n_components=self.n_components)
-        bggm.fit(coefs)
+        bgmm = BayesianGaussianMixture(n_components=self.n_components)
+        bgmm.fit(coefs)
         # make probability of sampling each component equal to better balance rare regimes
-        bggm.weights_[:] = 1 / self.n_components
-        return bggm
+        bgmm.weights_[:] = 1 / self.n_components
+        return bgmm
 
     def _generate_target(self, dataf: NumerFrame,
                          bgmm: BayesianGaussianMixture,
@@ -369,8 +371,8 @@ class BayesianGMMTargetProcessor(BaseProcessor):
 
     def __get_features_target(self, dataf: NumerFrame, era) -> tuple:
         """ Get features and target for one era and center data. """
-        sub_df = dataf[dataf.era == era]
-        features = sub_df.get_feature_data
+        sub_df = dataf[dataf[dataf.meta.era_col] == era]
+        features = self.feature_names if self.feature_names else sub_df.get_feature_data
         target = sub_df[self.target_col]
         features = features.values - .5
         target = target.values - .5
