@@ -111,6 +111,11 @@ class NumerFrame(pd.DataFrame):
         """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
 
+    @property
+    def get_prediction_aux_data(self):
+        """ All predictions columns and aux columns (for ensembling, etc.). """
+        return self.get_column_selection(cols=self.prediction_cols+self.aux_cols)
+
     def get_pattern_data(self, pattern: str):
         """
         Get columns based on pattern (for example '_20' to get all 20-day Numerai targets).
