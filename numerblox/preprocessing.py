@@ -3,7 +3,7 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'DeepDreamGenerator', 'UMAPFeatureGenerator',
            'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor', 'TalibFeatureGenerator', 'KatsuFeatureGenerator',
-           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'AwesomePreProcessor']
+           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'AwesomePreProcessor']
 
 # Cell
 import os
@@ -768,6 +768,30 @@ class SignalsTargetProcessor(BaseProcessor):
                     include_lowest=True
                 )
             )
+        return NumerFrame(dataf)
+
+# Cell
+class LagPreProcessor(BaseProcessor):
+    """ Add lag features based on given windows. """
+    def __init__(self, lag: int = 35, interval: int = 5, ticker_col: str = "bloomberg_ticker", feature_names: list = None):
+        super().__init__()
+        self.lag = lag
+        self.interval = interval
+        self.ticker_col = ticker_col
+        self.feature_names = feature_names
+
+    @display_processor_info
+    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+        ticker_groups = dataf.groupby(self.ticker_col)
+
+        for day in range(self.interval, self.lag, self.interval):
+            shifted_dataf = ticker_groups[self.feature_names].transform(
+                lambda group: group.shift(day)
+            )
+
+            shifted_dataf.columns = [f"{feature}_lag_{day}" for feature in self.feature_names]
+
+            dataf = pd.concat([dataf, shifted_dataf], axis=1)
         return NumerFrame(dataf)
 
 # Cell
