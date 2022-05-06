@@ -3,7 +3,7 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'DeepDreamGenerator', 'UMAPFeatureGenerator',
            'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor', 'TalibFeatureGenerator', 'KatsuFeatureGenerator',
-           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'AwesomePreProcessor']
+           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'AwesomePreProcessor']
 
 # Cell
 import os
@@ -768,6 +768,33 @@ class SignalsTargetProcessor(BaseProcessor):
                     include_lowest=True
                 )
             )
+        return NumerFrame(dataf)
+
+# Cell
+class LagPreProcessor(BaseProcessor):
+    """
+    Add lag features based on given windows.
+
+    :param windows: All lag windows to process for all features. \n
+    [5, 10, 15, 20] by default (4 weeks lookback) \n
+    :param ticker_col: Column name for grouping by tickers. \n
+    :param feature_names: All features for which you want to create lags. All features by default.
+    """
+    def __init__(self, windows: list = None, ticker_col: str = "bloomberg_ticker", feature_names: list = None):
+        super().__init__()
+        self.windows = windows if windows else [5, 10, 15, 20]
+        self.ticker_col = ticker_col
+        self.feature_names = feature_names
+
+    @display_processor_info
+    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
+        ticker_groups = dataf.groupby(self.ticker_col)
+        for feature in tqdm(feature_names, desc="Lag feature generation"):
+            feature_group = ticker_groups[feature]
+            for day in self.windows:
+                shifted = feature_group.shift(day, axis=0)
+                dataf.loc[:, f"{feature}_lag{day}"] = shifted
         return NumerFrame(dataf)
 
 # Cell
