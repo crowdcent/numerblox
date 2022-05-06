@@ -772,26 +772,29 @@ class SignalsTargetProcessor(BaseProcessor):
 
 # Cell
 class LagPreProcessor(BaseProcessor):
-    """ Add lag features based on given windows. """
-    def __init__(self, lag: int = 35, interval: int = 5, ticker_col: str = "bloomberg_ticker", feature_names: list = None):
+    """
+    Add lag features based on given windows.
+
+    :param windows: All lag windows to process for all features. \n
+    [5, 10, 15, 20] by default (4 weeks lookback) \n
+    :param ticker_col: Column name for grouping by tickers. \n
+    :param feature_names: All features for which you want to create lags. All features by default.
+    """
+    def __init__(self, windows: list = None, ticker_col: str = "bloomberg_ticker", feature_names: list = None):
         super().__init__()
-        self.lag = lag
-        self.interval = interval
+        self.windows = windows if windows else [5, 10, 15, 20]
         self.ticker_col = ticker_col
         self.feature_names = feature_names
 
     @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
         ticker_groups = dataf.groupby(self.ticker_col)
-
-        for day in range(self.interval, self.lag, self.interval):
-            shifted_dataf = ticker_groups[self.feature_names].transform(
-                lambda group: group.shift(day)
-            )
-
-            shifted_dataf.columns = [f"{feature}_lag_{day}" for feature in self.feature_names]
-
-            dataf = pd.concat([dataf, shifted_dataf], axis=1)
+        for feature in tqdm(feature_names, desc="Lag feature generation"):
+            feature_group = ticker_groups[feature]
+            for day in self.windows:
+                shifted = feature_group.shift(day, axis=0)
+                dataf.loc[:, f"{feature}_lag{day}"] = shifted
         return NumerFrame(dataf)
 
 # Cell
