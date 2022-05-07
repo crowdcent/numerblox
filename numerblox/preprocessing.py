@@ -3,7 +3,8 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'DeepDreamGenerator', 'UMAPFeatureGenerator',
            'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor', 'TalibFeatureGenerator', 'KatsuFeatureGenerator',
-           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'AwesomePreProcessor']
+           'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor',
+           'DifferencePreProcessor', 'AwesomePreProcessor']
 
 # Cell
 import os
@@ -131,7 +132,8 @@ class ReduceMemoryProcessor(BaseProcessor):
     :param deep_mem_inspect: Introspect the data deeply by interrogating object dtypes.
     Yields a more accurate representation of memory usage if you have complex object columns.
     """
-    def __init__(self, deep_mem_inspect = False):
+
+    def __init__(self, deep_mem_inspect=False):
         super().__init__()
         self.deep_mem_inspect = deep_mem_inspect
 
@@ -145,35 +147,65 @@ class ReduceMemoryProcessor(BaseProcessor):
         Iterate through all columns and modify the numeric column types
         to reduce memory usage.
         """
-        start_memory_usage = dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
-        rich_print(f"Memory usage of DataFrame is [bold]{round(start_memory_usage, 2)} MB[/bold]")
+        start_memory_usage = (
+            dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
+        )
+        rich_print(
+            f"Memory usage of DataFrame is [bold]{round(start_memory_usage, 2)} MB[/bold]"
+        )
 
         for col in dataf.columns:
             col_type = dataf[col].dtype.name
 
-            if col_type not in ['object', 'category', 'datetime64[ns, UTC]','datetime64[ns]']:
+            if col_type not in [
+                "object",
+                "category",
+                "datetime64[ns, UTC]",
+                "datetime64[ns]",
+            ]:
                 c_min = dataf[col].min()
                 c_max = dataf[col].max()
-                if str(col_type)[:3] == 'int':
+                if str(col_type)[:3] == "int":
                     if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
                         dataf[col] = dataf[col].astype(np.int16)
-                    elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    elif (
+                        c_min > np.iinfo(np.int16).min
+                        and c_max < np.iinfo(np.int16).max
+                    ):
                         dataf[col] = dataf[col].astype(np.int16)
-                    elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    elif (
+                        c_min > np.iinfo(np.int32).min
+                        and c_max < np.iinfo(np.int32).max
+                    ):
                         dataf[col] = dataf[col].astype(np.int32)
-                    elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    elif (
+                        c_min > np.iinfo(np.int64).min
+                        and c_max < np.iinfo(np.int64).max
+                    ):
                         dataf[col] = dataf[col].astype(np.int64)
                 else:
-                    if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    if (
+                        c_min > np.finfo(np.float16).min
+                        and c_max < np.finfo(np.float16).max
+                    ):
                         dataf[col] = dataf[col].astype(np.float16)
-                    elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    elif (
+                        c_min > np.finfo(np.float32).min
+                        and c_max < np.finfo(np.float32).max
+                    ):
                         dataf[col] = dataf[col].astype(np.float32)
                     else:
                         dataf[col] = dataf[col].astype(np.float64)
 
-        end_memory_usage = dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
-        rich_print(f"Memory usage after optimization is: [bold]{round(end_memory_usage, 2)} MB[/bold]")
-        rich_print(f"[green] Usage decreased by [bold]{round(100 * (start_memory_usage - end_memory_usage) / start_memory_usage, 2)}%[/bold][/green]")
+        end_memory_usage = (
+            dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
+        )
+        rich_print(
+            f"Memory usage after optimization is: [bold]{round(end_memory_usage, 2)} MB[/bold]"
+        )
+        rich_print(
+            f"[green] Usage decreased by [bold]{round(100 * (start_memory_usage - end_memory_usage) / start_memory_usage, 2)}%[/bold][/green]"
+        )
         return dataf
 
 # Cell
@@ -191,9 +223,15 @@ class DeepDreamGenerator(BaseProcessor):
     Like with the number of steps, a larger step size will lead to more dramatic changes to the input features. \n
     The default parameters are found to work well in practice, but could be further optimized.
     """
-    def __init__(self, model_path: str, batch_size: int = 200_000,
-                 steps: int = 5, step_size: float = .01,
-                 feature_names: list = None):
+
+    def __init__(
+        self,
+        model_path: str,
+        batch_size: int = 200_000,
+        steps: int = 5,
+        step_size: float = 0.01,
+        feature_names: list = None,
+    ):
         super().__init__()
         tf.config.run_functions_eagerly(True)
         self.model_path = model_path
@@ -220,12 +258,16 @@ class DeepDreamGenerator(BaseProcessor):
         targets = dataf.target_cols
 
         dream_dataf = pd.DataFrame(columns=features)
-        for i in tqdm(np.arange(0, len(dataf), self.batch_size),
-                      desc="Deepdreaming Synthetic Batches"):
+        for i in tqdm(
+            np.arange(0, len(dataf), self.batch_size),
+            desc="Deepdreaming Synthetic Batches",
+        ):
             start = i
             end = np.minimum(i + self.batch_size - 1, len(dataf) - 1)
             sub_dataf = dataf.reset_index(drop=False).iloc[start:end]
-            batch = tf.convert_to_tensor(sub_dataf.loc[:, features].astype(np.float32).values)
+            batch = tf.convert_to_tensor(
+                sub_dataf.loc[:, features].astype(np.float32).values
+            )
 
             dream_arr = self._dream(batch)
             batch_dataf = pd.DataFrame(dream_arr, columns=features)
@@ -254,7 +296,9 @@ class DeepDreamGenerator(BaseProcessor):
         return batch.numpy()
 
     @staticmethod
-    def __load_model(model_path: str, output_layer_name: str = 'concat') -> tf.keras.Model:
+    def __load_model(
+        model_path: str, output_layer_name: str = "concat"
+    ) -> tf.keras.Model:
         """
         Load in Keras model from given path.
         output_layer_name will be the layer used to augment data.
@@ -279,16 +323,31 @@ class UMAPFeatureGenerator(BaseProcessor):
     :param feature_names: Selection of features used to perform UMAP on. All features by default.
     *args, **kwargs will be passed to initialization of UMAP.
     """
-    def __init__(self, n_components: int = 5, n_neighbors: int = 15, min_dist: float = 0.,
-                 metric: str = "correlation", feature_names: list = None, *args, **kwargs):
+
+    def __init__(
+        self,
+        n_components: int = 5,
+        n_neighbors: int = 15,
+        min_dist: float = 0.0,
+        metric: str = "correlation",
+        feature_names: list = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__()
         self.n_components = n_components
         self.n_neighbors = n_neighbors
         self.min_dist = min_dist
         self.feature_names = feature_names
         self.metric = metric
-        self.umap = UMAP(n_components=self.n_components, n_neighbors=self.n_neighbors,
-                         min_dist=self.min_dist, metric=self.metric, *args, **kwargs)
+        self.umap = UMAP(
+            n_components=self.n_components,
+            n_neighbors=self.n_neighbors,
+            min_dist=self.min_dist,
+            metric=self.metric,
+            *args,
+            **kwargs,
+        )
 
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
@@ -309,7 +368,13 @@ class BayesianGMMTargetProcessor(BaseProcessor):
     :param feature_names: Selection of features used for Bayesian GMM. All features by default.
     :param n_components: Number of components for fitting Bayesian Gaussian Mixture Model.
     """
-    def __init__(self, target_col: str = "target", feature_names: list = None, n_components: int = 6):
+
+    def __init__(
+        self,
+        target_col: str = "target",
+        feature_names: list = None,
+        n_components: int = 6,
+    ):
         super().__init__()
         self.target_col = target_col
         self.feature_names = feature_names
@@ -322,9 +387,7 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         all_eras = dataf[dataf.meta.era_col].unique()
         coefs = self._get_coefs(dataf=dataf, all_eras=all_eras)
         bgmm = self._fit_bgmm(coefs=coefs)
-        fake_target = self._generate_target(dataf=dataf,
-                                            bgmm=bgmm,
-                                            all_eras=all_eras)
+        fake_target = self._generate_target(dataf=dataf, bgmm=bgmm, all_eras=all_eras)
         dataf[f"{self.target_col}_fake"] = fake_target
         return NumerFrame(dataf)
 
@@ -352,10 +415,10 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         bgmm.weights_[:] = 1 / self.n_components
         return bgmm
 
-    def _generate_target(self, dataf: NumerFrame,
-                         bgmm: BayesianGaussianMixture,
-                         all_eras: list) -> np.ndarray:
-        """ Generate fake target using Bayesian Gaussian Mixture model. """
+    def _generate_target(
+        self, dataf: NumerFrame, bgmm: BayesianGaussianMixture, all_eras: list
+    ) -> np.ndarray:
+        """Generate fake target using Bayesian Gaussian Mixture model."""
         fake_target = []
         for era in tqdm(all_eras, desc="Generating fake target"):
             features, _ = self.__get_features_target(dataf=dataf, era=era)
@@ -364,18 +427,18 @@ class BayesianGMMTargetProcessor(BaseProcessor):
             # Create fake continuous target
             fake_targ = features @ beta[0]
             # Bin fake target like real target
-            fake_targ = (rankdata(fake_targ) - .5) / len(fake_targ)
+            fake_targ = (rankdata(fake_targ) - 0.5) / len(fake_targ)
             fake_targ = (np.digitize(fake_targ, self.bins) - 1) / 4
             fake_target.append(fake_targ)
         return np.concatenate(fake_target)
 
     def __get_features_target(self, dataf: NumerFrame, era) -> tuple:
-        """ Get features and target for one era and center data. """
+        """Get features and target for one era and center data."""
         sub_df = dataf[dataf[dataf.meta.era_col] == era]
         features = self.feature_names if self.feature_names else sub_df.get_feature_data
         target = sub_df[self.target_col]
-        features = features.values - .5
-        target = target.values - .5
+        features = features.values - 0.5
+        target = target.values - 0.5
         return features, target
 
 # Cell
@@ -656,13 +719,14 @@ class EraQuantileProcessor(BaseProcessor):
     :param num_cores: CPU cores to allocate for quantile transforming. All available cores by default. \n
     :param random_state: Seed for QuantileTransformer.
     """
+
     def __init__(
         self,
         num_quantiles: int = 50,
         era_col: str = "friday_date",
         features: list = None,
         num_cores: int = None,
-        random_state: int = 0
+        random_state: int = 0,
     ):
         super().__init__()
         self.num_quantiles = num_quantiles
@@ -672,7 +736,9 @@ class EraQuantileProcessor(BaseProcessor):
         self.random_state = random_state
 
     def _process_eras(self, groupby_object):
-        quantizer = QuantileTransformer(n_quantiles=self.num_quantiles, random_state=self.random_state)
+        quantizer = QuantileTransformer(
+            n_quantiles=self.num_quantiles, random_state=self.random_state
+        )
         qt = lambda x: quantizer.fit_transform(x.values.reshape(-1, 1)).ravel()
 
         column = groupby_object.transform(qt)
@@ -701,7 +767,9 @@ class EraQuantileProcessor(BaseProcessor):
             )
 
         quantiles = pd.concat(results, axis=1)
-        dataf[[f"{feature}_quantile{self.num_quantiles}" for feature in self.features]] = quantiles
+        dataf[
+            [f"{feature}_quantile{self.num_quantiles}" for feature in self.features]
+        ] = quantiles
         return NumerFrame(dataf)
 
 # Cell
@@ -712,7 +780,10 @@ class TickerMapper(BaseProcessor):
     :param target_ticker_format: Format to map tickers to. Must be present in the ticker map. \n
     Supported ticker formats are: ['ticker', 'bloomberg_ticker', 'yahoo']
     """
-    def __init__(self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker"):
+
+    def __init__(
+        self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker"
+    ):
         super().__init__()
         self.ticker_col = ticker_col
         self.target_ticker_format = target_ticker_format
@@ -720,13 +791,21 @@ class TickerMapper(BaseProcessor):
         self.signals_map_path = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com/signals_ticker_map_w_bbg.csv"
         self.ticker_map = pd.read_csv(self.signals_map_path)
 
-        assert self.ticker_col in self.ticker_map.columns, f"Ticker column '{self.ticker_col}' is not available in ticker mapping."
-        assert self.target_ticker_format in self.ticker_map.columns, f"Target ticker column '{self.target_ticker_format}' is not available in ticker mapping."
+        assert (
+            self.ticker_col in self.ticker_map.columns
+        ), f"Ticker column '{self.ticker_col}' is not available in ticker mapping."
+        assert (
+            self.target_ticker_format in self.ticker_map.columns
+        ), f"Target ticker column '{self.target_ticker_format}' is not available in ticker mapping."
 
-        self.mapping = dict(self.ticker_map[[self.ticker_col, self.target_ticker_format]].values)
+        self.mapping = dict(
+            self.ticker_map[[self.ticker_col, self.target_ticker_format]].values
+        )
 
     @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs) -> NumerFrame:
+    def transform(
+        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs
+    ) -> NumerFrame:
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
@@ -742,7 +821,14 @@ class SignalsTargetProcessor(BaseProcessor):
     :param bins: Binning used to create group targets. Nomi binning by default. \n
     :param labels: Scaling for binned target. Must be same length as resulting bins (bins-1). Numerai labels by default.
     """
-    def __init__(self, price_col: str = 'close', windows: list = None, bins: list = None, labels: list = None):
+
+    def __init__(
+        self,
+        price_col: str = "close",
+        windows: list = None,
+        bins: list = None,
+        labels: list = None,
+    ):
         super().__init__()
         self.price_col = price_col
         self.windows = windows if windows else [10, 20]
@@ -757,15 +843,14 @@ class SignalsTargetProcessor(BaseProcessor):
             )
             era_groups = dataf.groupby(dataf.meta.era_col)
 
-            dataf.loc[:, f"target_{window}d_rank"] = era_groups[f"target_{window}d_raw"].rank(pct=True,
-                                                                                              method="first"
-                                                                                              )
-            dataf.loc[:, f"target_{window}d_group"] = era_groups[f"target_{window}d_rank"].transform(
+            dataf.loc[:, f"target_{window}d_rank"] = era_groups[
+                f"target_{window}d_raw"
+            ].rank(pct=True, method="first")
+            dataf.loc[:, f"target_{window}d_group"] = era_groups[
+                f"target_{window}d_rank"
+            ].transform(
                 lambda group: pd.cut(
-                    group,
-                    bins=self.bins,
-                    labels=self.labels,
-                    include_lowest=True
+                    group, bins=self.bins, labels=self.labels, include_lowest=True
                 )
             )
         return NumerFrame(dataf)
@@ -780,7 +865,13 @@ class LagPreProcessor(BaseProcessor):
     :param ticker_col: Column name for grouping by tickers. \n
     :param feature_names: All features for which you want to create lags. All features by default.
     """
-    def __init__(self, windows: list = None, ticker_col: str = "bloomberg_ticker", feature_names: list = None):
+
+    def __init__(
+        self,
+        windows: list = None,
+        ticker_col: str = "bloomberg_ticker",
+        feature_names: list = None,
+    ):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
         self.ticker_col = ticker_col
@@ -795,6 +886,53 @@ class LagPreProcessor(BaseProcessor):
             for day in self.windows:
                 shifted = feature_group.shift(day, axis=0)
                 dataf.loc[:, f"{feature}_lag{day}"] = shifted
+        return NumerFrame(dataf)
+
+# Cell
+class DifferencePreProcessor(BaseProcessor):
+    """
+    Add difference features based on given windows. Run LagPreProcessor first.
+
+    :param windows: All lag windows to process for all features. \n
+    :param feature_names: All features for which you want to create differences. All features that also have lags by default. \n
+    :param pct_change: Method to calculate differences. If True, will calculate differences with a percentage change. Otherwise calculates a simple difference. Defaults to False \n
+    :param abs_diff: Whether to also calculate the absolute value of all differences. Defaults to True \n
+    """
+
+    def __init__(
+        self,
+        windows: list = None,
+        feature_names: list = None,
+        pct_diff: bool = False,
+        abs_diff: bool = False,
+    ):
+        super().__init__()
+        self.windows = windows if windows else [5, 10, 15, 20]
+        self.feature_names = feature_names
+        self.pct_diff = pct_diff
+        self.abs_diff = abs_diff
+
+    @display_processor_info
+    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
+        for feature in tqdm(self.feature_names, desc="Difference feature generation"):
+            lag_columns = dataf.get_pattern_data(f"{feature}_lag").columns
+            if not lag_columns.empty:
+                for day in self.windows:
+                    differenced_values = (
+                        (dataf[feature] / dataf[f"{feature}_lag{day}"]) - 1
+                        if self.pct_diff
+                        else dataf[feature] - dataf[f"{feature}_lag{day}"]
+                    )
+                    dataf[f"{feature}_diff{day}"] = differenced_values
+                    if self.abs_diff:
+                        dataf[f"{feature}_absdiff{day}"] = np.abs(
+                            dataf[f"{feature}_diff{day}"]
+                        )
+            else:
+                rich_print(
+                    f":warning: WARNING: Skipping {feature}. Lag features for feature: {feature} were not detected. Have you already run LagPreProcessor? :warning:"
+                )
         return NumerFrame(dataf)
 
 # Cell
