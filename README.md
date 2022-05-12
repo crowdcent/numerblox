@@ -45,7 +45,7 @@ quickly test if your installation has succeeded
 
 `numerblox` features the following functionality:
 
-1. Downloading data (`NumeraiClassicDownloader`, `KaggleDownloader` and `PandasDataReader`)
+1. Downloading data
 2. A custom data structure extending Pandas DataFrame (`NumerFrame`)
 3. A suite of preprocessors for Numerai Classic and Signals (feature selection, engineering and manipulation)
 4. Model objects for easy inference.
