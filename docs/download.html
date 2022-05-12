@@ -79,41 +79,6 @@ nb_path: "nbs/01_download.ipynb"
     
 <div class="cell border-box-sizing code_cell rendered">
 
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="dcaa3786-dc03-4bbb-9cc9-3b332d5c6174" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#dcaa3786-dc03-4bbb-9cc9-3b332d5c6174');
-
-            setTimeout(function() {
-                var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\" Create blob that interacts with Google Cloud Storage (GCS). \"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\" Create base directory if it does not exist. \"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\" Return all paths of contents in directory. \"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\" Check if directory is empty. \"\"\"\n        return not bool(self.get_all_files)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseIO(ABC):\n    \"\"\"\n    Basic functionality for IO (downloading and uploading).\n\n    :param directory_path: Base folder for IO. Will be created if it does not exist.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.dir = Path(directory_path)\n        self._create_directory()\n\n    def remove_base_directory(self):\n        \"\"\"Remove directory with all contents.\"\"\"\n        abs_path = self.dir.resolve()\n        rich_print(\n            f\":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\\nPath: '{abs_path}'\"\n        )\n        shutil.rmtree(abs_path)\n\n    def download_file_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Get file from GCS bucket and download to local directory.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        blob.download_to_filename(gcs_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:\"\n        )\n\n    def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):\n        \"\"\"\n        Upload file to some GCS bucket.\n        :param gcs_path: Path to file on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:\"\n        )\n\n    def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Copy full directory from GCS bucket to local environment.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob_path = str(self.dir.resolve())\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)\n        for gcs_file in glob.glob(gcs_path + \"/**\", recursive=True):\n            if os.path.isfile(gcs_file):\n                blob.download_to_filename(blob_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:\"\n        )\n\n    def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):\n        \"\"\"\n        Upload full base directory to GCS bucket.\n        :param gcs_path: Name of directory on GCS bucket.\n        \"\"\"\n        blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)\n        for local_path in glob.glob(str(self.dir) + \"/**\", recursive=True):\n            if os.path.isfile(local_path):\n                blob.upload_from_filename(local_path)\n        rich_print(\n            f\":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:\"\n        )\n\n    def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:\n        \"\"\"Create blob that interacts with Google Cloud Storage (GCS).\"\"\"\n        client = storage.Client()\n        # https://console.cloud.google.com/storage/browser/[bucket_name]\n        bucket = client.get_bucket(bucket_name)\n        blob = bucket.blob(blob_path)\n        return blob\n\n    def _append_folder(self, folder: str) -> Path:\n        \"\"\"\n        Return base directory Path object appended with 'folder'.\n        Create directory if it does not exist.\n        \"\"\"\n        dir = Path(self.dir / folder)\n        dir.mkdir(parents=True, exist_ok=True)\n        return dir\n\n    def _create_directory(self):\n        \"\"\"Create base directory if it does not exist.\"\"\"\n        if not self.dir.is_dir():\n            rich_print(\n                f\"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory...\"\n            )\n            self.dir.mkdir(parents=True, exist_ok=True)\n\n    @property\n    def get_all_files(self) -> list:\n        \"\"\"Return all paths of contents in directory.\"\"\"\n        return list(self.dir.iterdir())\n\n    @property\n    def is_empty(self) -> bool:\n        \"\"\"Check if directory is empty.\"\"\"\n        return not bool(self.get_all_files)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
 </div>
     {% endraw %}
 
@@ -155,41 +120,6 @@ var element = $('#dcaa3786-dc03-4bbb-9cc9-3b332d5c6174');
     
 <div class="cell border-box-sizing code_cell rendered">
 
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="71f2ddd6-1f4f-4aa3-a008-d07c988d1c0d" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#71f2ddd6-1f4f-4aa3-a008-d07c988d1c0d');
-
-            setTimeout(function() {
-                var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Download all necessary files needed for training. \"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" Download minimal amount of files needed for weekly inference. \"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\" Load JSON from file and return as dictionary. \"\"\"\n        with open(Path(file_path)) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass BaseDownloader(BaseIO):\n    \"\"\"\n    Abstract base class for downloaders.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    @abstractmethod\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Download all necessary files needed for training.\"\"\"\n        ...\n\n    @abstractmethod\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"Download minimal amount of files needed for weekly inference.\"\"\"\n        ...\n\n    @staticmethod\n    def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:\n        \"\"\"Load JSON from file and return as dictionary.\"\"\"\n        with open(Path(file_path)) as json_file:\n            json_data = json.load(json_file, *args, **kwargs)\n        if verbose:\n            rich_print(json_data)\n        return json_data\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        The most common use case will be to get weekly inference data. So calling the class itself returns inference data.\n        \"\"\"\n        self.download_inference_data(*args, **kwargs)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
-
 </div>
     {% endraw %}
 
@@ -210,7 +140,7 @@ var element = $('#71f2ddd6-1f4f-4aa3-a008-d07c988d1c0d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NumeraiClassicDownloader" class="doc_header"><code>class</code> <code>NumeraiClassicDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L175" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="NumeraiClassicDownloader" class="doc_header"><code>class</code> <code>NumeraiClassicDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L179" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NumeraiClassicDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.</p>
 <p>Downloading from NumerAPI for Numerai Classic data.</p>
@@ -230,41 +160,6 @@ var element = $('#71f2ddd6-1f4f-4aa3-a008-d07c988d1c0d');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="2bd51901-07a1-4011-8807-63ccf05fc6f7" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#2bd51901-07a1-4011-8807-63ccf05fc6f7');
-
-            setTimeout(function() {
-                var nbb_cell_id = 7;
-                var nbb_unformatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.\n\n    Downloading from NumerAPI for Numerai Classic data. \\n\n    :param directory_path: Base folder to download files to. \\n\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\"3\": {\n            \"train\": {\n                \"int8\": [\n                    \"v3/numerai_training_data_int8.parquet\",\n                    \"v3/numerai_validation_data_int8.parquet\"\n                ],\n                \"float\": [\n                    \"v3/numerai_training_data.parquet\",\n                    \"v3/numerai_validation_data.parquet\"\n                ]\n            },\n            \"inference\": {\n                \"int8\": [\"v3/numerai_tournament_data_int8.parquet\"],\n                \"float\": [\"v3/numerai_tournament_data.parquet\"]\n            },\n            \"live\": {\n                \"int8\": [\"v3/numerai_live_data_int8.parquet\"],\n                \"float\": [\"v3/numerai_live_data.parquet\"]\n            },\n            \"example\": [\n                \"v3/example_predictions.parquet\",\n                \"v3/example_validation_predictions.parquet\"\n            ]\n        },\n            \"4\": {\n                \"train\": {\n                    \"int8\": [\n                        \"v4/train_int8.parquet\",\n                        \"v4/validation_int8.parquet\"\n                    ],\n                    \"float\": [\n                        \"v4/train.parquet\",\n                        \"v4/validation.parquet\"\n                    ]\n                },\n                \"inference\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"]\n                },\n                \"live\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"]\n                },\n                \"example\": [\n                    \"v4/live_example_preds.parquet\",\n                    \"v4/validation_example_preds.parquet\"\n                ]\n            }\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 4, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (3=1050+ features dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path\n            )\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename,\n            dest_path=dest_path,\n            round_num=round_num\n        )\n\n    def download_live_data(\n            self,\n            subfolder: str = \"\",\n            version: int = 4,\n            int8: bool = False,\n            round_num: int = None\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 4, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file,\n                dest_path=dest_path,\n                round_num=round_num\n            )\n\n    def get_classic_features(self, subfolder: str = \"\", filename=\"v4/features.json\", *args, **kwargs) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dest_path = self.__get_dest_path(subfolder, filename)\n        self.download_single_dataset(filename=filename,\n                                     dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\" Check if data version is supported and return file mapping for version. \"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[str(version)]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary\n\n    def __get_dest_path(self, subfolder: str, filename: str) -> str:\n        \"\"\" Prepare destination path for downloading. \"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename.split(\"/\")[-1]))\n        return dest_path";
-                var nbb_formatted_code = "# export\nclass NumeraiClassicDownloader(BaseDownloader):\n    \"\"\"\n    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.\n\n    Downloading from NumerAPI for Numerai Classic data. \\n\n    :param directory_path: Base folder to download files to. \\n\n    All *args, **kwargs will be passed to NumerAPI initialization.\n    \"\"\"\n\n    def __init__(self, directory_path: str, *args, **kwargs):\n        super().__init__(directory_path=directory_path)\n        self.napi = NumerAPI(*args, **kwargs)\n        self.current_round = self.napi.get_current_round()\n        # NumerAPI filenames corresponding to version, class and data type\n        self.version_mapping = {\n            \"3\": {\n                \"train\": {\n                    \"int8\": [\n                        \"v3/numerai_training_data_int8.parquet\",\n                        \"v3/numerai_validation_data_int8.parquet\",\n                    ],\n                    \"float\": [\n                        \"v3/numerai_training_data.parquet\",\n                        \"v3/numerai_validation_data.parquet\",\n                    ],\n                },\n                \"inference\": {\n                    \"int8\": [\"v3/numerai_tournament_data_int8.parquet\"],\n                    \"float\": [\"v3/numerai_tournament_data.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"v3/numerai_live_data_int8.parquet\"],\n                    \"float\": [\"v3/numerai_live_data.parquet\"],\n                },\n                \"example\": [\n                    \"v3/example_predictions.parquet\",\n                    \"v3/example_validation_predictions.parquet\",\n                ],\n            },\n            \"4\": {\n                \"train\": {\n                    \"int8\": [\"v4/train_int8.parquet\", \"v4/validation_int8.parquet\"],\n                    \"float\": [\"v4/train.parquet\", \"v4/validation.parquet\"],\n                },\n                \"inference\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"],\n                },\n                \"live\": {\n                    \"int8\": [\"v4/live_int8.parquet\"],\n                    \"float\": [\"v4/live.parquet\"],\n                },\n                \"example\": [\n                    \"v4/live_example_preds.parquet\",\n                    \"v4/validation_example_preds.parquet\",\n                ],\n            },\n        }\n\n    def download_training_data(\n        self, subfolder: str = \"\", version: int = 4, int8: bool = False\n    ):\n        \"\"\"\n        Get Numerai classic training and validation data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (3=1050+ features dataset (parquet))\n        :param int8: Integer version of data\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        train_val_files = self._get_version_mapping(version)[\"train\"][data_type]\n        for file in train_val_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(filename=file, dest_path=dest_path)\n\n    def download_inference_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Get Numerai classic inference (tournament) data.\n        If only minimal live data is needed, consider .download_live_data.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        inference_files = self._get_version_mapping(version)[\"inference\"][data_type]\n        for file in inference_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def download_single_dataset(\n        self, filename: str, dest_path: str, round_num: int = None\n    ):\n        \"\"\"\n        Download one of the available datasets through NumerAPI.\n\n        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)\n        :param dest_path: Full path where file will be saved.\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        rich_print(\n            f\":file_folder: [green]Downloading[/green] '{filename}' :file_folder:\"\n        )\n        self.napi.download_dataset(\n            filename=filename, dest_path=dest_path, round_num=round_num\n        )\n\n    def download_live_data(\n        self,\n        subfolder: str = \"\",\n        version: int = 4,\n        int8: bool = False,\n        round_num: int = None,\n    ):\n        \"\"\"\n        Download all live data in specified folder for given version (i.e. minimal data needed for inference).\n\n        :param subfolder: Specify folder to create folder within directory root.\n        Saves in directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param int8: Integer version of data\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        data_type = \"int8\" if int8 else \"float\"\n        live_files = self._get_version_mapping(version)[\"live\"][data_type]\n        for file in live_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def download_example_data(\n        self, subfolder: str = \"\", version: int = 4, round_num: int = None\n    ):\n        \"\"\"\n        Download all example prediction data in specified folder for given version.\n\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param version: Numerai dataset version (2=super massive dataset (parquet))\n        :param round_num: Numerai tournament round number. Downloads latest round by default.\n        \"\"\"\n        example_files = self._get_version_mapping(version)[\"example\"]\n        for file in example_files:\n            dest_path = self.__get_dest_path(subfolder, file)\n            self.download_single_dataset(\n                filename=file, dest_path=dest_path, round_num=round_num\n            )\n\n    def get_classic_features(\n        self, subfolder: str = \"\", filename=\"v4/features.json\", *args, **kwargs\n    ) -> dict:\n        \"\"\"\n        Download feature overview (stats and feature sets) through NumerAPI and load as dict.\n        :param subfolder: Specify folder to create folder within base directory root.\n        Saves in base directory root by default.\n        :param filename: name for feature overview.\n        Currently defined as 'features.json' in NumerAPI and used as default.\n        *args, **kwargs will be passed to the JSON loader.\n        \"\"\"\n        dest_path = self.__get_dest_path(subfolder, filename)\n        self.download_single_dataset(filename=filename, dest_path=dest_path)\n        json_data = self._load_json(dest_path, *args, **kwargs)\n        return json_data\n\n    def _get_version_mapping(self, version: int) -> dict:\n        \"\"\"Check if data version is supported and return file mapping for version.\"\"\"\n        try:\n            mapping_dictionary = self.version_mapping[str(version)]\n        except KeyError:\n            raise NotImplementedError(\n                f\"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}\"\n            )\n        return mapping_dictionary\n\n    def __get_dest_path(self, subfolder: str, filename: str) -> str:\n        \"\"\"Prepare destination path for downloading.\"\"\"\n        dir = self._append_folder(subfolder)\n        dest_path = str(dir.joinpath(filename.split(\"/\")[-1]))\n        return dest_path";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -346,8 +241,8 @@ Feature stats and overview can be downloaded with <code>.get_classic_features()<
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-05-11 18:07:23,822 INFO numerapi.utils: starting download
-test_numclassic_train/features.json: 562kB [00:00, 800kB/s]                             
+<pre>2022-05-12 14:44:14,707 INFO numerapi.utils: starting download
+test_numclassic_train/features.json: 562kB [00:00, 755kB/s]                             
 </pre>
 </div>
 </div>
@@ -359,35 +254,6 @@ test_numclassic_train/features.json: 562kB [00:00, 800kB/s]
 Path: 
 <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/test_numclassic_train'</span>
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="854b1856-b106-4124-9263-d1ade2b7db75" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#854b1856-b106-4124-9263-d1ade2b7db75');
-
-            setTimeout(function() {
-                var nbb_cell_id = 9;
-                var nbb_unformatted_code = "# slow\n# Initialization\ntrain_base_directory = \"test_numclassic_train\"\nnumer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Uncomment line below to download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", int8=False)\n\n# Get feature overview (dict)\nnumer_classic_downloader.get_classic_features()\n\n# Remove contents (To clean up environment)\nnumer_classic_downloader.remove_base_directory()";
-                var nbb_formatted_code = "# slow\n# Initialization\ntrain_base_directory = \"test_numclassic_train\"\nnumer_classic_downloader = NumeraiClassicDownloader(train_base_directory)\n\n# Uncomment line below to download training and validation data\n# numer_classic_downloader.download_training_data(\"train_val\", int8=False)\n\n# Get feature overview (dict)\nnumer_classic_downloader.get_classic_features()\n\n# Remove contents (To clean up environment)\nnumer_classic_downloader.remove_base_directory()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -421,35 +287,6 @@ var element = $('#854b1856-b106-4124-9263-d1ade2b7db75');
 <span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 numerai_training_data.parquet                                                            
 <span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 numerai_validation_data.parquet                                                          
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="7eab9e16-e6dc-4ab6-bbe9-161688beb41b" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#7eab9e16-e6dc-4ab6-bbe9-161688beb41b');
-
-            setTimeout(function() {
-                var nbb_cell_id = 10;
-                var nbb_unformatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {train_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(\":page_facing_up: numerai_training_data.parquet\")\ntrain_val_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\n\nconsole.print(tree)";
-                var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {train_base_directory} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\nfolder_tree = tree.add(\":page_facing_up: features.json\")\ntrain_val_tree = tree.add(\":file_folder: train_val\")\ntrain_val_tree.add(\":page_facing_up: numerai_training_data.parquet\")\ntrain_val_tree.add(\":page_facing_up: numerai_validation_data.parquet\")\n\nconsole.print(tree)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -520,8 +357,8 @@ It can also easily be deleted after you are done with inference by calling <code
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-05-11 18:07:26,979 INFO numerapi.utils: starting download
-test_numclassic_inference/inference/live_int8.parquet: 3.54MB [00:01, 2.16MB/s]                            
+<pre>2022-05-12 14:44:17,163 INFO numerapi.utils: starting download
+test_numclassic_inference/inference/live_int8.parquet: 3.54MB [00:01, 1.97MB/s]                            
 </pre>
 </div>
 </div>
@@ -533,35 +370,6 @@ test_numclassic_inference/inference/live_int8.parquet: 3.54MB [00:01, 2.16MB/s]
 Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/test_numclassic_in</span>
 <span style="color: #008000; text-decoration-color: #008000">ference'</span>
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="5435f386-c1d0-48b2-bf92-a034281f3e6d" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#5435f386-c1d0-48b2-bf92-a034281f3e6d');
-
-            setTimeout(function() {
-                var nbb_cell_id = 11;
-                var nbb_unformatted_code = "# slow\n# Initialization\ninference_base_dir = \"test_numclassic_inference\"\nnumer_classic_downloader = NumeraiClassicDownloader(directory_path=inference_base_dir)\n\n# Download tournament (inference) data\nnumer_classic_downloader.download_inference_data(\"inference\", version=4, int8=True)\n\n# Remove folder when done with inference\nnumer_classic_downloader.remove_base_directory()";
-                var nbb_formatted_code = "# slow\n# Initialization\ninference_base_dir = \"test_numclassic_inference\"\nnumer_classic_downloader = NumeraiClassicDownloader(directory_path=inference_base_dir)\n\n# Download tournament (inference) data\nnumer_classic_downloader.download_inference_data(\"inference\", version=4, int8=True)\n\n# Remove folder when done with inference\nnumer_classic_downloader.remove_base_directory()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -593,35 +401,6 @@ var element = $('#5435f386-c1d0-48b2-bf92-a034281f3e6d');
 <span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 inference                                                                                    
 <span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 numerai_tournament_data.parquet                                                          
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="6bef117f-8d8f-44a7-a6b0-53dfe1f3fc07" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#6bef117f-8d8f-44a7-a6b0-53dfe1f3fc07');
-
-            setTimeout(function() {
-                var nbb_cell_id = 12;
-                var nbb_unformatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {inference_base_dir} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\n\nconsole.print(tree)";
-                var nbb_formatted_code = "# hide_input\nconsole = Console(record=True, width=100)\n\ntree = Tree(\n    f\":file_folder: {inference_base_dir} (base_directory)\",\n    guide_style=\"bold bright_black\",\n)\ninference_tree = tree.add(\":file_folder: inference\")\ninference_tree.add(\":page_facing_up: numerai_tournament_data.parquet\")\n\nconsole.print(tree)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -658,7 +437,7 @@ var element = $('#6bef117f-8d8f-44a7-a6b0-53dfe1f3fc07');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="KaggleDownloader" class="doc_header"><code>class</code> <code>KaggleDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L380" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>KaggleDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="KaggleDownloader" class="doc_header"><code>class</code> <code>KaggleDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L384" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>KaggleDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>Download awesome financial data from Kaggle.</p>
 <p>For authentication, make sure you have a directory called .kaggle in your home directory
@@ -681,41 +460,6 @@ with therein a kaggle.json file. kaggle.json should have the following structure
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="e2d1bead-720a-4a99-a14e-d83e8086b7ac" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#e2d1bead-720a-4a99-a14e-d83e8086b7ac');
-
-            setTimeout(function() {
-                var nbb_cell_id = 13;
-                var nbb_unformatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: kaggle.com/donkeys/kaggle-python-api \\n\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        self.__check_kaggle_import()\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        import kaggle\n        kaggle.api.dataset_download_files(kaggle_dataset_path,\n                                          path=self.dir, unzip=True)\n\n    @staticmethod\n    def __check_kaggle_import():\n        try:\n            import kaggle\n        except OSError:\n            raise OSError(\"Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.\")";
-                var nbb_formatted_code = "# export\nclass KaggleDownloader(BaseDownloader):\n    \"\"\"\n    Download awesome financial data from Kaggle.\n\n    For authentication, make sure you have a directory called .kaggle in your home directory\n    with therein a kaggle.json file. kaggle.json should have the following structure: \\n\n    `{\"username\": USERNAME, \"key\": KAGGLE_API_KEY}` \\n\n    More info on authentication: github.com/Kaggle/kaggle-api#api-credentials \\n\n\n    More info on the Kaggle Python API: kaggle.com/donkeys/kaggle-python-api \\n\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        self.__check_kaggle_import()\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        self.download_training_data(kaggle_dataset_path)\n\n    def download_training_data(self, kaggle_dataset_path: str):\n        \"\"\"\n        Download arbitrary Kaggle dataset.\n        :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)\n        \"\"\"\n        import kaggle\n\n        kaggle.api.dataset_download_files(\n            kaggle_dataset_path, path=self.dir, unzip=True\n        )\n\n    @staticmethod\n    def __check_kaggle_import():\n        try:\n            import kaggle\n        except OSError:\n            raise OSError(\n                \"Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.\"\n            )";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -751,35 +495,6 @@ var element = $('#e2d1bead-720a-4a99-a14e-d83e8086b7ac');
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">test_kaggle_downloader</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="cea64241-d1fd-4769-b15b-9c3e99188ce3" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#cea64241-d1fd-4769-b15b-9c3e99188ce3');
-
-            setTimeout(function() {
-                var nbb_cell_id = 14;
-                var nbb_unformatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
-                var nbb_formatted_code = "# other\nhome_directory = \"test_kaggle_downloader\"\nkd = KaggleDownloader(home_directory)\nkd.download_training_data(\"code1110/yfinance-stock-price-data-for-numerai-signals\")";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -820,35 +535,6 @@ var element = $('#cea64241-d1fd-4769-b15b-9c3e99188ce3');
 
 <div class="output_text output_subarea output_execute_result">
 <pre>[Path(&#39;test_kaggle_downloader/full_data.parquet&#39;)]</pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="787e9dcc-9f3c-4204-abf9-138f79039e6b" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#787e9dcc-9f3c-4204-abf9-138f79039e6b');
-
-            setTimeout(function() {
-                var nbb_cell_id = 15;
-                var nbb_unformatted_code = "# other\nlist(kd.dir.iterdir())";
-                var nbb_formatted_code = "# other\nlist(kd.dir.iterdir())";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -937,35 +623,6 @@ var element = $('#787e9dcc-9f3c-4204-abf9-138f79039e6b');
 
 </div>
 
-<div class="output_area">
-
-
-
-
-<div id="739f6807-9172-4230-aad9-dda81f4e060d" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#739f6807-9172-4230-aad9-dda81f4e060d');
-
-            setTimeout(function() {
-                var nbb_cell_id = 16;
-                var nbb_unformatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
-                var nbb_formatted_code = "# other\ndf = pd.read_parquet(f\"{home_directory}/full_data.parquet\")\ndf.head(2)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -1007,35 +664,6 @@ Path:
 
 </div>
 
-<div class="output_area">
-
-
-
-
-<div id="364aee09-11bd-4577-a4c4-549c8ab685a2" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#364aee09-11bd-4577-a4c4-549c8ab685a2');
-
-            setTimeout(function() {
-                var nbb_cell_id = 17;
-                var nbb_unformatted_code = "# other\nkd.remove_base_directory()";
-                var nbb_formatted_code = "# other\nkd.remove_base_directory()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -1066,7 +694,7 @@ var element = $('#364aee09-11bd-4577-a4c4-549c8ab685a2');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="PandasDataReader" class="doc_header"><code>class</code> <code>PandasDataReader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L421" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>PandasDataReader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>backend</code></strong>:<code>str</code>=<em><code>'yahoo'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="PandasDataReader" class="doc_header"><code>class</code> <code>PandasDataReader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L425" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>PandasDataReader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>backend</code></strong>:<code>str</code>=<em><code>'yahoo'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>Download financial data using Pandas Datareader.</p>
 <p>:param directory_path: Base folder to download files to.</p>
@@ -1087,41 +715,6 @@ var element = $('#364aee09-11bd-4577-a4c4-549c8ab685a2');
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="65c04a5e-92d0-4996-b2e7-963338b2c9ea" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#65c04a5e-92d0-4996-b2e7-963338b2c9ea');
-
-            setTimeout(function() {
-                var nbb_cell_id = 18;
-                var nbb_unformatted_code = "# export\nclass PandasDataReader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for downloading. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n    def __init__(self, directory_path: str, tickers: list, backend: str = 'yahoo'):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\" Download a year of data. \"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_live_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\" Download a month of data. \"\"\"\n        start = self.current_time - relativedelta(months=1)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self.get_live_data(*args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> NumerFrame:\n        \"\"\" Get a month of data as DataFrame. \"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return NumerFrame(self._get_all_ticker_data(start=start, *args, **kwargs))\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\")\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(self, ticker: str, start: dt, *args, **kwargs) -> pd.DataFrame:\n        dataf = web.DataReader(ticker, self.backend, start, self.current_time, *args, **kwargs)\n        dataf['ticker'] = ticker\n        dataf.index.names = ['date']\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
-                var nbb_formatted_code = "# export\nclass PandasDataReader(BaseDownloader):\n    \"\"\"\n    Download financial data using Pandas Datareader.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param tickers: list of tickers used for downloading. \\n\n    :param backend: Data provider you want to use. Yahoo Finance by default. \\n\n    Check pydata.github.io/pandas-datareader/stable/readers/index.html to see all data readers.\n    \"\"\"\n\n    def __init__(self, directory_path: str, tickers: list, backend: str = \"yahoo\"):\n        super().__init__(directory_path=directory_path)\n        self.tickers = tickers\n        self.backend = backend\n        self.current_time = dt.now()\n\n    def download_inference_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\"Download a year of data.\"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):\n        \"\"\"\n        Download full training dataset with given start_date.\n        :param start: datetime object defining starting date.\n        :param save_path: Path for Parquet file.\n        \"\"\"\n        dataf = self._get_all_ticker_data(start=start, *args, **kwargs)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf.to_parquet(save_path)\n\n    def download_live_data(self, save_path: str = None, *args, **kwargs):\n        \"\"\"Download a month of data.\"\"\"\n        start = self.current_time - relativedelta(months=1)\n        save_path = save_path if save_path else self.__format_default_save_path(start)\n        dataf = self.get_live_data(*args, **kwargs)\n        dataf.to_parquet(save_path)\n\n    def get_live_data(self, *args, **kwargs) -> NumerFrame:\n        \"\"\"Get a month of data as DataFrame.\"\"\"\n        start = self.current_time - relativedelta(months=1)\n        return NumerFrame(self._get_all_ticker_data(start=start, *args, **kwargs))\n\n    def _get_all_ticker_data(self, start: dt, *args, **kwargs) -> pd.DataFrame:\n        \"\"\"\n        Get data for all tickers defined in class using given starting date.\n        :param start: datetime object defining starting date.\n        \"\"\"\n        func = partial(self.__get_ticker_data, start=start)\n        results = []\n        for tick in tqdm(self.tickers):\n            try:\n                res = func(ticker=tick, *args, **kwargs)\n            except RemoteDataError:\n                rich_print(\n                    f\":warning: WARNING: No data found for ticker: [red]'{tick}'[/red]. :warning:\"\n                )\n                continue\n            results.append(res)\n        dataf = pd.concat(results)\n        return dataf\n\n    def __get_ticker_data(\n        self, ticker: str, start: dt, *args, **kwargs\n    ) -> pd.DataFrame:\n        dataf = web.DataReader(\n            ticker, self.backend, start, self.current_time, *args, **kwargs\n        )\n        dataf[\"ticker\"] = ticker\n        dataf.index.names = [\"date\"]\n        dataf = dataf.reset_index(drop=False)\n        return dataf\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -1148,35 +741,6 @@ var element = $('#65c04a5e-92d0-4996-b2e7-963338b2c9ea');
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">pandas_datareader_test</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="a60d45db-ca61-4b41-bc40-637f97718794" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#a60d45db-ca61-4b41-bc40-637f97718794');
-
-            setTimeout(function() {
-                var nbb_cell_id = 19;
-                var nbb_unformatted_code = "pdr = PandasDataReader(directory_path=\"pandas_datareader_test\", tickers=['AAPL', 'MSFT', 'NOTATICKER'])";
-                var nbb_formatted_code = "pdr = PandasDataReader(\n    directory_path=\"pandas_datareader_test\", tickers=[\"AAPL\", \"MSFT\", \"NOTATICKER\"]\n)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -1220,8 +784,8 @@ var element = $('#a60d45db-ca61-4b41-bc40-637f97718794');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-05-11 18:08:21,118 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
-2022-05-11 18:08:21,119 INFO numexpr.utils: NumExpr defaulting to 8 threads.
+<pre>2022-05-12 14:45:12,980 INFO numexpr.utils: Note: NumExpr detected 16 cores but &#34;NUMEXPR_MAX_THREADS&#34; not set, so enforcing safe limit of 8.
+2022-05-12 14:45:12,982 INFO numexpr.utils: NumExpr defaulting to 8 threads.
 </pre>
 </div>
 </div>
@@ -1249,35 +813,6 @@ var element = $('#a60d45db-ca61-4b41-bc40-637f97718794');
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ WARNING: No data found for ticker: <span style="color: #800000; text-decoration-color: #800000">'NOTATICKER'</span>. ⚠
 </pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="95ba5316-2405-46d3-8bec-465aaab19e1c" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#95ba5316-2405-46d3-8bec-465aaab19e1c');
-
-            setTimeout(function() {
-                var nbb_cell_id = 20;
-                var nbb_unformatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))\npdr.download_inference_data()\npdr.download_live_data()\n\nassert Path(f\"pandas_datareader_test/yahoo_20080101_{dt.now().strftime('%Y%m%d')}.parquet\").is_file()";
-                var nbb_formatted_code = "pdr.download_training_data(start=dt(year=2008, month=1, day=1))\npdr.download_inference_data()\npdr.download_live_data()\n\nassert Path(\n    f\"pandas_datareader_test/yahoo_20080101_{dt.now().strftime('%Y%m%d')}.parquet\"\n).is_file()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -1321,35 +856,6 @@ var element = $('#95ba5316-2405-46d3-8bec-465aaab19e1c');
 
 </div>
 
-<div class="output_area">
-
-
-
-
-<div id="20aac6c7-37ac-4159-832e-b50eda1a3b8f" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#20aac6c7-37ac-4159-832e-b50eda1a3b8f');
-
-            setTimeout(function() {
-                var nbb_cell_id = 21;
-                var nbb_unformatted_code = "dataf = pdr.get_live_data()";
-                var nbb_formatted_code = "dataf = pdr.get_live_data()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -1377,7 +883,7 @@ var element = $('#20aac6c7-37ac-4159-832e-b50eda1a3b8f');
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>(44, 8)
+<pre>(42, 8)
 </pre>
 </div>
 </div>
@@ -1416,17 +922,6 @@ var element = $('#20aac6c7-37ac-4159-832e-b50eda1a3b8f');
   <tbody>
     <tr>
       <th>0</th>
-      <td>2022-04-11</td>
-      <td>169.029999</td>
-      <td>165.500000</td>
-      <td>168.710007</td>
-      <td>165.750000</td>
-      <td>72246700.0</td>
-      <td>165.506821</td>
-      <td>AAPL</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>2022-04-12</td>
       <td>169.869995</td>
       <td>166.639999</td>
@@ -1436,38 +931,20 @@ var element = $('#20aac6c7-37ac-4159-832e-b50eda1a3b8f');
       <td>167.414032</td>
       <td>AAPL</td>
     </tr>
+    <tr>
+      <th>1</th>
+      <td>2022-04-13</td>
+      <td>171.039993</td>
+      <td>166.770004</td>
+      <td>167.389999</td>
+      <td>170.399994</td>
+      <td>70618900.0</td>
+      <td>170.149994</td>
+      <td>AAPL</td>
+    </tr>
   </tbody>
 </table>
 </div></div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="b3efc924-2659-46f5-a5e0-5bd032f9f949" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#b3efc924-2659-46f5-a5e0-5bd032f9f949');
-
-            setTimeout(function() {
-                var nbb_cell_id = 22;
-                var nbb_unformatted_code = "print(dataf.shape)\ndataf.head(2)";
-                var nbb_formatted_code = "print(dataf.shape)\ndataf.head(2)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
 
 </div>
 
@@ -1527,59 +1004,30 @@ var element = $('#b3efc924-2659-46f5-a5e0-5bd032f9f949');
   </thead>
   <tbody>
     <tr>
-      <th>20</th>
+      <th>19</th>
       <td>2022-05-10</td>
       <td>273.750000</td>
       <td>265.070007</td>
       <td>271.690002</td>
-      <td>269.50000</td>
-      <td>39292300.0</td>
-      <td>269.50000</td>
+      <td>269.500000</td>
+      <td>39336400.0</td>
+      <td>269.500000</td>
       <td>MSFT</td>
     </tr>
     <tr>
-      <th>21</th>
+      <th>20</th>
       <td>2022-05-11</td>
       <td>271.359985</td>
-      <td>263.779999</td>
+      <td>259.299988</td>
       <td>265.679993</td>
-      <td>265.23999</td>
-      <td>16032857.0</td>
-      <td>265.23999</td>
+      <td>260.549988</td>
+      <td>48894500.0</td>
+      <td>260.549988</td>
       <td>MSFT</td>
     </tr>
   </tbody>
 </table>
 </div></div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="e578c6ef-7580-4805-95cf-6cbb095195a6" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#e578c6ef-7580-4805-95cf-6cbb095195a6');
-
-            setTimeout(function() {
-                var nbb_cell_id = 23;
-                var nbb_unformatted_code = "dataf.tail(2)";
-                var nbb_formatted_code = "dataf.tail(2)";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
 
 </div>
 
@@ -1613,38 +1061,9 @@ var element = $('#e578c6ef-7580-4805-95cf-6cbb095195a6');
 
 
 <div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
+<img src="data:image/png;base64,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
 "
 >
-</div>
-
-</div>
-
-<div class="output_area">
-
-
-
-
-<div id="d9c762f3-76c6-4a05-9611-6294d57b4384" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#d9c762f3-76c6-4a05-9611-6294d57b4384');
-
-            setTimeout(function() {
-                var nbb_cell_id = 24;
-                var nbb_unformatted_code = "dataf[dataf['ticker']==\"AAPL\"].set_index(\"date\")['Adj Close'].plot()\ndataf[dataf['ticker']==\"MSFT\"].set_index(\"date\")['Adj Close'].plot()\nplt.legend(['AAPL', 'MSFT']);";
-                var nbb_formatted_code = "dataf[dataf[\"ticker\"] == \"AAPL\"].set_index(\"date\")[\"Adj Close\"].plot()\ndataf[dataf[\"ticker\"] == \"MSFT\"].set_index(\"date\")[\"Adj Close\"].plot()\nplt.legend([\"AAPL\", \"MSFT\"])";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
 </div>
 
 </div>
@@ -1683,35 +1102,6 @@ Path:
 
 </div>
 
-<div class="output_area">
-
-
-
-
-<div id="8764abc5-8402-4807-8d8a-5cefa03c0f1b" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#8764abc5-8402-4807-8d8a-5cefa03c0f1b');
-
-            setTimeout(function() {
-                var nbb_cell_id = 25;
-                var nbb_unformatted_code = "pdr.remove_base_directory()";
-                var nbb_formatted_code = "pdr.remove_base_directory()";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -1721,6 +1111,14 @@ var element = $('#8764abc5-8402-4807-8d8a-5cefa03c0f1b');
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="5.-FinnhubDownloader">5. FinnhubDownloader<a class="anchor-link" href="#5.-FinnhubDownloader"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://finnhub.io">Finnhub</a> is a professional RESTFul stock API. Note that this a paid service. You will need to pass a Finnhub key (string) to use this downloader.</p>
+<p>WARNING: Note that Finnhub has its own ticker format. You will need to make your own mapping from this format to for example Bloomberg tickers. See <a href="https://finnhub.io/docs/api/stock-symbols">documentation for ticker symbol conventions</a>.</p>
+
 </div>
 </div>
 </div>
@@ -1735,12 +1133,13 @@ var element = $('#8764abc5-8402-4807-8d8a-5cefa03c0f1b');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FinnhubDownloader" class="doc_header"><code>class</code> <code>FinnhubDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L493" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FinnhubDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>frequency</code></strong>:<code>str</code>=<em><code>'D'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="FinnhubDownloader" class="doc_header"><code>class</code> <code>FinnhubDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L500" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FinnhubDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>, <strong><code>key</code></strong>:<code>str</code>, <strong><code>tickers</code></strong>:<code>list</code>, <strong><code>frequency</code></strong>:<code>str</code>=<em><code>'D'</code></em>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>Download financial data from Finnhub.</p>
 <p>:param directory_path: Base folder to download files to.</p>
 <p>:param key: Valid Finnhub client key.</p>
-<p>:param frequency: Choose from [1, 5, 15, 30, 60, D, W, M].</p>
+<p>:param tickers: List of valid Finnhub tickers.
+:param frequency: Choose from [1, 5, 15, 30, 60, D, W, M].</p>
 <p>Daily data by default.</p>
 
 </div>
@@ -1757,34 +1156,259 @@ var element = $('#8764abc5-8402-4807-8d8a-5cefa03c0f1b');
     
 <div class="cell border-box-sizing code_cell rendered">
 
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;YOUR_FINNHUB_KEY_HERE&quot;</span>
+<span class="n">fhd</span> <span class="o">=</span> <span class="n">FinnhubDownloader</span><span class="p">(</span><span class="n">directory_path</span><span class="o">=</span><span class="s2">&quot;finnhub_test&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">tickers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;COIN&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 <div class="output_wrapper">
 <div class="output">
 
 <div class="output_area">
 
 
+<div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">No existing directory found at <span style="color: #008000; text-decoration-color: #008000">'</span><span style="color: #000080; text-decoration-color: #000080">finnhub_test</span><span style="color: #008000; text-decoration-color: #008000">'</span>. Creating directory<span style="color: #808000; text-decoration-color: #808000">...</span>
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fhd</span><span class="o">.</span><span class="n">download_inference_data</span><span class="p">()</span>
+<span class="n">fhd</span><span class="o">.</span><span class="n">download_training_data</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If no starting date is passed in <code>download_training_data</code> this downloader will take the earliest date available. Thats why the starting date in the filename is the 1st Unix timestamp (January 1st 1970).</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;finnhub_test/finnhub_19700101_20220512.parquet&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
 
 
-<div id="9111714b-beda-455f-be19-7edbd77ab82e" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#9111714b-beda-455f-be19-7edbd77ab82e');
+<div class="output_html rendered_html output_subarea output_execute_result"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-            setTimeout(function() {
-                var nbb_cell_id = 26;
-                var nbb_unformatted_code = "# export\nclass FinnhubDownloader(BaseDownloader):\n    \"\"\"\n    Download financial data from Finnhub.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param key: Valid Finnhub client key. \\n\n    :param frequency: Choose from [1, 5, 15, 30, 60, D, W, M]. \\n\n    Daily data by default.\n    \"\"\"\n    def __init__(self,\n                 directory_path: str,\n                 key: str,\n                 tickers: list,\n                 frequency: str = \"D\"):\n        super().__init__(directory_path=directory_path)\n        self.key = key\n        self.tickers = tickers\n        self.client = finnhub.Client(api_key=self.key)\n        self.frequency = frequency\n        self.current_time = dt.now()\n        self.end_timestamp = int(self.current_time.timestamp())\n\n    def download_inference_data(self):\n        \"\"\" Download one year of data for defined tickers. \"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self.generate_full_dataf(start=start)\n        dataf.to_parquet(self.__format_default_save_path(start=start))\n\n    def download_training_data(self):\n        \"\"\" Download full date length available. \"\"\"\n        start = int(pd.to_datetime(0).timestamp())\n        dataf = self.generate_full_dataf(start=start)\n        dataf.to_parquet(self.__format_default_save_path(start=start))\n\n    def generate_full_dataf(self, start: int) -> pd.DataFrame:\n        \"\"\" Collect all price data for list of Finnhub ticker symbols (without US). \"\"\"\n        price_datafs = []\n        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:\n            tasks = [executor.submit(self.generate_stock_dataf, ticker, start) for ticker in self.tickers]\n            for task in tqdm(concurrent.futures.as_completed(tasks),\n                             total=len(self.tickers),\n                             desc=\"Finnhub price data extraction\"):\n                price_datafs.append(task.result())\n        return pd.concat(price_datafs)\n\n    def generate_stock_dataf(self, ticker: str, start: dt) -> pd.DataFrame:\n        \"\"\"\n        Generate Price DataFrame for a single ticker.\n        ticker: Finnhub ticker symbol (without US).\n        start: Datetime object denoting starting time.\n        \"\"\"\n        candles = self.client.stock_candles(ticker,\n                                            self.frequency,\n                                            int(start.timestamp()),\n                                            self.end_timestamp)\n        try:\n            stock_df = pd.DataFrame(candles)\n        except:\n            return pd.DataFrame()\n        stock_df['ticker'] = ticker\n        stock_df['date'] = pd.to_datetime(stock_df['t'], unit='s', origin='unix').map(lambda x: x.strftime('%Y-%m-%d'))\n        stock_df = stock_df.drop(['s', 't'], axis=1)\n        return stock_df\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/finnhub_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
-                var nbb_formatted_code = "# export\nclass FinnhubDownloader(BaseDownloader):\n    \"\"\"\n    Download financial data from Finnhub.\n\n    :param directory_path: Base folder to download files to. \\n\n    :param key: Valid Finnhub client key. \\n\n    :param frequency: Choose from [1, 5, 15, 30, 60, D, W, M]. \\n\n    Daily data by default.\n    \"\"\"\n\n    def __init__(\n        self, directory_path: str, key: str, tickers: list, frequency: str = \"D\"\n    ):\n        super().__init__(directory_path=directory_path)\n        self.key = key\n        self.tickers = tickers\n        self.client = finnhub.Client(api_key=self.key)\n        self.frequency = frequency\n        self.current_time = dt.now()\n        self.end_timestamp = int(self.current_time.timestamp())\n\n    def download_inference_data(self):\n        \"\"\"Download one year of data for defined tickers.\"\"\"\n        start = self.current_time - relativedelta(years=1)\n        dataf = self.generate_full_dataf(start=start)\n        dataf.to_parquet(self.__format_default_save_path(start=start))\n\n    def download_training_data(self):\n        \"\"\"Download full date length available.\"\"\"\n        start = int(pd.to_datetime(0).timestamp())\n        dataf = self.generate_full_dataf(start=start)\n        dataf.to_parquet(self.__format_default_save_path(start=start))\n\n    def generate_full_dataf(self, start: int) -> pd.DataFrame:\n        \"\"\"Collect all price data for list of Finnhub ticker symbols (without US).\"\"\"\n        price_datafs = []\n        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:\n            tasks = [\n                executor.submit(self.generate_stock_dataf, ticker, start)\n                for ticker in self.tickers\n            ]\n            for task in tqdm(\n                concurrent.futures.as_completed(tasks),\n                total=len(self.tickers),\n                desc=\"Finnhub price data extraction\",\n            ):\n                price_datafs.append(task.result())\n        return pd.concat(price_datafs)\n\n    def generate_stock_dataf(self, ticker: str, start: dt) -> pd.DataFrame:\n        \"\"\"\n        Generate Price DataFrame for a single ticker.\n        ticker: Finnhub ticker symbol (without US).\n        start: Datetime object denoting starting time.\n        \"\"\"\n        candles = self.client.stock_candles(\n            ticker, self.frequency, int(start.timestamp()), self.end_timestamp\n        )\n        try:\n            stock_df = pd.DataFrame(candles)\n        except:\n            return pd.DataFrame()\n        stock_df[\"ticker\"] = ticker\n        stock_df[\"date\"] = pd.to_datetime(stock_df[\"t\"], unit=\"s\", origin=\"unix\").map(\n            lambda x: x.strftime(\"%Y-%m-%d\")\n        )\n        stock_df = stock_df.drop([\"s\", \"t\"], axis=1)\n        return stock_df\n\n    def __format_default_save_path(self, start: dt):\n        return f\"{self.dir}/finnhub_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet\"";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>close</th>
+      <th>high</th>
+      <th>low</th>
+      <th>open</th>
+      <th>volume</th>
+      <th>ticker</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>328.28</td>
+      <td>429.54</td>
+      <td>310.0000</td>
+      <td>381.0</td>
+      <td>81065746</td>
+      <td>COIN</td>
+      <td>2021-04-14</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>322.75</td>
+      <td>349.20</td>
+      <td>317.2701</td>
+      <td>348.9</td>
+      <td>39777858</td>
+      <td>COIN</td>
+      <td>2021-04-15</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Live data with an custom starting date can be retrieved as a <a href="/numerbloxnumerframe.html#NumerFrame"><code>NumerFrame</code></a> directly with <code>get_live_data</code>.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">live_dataf</span> <span class="o">=</span> <span class="n">fhd</span><span class="o">.</span><span class="n">get_live_data</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2021</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">live_dataf</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>close</th>
+      <th>high</th>
+      <th>low</th>
+      <th>open</th>
+      <th>volume</th>
+      <th>ticker</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>23.25</td>
+      <td>24.45</td>
+      <td>23.125</td>
+      <td>23.62</td>
+      <td>5400324</td>
+      <td>AA</td>
+      <td>2021-01-04</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>23.67</td>
+      <td>24.12</td>
+      <td>23.220</td>
+      <td>23.30</td>
+      <td>4297930</td>
+      <td>AA</td>
+      <td>2021-01-05</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fhd</span><span class="o">.</span><span class="n">remove_base_directory</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">⚠ <span style="color: #800000; text-decoration-color: #800000">Deleting directory for </span><span style="color: #800000; text-decoration-color: #800000">'FinnhubDownloader</span><span style="color: #008000; text-decoration-color: #008000">'</span> ⚠
+Path: <span style="color: #008000; text-decoration-color: #008000">'/Users/clepelaars/Desktop/crowdcent/repositories/numerai-blocks/nbs/finnhub_test'</span>
+</pre>
 </div>
 
 </div>
@@ -1821,7 +1445,7 @@ var element = $('#9111714b-beda-455f-be19-7edbd77ab82e');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L562" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
+<h2 id="AwesomeCustomDownloader" class="doc_header"><code>class</code> <code>AwesomeCustomDownloader</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/download.py#L576" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomeCustomDownloader</code>(<strong><code>directory_path</code></strong>:<code>str</code>) :: <a href="/numerbloxdownload.html#BaseDownloader"><code>BaseDownloader</code></a></p>
 </blockquote>
 <p>TEMPLATE -
 Download awesome financial data from who knows where.</p>
@@ -1840,41 +1464,6 @@ Download awesome financial data from who knows where.</p>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-
-<div id="3762d0df-97b8-475a-b3a7-94007a54b4dd" class="output_subarea output_javascript ">
-<script type="text/javascript">
-var element = $('#3762d0df-97b8-475a-b3a7-94007a54b4dd');
-
-            setTimeout(function() {
-                var nbb_cell_id = 27;
-                var nbb_unformatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\" (minimal) weekly inference downloading here. \"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\" Training + validation dataset downloading here. \"\"\"\n        ...";
-                var nbb_formatted_code = "# export\nclass AwesomeCustomDownloader(BaseDownloader):\n    \"\"\"\n    TEMPLATE -\n    Download awesome financial data from who knows where.\n\n    :param directory_path: Base folder to download files to.\n    \"\"\"\n\n    def __init__(self, directory_path: str):\n        super().__init__(directory_path=directory_path)\n\n    def download_inference_data(self, *args, **kwargs):\n        \"\"\"(minimal) weekly inference downloading here.\"\"\"\n        ...\n\n    def download_training_data(self, *args, **kwargs):\n        \"\"\"Training + validation dataset downloading here.\"\"\"\n        ...";
-                var nbb_cells = Jupyter.notebook.get_cells();
-                for (var i = 0; i < nbb_cells.length; ++i) {
-                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
-                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
-                             nbb_cells[i].set_text(nbb_formatted_code);
-                        }
-                        break;
-                    }
-                }
-            }, 500);
-            
-</script>
-</div>
-
-</div>
-
-</div>
-</div>
 
 </div>
     {% endraw %}

@@ -165,6 +165,10 @@ class BaseDownloader(BaseIO):
             rich_print(json_data)
         return json_data
 
+    def _default_save_path(self, start: dt, end: dt, backend: str):
+        """ Save to downloader directory indicating backend, start date and end date as parquet file. """
+        return f"{self.dir}/{backend}_{start.strftime('%Y%m%d')}_{end.strftime('%Y%m%d')}.parquet"
+
     def __call__(self, *args, **kwargs):
         """
         The most common use case will be to get weekly inference data. So calling the class itself returns inference data.
@@ -437,7 +441,9 @@ class PandasDataReader(BaseDownloader):
         """ Download a year of data. """
         start = self.current_time - relativedelta(years=1)
         dataf = self._get_all_ticker_data(start=start, *args, **kwargs)
-        save_path = save_path if save_path else self.__format_default_save_path(start)
+        save_path = save_path if save_path else self._default_save_path(start,
+                                                                                end=self.current_time,
+                                                                                backend=self.backend)
         dataf.to_parquet(save_path)
 
     def download_training_data(self, start: dt, save_path: str = None, *args, **kwargs):
@@ -447,13 +453,17 @@ class PandasDataReader(BaseDownloader):
         :param save_path: Path for Parquet file.
         """
         dataf = self._get_all_ticker_data(start=start, *args, **kwargs)
-        save_path = save_path if save_path else self.__format_default_save_path(start)
+        save_path = save_path if save_path else self._default_save_path(start,
+                                                                        end=self.current_time,
+                                                                        backend=self.backend)
         dataf.to_parquet(save_path)
 
     def download_live_data(self, save_path: str = None, *args, **kwargs):
         """ Download a month of data. """
         start = self.current_time - relativedelta(months=1)
-        save_path = save_path if save_path else self.__format_default_save_path(start)
+        save_path = save_path if save_path else self._default_save_path(start,
+                                                                        end=self.current_time,
+                                                                        backend=self.backend)
         dataf = self.get_live_data(*args, **kwargs)
         dataf.to_parquet(save_path)
 
@@ -486,9 +496,6 @@ class PandasDataReader(BaseDownloader):
         dataf = dataf.reset_index(drop=False)
         return dataf
 
-    def __format_default_save_path(self, start: dt):
-        return f"{self.dir}/{self.backend}_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet"
-
 # Cell
 class FinnhubDownloader(BaseDownloader):
     """
@@ -496,6 +503,7 @@ class FinnhubDownloader(BaseDownloader):
 
     :param directory_path: Base folder to download files to. \n
     :param key: Valid Finnhub client key. \n
+    :param tickers: List of valid Finnhub tickers.
     :param frequency: Choose from [1, 5, 15, 30, 60, D, W, M]. \n
     Daily data by default.
     """
@@ -515,16 +523,25 @@ class FinnhubDownloader(BaseDownloader):
     def download_inference_data(self):
         """ Download one year of data for defined tickers. """
         start = self.current_time - relativedelta(years=1)
-        dataf = self.generate_full_dataf(start=start)
-        dataf.to_parquet(self.__format_default_save_path(start=start))
+        dataf = self.get_live_data(start=start)
+        dataf.to_parquet(self._default_save_path(start=start,
+                                                 end=self.current_time,
+                                                 backend="finnhub"))
 
-    def download_training_data(self):
+    def download_training_data(self, start: pd.Timestamp = None):
         """ Download full date length available. """
-        start = int(pd.to_datetime(0).timestamp())
+        start = start if start else pd.to_datetime(0)
         dataf = self.generate_full_dataf(start=start)
-        dataf.to_parquet(self.__format_default_save_path(start=start))
+        dataf.to_parquet(self._default_save_path(start=start,
+                                                 end=self.current_time,
+                                                 backend="finnhub"))
 
-    def generate_full_dataf(self, start: int) -> pd.DataFrame:
+    def get_live_data(self, start: pd.Timestamp) -> NumerFrame:
+        """ Get NumerFrame containing one year of data. """
+        dataf = self.generate_full_dataf(start=start)
+        return NumerFrame(dataf)
+
+    def generate_full_dataf(self, start: dt) -> pd.DataFrame:
         """ Collect all price data for list of Finnhub ticker symbols (without US). """
         price_datafs = []
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -550,13 +567,10 @@ class FinnhubDownloader(BaseDownloader):
         except:
             return pd.DataFrame()
         stock_df['ticker'] = ticker
-        stock_df['date'] = pd.to_datetime(stock_df['t'], unit='s', origin='unix', format='%Y-%m-%d')
+        stock_df['date'] = pd.to_datetime(stock_df['t'], unit='s', origin='unix')
         stock_df = stock_df.drop(['s', 't'], axis=1)
+        stock_df.columns = ['close', 'high', 'low', 'open', 'volume', 'ticker', 'date']
         return stock_df
-
-    def __format_default_save_path(self, start: dt):
-        return f"{self.dir}/finnhub_{start.strftime('%Y%m%d')}_{self.current_time.strftime('%Y%m%d')}.parquet"
-
 
 # Cell
 class AwesomeCustomDownloader(BaseDownloader):
