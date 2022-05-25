@@ -96,14 +96,14 @@ This functionality is implemented in <a href="/numerbloxpostprocessing.html#Base
 
 
 
-<div id="e24792b9-fb7c-45b8-8a7d-c7e7969df13d" class="output_subarea output_javascript ">
+<div id="95fbd37e-f7c6-4ac0-aa01-28150fed1fb7" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e24792b9-fb7c-45b8-8a7d-c7e7969df13d');
+var element = $('#95fbd37e-f7c6-4ac0-aa01-28150fed1fb7');
 
             setTimeout(function() {
                 var nbb_cell_id = 5;
-                var nbb_unformatted_code = "# export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n\n    Postprocessors manipulate or introduce new prediction columns in a NumerFrame.\n    \"\"\"\n\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\n            \"prediction\"\n        ), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        ...";
-                var nbb_formatted_code = "# export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n\n    Postprocessors manipulate or introduce new prediction columns in a NumerFrame.\n    \"\"\"\n\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        assert final_col_name.startswith(\n            \"prediction\"\n        ), f\"final_col name should start with 'prediction'. Got {final_col_name}\"\n\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        ...";
+                var nbb_unformatted_code = "# export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n\n    Postprocessors manipulate or introduce new prediction columns in a NumerFrame.\n    \"\"\"\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        if not final_col_name.startswith(\"prediction\"):\n            rich_print(f\":warning: WARNING: final_col_name should start with 'prediction'. Column output will be: '{final_col_name}'. :warning:\")\n\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        ...";
+                var nbb_formatted_code = "# export\nclass BasePostProcessor(BaseProcessor):\n    \"\"\"\n    Base class for postprocessing objects.\n\n    Postprocessors manipulate or introduce new prediction columns in a NumerFrame.\n    \"\"\"\n\n    def __init__(self, final_col_name: str):\n        super().__init__()\n        self.final_col_name = final_col_name\n        if not final_col_name.startswith(\"prediction\"):\n            rich_print(\n                f\":warning: WARNING: final_col_name should start with 'prediction'. Column output will be: '{final_col_name}'. :warning:\"\n            )\n\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        ...";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -171,7 +171,7 @@ This section implements commonly used postprocessing for Numerai.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Standardizer" class="doc_header"><code>class</code> <code>Standardizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L41" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Standardizer</code>(<strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="Standardizer" class="doc_header"><code>class</code> <code>Standardizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L39" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Standardizer</code>(<strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Uniform standardization of prediction columns.
 All values should only contain values in the range [0...1].</p>
@@ -199,14 +199,14 @@ All values should only contain values in the range [0...1].</p>
 
 
 
-<div id="d01a89b5-999f-45d8-a183-4584d393d1b0" class="output_subarea output_javascript ">
+<div id="31814081-49ed-42c0-abb9-f248dfe7efb8" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#d01a89b5-999f-45d8-a183-4584d393d1b0');
+var element = $('#31814081-49ed-42c0-abb9-f248dfe7efb8');
 
             setTimeout(function() {
                 var nbb_cell_id = 6;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass Standardizer(BasePostProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n\n    | :param cols: All prediction columns that should be standardized. Use all prediction columns by default.\n    \"\"\"\n\n    def __init__(self, cols: list = None):\n        super().__init__(final_col_name=\"prediction\")\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass Standardizer(BasePostProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n\n    | :param cols: All prediction columns that should be standardized. Use all prediction columns by default.\n    \"\"\"\n\n    def __init__(self, cols: list = None):\n        super().__init__(final_col_name=\"prediction\")\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass Standardizer(BasePostProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n\n    :param cols: All prediction columns that should be standardized. Use all prediction columns by default.\n    \"\"\"\n\n    def __init__(self, cols: list = None):\n        super().__init__(final_col_name=\"prediction\")\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass Standardizer(BasePostProcessor):\n    \"\"\"\n    Uniform standardization of prediction columns.\n    All values should only contain values in the range [0...1].\n\n    :param cols: All prediction columns that should be standardized. Use all prediction columns by default.\n    \"\"\"\n\n    def __init__(self, cols: list = None):\n        super().__init__(final_col_name=\"prediction\")\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = dataf.prediction_cols if not self.cols else self.cols\n        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -255,9 +255,9 @@ var element = $('#d01a89b5-999f-45d8-a183-4584d393d1b0');
 
 
 
-<div id="3e8be9d6-7afb-47bb-907c-10e93ccb5369" class="output_subarea output_javascript ">
+<div id="b0127863-2872-42a2-acff-42e42372af4a" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3e8be9d6-7afb-47bb-907c-10e93ccb5369');
+var element = $('#b0127863-2872-42a2-acff-42e42372af4a');
 
             setTimeout(function() {
                 var nbb_cell_id = 7;
@@ -306,7 +306,7 @@ var element = $('#3e8be9d6-7afb-47bb-907c-10e93ccb5369');
 <div class="output_area">
 
 
-<div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">006124</span>. ✅
+<div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">Standardizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">7</span><span style="font-weight: bold">)</span>. Time taken for step: <span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">012889</span>. ✅
 </pre>
 </div>
 
@@ -343,19 +343,19 @@ var element = $('#3e8be9d6-7afb-47bb-907c-10e93ccb5369');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.24</td>
-      <td>0.72</td>
-      <td>0.96</td>
+      <td>0.32</td>
+      <td>0.20</td>
       <td>0.08</td>
-      <td>0.52</td>
+      <td>0.68</td>
+      <td>0.40</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>0.16</td>
+      <td>0.88</td>
       <td>0.20</td>
-      <td>0.60</td>
-      <td>0.24</td>
-      <td>0.68</td>
-      <td>0.84</td>
+      <td>0.08</td>
+      <td>0.88</td>
     </tr>
   </tbody>
 </table>
@@ -368,9 +368,9 @@ var element = $('#3e8be9d6-7afb-47bb-907c-10e93ccb5369');
 
 
 
-<div id="b61a3974-383c-4ab5-853a-cbfcc80b0050" class="output_subarea output_javascript ">
+<div id="015639c9-eb95-42a2-b1d2-b4fe416d6ea6" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b61a3974-383c-4ab5-853a-cbfcc80b0050');
+var element = $('#015639c9-eb95-42a2-b1d2-b4fe416d6ea6');
 
             setTimeout(function() {
                 var nbb_cell_id = 8;
@@ -428,7 +428,7 @@ var element = $('#b61a3974-383c-4ab5-853a-cbfcc80b0050');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="MeanEnsembler" class="doc_header"><code>class</code> <code>MeanEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L61" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>MeanEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>standardize</code></strong>:<code>bool</code>=<em><code>False</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="MeanEnsembler" class="doc_header"><code>class</code> <code>MeanEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L59" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>MeanEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>standardize</code></strong>:<code>bool</code>=<em><code>False</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Take simple mean of multiple cols and store in new col.</p>
 <p>:param final_col_name: Name of new averaged column.
@@ -458,14 +458,14 @@ final_col_name should start with "prediction".</p>
 
 
 
-<div id="9acaceed-6d83-4833-9f3b-c0ef357630ea" class="output_subarea output_javascript ">
+<div id="d6d09801-032a-432f-8a8a-a48b1ca76d4b" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9acaceed-6d83-4833-9f3b-c0ef357630ea');
+var element = $('#d6d09801-032a-432f-8a8a-a48b1ca76d4b');
 
             setTimeout(function() {
                 var nbb_cell_id = 9;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Take simple mean of multiple cols and store in new col.\n\n    | :param final_col_name: Name of new averaged column.\n    final_col_name should start with \"prediction\". \\n\n    | :param cols: Column names to average. \\n\n    | :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.\n    \"\"\"\n\n    def __init__(\n        self, final_col_name: str, cols: list = None, standardize: bool = False\n    ):\n        self.cols = cols\n        self.standardize = standardize\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        if self.standardize:\n            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        else:\n            to_average = dataf[cols]\n        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Take simple mean of multiple cols and store in new col.\n\n    | :param final_col_name: Name of new averaged column.\n    final_col_name should start with \"prediction\". \\n\n    | :param cols: Column names to average. \\n\n    | :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.\n    \"\"\"\n\n    def __init__(\n        self, final_col_name: str, cols: list = None, standardize: bool = False\n    ):\n        self.cols = cols\n        self.standardize = standardize\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        if self.standardize:\n            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        else:\n            to_average = dataf[cols]\n        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Take simple mean of multiple cols and store in new col.\n\n    :param final_col_name: Name of new averaged column.\n    final_col_name should start with \"prediction\". \\n\n    :param cols: Column names to average. \\n\n    :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.\n    \"\"\"\n\n    def __init__(\n        self, final_col_name: str, cols: list = None, standardize: bool = False\n    ):\n        self.cols = cols\n        self.standardize = standardize\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        if self.standardize:\n            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        else:\n            to_average = dataf[cols]\n        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass MeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Take simple mean of multiple cols and store in new col.\n\n    :param final_col_name: Name of new averaged column.\n    final_col_name should start with \"prediction\". \\n\n    :param cols: Column names to average. \\n\n    :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.\n    \"\"\"\n\n    def __init__(\n        self, final_col_name: str, cols: list = None, standardize: bool = False\n    ):\n        self.cols = cols\n        self.standardize = standardize\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        if self.standardize:\n            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)\n        else:\n            to_average = dataf[cols]\n        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -514,7 +514,7 @@ Based on a <a href="https://doi.org/10.1016/j.neucom.2012.02.053">paper by Donat
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="DonateWeightedEnsembler" class="doc_header"><code>class</code> <code>DonateWeightedEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L93" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DonateWeightedEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="DonateWeightedEnsembler" class="doc_header"><code>class</code> <code>DonateWeightedEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L91" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DonateWeightedEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Weighted average as per Donate et al.'s formula
 Paper Link: <a href="https://doi.org/10.1016/j.neucom.2012.02.053">https://doi.org/10.1016/j.neucom.2012.02.053</a>
@@ -546,14 +546,14 @@ Uses all prediction columns by default.</p>
 
 
 
-<div id="472edb22-7579-44d4-bf6e-b5dffb5849f7" class="output_subarea output_javascript ">
+<div id="a38eaf97-f904-4b98-889a-1bb7f331ea7c" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#472edb22-7579-44d4-bf6e-b5dffb5849f7');
+var element = $('#a38eaf97-f904-4b98-889a-1bb7f331ea7c');
 
             setTimeout(function() {
                 var nbb_cell_id = 10;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    Paper Link: https://doi.org/10.1016/j.neucom.2012.02.053\n    Code source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n\n    Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]\n\n    | :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    | :param final_col_name: New column name for ensembled values.\n    \"\"\"\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        dataf.loc[:, self.final_col_name] = np.average(\n            dataf.loc[:, cols], weights=self.weights, axis=1\n        )\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        \"\"\"Exponential weights.\"\"\"\n        weights = []\n        for j in range(1, self.n_cols + 1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2 ** (self.n_cols + 1 - j)))\n        return weights";
-                var nbb_formatted_code = "# export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    Paper Link: https://doi.org/10.1016/j.neucom.2012.02.053\n    Code source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n\n    Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]\n\n    | :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    | :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        dataf.loc[:, self.final_col_name] = np.average(\n            dataf.loc[:, cols], weights=self.weights, axis=1\n        )\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        \"\"\"Exponential weights.\"\"\"\n        weights = []\n        for j in range(1, self.n_cols + 1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2 ** (self.n_cols + 1 - j)))\n        return weights";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    Paper Link: https://doi.org/10.1016/j.neucom.2012.02.053\n    Code source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n\n    Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]\n\n    :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    :param final_col_name: New column name for ensembled values.\n    \"\"\"\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        dataf.loc[:, self.final_col_name] = np.average(\n            dataf.loc[:, cols], weights=self.weights, axis=1\n        )\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        \"\"\"Exponential weights.\"\"\"\n        weights = []\n        for j in range(1, self.n_cols + 1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2 ** (self.n_cols + 1 - j)))\n        return weights";
+                var nbb_formatted_code = "# export\n@typechecked\nclass DonateWeightedEnsembler(BasePostProcessor):\n    \"\"\"\n    Weighted average as per Donate et al.'s formula\n    Paper Link: https://doi.org/10.1016/j.neucom.2012.02.053\n    Code source: https://www.kaggle.com/gogo827jz/jane-street-supervised-autoencoder-mlp\n\n    Weightings for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]\n\n    :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n        self.n_cols = len(cols)\n        self.weights = self._get_weights()\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        dataf.loc[:, self.final_col_name] = np.average(\n            dataf.loc[:, cols], weights=self.weights, axis=1\n        )\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)\n\n    def _get_weights(self) -> list:\n        \"\"\"Exponential weights.\"\"\"\n        weights = []\n        for j in range(1, self.n_cols + 1):\n            j = 2 if j == 1 else j\n            weights.append(1 / (2 ** (self.n_cols + 1 - j)))\n        return weights";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -622,7 +622,7 @@ var element = $('#472edb22-7579-44d4-bf6e-b5dffb5849f7');
 
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">DonateWeightedEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">8</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">003412</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">005038</span>. ✅
 </pre>
 </div>
 
@@ -660,21 +660,21 @@ var element = $('#472edb22-7579-44d4-bf6e-b5dffb5849f7');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.416535</td>
-      <td>0.138095</td>
-      <td>0.999946</td>
-      <td>0.526442</td>
-      <td>0.526614</td>
-      <td>0.554575</td>
+      <td>0.111924</td>
+      <td>0.935528</td>
+      <td>0.853572</td>
+      <td>0.351036</td>
+      <td>0.158973</td>
+      <td>0.339408</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.904615</td>
-      <td>0.882722</td>
-      <td>0.686041</td>
-      <td>0.017293</td>
-      <td>0.827808</td>
-      <td>0.615691</td>
+      <td>0.846985</td>
+      <td>0.748842</td>
+      <td>0.839880</td>
+      <td>0.781556</td>
+      <td>0.354063</td>
+      <td>0.577145</td>
     </tr>
   </tbody>
 </table>
@@ -687,9 +687,9 @@ var element = $('#472edb22-7579-44d4-bf6e-b5dffb5849f7');
 
 
 
-<div id="e43bddef-d09f-4b54-9947-55d3c79ce80d" class="output_subarea output_javascript ">
+<div id="dcb7ebaf-2d29-4f8c-b32e-e1a349e8180c" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#e43bddef-d09f-4b54-9947-55d3c79ce80d');
+var element = $('#dcb7ebaf-2d29-4f8c-b32e-e1a349e8180c');
 
             setTimeout(function() {
                 var nbb_cell_id = 12;
@@ -746,7 +746,7 @@ var element = $('#e43bddef-d09f-4b54-9947-55d3c79ce80d');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="GeometricMeanEnsembler" class="doc_header"><code>class</code> <code>GeometricMeanEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L132" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GeometricMeanEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="GeometricMeanEnsembler" class="doc_header"><code>class</code> <code>GeometricMeanEnsembler</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L130" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>GeometricMeanEnsembler</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong><code>cols</code></strong>:<code>list</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Calculate the weighted Geometric mean.</p>
 <p>:param cols: Prediction columns to ensemble.
@@ -775,14 +775,14 @@ Uses all prediction columns by default.</p>
 
 
 
-<div id="b1de8307-7952-486d-b24d-8e885a98880c" class="output_subarea output_javascript ">
+<div id="4aa33fef-f9ef-4097-a89d-610d7b71f949" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b1de8307-7952-486d-b24d-8e885a98880c');
+var element = $('#4aa33fef-f9ef-4097-a89d-610d7b71f949');
 
             setTimeout(function() {
                 var nbb_cell_id = 13;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean.\n\n    | :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    | :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        new_col = dataf.loc[:, cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean.\n\n    | :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    | :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        new_col = dataf.loc[:, cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean.\n\n    :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        new_col = dataf.loc[:, cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass GeometricMeanEnsembler(BasePostProcessor):\n    \"\"\"\n    Calculate the weighted Geometric mean.\n\n    :param cols: Prediction columns to ensemble.\n    Uses all prediction columns by default. \\n\n    :param final_col_name: New column name for ensembled values.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, cols: list = None):\n        super().__init__(final_col_name=final_col_name)\n        self.cols = cols\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        cols = self.cols if self.cols else dataf.prediction_cols\n        new_col = dataf.loc[:, cols].apply(gmean, axis=1)\n        dataf.loc[:, self.final_col_name] = new_col\n        rich_print(\n            f\":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:\"\n        )\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -838,7 +838,7 @@ var element = $('#b1de8307-7952-486d-b24d-8e885a98880c');
 
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">GeometricMeanEnsembler</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">100</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">9</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">009891</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">014248</span>. ✅
 </pre>
 </div>
 
@@ -877,23 +877,23 @@ var element = $('#b1de8307-7952-486d-b24d-8e885a98880c');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.416535</td>
-      <td>0.138095</td>
-      <td>0.999946</td>
-      <td>0.526442</td>
-      <td>0.526614</td>
-      <td>0.554575</td>
-      <td>0.437048</td>
+      <td>0.111924</td>
+      <td>0.935528</td>
+      <td>0.853572</td>
+      <td>0.351036</td>
+      <td>0.158973</td>
+      <td>0.339408</td>
+      <td>0.346401</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.904615</td>
-      <td>0.882722</td>
-      <td>0.686041</td>
-      <td>0.017293</td>
-      <td>0.827808</td>
-      <td>0.615691</td>
-      <td>0.379219</td>
+      <td>0.846985</td>
+      <td>0.748842</td>
+      <td>0.839880</td>
+      <td>0.781556</td>
+      <td>0.354063</td>
+      <td>0.577145</td>
+      <td>0.681875</td>
     </tr>
   </tbody>
 </table>
@@ -906,9 +906,9 @@ var element = $('#b1de8307-7952-486d-b24d-8e885a98880c');
 
 
 
-<div id="5a949074-6d13-4e7d-9916-8b56699cbf6e" class="output_subarea output_javascript ">
+<div id="8149353f-5ef8-41d2-a4f1-784473247d6b" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#5a949074-6d13-4e7d-9916-8b56699cbf6e');
+var element = $('#8149353f-5ef8-41d2-a4f1-784473247d6b');
 
             setTimeout(function() {
                 var nbb_cell_id = 14;
@@ -969,7 +969,7 @@ var element = $('#5a949074-6d13-4e7d-9916-8b56699cbf6e');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L157" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>proportion</code></strong>:<code>float</code>=<em><code>0.5</code></em>, <strong><code>suffix</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>cuda</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="FeatureNeutralizer" class="doc_header"><code>class</code> <code>FeatureNeutralizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L155" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeatureNeutralizer</code>(<strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>proportion</code></strong>:<code>float</code>=<em><code>0.5</code></em>, <strong><code>suffix</code></strong>:<code>str</code>=<em><code>None</code></em>, <strong><code>cuda</code></strong>=<em><code>False</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Classic feature neutralization by subtracting linear model.</p>
 <p>:param feature_names: List of column names to neutralize against. Uses all feature columns by default.</p>
@@ -1002,13 +1002,13 @@ var element = $('#5a949074-6d13-4e7d-9916-8b56699cbf6e');
 
 
 
-<div id="800527ee-4f3b-4f65-b756-e88da807babc" class="output_subarea output_javascript ">
+<div id="aaa46ba5-e319-460b-a57e-fd13343e6395" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#800527ee-4f3b-4f65-b756-e88da807babc');
+var element = $('#aaa46ba5-e319-460b-a57e-fd13343e6395');
 
             setTimeout(function() {
                 var nbb_cell_id = 15;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass FeatureNeutralizer(BasePostProcessor):\n    \"\"\"\n    Classic feature neutralization by subtracting linear model.\n\n    :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \\n\n    :param pred_name: Prediction column to neutralize. \\n\n    :param proportion: Number in range [0...1] indicating how much to neutralize. \\n\n    :param suffix: Optional suffix that is added to new column name. \\n\n    :param cuda: Do neutralization on the GPU \\n\n    Make sure you have CuPy installed when setting cuda to True. \\n\n    Installation docs: docs.cupy.dev/en/stable/install.html\n    \"\"\"\n    def __init__(\n        self,\n        feature_names: list = None,\n        pred_name: str = \"prediction\",\n        proportion: float = 0.5,\n        suffix: str = None,\n        cuda = False\n    ):\n        self.pred_name = pred_name\n        self.proportion = proportion\n        assert (\n            0.0 <= proportion <= 1.0\n        ), f\"'proportion' should be a float in range [0...1]. Got '{proportion}'.\"\n        self.new_col_name = (\n            f\"{self.pred_name}_neutralized_{self.proportion}_{suffix}\"\n            if suffix\n            else f\"{self.pred_name}_neutralized_{self.proportion}\"\n        )\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.feature_names = feature_names\n        self.cuda = cuda\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        feature_names = self.feature_names if self.feature_names else dataf.feature_cols\n        neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(\n            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)\n        )\n        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(\n            neutralized_preds\n        )\n        rich_print(\n            f\":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:\"\n        )\n        rich_print(\n            f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].\"\n        )\n        return NumerFrame(dataf)\n\n    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        \"\"\" Neutralize on CPU. \"\"\"\n        scores = dataf[columns]\n        exposures = dataf[by].values\n        scores = scores - self.proportion * exposures.dot(\n            np.linalg.pinv(exposures).dot(scores)\n        )\n        return scores / scores.std()\n\n    def neutralize_cuda(self, dataf: pd.DataFrame, columns: list, by: list) -> np.ndarray:\n        \"\"\" Neutralize on GPU. \"\"\"\n        try:\n            import cupy\n        except ImportError:\n            raise ImportError(\"CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html\")\n        scores = cupy.array(dataf[columns].values)\n        exposures = cupy.array(dataf[by].values)\n        scores = scores - self.proportion * exposures.dot(\n            cupy.linalg.pinv(exposures).dot(scores)\n        )\n        return cupy.asnumpy(scores / scores.std())\n\n    @staticmethod\n    def normalize(dataf: pd.DataFrame) -> np.ndarray:\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(\n        self, dataf: pd.DataFrame, columns: list, by: list\n    ) -> pd.DataFrame:\n        dataf[columns] = self.normalize(dataf[columns])\n        neutralization_func = self.neutralize if not self.cuda else self.neutralize_cuda\n        dataf[columns] = neutralization_func(dataf, columns, by)\n        return dataf[columns]";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass FeatureNeutralizer(BasePostProcessor):\n    \"\"\"\n    Classic feature neutralization by subtracting linear model.\n\n    :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \\n\n    :param pred_name: Prediction column to neutralize. \\n\n    :param proportion: Number in range [0...1] indicating how much to neutralize. \\n\n    :param suffix: Optional suffix that is added to new column name. \\n\n    :param cuda: Do neutralization on the GPU \\n\n    Make sure you have CuPy installed when setting cuda to True. \\n\n    Installation docs: docs.cupy.dev/en/stable/install.html\n    \"\"\"\n    def __init__(\n        self,\n        feature_names: list = None,\n        pred_name: str = \"prediction\",\n        proportion: float = 0.5,\n        suffix: str = None,\n        cuda = False,\n    ):\n        self.pred_name = pred_name\n        self.proportion = proportion\n        assert (\n            0.0 <= proportion <= 1.0\n        ), f\"'proportion' should be a float in range [0...1]. Got '{proportion}'.\"\n        self.new_col_name = (\n            f\"{self.pred_name}_neutralized_{self.proportion}_{suffix}\"\n            if suffix\n            else f\"{self.pred_name}_neutralized_{self.proportion}\"\n        )\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.feature_names = feature_names\n        self.cuda = cuda\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        feature_names = self.feature_names if self.feature_names else dataf.feature_cols\n        neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(\n            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)\n        )\n        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(\n            neutralized_preds\n        )\n        rich_print(\n            f\":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:\"\n        )\n        rich_print(\n            f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].\"\n        )\n        return NumerFrame(dataf)\n\n    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        \"\"\" Neutralize on CPU. \"\"\"\n        scores = dataf[columns]\n        exposures = dataf[by].values\n        scores = scores - self.proportion * exposures.dot(\n            np.linalg.pinv(exposures).dot(scores)\n        )\n        return scores / scores.std()\n\n    def neutralize_cuda(self, dataf: pd.DataFrame, columns: list, by: list) -> np.ndarray:\n        \"\"\" Neutralize on GPU. \"\"\"\n        try:\n            import cupy\n        except ImportError:\n            raise ImportError(\"CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html\")\n        scores = cupy.array(dataf[columns].values)\n        exposures = cupy.array(dataf[by].values)\n        scores = scores - self.proportion * exposures.dot(\n            cupy.linalg.pinv(exposures).dot(scores)\n        )\n        return cupy.asnumpy(scores / scores.std())\n\n    @staticmethod\n    def normalize(dataf: pd.DataFrame) -> np.ndarray:\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(\n        self, dataf: pd.DataFrame, columns: list, by: list\n    ) -> pd.DataFrame:\n        dataf[columns] = self.normalize(dataf[columns])\n        neutralization_func = self.neutralize if not self.cuda else self.neutralize_cuda\n        dataf[columns] = neutralization_func(dataf, columns, by)\n        return dataf[columns]";
                 var nbb_formatted_code = "# export\n@typechecked\nclass FeatureNeutralizer(BasePostProcessor):\n    \"\"\"\n    Classic feature neutralization by subtracting linear model.\n\n    :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \\n\n    :param pred_name: Prediction column to neutralize. \\n\n    :param proportion: Number in range [0...1] indicating how much to neutralize. \\n\n    :param suffix: Optional suffix that is added to new column name. \\n\n    :param cuda: Do neutralization on the GPU \\n\n    Make sure you have CuPy installed when setting cuda to True. \\n\n    Installation docs: docs.cupy.dev/en/stable/install.html\n    \"\"\"\n\n    def __init__(\n        self,\n        feature_names: list = None,\n        pred_name: str = \"prediction\",\n        proportion: float = 0.5,\n        suffix: str = None,\n        cuda=False,\n    ):\n        self.pred_name = pred_name\n        self.proportion = proportion\n        assert (\n            0.0 <= proportion <= 1.0\n        ), f\"'proportion' should be a float in range [0...1]. Got '{proportion}'.\"\n        self.new_col_name = (\n            f\"{self.pred_name}_neutralized_{self.proportion}_{suffix}\"\n            if suffix\n            else f\"{self.pred_name}_neutralized_{self.proportion}\"\n        )\n        super().__init__(final_col_name=self.new_col_name)\n\n        self.feature_names = feature_names\n        self.cuda = cuda\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame) -> NumerFrame:\n        feature_names = self.feature_names if self.feature_names else dataf.feature_cols\n        neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(\n            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)\n        )\n        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(\n            neutralized_preds\n        )\n        rich_print(\n            f\":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:\"\n        )\n        rich_print(\n            f\"New neutralized column = [bold green]'{self.new_col_name}'[/bold green].\"\n        )\n        return NumerFrame(dataf)\n\n    def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:\n        \"\"\"Neutralize on CPU.\"\"\"\n        scores = dataf[columns]\n        exposures = dataf[by].values\n        scores = scores - self.proportion * exposures.dot(\n            np.linalg.pinv(exposures).dot(scores)\n        )\n        return scores / scores.std()\n\n    def neutralize_cuda(\n        self, dataf: pd.DataFrame, columns: list, by: list\n    ) -> np.ndarray:\n        \"\"\"Neutralize on GPU.\"\"\"\n        try:\n            import cupy\n        except ImportError:\n            raise ImportError(\n                \"CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html\"\n            )\n        scores = cupy.array(dataf[columns].values)\n        exposures = cupy.array(dataf[by].values)\n        scores = scores - self.proportion * exposures.dot(\n            cupy.linalg.pinv(exposures).dot(scores)\n        )\n        return cupy.asnumpy(scores / scores.std())\n\n    @staticmethod\n    def normalize(dataf: pd.DataFrame) -> np.ndarray:\n        normalized_ranks = (dataf.rank(method=\"first\") - 0.5) / len(dataf)\n        return sp.norm.ppf(normalized_ranks)\n\n    def normalize_and_neutralize(\n        self, dataf: pd.DataFrame, columns: list, by: list\n    ) -> pd.DataFrame:\n        dataf[columns] = self.normalize(dataf[columns])\n        neutralization_func = self.neutralize if not self.cuda else self.neutralize_cuda\n        dataf[columns] = neutralization_func(dataf, columns, by)\n        return dataf[columns]";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
@@ -1055,9 +1055,9 @@ var element = $('#800527ee-4f3b-4f65-b756-e88da807babc');
 
 
 
-<div id="4732b862-ddc1-4d7f-a90a-888cd9ffba8f" class="output_subarea output_javascript ">
+<div id="337b0e55-b545-4737-8ecc-993c435f51e9" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#4732b862-ddc1-4d7f-a90a-888cd9ffba8f');
+var element = $('#337b0e55-b545-4737-8ecc-993c435f51e9');
 
             setTimeout(function() {
                 var nbb_cell_id = 16;
@@ -1127,7 +1127,7 @@ var element = $('#4732b862-ddc1-4d7f-a90a-888cd9ffba8f');
 
 
 <div class="output_html rendered_html output_subarea "><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">✅ Finished step <span style="font-weight: bold">FeatureNeutralizer</span>. Output <span style="color: #808000; text-decoration-color: #808000">shape</span>=<span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">316</span><span style="font-weight: bold">)</span>. Time taken for step: 
-<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">027703</span>. ✅
+<span style="color: #000080; text-decoration-color: #000080; font-weight: bold">0:00:00</span><span style="color: #000080; text-decoration-color: #000080">.</span><span style="color: #000080; text-decoration-color: #000080; font-weight: bold">048929</span>. ✅
 </pre>
 </div>
 
@@ -1138,9 +1138,9 @@ var element = $('#4732b862-ddc1-4d7f-a90a-888cd9ffba8f');
 
 
 
-<div id="2b127400-2f36-4dc8-8081-d778d82d9768" class="output_subarea output_javascript ">
+<div id="1d259534-f883-4bd7-a155-2209ce3a6669" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#2b127400-2f36-4dc8-8081-d778d82d9768');
+var element = $('#1d259534-f883-4bd7-a155-2209ce3a6669');
 
             setTimeout(function() {
                 var nbb_cell_id = 17;
@@ -1192,9 +1192,9 @@ var element = $('#2b127400-2f36-4dc8-8081-d778d82d9768');
 
 
 
-<div id="a2448aa9-9655-4a92-b0a4-2d27a079f8f9" class="output_subarea output_javascript ">
+<div id="905521aa-dfbe-48c9-b2d9-f028ba722916" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#a2448aa9-9655-4a92-b0a4-2d27a079f8f9');
+var element = $('#905521aa-dfbe-48c9-b2d9-f028ba722916');
 
             setTimeout(function() {
                 var nbb_cell_id = 18;
@@ -1261,9 +1261,9 @@ var element = $('#a2448aa9-9655-4a92-b0a4-2d27a079f8f9');
 
 
 
-<div id="9f7c549f-cf79-4519-8deb-c9b625415a63" class="output_subarea output_javascript ">
+<div id="8b720641-8536-47eb-881e-c3b7f67907ba" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9f7c549f-cf79-4519-8deb-c9b625415a63');
+var element = $('#8b720641-8536-47eb-881e-c3b7f67907ba');
 
             setTimeout(function() {
                 var nbb_cell_id = 19;
@@ -1336,17 +1336,17 @@ var element = $('#9f7c549f-cf79-4519-8deb-c9b625415a63');
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.909157</td>
-      <td>0.815053</td>
+      <td>0.516076</td>
+      <td>0.461802</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.263007</td>
+      <td>0.356837</td>
       <td>0.294970</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.203468</td>
+      <td>0.283496</td>
       <td>0.184947</td>
     </tr>
   </tbody>
@@ -1360,9 +1360,9 @@ var element = $('#9f7c549f-cf79-4519-8deb-c9b625415a63');
 
 
 
-<div id="de7e7c8b-530c-43d4-b5bc-279ed59663cc" class="output_subarea output_javascript ">
+<div id="e8a18b68-e266-4cde-a865-25365ad12462" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#de7e7c8b-530c-43d4-b5bc-279ed59663cc');
+var element = $('#e8a18b68-e266-4cde-a865-25365ad12462');
 
             setTimeout(function() {
                 var nbb_cell_id = 20;
@@ -1407,7 +1407,7 @@ var element = $('#de7e7c8b-530c-43d4-b5bc-279ed59663cc');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="FeaturePenalizer" class="doc_header"><code>class</code> <code>FeaturePenalizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L246" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeaturePenalizer</code>(<strong><code>max_exposure</code></strong>:<code>float</code>, <strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>suffix</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="FeaturePenalizer" class="doc_header"><code>class</code> <code>FeaturePenalizer</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L243" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FeaturePenalizer</code>(<strong><code>max_exposure</code></strong>:<code>float</code>, <strong><code>feature_names</code></strong>:<code>list</code>=<em><code>None</code></em>, <strong><code>pred_name</code></strong>:<code>str</code>=<em><code>'prediction'</code></em>, <strong><code>suffix</code></strong>:<code>str</code>=<em><code>None</code></em>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>Feature penalization with TensorFlow.</p>
 <p>Source (by jrb): <a href="https://github.com/jonrtaylor/twitch/blob/master/FE_Clipping_Script.ipynb">https://github.com/jonrtaylor/twitch/blob/master/FE_Clipping_Script.ipynb</a></p>
@@ -1438,9 +1438,9 @@ var element = $('#de7e7c8b-530c-43d4-b5bc-279ed59663cc');
 
 
 
-<div id="8e707ce2-84ca-47cc-a51e-c3c409db4ff3" class="output_subarea output_javascript ">
+<div id="78c15d02-3ec2-4822-af28-9ac3d622ef13" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#8e707ce2-84ca-47cc-a51e-c3c409db4ff3');
+var element = $('#78c15d02-3ec2-4822-af28-9ac3d622ef13');
 
             setTimeout(function() {
                 var nbb_cell_id = 22;
@@ -1503,14 +1503,14 @@ var element = $('#8e707ce2-84ca-47cc-a51e-c3c409db4ff3');
 
 
 
-<div id="9d0c1eb6-cd32-423c-8fe7-89c02b6998dc" class="output_subarea output_javascript ">
+<div id="4a44e6b2-107b-4e73-ac90-a292cda87159" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9d0c1eb6-cd32-423c-8fe7-89c02b6998dc');
+var element = $('#4a44e6b2-107b-4e73-ac90-a292cda87159');
 
             setTimeout(function() {
                 var nbb_cell_id = 24;
-                var nbb_unformatted_code = "# 1.2.\n# No Numerai Classic specific postprocessors implemented yet.";
-                var nbb_formatted_code = "# 1.2.\n# No Numerai Classic specific postprocessors implemented yet.";
+                var nbb_unformatted_code = "# 1.1.\n# No Numerai Classic specific postprocessors implemented yet.";
+                var nbb_formatted_code = "# 1.1.\n# No Numerai Classic specific postprocessors implemented yet.";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1568,14 +1568,14 @@ var element = $('#9d0c1eb6-cd32-423c-8fe7-89c02b6998dc');
 
 
 
-<div id="3aba6072-6b37-4d86-bf84-79621112bc2e" class="output_subarea output_javascript ">
+<div id="3f09d018-001f-497a-8d71-afb00bf494bf" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#3aba6072-6b37-4d86-bf84-79621112bc2e');
+var element = $('#3f09d018-001f-497a-8d71-afb00bf494bf');
 
             setTimeout(function() {
                 var nbb_cell_id = 25;
-                var nbb_unformatted_code = "# 1.3.\n# No Numerai Signals specific postprocessors implemented yet.";
-                var nbb_formatted_code = "# 1.3.\n# No Numerai Signals specific postprocessors implemented yet.";
+                var nbb_unformatted_code = "# 1.2.\n# No Numerai Signals specific postprocessors implemented yet.";
+                var nbb_formatted_code = "# 1.2.\n# No Numerai Signals specific postprocessors implemented yet.";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
@@ -1625,7 +1625,7 @@ var element = $('#3aba6072-6b37-4d86-bf84-79621112bc2e');
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L378" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
+<h2 id="AwesomePostProcessor" class="doc_header"><code>class</code> <code>AwesomePostProcessor</code><a href="https://github.com/crowdcent/numerblox/tree/master/numerblox/postprocessing.py#L375" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AwesomePostProcessor</code>(<strong><code>final_col_name</code></strong>:<code>str</code>, <strong>*<code>args</code></strong>, <strong>**<code>kwargs</code></strong>) :: <a href="/numerbloxpostprocessing.html#BasePostProcessor"><code>BasePostProcessor</code></a></p>
 </blockquote>
 <p>TEMPLATE - Do some awesome postprocessing.</p>
 <p>:param final_col_name: Column name to store manipulated or ensembled predictions in.</p>
@@ -1652,14 +1652,14 @@ var element = $('#3aba6072-6b37-4d86-bf84-79621112bc2e');
 
 
 
-<div id="05faa1f3-5efe-4e5b-a85e-6fa610dcaa60" class="output_subarea output_javascript ">
+<div id="6856e978-4c35-4911-bd63-8d032983a9ff" class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#05faa1f3-5efe-4e5b-a85e-6fa610dcaa60');
+var element = $('#6856e978-4c35-4911-bd63-8d032983a9ff');
 
             setTimeout(function() {
                 var nbb_cell_id = 26;
-                var nbb_unformatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    TEMPLATE - Do some awesome postprocessing.\n\n    | :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
-                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    TEMPLATE - Do some awesome postprocessing.\n\n    | :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
+                var nbb_unformatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    TEMPLATE - Do some awesome postprocessing.\n\n    :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
+                var nbb_formatted_code = "# export\n@typechecked\nclass AwesomePostProcessor(BasePostProcessor):\n    \"\"\"\n    TEMPLATE - Do some awesome postprocessing.\n\n    :param final_col_name: Column name to store manipulated or ensembled predictions in.\n    \"\"\"\n\n    def __init__(self, final_col_name: str, *args, **kwargs):\n        super().__init__(final_col_name=final_col_name)\n\n    @display_processor_info\n    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:\n        # Do processing\n        ...\n        # Add new column(s) for manipulated data\n        dataf.loc[:, self.final_col_name] = ...\n        ...\n        # Parse all contents to the next pipeline step\n        return NumerFrame(dataf)";
                 var nbb_cells = Jupyter.notebook.get_cells();
                 for (var i = 0; i < nbb_cells.length; ++i) {
                     if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
