@@ -10,7 +10,6 @@ import pandas as pd
 import tensorflow as tf
 from pathlib import Path
 from rich import print as rich_print
-from pandas_profiling import ProfileReport
 from typing import Union, Tuple, Any, List
 
 from .misc import AttrDict
@@ -167,14 +166,6 @@ class NumerFrame(pd.DataFrame):
             else:
                 y = tf.convert_to_tensor(y, *args, **kwargs)
         return X, y
-
-    def profile_report(self, *args, **kwargs) -> ProfileReport:
-        """
-        DataFrame profiling. Might take a while to generate for large datasets.
-        For more info: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html
-        *args, **kwargs will be passed to ProfileReport initialization.
-        """
-        return ProfileReport(self, *args, **kwargs)
 
 # Cell
 def create_numerframe(file_path: str, metadata: dict = None, columns: list = None, *args, **kwargs) -> NumerFrame:
