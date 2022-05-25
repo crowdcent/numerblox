@@ -25,13 +25,11 @@ class BasePostProcessor(BaseProcessor):
 
     Postprocessors manipulate or introduce new prediction columns in a NumerFrame.
     """
-
     def __init__(self, final_col_name: str):
         super().__init__()
         self.final_col_name = final_col_name
-        assert final_col_name.startswith(
-            "prediction"
-        ), f"final_col name should start with 'prediction'. Got {final_col_name}"
+        if not final_col_name.startswith("prediction"):
+            rich_print(f":warning: WARNING: final_col_name should start with 'prediction'. Column output will be: '{final_col_name}'. :warning:")
 
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         ...
@@ -172,7 +170,7 @@ class FeatureNeutralizer(BasePostProcessor):
         pred_name: str = "prediction",
         proportion: float = 0.5,
         suffix: str = None,
-        cuda = False
+        cuda = False,
     ):
         self.pred_name = pred_name
         self.proportion = proportion
@@ -185,7 +183,6 @@ class FeatureNeutralizer(BasePostProcessor):
             else f"{self.pred_name}_neutralized_{self.proportion}"
         )
         super().__init__(final_col_name=self.new_col_name)
-
         self.feature_names = feature_names
         self.cuda = cuda
 
