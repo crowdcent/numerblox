@@ -566,6 +566,7 @@ class FinnhubDownloader(BaseDownloader):
         try:
             stock_df = pd.DataFrame(candles)
         except:
+            rich_print(f":warning: WARNING: No data found for ticker: [red]'{ticker}'[/red]. :warning:")
             return pd.DataFrame()
         stock_df['ticker'] = ticker
         stock_df['date'] = pd.to_datetime(stock_df['t'], unit='s', origin='unix')
@@ -652,6 +653,7 @@ class EODDownloader(BaseDownloader):
             stock_df = pd.DataFrame(resp).set_index('date')
             stock_df['ticker'] = ticker
         except:
+            rich_print(f":warning: WARNING: No data found for ticker: [red]'{ticker}'[/red]. :warning:")
             stock_df = pd.DataFrame()
         return stock_df
 
