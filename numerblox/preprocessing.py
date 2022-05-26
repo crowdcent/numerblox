@@ -778,17 +778,20 @@ class TickerMapper(BaseProcessor):
     Map ticker from one format to another. \n
     :param ticker_col: Column used for mapping. Must already be present in the input data. \n
     :param target_ticker_format: Format to map tickers to. Must be present in the ticker map. \n
-    Supported ticker formats are: ['ticker', 'bloomberg_ticker', 'yahoo']
+    For default mapper supported ticker formats are: ['ticker', 'bloomberg_ticker', 'yahoo'] \n
+    :param mapper_path: Path to CSV file containing at least ticker_col and target_ticker_format columns. \n
+    Can be either a web link of local path. Numerai Signals mapping by default.
     """
 
     def __init__(
-        self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker"
+        self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker",
+        mapper_path: str = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com/signals_ticker_map_w_bbg.csv"
     ):
         super().__init__()
         self.ticker_col = ticker_col
         self.target_ticker_format = target_ticker_format
 
-        self.signals_map_path = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com/signals_ticker_map_w_bbg.csv"
+        self.signals_map_path = mapper_path
         self.ticker_map = pd.read_csv(self.signals_map_path)
 
         assert (
