@@ -646,13 +646,13 @@ class EODDownloader(BaseDownloader):
         For example, Apple stock = AAPL.US.
         start: Starting data in %Y-%m-%d format.
         """
-        resp = self.client.get_prices_eod(ticker, period=self.frequency,
-                                          from_=start, to=self.end_date)
         try:
+            resp = self.client.get_prices_eod(ticker, period=self.frequency,
+                                              from_=start, to=self.end_date)
             stock_df = pd.DataFrame(resp).set_index('date')
+            stock_df['ticker'] = ticker
         except:
-            return pd.DataFrame()
-        stock_df['ticker'] = ticker
+            stock_df = pd.DataFrame()
         return stock_df
 
 # Cell
