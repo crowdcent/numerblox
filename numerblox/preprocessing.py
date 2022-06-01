@@ -435,10 +435,9 @@ class BayesianGMMTargetProcessor(BaseProcessor):
     def __get_features_target(self, dataf: NumerFrame, era) -> tuple:
         """Get features and target for one era and center data."""
         sub_df = dataf[dataf[dataf.meta.era_col] == era]
-        features = self.feature_names if self.feature_names else sub_df.get_feature_data
-        target = sub_df[self.target_col]
-        features = features.values - 0.5
-        target = target.values - 0.5
+        features = self.feature_names if self.feature_names else sub_df.feature_cols
+        target = sub_df[self.target_col].values - 0.5
+        features = sub_df[features].values - 0.5
         return features, target
 
 # Cell
