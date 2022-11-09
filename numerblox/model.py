@@ -407,7 +407,7 @@ class CatBoostModel(DirectoryModel):
     def load_models(self) -> list:
         return [CatBoost().load_model(path) for path in self.model_paths]
 
-# %% ../nbs/04_model.ipynb 45
+# %% ../nbs/04_model.ipynb 46
 @typechecked
 class LGBMModel(DirectoryModel):
     """
@@ -432,7 +432,7 @@ class LGBMModel(DirectoryModel):
     def load_models(self) -> list:
         return [lgb.Booster(model_file=str(path)) for path in self.model_paths]
 
-# %% ../nbs/04_model.ipynb 51
+# %% ../nbs/04_model.ipynb 52
 class ConstantModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes. \n
@@ -453,7 +453,7 @@ class ConstantModel(BaseModel):
         dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataf.get_feature_data)
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 55
+# %% ../nbs/04_model.ipynb 56
 class RandomModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes. \n
@@ -471,7 +471,7 @@ class RandomModel(BaseModel):
         dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataf))
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 59
+# %% ../nbs/04_model.ipynb 60
 @typechecked
 class ExamplePredictionsModel(BaseModel):
     """
@@ -510,7 +510,7 @@ class ExamplePredictionsModel(BaseModel):
     def _load_example_preds(self, *args, **kwargs):
         return pd.read_parquet(self.dest_path, *args, **kwargs)
 
-# %% ../nbs/04_model.ipynb 65
+# %% ../nbs/04_model.ipynb 66
 @typechecked
 class AwesomeModel(BaseModel):
     """
@@ -538,7 +538,7 @@ class AwesomeModel(BaseModel):
         # Parse all contents of NumerFrame to the next pipeline step
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 68
+# %% ../nbs/04_model.ipynb 69
 @typechecked
 class AwesomeDirectoryModel(DirectoryModel):
     """
