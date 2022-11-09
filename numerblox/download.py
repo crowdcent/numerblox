@@ -210,10 +210,6 @@ class NumeraiClassicDownloader(BaseDownloader):
                 "int8": ["v3/numerai_live_data_int8.parquet"],
                 "float": ["v3/numerai_live_data.parquet"]
             },
-            "example": [
-                "v3/example_predictions.parquet",
-                "v3/example_validation_predictions.parquet"
-            ]
         },
             "4": {
                 "train": {
