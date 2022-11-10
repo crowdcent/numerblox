@@ -55,7 +55,7 @@ class Standardizer(BasePostProcessor):
         dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 21
+# %% ../nbs/05_postprocessing.ipynb 20
 @typechecked
 class MeanEnsembler(BasePostProcessor):
     """
@@ -87,7 +87,7 @@ class MeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 24
+# %% ../nbs/05_postprocessing.ipynb 23
 @typechecked
 class DonateWeightedEnsembler(BasePostProcessor):
     """
@@ -126,7 +126,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
             weights.append(1 / (2 ** (self.n_cols + 1 - j)))
         return weights
 
-# %% ../nbs/05_postprocessing.ipynb 30
+# %% ../nbs/05_postprocessing.ipynb 29
 @typechecked
 class GeometricMeanEnsembler(BasePostProcessor):
     """
@@ -151,7 +151,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 35
+# %% ../nbs/05_postprocessing.ipynb 34
 @typechecked
 class FeatureNeutralizer(BasePostProcessor):
     """
