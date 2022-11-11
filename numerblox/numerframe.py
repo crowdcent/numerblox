@@ -5,12 +5,10 @@ __all__ = ['NumerFrame', 'create_numerframe']
 
 # %% ../nbs/02_numerframe.ipynb 4
 import uuid
-import json
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from pathlib import Path
-from rich import print as rich_print
 from typing import Union, Tuple, Any, List
 
 from .misc import AttrDict
@@ -23,13 +21,13 @@ class NumerFrame(pd.DataFrame):
     """
     _metadata = ["meta", "feature_cols", "target_cols",
                  "prediction_cols", "not_aux_cols", "aux_cols"]
-    meta = AttrDict()
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.meta = AttrDict()
+        self.__set_era_col()
         self.__init_meta_attrs()
-        if not "era_col_verified" in self.meta:
-            self.__set_era_col()
 
     @property
     def _constructor(self):
@@ -56,31 +54,7 @@ class NumerFrame(pd.DataFrame):
         elif "date" in self.columns:
             self.meta.era_col = "date"
         else:
-            raise AttributeError("NumerFrame must contain either an 'era', 'friday_date' or 'date' column.")
-        self.meta.era_col_verified = True
-
-    def add_metadata(self, *args, **kwargs):
-        """ Parse arbitrary metadata (i.e. Python objects) to the meta attribute. """
-        self.meta.update(*args, **kwargs)
-
-    def export_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Export all attributes in NumerFrame that can be serialized to json file."""
-        rich_print(f":file_folder: Exporting metadata to {file} :file_folder:")
-        json_txt = json.dumps(
-            self.meta.__dict__, default=lambda o: "<not serializable>", **kwargs
-        )
-        if verbose:
-            rich_print(json_txt)
-        Path(file).write_text(json_txt)
-
-    def import_json_metadata(self, file="config.json", verbose=False, **kwargs):
-        """Load arbitrary data into NumerFrame object from json file."""
-        rich_print(f":file_folder: Importing metadata from {file} :file_folder:")
-        with open(file) as json_file:
-            json_data = json.load(json_file, **kwargs)
-        if verbose:
-            rich_print(json_data)
-        self.meta.__dict__.update(json_data)
+            self.meta.era_col = None
 
     def get_column_selection(self, cols: Union[str, list]):
         """ Return NumerFrame from selection of columns. """
@@ -195,6 +169,4 @@ def create_numerframe(file_path: str, metadata: dict = None, columns: list = Non
     else:
         raise NotImplementedError(f"Suffix '{suffix}' is not supported.")
     num_frame = NumerFrame(df)
-    if metadata:
-        num_frame.add_metadata(metadata)
     return num_frame
