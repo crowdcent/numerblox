@@ -28,7 +28,7 @@ class NumerFrame(pd.DataFrame):
         self.meta = AttrDict()
         self.__set_era_col()
         self.__init_meta_attrs()
-
+        
     @property
     def _constructor(self):
         return NumerFrame
