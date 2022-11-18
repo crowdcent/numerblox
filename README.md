@@ -141,19 +141,13 @@ downloader = NumeraiClassicDownloader("data")
 downloader.download_inference_data("current_round")
 
 # --- 2. Initialize NumerFrame ---
-metadata = {"version": 4,
-            "joblib_model_name": "test",
-            "joblib_model_path": "test_assets/joblib_v2_example_model.joblib",
-            "numerai_model_name": "test_model1",
-            "key_path": "test_assets/test_credentials.json"}
-dataf = create_numerframe(file_path="data/current_round/live.parquet",
-                          metadata=metadata)
+dataf = create_numerframe(file_path="data/current_round/live.parquet")
 
 # --- 3. Define and run pipeline ---
-models = [SingleModel(dataf.meta.joblib_model_path,
-                      model_name=dataf.meta.joblib_model_name)]
+models = [SingleModel("test_assets/joblib_v2_example_model.joblib",
+                      model_name="test")]
 # No preprocessing and 0.5 feature neutralization
-postprocessors = [FeatureNeutralizer(pred_name=f"prediction_{dataf.meta.joblib_model_name}",
+postprocessors = [FeatureNeutralizer(pred_name=f"prediction_test",
                                      proportion=0.5)]
 pipeline = ModelPipeline(preprocessors=[],
                          models=models,
@@ -162,30 +156,29 @@ dataf = pipeline(dataf)
 
 # --- 4. Submit ---
 # Load credentials from .json (random credentials in this example)
-key = load_key_from_json(dataf.meta.key_path)
+key = load_key_from_json("test_assets/test_credentials.json")
 submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
 # full_submission checks contents, saves as csv and submits.
 submitter.full_submission(dataf=dataf,
-                          cols=f"prediction_{dataf.meta.joblib_model_name}_neutralized_0.5",
-                          model_name=dataf.meta.numerai_model_name,
-                          version=dataf.meta.version)
+                          cols=f"prediction_test_neutralized_0.5",
+                          model_name="test")
 
 # --- 5. Clean up environment (optional) ---
 downloader.remove_base_directory()
 submitter.remove_base_directory()
 ```
 
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting                                                              
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib                                                           
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json                                                                    
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json
 </pre>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting                                                             
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data                                                                                         
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet                                                      
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv                                                                          
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round
+<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv
 </pre>
 
 #### 2.2.2. Numerai Signals
@@ -204,10 +197,8 @@ from numerblox.submission import NumeraiSignalsSubmitter
 kd = KaggleDownloader("data")
 kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 
-# --- 2. Initialize NumerFrame with metadata ---
-metadata = {"numerai_model_name": "test_model1",
-            "key_path": "test_assets/test_credentials.json"}
-dataf = create_numerframe("data/full_data.parquet", metadata=metadata)
+# --- 2. Initialize NumerFrame ---
+dataf = create_numerframe("data/full_data.parquet")
 
 # --- 3. Define and run pipeline ---
 models = [SingleModel("models/signals_model.cbm", model_name="cb")]
@@ -220,31 +211,31 @@ dataf = pipeline(dataf)
 
 # --- 4. Submit ---
 # Load credentials from .json (random credentials in this example)
-key = load_key_from_json(dataf.meta.key_path)
+key = load_key_from_json("test_assets/test_credentials.json")
 submitter = NumeraiSignalsSubmitter(directory_path="sub_current_round", key=key)
 # full_submission checks contents, saves as csv and submits.
 # cols selection must at least contain 1 ticker column and a signal column.
 dataf['signal'] = dataf['prediction_cb']
 submitter.full_submission(dataf=dataf,
                           cols=['bloomberg_ticker', 'signal'],
-                          model_name=dataf.meta.numerai_model_name)
+                          model_name="test_model1")
 
 # --- 5. Clean up environment (optional) ---
 kd.remove_base_directory()
 submitter.remove_base_directory()
 ```
 
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting                                                              
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 test_assets                                                                                  
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 test_credentials.json                                                                    
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 models                                                                                       
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 signals_model.cbm                                                                        
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 test_assets
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 test_credentials.json
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 models
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 signals_model.cbm
 </pre>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting                                                             
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data                                                                                         
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 full_data.parquet                                                                        
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round                                                                            
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 submission.csv                                                                           
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 full_data.parquet
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 submission.csv
 </pre>
 
 ## 3. Contributing
@@ -263,13 +254,13 @@ Every new feature should be implemented in a branch that branches from
 Explicit bugfixes should be named `bugfix/{FIX_DESCRIPTION}`. An example
 structure is given below.
 
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure                                                                                    
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)                                                                             
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev                                                                                    
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features                                                          
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader                                                          
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management                                                 
-<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix                                                         
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management
+<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix
 </pre>
 
 ## 5. Crediting sources

@@ -358,7 +358,6 @@ class GroupStatsPreProcessor(BaseProcessor):
     @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         """Check validity and add group features."""
-        self._check_data_validity(dataf=dataf)
         dataf = dataf.pipe(self._add_group_features)
         return NumerFrame(dataf)
 
@@ -371,17 +370,7 @@ class GroupStatsPreProcessor(BaseProcessor):
             dataf[f"feature_{group}_skew"] = dataf[cols].skew(axis=1)
         return dataf
 
-    def _check_data_validity(self, dataf: NumerFrame):
-        """Make sure this is only used for version 1 data."""
-        assert hasattr(
-            dataf.meta, "version"
-        ), f"Version should be specified for '{self.__class__.__name__}' This Preprocessor will only work on version 1 data."
-        assert (
-            getattr(dataf.meta, "version") == 1
-        ), f"'{self.__class__.__name__}' only works on version 1 data. Got version: '{getattr(dataf.meta, 'version')}'."
-
-
-# %% ../nbs/03_preprocessing.ipynb 54
+# %% ../nbs/03_preprocessing.ipynb 52
 class KatsuFeatureGenerator(BaseProcessor):
     """
     Effective feature engineering setup based on Katsu's starter notebook.
@@ -493,7 +482,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         a = 2 / (span + 1)
         return series.ewm(alpha=a).mean()
 
-# %% ../nbs/03_preprocessing.ipynb 62
+# %% ../nbs/03_preprocessing.ipynb 60
 class EraQuantileProcessor(BaseProcessor):
     """
     Transform features into quantiles on a per-era basis
@@ -557,7 +546,7 @@ class EraQuantileProcessor(BaseProcessor):
         ] = quantiles
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 67
+# %% ../nbs/03_preprocessing.ipynb 65
 class TickerMapper(BaseProcessor):
     """
     Map ticker from one format to another. \n
@@ -597,7 +586,7 @@ class TickerMapper(BaseProcessor):
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 74
+# %% ../nbs/03_preprocessing.ipynb 72
 class SignalsTargetProcessor(BaseProcessor):
     """
     Engineer targets for Numerai Signals. \n
@@ -643,7 +632,7 @@ class SignalsTargetProcessor(BaseProcessor):
             )
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 78
+# %% ../nbs/03_preprocessing.ipynb 76
 class LagPreProcessor(BaseProcessor):
     """
     Add lag features based on given windows.
@@ -676,7 +665,7 @@ class LagPreProcessor(BaseProcessor):
                 dataf.loc[:, f"{feature}_lag{day}"] = shifted
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 84
+# %% ../nbs/03_preprocessing.ipynb 82
 class DifferencePreProcessor(BaseProcessor):
     """
     Add difference features based on given windows. Run LagPreProcessor first.
@@ -723,7 +712,7 @@ class DifferencePreProcessor(BaseProcessor):
                 )
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 90
+# %% ../nbs/03_preprocessing.ipynb 88
 class AwesomePreProcessor(BaseProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self):
