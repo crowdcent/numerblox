@@ -32,6 +32,12 @@ class BaseEvaluator:
     Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
     :param fast_mode: Will skip compute intensive metrics if set to True,
     namely max_exposure, feature neutral mean, TB200 and TB500.
+
+    Note that we calculate the sample standard deviation with ddof=0. 
+    It may differ slightly from the standard Pandas calculation, but 
+    is consistent with how NumPy computes standard deviation. 
+    More info: 
+    https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy
     """
     def __init__(self, era_col: str = "era", fast_mode=False):
         self.era_col = era_col
