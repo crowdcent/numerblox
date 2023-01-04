@@ -8,7 +8,6 @@ __all__ = ['BasePostProcessor', 'Standardizer', 'MeanEnsembler', 'DonateWeighted
 import scipy
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 import scipy.stats as sp
 from tqdm.auto import tqdm
 from typeguard import typechecked
@@ -240,6 +239,7 @@ class FeatureNeutralizer(BasePostProcessor):
         return dataf[columns]
 
 # %% ../nbs/05_postprocessing.ipynb 44
+import tensorflow as tf
 @typechecked
 class FeaturePenalizer(BasePostProcessor):
     """

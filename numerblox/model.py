@@ -15,7 +15,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
-import tensorflow as tf
 from pathlib import Path
 from typing import Union
 from tqdm.auto import tqdm
@@ -138,6 +137,7 @@ class SingleModel(BaseModel):
                  combine_preds = False, autoencoder_mlp = False,
                  feature_cols: list = None
                  ):
+        import tensorflow as tf
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."

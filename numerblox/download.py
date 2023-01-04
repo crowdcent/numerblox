@@ -230,21 +230,48 @@ class NumeraiClassicDownloader(BaseDownloader):
                     "v4/live_example_preds.parquet",
                     "v4/validation_example_preds.parquet"
                 ]
+            },
+            "4.1": {
+                "train": {
+                    "int8": [
+                        "v4.1/train_int8.parquet",
+                        "v4.1/validation_int8.parquet"
+                    ],
+                    "float": [
+                        "v4.1/train.parquet",
+                        "v4.1/validation.parquet"
+                    ]
+                },
+                "inference": {
+                    "int8": ["v4.1/live_int8.parquet"],
+                    "float": ["v4.1/live.parquet"]
+                },
+                "live": {
+                    "int8": ["v4.1/live_int8.parquet"],
+                    "float": ["v4.1/live.parquet"]
+                },
+                "example": [
+                    "v4.1/live_example_preds.parquet",
+                    "v4.1/validation_example_preds.parquet"
+                ],
+                "meta_model": [
+                    "v4.1/meta_model.parquet",
+                ]
             }
         }
 
     def download_training_data(
-        self, subfolder: str = "", version: int = 4, int8: bool = False
+        self, subfolder: str = "", version: str = "4.1", int8: bool = False
     ):
         """
         Get Numerai classic training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (3=1050+ features dataset (parquet))
+        :param version: Numerai dataset version (4.1=Sunshine dataset)
         :param int8: Integer version of data
         """
         data_type = "int8" if int8 else "float"
-        train_val_files = self._get_version_mapping(version)["train"][data_type]
+        train_val_files = self._get_version_mapping(str(version))["train"][data_type]
         for file in train_val_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -255,7 +282,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_inference_data(
         self,
         subfolder: str = "",
-        version: int = 4,
+        version: str = "4.1",
         int8: bool = False,
         round_num: int = None,
     ):
@@ -264,12 +291,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         If only minimal live data is needed, consider .download_live_data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (2=super massive dataset (parquet))
+        :param version: Numerai dataset version (4.1=Sunshine dataset)
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         data_type = "int8" if int8 else "float"
-        inference_files = self._get_version_mapping(version)["inference"][data_type]
+        inference_files = self._get_version_mapping(str(version))["inference"][data_type]
         for file in inference_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -300,7 +327,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_live_data(
             self,
             subfolder: str = "",
-            version: int = 4,
+            version: str = "4.1",
             int8: bool = False,
             round_num: int = None
     ):
@@ -309,12 +336,12 @@ class NumeraiClassicDownloader(BaseDownloader):
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version (2=super massive dataset (parquet))
+        :param version: Numerai dataset version (4.1=Sunshine dataset)
         :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         data_type = "int8" if int8 else "float"
-        live_files = self._get_version_mapping(version)["live"][data_type]
+        live_files = self._get_version_mapping(str(version))["live"][data_type]
         for file in live_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -324,17 +351,17 @@ class NumeraiClassicDownloader(BaseDownloader):
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: int = 4, round_num: int = None
+        self, subfolder: str = "", version: str = "4.1", round_num: int = None
     ):
         """
         Download all example prediction data in specified folder for given version.
 
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (2=super massive dataset (parquet))
+        :param version: Numerai dataset version (4.1=Sunshine dataset)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        example_files = self._get_version_mapping(version)["example"]
+        example_files = self._get_version_mapping(str(version))["example"]
         for file in example_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -343,7 +370,7 @@ class NumeraiClassicDownloader(BaseDownloader):
                 round_num=round_num
             )
 
-    def get_classic_features(self, subfolder: str = "", filename="v4/features.json", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", filename="v4.1/features.json", *args, **kwargs) -> dict:
         """
         Download feature overview (stats and feature sets) through NumerAPI and load as dict.
         :param subfolder: Specify folder to create folder within base directory root.
