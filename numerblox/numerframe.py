@@ -7,7 +7,6 @@ __all__ = ['NumerFrame', 'create_numerframe']
 import uuid
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from pathlib import Path
 from typing import Union, Tuple, Any, List
 
@@ -135,6 +134,7 @@ class NumerFrame(pd.DataFrame):
             y = [X.copy(), y.copy(), y.copy()]
 
         if convert_to_tf:
+            import tensorflow as tf
             X = tf.convert_to_tensor(X, *args, **kwargs)
             if aemlp_batch:
                 y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]
