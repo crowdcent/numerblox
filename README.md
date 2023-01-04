@@ -87,10 +87,7 @@ Notebook environment to quickly test if your installation has succeeded
     [`NumeraiSignalsSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter)
     and
     [`NumerBaySubmitter`](https://crowdcent.github.io/numerblox/submission.html#numerbaysubmitter))
-10. Automated staking
-    ([`NumeraiClassicStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraiclassicstaker)
-    and
-    [`NumeraiSignalsStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraisignalsstaker))
+    
 
 #### 2.1.2. Educational notebooks
 
