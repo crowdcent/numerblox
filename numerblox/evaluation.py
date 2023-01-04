@@ -367,7 +367,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         if set(self.fncv3_features).issubset(set(dataf.columns)):
             valid_features = self.fncv3_features
         else:
-            print("WARNING: 'v4/fncv3_features' features are not defined in DataFrame. Skipping calculation of v3 metrics.")
+            print("WARNING: 'v4.1/features.json/fncv3_features' features are not defined in DataFrame. Skipping calculation of v3 metrics.")
             valid_features = []
 
         for col in tqdm(pred_cols, desc="Evaluation: "):

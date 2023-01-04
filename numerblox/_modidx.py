@@ -3,7 +3,7 @@
 d = { 'settings': { 'branch': 'master',
                 'doc_baseurl': '/numerblox',
                 'doc_host': 'https://crowdcent.github.io',
-                'git_url': 'https://github.com/crowdcent/numerblox/tree/master/',
+                'git_url': 'https://github.com/crowdcent/numerblox/',
                 'lib_path': 'numerblox'},
   'syms': { 'numerblox.download': { 'numerblox.download.AwesomeCustomDownloader': ( 'download.html#awesomecustomdownloader',
                                                                                     'numerblox/download.py'),
