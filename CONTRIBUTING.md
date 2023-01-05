@@ -3,16 +3,13 @@
 We are using a project setup called [nbdev](https://nbdev.fast.ai/) to easily develop code, documentation and tests within Jupyter notebooks. If you are using the library and have no interest in contributing, don't worry about this. Just `pip install numerblox` and you are good to go!
 
 Else, thanks a lot for wanting to help us out with this project! If you are thinking of contributing and are not familiar with `nbdev`, it may take some time to learn nbdev development. 
-We are happy to help out and point you to documentation or videos to learn more. You can also always ask questions in [the numerblox Rocketchat channel](https://rocketchat.numer.ai/channel/numerblox).
+We are happy to help out and point you to documentation or videos to learn more.
 
 If you are interested in the full scope of what nbdev has to offer, check out this tutorial by Jeremy Howard:
-[https://youtu.be/Hrs7iEYmRmg](https://youtu.be/Hrs7iEYmRmg).
+[https://nbdev.fast.ai/tutorials/tutorial.html](https://nbdev.fast.ai/tutorials/tutorial.html).
 
 Why are we using nbdev? To learn more about the rationale behind nbdev:
 [https://youtu.be/9Q6sLbz37gk](https://youtu.be/9Q6sLbz37gk)
-
-nbdev live coding example with Hamel Husain:
-[https://youtu.be/ZJTop5uqC2U](https://youtu.be/ZJTop5uqC2U)
 
 ## How to get started
 
@@ -20,8 +17,6 @@ Before anything else, please install the git hooks that run automatic scripts du
 ```
 nbdev_install_git_hooks
 ```
-
-Questions about contributing? Please post these in [rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
 
 ## Did you find a bug?
 
