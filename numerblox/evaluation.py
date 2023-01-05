@@ -382,9 +382,10 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         # Check if sufficient columns are present in dataf to compute FNC
         feature_set = set(dataf.columns)
         if set(self.fncv4_features).issubset(feature_set):
+            print("Using 'v4.1/features.json/medium' feature set to calculate FNC metrics.")
             valid_features = self.fncv4_features
         elif set(self.fncv3_features).issubset(feature_set):
-            print("WARNING: 'v4.1/features.json/fncv3_features' features are not defined in DataFrame. Using FNCv3 features.")
+            print("WARNING: 'v4.1/features.json/medium' features are not defined in DataFrame. Using FNCv3 features.")
             valid_features = self.fncv3_features
         elif set(self.medium_features).issubset(feature_set):
             print("WARNING: No FNC feature set defined in DataFrame. Using v3 medium feature set.")
