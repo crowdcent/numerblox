@@ -49,7 +49,7 @@ Even though most of the components in this library are tested, users will still 
 
 There are a few small things you should do before contributing code to this project. After you clone the repository, please run `nbdev_install_git_hooks` in your terminal. This sets up git hooks, which cleans up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran). This avoids unnecessary merge conflicts.
 
-When adding a new feature, only change code in the `nbs/` directory. Then, before pushing code, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically handles the parsing of notebook code into source code and automatically generates documentation from these notebooks.
+When adding a new feature, only change code in the `nbs/` directory. Then, before pushing code, be sure to run `nbdev_prepare`. `nbdev` automatically handles the parsing of notebook code into source code and automatically generates documentation from these notebooks.
 
 ## Do you want to contribute example notebooks?
 
@@ -58,4 +58,4 @@ Same guidelines as "Contributing Code" section. New notebooks should be created 
 ## Do you want to contribute to the documentation?
 
 * Docs are automatically created from the notebooks in the nbs folder.
-* Therefore, to change the documentation, only change files in the `nbs/` folder. Then, before pushing new documentation, be sure to run `nbdev_build_lib` and `nbdev_build_docs` so the notebooks and source code are synced. `nbdev` automatically generates documentation from these notebooks.
+* Therefore, to change the documentation, only change files in the `nbs/` folder. Then, before pushing new documentation, be sure to run `nbdev_prepare` so the notebooks and source code are synced. `nbdev` automatically generates documentation from these notebooks and uploads to Github pages.

@@ -12,9 +12,6 @@ inference pipelines, but tools like
 [`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe),
 preprocessors and evaluators also greatly simplify the training process.
 
-**Questions and discussion:**
-[rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
-
 **Documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
@@ -87,7 +84,10 @@ Notebook environment to quickly test if your installation has succeeded
     [`NumeraiSignalsSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter)
     and
     [`NumerBaySubmitter`](https://crowdcent.github.io/numerblox/submission.html#numerbaysubmitter))
-    
+10. Automated staking
+    ([`NumeraiClassicStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraiclassicstaker)
+    and
+    [`NumeraiSignalsStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraisignalsstaker))
 
 #### 2.1.2. Educational notebooks
 
@@ -96,21 +96,18 @@ Example notebooks can be found in the `nbs/edu_nbs` directory.
 `nbs/edu_nbs` currently contains the following examples: -
 `numerframe_tutorial.ipynb`: A deep dive into what
 [`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe)
-has to offer. - `pipeline_construction.ipynb`: How to use `numerblox`
-tools for efficient Numerai inference. - `submitting.ipynb`: How to use
-Submitters for safe and easy Numerai submissions. -
-`google_cloud_storage.ipynb`: How to use Downloaders and Submitters to
-interact with Google Cloud Storage (GCS). -
-`load_model_from_wandb.ipynb`: For [Weights & Biases](https://wandb.ai/)
-users. Easily pull a model from W&B for inference. -
-`numerbay_integration.ipynb`: How to use `NumerBlox` to download and
-upload predictions listed on [NumerBay](https://numerbay.ai).
+has to offer. - `submitting.ipynb`: How to use Submitters for safe and
+easy Numerai submissions. - `google_cloud_storage.ipynb`: How to use
+Downloaders and Submitters to interact with Google Cloud Storage
+(GCS). - `load_model_from_wandb.ipynb`: For [Weights &
+Biases](https://wandb.ai/) users. Easily pull a model from W&B for
+inference. - `numerbay_integration.ipynb`: How to use `NumerBlox` to
+download and upload predictions listed on
+[NumerBay](https://numerbay.ai). - `synthetic_data_generation.ipynb`:
+Tutorial for generating synthetic data for training Numerai models.
 
 Development notebooks are also in the `nbs` directory. These notebooks
 are also used to generate the documentation.
-
-**Questions or idea discussion for educational notebooks:**
-[rocketchat.numer.ai/channel/numerblox](https://rocketchat.numer.ai/channel/numerblox)
 
 **Full documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
