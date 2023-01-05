@@ -357,7 +357,7 @@ class GroupStatsPreProcessor(BaseProcessor):
 
     @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
-        """Check validity and add group features."""
+        """Add group features."""
         dataf = dataf.pipe(self._add_group_features)
         return NumerFrame(dataf)
 

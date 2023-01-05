@@ -143,7 +143,7 @@ class NumerFrame(pd.DataFrame):
         return X, y
 
 # %% ../nbs/02_numerframe.ipynb 10
-def create_numerframe(file_path: str, metadata: dict = None, columns: list = None, *args, **kwargs) -> NumerFrame:
+def create_numerframe(file_path: str, columns: list = None, *args, **kwargs) -> NumerFrame:
     """
     Convenient function to initialize NumerFrame.
     Support most used file formats for Pandas DataFrames \n
@@ -151,7 +151,6 @@ def create_numerframe(file_path: str, metadata: dict = None, columns: list = Non
     For more details check https://pandas.pydata.org/docs/reference/io.html
 
     :param file_path: Relative or absolute path to data file. \n
-    :param metadata: Metadata to be stored in NumerFrame.meta. \n
     :param columns: Which columns to read (All by default). \n
     *args, **kwargs will be passed to Pandas loading function.
     """
