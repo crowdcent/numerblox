@@ -441,7 +441,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         """
         Retrieved neutralized validation correlation by era. \n
         Calculated on Numerai servers. \n
-        :param val_dataf: A DataFrame containing prediction, friday_date, era and data_type columns. \n
+        :param val_dataf: A DataFrame containing prediction, friday_date, ticker and data_type columns. \n
         data_type column should contain 'validation' instances. \n
         :param model_name: Any model name for which you have authentication credentials. \n
         :param key: Key object to authenticate upload of diagnostics. \n
