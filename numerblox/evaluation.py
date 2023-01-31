@@ -313,20 +313,33 @@ class BaseEvaluator:
         self,
         dataf: NumerFrame,
         pred_cols: list = None,
+        corr_cols: list = None,
         target_col: str = "target",
         roll_mean: int = 20,
     ):
         """
         Plot per era correlations over time.
+        :param dataf: NumerFrame that contains at least all pred_cols, target_col and corr_cols.
+        :param pred_cols: List of prediction columns that per era correlations of and plot.
+        By default, all predictions_cols in the NumerFrame are used. 
+        :param corr_cols: Per era correlations already prepared to include in the plot.
+        This is optional for if you already have per era correlations prepared in your input dataf.
+        :param target_col: Target column name to compute per era correlations against.
         :param roll_mean: How many eras should be averaged to compute a rolling score.
         """
         validation_by_eras = pd.DataFrame()
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
+        # Compute per era correlation for each prediction column.
         for pred_col in pred_cols:
             per_era_corrs = self.per_era_corrs(
                 dataf, pred_col=pred_col, target_col=target_col
             )
             validation_by_eras.loc[:, pred_col] = per_era_corrs
+
+        # Add prepared per era correlation if any.
+        if corr_cols is not None:
+            for corr_col in corr_cols:
+                validation_by_eras.loc[:, corr_col] = dataf[corr_col]
 
         validation_by_eras.rolling(roll_mean).mean().plot(
             kind="line",
@@ -438,14 +451,14 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         """
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
-        api.upload_diagnostics(df=val_dataf, model_id=model_id)
-        data = self.__await_diagnostics(api=api, model_id=model_id, timeout_min=timeout_min)
+        diagnostics_id = api.upload_diagnostics(df=val_dataf, model_id=model_id)
+        data = self.__await_diagnostics(api=api, model_id=model_id, diagnostics_id=diagnostics_id, timeout_min=timeout_min)
         dataf = pd.DataFrame(data['perEraDiagnostics']).set_index("era")['validationCorr']
         dataf.index = pd.to_datetime(dataf.index)
         return dataf
 
     @staticmethod
-    def __await_diagnostics(api: SignalsAPI, model_id: str, timeout_min: int, interval_sec: int = 15):
+    def __await_diagnostics(api: SignalsAPI, model_id: str, diagnostics_id: str, timeout_min: int, interval_sec: int = 15):
         """
         Wait for diagnostics to be uploaded.
         Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.
@@ -453,12 +466,12 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         timeout = time.time() + 60 * timeout_min
         data = {"status": "not_done"}
         while time.time() < timeout:
-            data = api.diagnostics(model_id=model_id)[0]
-            if data['status'] == 'done':
-                break
-            else:
+            data = api.diagnostics(model_id=model_id, diagnostics_id=diagnostics_id)[0]
+            if not data['status'] == 'done':
                 print(f"Diagnostics not processed yet. Sleeping for another {interval_sec} seconds.")
                 time.sleep(interval_sec)
+            else:
+                break
         if not data['status'] == 'done':
             raise Exception(f"Diagnostics couldn't be retrieved within {timeout_min} minutes after uploading. Check if Numerai API is offline.")
         return data
