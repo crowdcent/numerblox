@@ -4,7 +4,8 @@
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'UMAPFeatureGenerator', 'BayesianGMMTargetProcessor',
            'GroupStatsPreProcessor', 'KatsuFeatureGenerator', 'EraQuantileProcessor', 'TickerMapper',
-           'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'AwesomePreProcessor']
+           'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'PandasTaFeatureGenerator',
+           'AwesomePreProcessor']
 
 # %% ../nbs/03_preprocessing.ipynb 4
 import os
@@ -14,13 +15,14 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 from umap import UMAP
+import pandas_ta as ta
 from tqdm.auto import tqdm
 from functools import wraps
 from scipy.stats import rankdata
 from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 from multiprocessing.pool import Pool
 from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
@@ -482,7 +484,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         a = 2 / (span + 1)
         return series.ewm(alpha=a).mean()
 
-# %% ../nbs/03_preprocessing.ipynb 60
+# %% ../nbs/03_preprocessing.ipynb 62
 class EraQuantileProcessor(BaseProcessor):
     """
     Transform features into quantiles on a per-era basis
@@ -524,13 +526,13 @@ class EraQuantileProcessor(BaseProcessor):
         dataf: Union[pd.DataFrame, NumerFrame],
     ) -> NumerFrame:
         """Multiprocessing quantile transforms by era."""
-        self.features = self.features if self.features else dataf.feature_cols
+        features = self.features if self.features else dataf.feature_cols
         rich_print(
-            f"Quantiling for {len(self.features)} features using {self.num_cores} CPU cores."
+            f"Quantiling for {len(features)} features using {self.num_cores} CPU cores."
         )
 
         date_groups = dataf.groupby(self.era_col)
-        groupby_objects = [date_groups[feature] for feature in self.features]
+        groupby_objects = [date_groups[feature] for feature in features]
 
         with Pool() as p:
             results = list(
@@ -542,11 +544,11 @@ class EraQuantileProcessor(BaseProcessor):
 
         quantiles = pd.concat(results, axis=1)
         dataf[
-            [f"{feature}_quantile{self.num_quantiles}" for feature in self.features]
+            [f"{feature}_quantile{self.num_quantiles}" for feature in features]
         ] = quantiles
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 65
+# %% ../nbs/03_preprocessing.ipynb 66
 class TickerMapper(BaseProcessor):
     """
     Map ticker from one format to another. \n
@@ -586,7 +588,7 @@ class TickerMapper(BaseProcessor):
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 72
+# %% ../nbs/03_preprocessing.ipynb 73
 class SignalsTargetProcessor(BaseProcessor):
     """
     Engineer targets for Numerai Signals. \n
@@ -632,7 +634,7 @@ class SignalsTargetProcessor(BaseProcessor):
             )
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 76
+# %% ../nbs/03_preprocessing.ipynb 77
 class LagPreProcessor(BaseProcessor):
     """
     Add lag features based on given windows.
@@ -665,7 +667,7 @@ class LagPreProcessor(BaseProcessor):
                 dataf.loc[:, f"{feature}_lag{day}"] = shifted
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 82
+# %% ../nbs/03_preprocessing.ipynb 83
 class DifferencePreProcessor(BaseProcessor):
     """
     Add difference features based on given windows. Run LagPreProcessor first.
@@ -692,7 +694,7 @@ class DifferencePreProcessor(BaseProcessor):
     @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
-        for feature in tqdm(self.feature_names, desc="Difference feature generation"):
+        for feature in tqdm(feature_names, desc="Difference feature generation"):
             lag_columns = dataf.get_pattern_data(f"{feature}_lag").columns
             if not lag_columns.empty:
                 for day in self.windows:
@@ -713,6 +715,75 @@ class DifferencePreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 # %% ../nbs/03_preprocessing.ipynb 88
+class PandasTaFeatureGenerator:
+    """
+    Generate features with pandas-ta.
+    https://github.com/twopirllc/pandas-ta
+
+    :param strategy: Valid Pandas Ta strategy. \n
+    For more information on creating a strategy, see: \n
+    https://github.com/twopirllc/pandas-ta#pandas-ta-strategy \n
+    By default, a strategy with RSI(14) and RSI(60) is used. \n
+    :param ticker_col: Column name for grouping by tickers. \n
+    :param num_cores: Number of cores to use for multiprocessing. \n
+    By default, all available cores are used. \n
+    """
+    def __init__(self, 
+                 strategy: ta.Strategy = None,
+                 ticker_col: str = "ticker",
+                 num_cores: int = None,
+    ):
+        super().__init__()
+        self.ticker_col = ticker_col
+        self.num_cores = num_cores if num_cores else os.cpu_count()
+        standard_strategy = ta.Strategy(name="standard", 
+                                        ta=[{"kind": "rsi", "length": 14, "col_names": ("feature_RSI_14")},
+                                            {"kind": "rsi", "length": 60, "col_names": ("feature_RSI_60")}])
+        self.strategy = strategy if strategy else standard_strategy
+
+    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        """
+        Main feature generation method. \n 
+        :param dataf: DataFrame with columns: [ticker, date, open, high, low, close, volume] \n
+        :return: DataFrame with features added.
+        """
+        dataf_list = [
+            x
+            for _, x in tqdm(
+                dataf.groupby(self.ticker_col), desc="Generating ticker DataFrames"
+            )
+        ]
+        dataf = self._generate_features(dataf_list=dataf_list)
+        return NumerFrame(dataf)
+    
+    def _generate_features(self, dataf_list: List[pd.DataFrame]) -> pd.DataFrame:
+        """
+        Add features for list of ticker DataFrames and concatenate.
+        :param dataf_list: List of DataFrames for each ticker.
+        :return: Concatenated DataFrame for all full list with features added.
+        """
+        with Pool(self.num_cores) as p:
+            feature_datafs = list(
+                tqdm(
+                    p.imap(self.add_features, dataf_list),
+                    desc="Generating features",
+                    total=len(dataf_list),
+                )
+            )
+        return pd.concat(feature_datafs)
+
+    def add_features(self, ticker_df: pd.DataFrame) -> pd.DataFrame:
+        """ 
+        The TA strategy is applied to the DataFrame here.
+        :param ticker_df: DataFrame for a single ticker.
+        :return: DataFrame with features added.
+        """
+        # We use a different multiprocessing engine so shutting off pandas_ta's multiprocessing
+        ticker_df.ta.cores = 0
+        ticker_df.ta.strategy(self.strategy)
+        return ticker_df
+
+# %% ../nbs/03_preprocessing.ipynb 93
 class AwesomePreProcessor(BaseProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self):
