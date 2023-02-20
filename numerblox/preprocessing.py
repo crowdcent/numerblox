@@ -739,8 +739,9 @@ class PandasTaFeatureGenerator:
         standard_strategy = ta.Strategy(name="standard", 
                                         ta=[{"kind": "rsi", "length": 14, "col_names": ("feature_RSI_14")},
                                             {"kind": "rsi", "length": 60, "col_names": ("feature_RSI_60")}])
-        self.strategy = strategy if strategy else standard_strategy
+        self.strategy = strategy if strategy is not None else standard_strategy
 
+    @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """
         Main feature generation method. \n 
@@ -766,7 +767,7 @@ class PandasTaFeatureGenerator:
             feature_datafs = list(
                 tqdm(
                     p.imap(self.add_features, dataf_list),
-                    desc="Generating features",
+                    desc="Generating pandas-ta features",
                     total=len(dataf_list),
                 )
             )
@@ -783,7 +784,7 @@ class PandasTaFeatureGenerator:
         ticker_df.ta.strategy(self.strategy)
         return ticker_df
 
-# %% ../nbs/03_preprocessing.ipynb 93
+# %% ../nbs/03_preprocessing.ipynb 97
 class AwesomePreProcessor(BaseProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self):
