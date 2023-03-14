@@ -536,8 +536,8 @@ class EODDownloader(BaseDownloader):
                                               from_=start, to=self.end_date)
             stock_df = pd.DataFrame(resp).set_index('date')
             stock_df['ticker'] = ticker
-        except:
-            rich_print(f":warning: WARNING: No data found for ticker: [red]'{ticker}'[/red]. :warning:")
+        except Exception as e:
+            rich_print(f":warning: WARNING: Date pull failed on ticker: [red]'{ticker}'[/red]. :warning: Exception: {e}")
             stock_df = pd.DataFrame()
         return stock_df
 
