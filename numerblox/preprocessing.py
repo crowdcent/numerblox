@@ -3,9 +3,8 @@
 # %% auto 0
 __all__ = ['BaseProcessor', 'display_processor_info', 'CopyPreProcessor', 'FeatureSelectionPreProcessor',
            'TargetSelectionPreProcessor', 'ReduceMemoryProcessor', 'UMAPFeatureGenerator', 'BayesianGMMTargetProcessor',
-           'GroupStatsPreProcessor', 'KatsuFeatureGenerator', 'EraQuantileProcessor', 'TickerMapper',
-           'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'PandasTaFeatureGenerator',
-           'AwesomePreProcessor']
+           'KatsuFeatureGenerator', 'EraQuantileProcessor', 'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor',
+           'DifferencePreProcessor', 'PandasTaFeatureGenerator', 'AwesomePreProcessor']
 
 # %% ../nbs/03_preprocessing.ipynb 4
 import os
@@ -337,42 +336,7 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         features = sub_df[features].values - 0.5
         return features, target
 
-# %% ../nbs/03_preprocessing.ipynb 47
-class GroupStatsPreProcessor(BaseProcessor):
-    """
-    WARNING: Only supported for Version 1 (legacy) data. \n
-    Calculate group statistics for all data groups. \n
-    | :param groups: Groups to create features for. All groups by default.
-    """
-
-    def __init__(self, groups: list = None):
-        super().__init__()
-        self.all_groups = [
-            "intelligence",
-            "wisdom",
-            "charisma",
-            "dexterity",
-            "strength",
-            "constitution",
-        ]
-        self.group_names = groups if groups else self.all_groups
-
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
-        """Add group features."""
-        dataf = dataf.pipe(self._add_group_features)
-        return NumerFrame(dataf)
-
-    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:
-        """Mean, standard deviation and skew for each group."""
-        for group in self.group_names:
-            cols = [col for col in dataf.columns if group in col]
-            dataf[f"feature_{group}_mean"] = dataf[cols].mean(axis=1)
-            dataf[f"feature_{group}_std"] = dataf[cols].std(axis=1)
-            dataf[f"feature_{group}_skew"] = dataf[cols].skew(axis=1)
-        return dataf
-
-# %% ../nbs/03_preprocessing.ipynb 52
+# %% ../nbs/03_preprocessing.ipynb 45
 class KatsuFeatureGenerator(BaseProcessor):
     """
     Effective feature engineering setup based on Katsu's starter notebook.
@@ -484,7 +448,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         a = 2 / (span + 1)
         return series.ewm(alpha=a).mean()
 
-# %% ../nbs/03_preprocessing.ipynb 62
+# %% ../nbs/03_preprocessing.ipynb 55
 class EraQuantileProcessor(BaseProcessor):
     """
     Transform features into quantiles on a per-era basis
@@ -493,7 +457,10 @@ class EraQuantileProcessor(BaseProcessor):
     :param era_col: Era column name in the dataframe to perform each transformation. \n
     :param features: All features that you want quantized. All feature cols by default. \n
     :param num_cores: CPU cores to allocate for quantile transforming. All available cores by default. \n
-    :param random_state: Seed for QuantileTransformer.
+    :param random_state: Seed for QuantileTransformer. \n
+    :param batch_size: How many feature to process at the same time.
+    For Numerai Signals scale data it is advisable to process features one by one. 
+    This is the default setting.
     """
 
     def __init__(
@@ -503,13 +470,15 @@ class EraQuantileProcessor(BaseProcessor):
         features: list = None,
         num_cores: int = None,
         random_state: int = 0,
+        batch_size: int = 1
     ):
         super().__init__()
         self.num_quantiles = num_quantiles
         self.era_col = era_col
         self.num_cores = num_cores if num_cores else os.cpu_count()
-        self.features = features
+        self.features = features 
         self.random_state = random_state
+        self.batch_size = batch_size 
 
     def _process_eras(self, groupby_object):
         quantizer = QuantileTransformer(
@@ -532,23 +501,24 @@ class EraQuantileProcessor(BaseProcessor):
         )
 
         date_groups = dataf.groupby(self.era_col)
-        groupby_objects = [date_groups[feature] for feature in features]
+        for batch_start in tqdm(range(0, len(features), self.batch_size), total=len(features)):
+            # Create batch of features. Default is to process features on by one.
+            batch_end = min(batch_start + self.batch_size, len(features))
+            batch_features = features[batch_start:batch_end]
+            groupby_objects = [date_groups[feature] for feature in batch_features]
 
-        with Pool() as p:
-            results = list(
-                tqdm(
-                    p.imap(self._process_eras, groupby_objects),
-                    total=len(groupby_objects),
+            with Pool() as p:
+                results = list(
+                        p.imap(self._process_eras, groupby_objects),
                 )
-            )
 
-        quantiles = pd.concat(results, axis=1)
-        dataf[
-            [f"{feature}_quantile{self.num_quantiles}" for feature in features]
-        ] = quantiles
-        return NumerFrame(dataf)
+            quantiles = pd.concat(results, axis=1)
+            dataf[
+                [f"{feature}_quantile{self.num_quantiles}" for feature in batch_features]
+            ] = quantiles
+            return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 66
+# %% ../nbs/03_preprocessing.ipynb 59
 class TickerMapper(BaseProcessor):
     """
     Map ticker from one format to another. \n
@@ -588,7 +558,7 @@ class TickerMapper(BaseProcessor):
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 73
+# %% ../nbs/03_preprocessing.ipynb 66
 class SignalsTargetProcessor(BaseProcessor):
     """
     Engineer targets for Numerai Signals. \n
@@ -634,7 +604,7 @@ class SignalsTargetProcessor(BaseProcessor):
             )
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 77
+# %% ../nbs/03_preprocessing.ipynb 70
 class LagPreProcessor(BaseProcessor):
     """
     Add lag features based on given windows.
@@ -667,7 +637,7 @@ class LagPreProcessor(BaseProcessor):
                 dataf.loc[:, f"{feature}_lag{day}"] = shifted
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 83
+# %% ../nbs/03_preprocessing.ipynb 76
 class DifferencePreProcessor(BaseProcessor):
     """
     Add difference features based on given windows. Run LagPreProcessor first.
@@ -714,7 +684,7 @@ class DifferencePreProcessor(BaseProcessor):
                 )
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 88
+# %% ../nbs/03_preprocessing.ipynb 81
 class PandasTaFeatureGenerator:
     """
     Generate features with pandas-ta.
@@ -784,7 +754,7 @@ class PandasTaFeatureGenerator:
         ticker_df.ta.strategy(self.strategy)
         return ticker_df
 
-# %% ../nbs/03_preprocessing.ipynb 97
+# %% ../nbs/03_preprocessing.ipynb 90
 class AwesomePreProcessor(BaseProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self):

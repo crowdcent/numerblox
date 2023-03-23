@@ -12,7 +12,7 @@ from typing import List, Union, Dict
 from rich import print as rich_print
 
 from .numerframe import NumerFrame, create_numerframe
-from .preprocessing import BaseProcessor, CopyPreProcessor, GroupStatsPreProcessor, FeatureSelectionPreProcessor
+from .preprocessing import BaseProcessor, CopyPreProcessor, FeatureSelectionPreProcessor
 from .model import BaseModel, ConstantModel, RandomModel
 from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
 
@@ -100,8 +100,8 @@ class ModelPipelineCollection:
     def process_all_pipelines(self, dataf: Union[pd.DataFrame, NumerFrame]) -> Dict[str, NumerFrame]:
         """ Process all pipelines and return Dictionary mapping pipeline names to resulting NumerFrames. """
         result_datafs = dict()
-        for name, pipeline in tqdm(self.pipelines.items(),
-                                   desc="Processing Pipeline Collection"):
+        for name in tqdm(self.pipeline_names,
+                         desc="Processing Pipeline Collection"):
             result_datafs[name] = self.process_single_pipeline(dataf, name)
         return result_datafs
 
