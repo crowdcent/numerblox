@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sp
 from tqdm.auto import tqdm
-from typeguard import typechecked
 from rich import print as rich_print
 from scipy.stats.mstats import gmean
 from sklearn.preprocessing import MinMaxScaler
@@ -35,7 +34,6 @@ class BasePostProcessor(BaseProcessor):
         ...
 
 # %% ../nbs/05_postprocessing.ipynb 14
-@typechecked
 class Standardizer(BasePostProcessor):
     """
     Uniform standardization of prediction columns.
@@ -55,7 +53,6 @@ class Standardizer(BasePostProcessor):
         return NumerFrame(dataf)
 
 # %% ../nbs/05_postprocessing.ipynb 20
-@typechecked
 class MeanEnsembler(BasePostProcessor):
     """
     Take simple mean of multiple cols and store in new col.
@@ -87,7 +84,6 @@ class MeanEnsembler(BasePostProcessor):
         return NumerFrame(dataf)
 
 # %% ../nbs/05_postprocessing.ipynb 23
-@typechecked
 class DonateWeightedEnsembler(BasePostProcessor):
     """
     Weighted average as per Donate et al.'s formula
@@ -126,7 +122,6 @@ class DonateWeightedEnsembler(BasePostProcessor):
         return weights
 
 # %% ../nbs/05_postprocessing.ipynb 29
-@typechecked
 class GeometricMeanEnsembler(BasePostProcessor):
     """
     Calculate the weighted Geometric mean.
@@ -151,7 +146,6 @@ class GeometricMeanEnsembler(BasePostProcessor):
         return NumerFrame(dataf)
 
 # %% ../nbs/05_postprocessing.ipynb 34
-@typechecked
 class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
@@ -240,7 +234,6 @@ class FeatureNeutralizer(BasePostProcessor):
 
 # %% ../nbs/05_postprocessing.ipynb 44
 import tensorflow as tf
-@typechecked
 class FeaturePenalizer(BasePostProcessor):
     """
     Feature penalization with TensorFlow.
@@ -372,7 +365,6 @@ class FeaturePenalizer(BasePostProcessor):
         return tf.matmul(x, y, transpose_a=True)
 
 # %% ../nbs/05_postprocessing.ipynb 54
-@typechecked
 class AwesomePostProcessor(BasePostProcessor):
     """
     TEMPLATE - Do some awesome postprocessing.
