@@ -14,7 +14,6 @@ from random import choices
 from tqdm.auto import tqdm
 from datetime import datetime
 from abc import abstractmethod
-from typeguard import typechecked
 from string import ascii_uppercase
 from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
@@ -25,7 +24,6 @@ from .download import BaseIO
 from .key import Key
 
 # %% ../nbs/09_submission.ipynb 7
-@typechecked
 class BaseSubmitter(BaseIO):
     """
     Basic functionality for submitting to Numerai. \n
@@ -174,7 +172,6 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
         )
 
 # %% ../nbs/09_submission.ipynb 10
-@typechecked
 class NumeraiClassicSubmitter(BaseSubmitter):
     """
     Submit for Numerai Classic.
@@ -216,7 +213,6 @@ class NumeraiClassicSubmitter(BaseSubmitter):
         sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
 
 # %% ../nbs/09_submission.ipynb 26
-@typechecked
 class NumeraiSignalsSubmitter(BaseSubmitter):
     """
     Submit for Numerai Signals.
@@ -282,7 +278,6 @@ Supported: '{self.supported_ticker_formats}'"
             )
 
 # %% ../nbs/09_submission.ipynb 42
-@typechecked
 class NumerBaySubmitter(BaseSubmitter):
     """
     Submit to NumerBay to fulfill sale orders, in addition to submission to Numerai.

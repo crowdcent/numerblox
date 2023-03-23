@@ -21,7 +21,6 @@ from tqdm.auto import tqdm
 from functools import partial
 from catboost import CatBoost
 from numerbay import NumerBay
-from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
@@ -118,7 +117,6 @@ class DirectoryModel(BaseModel):
         ...
 
 # %% ../nbs/04_model.ipynb 16
-@typechecked
 class SingleModel(BaseModel):
     """
     Load single model from file and perform prediction logic.
@@ -183,7 +181,6 @@ class SingleModel(BaseModel):
             )
 
 # %% ../nbs/04_model.ipynb 21
-@typechecked
 class WandbKerasModel(SingleModel):
     """
     Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.
@@ -239,7 +236,6 @@ class WandbKerasModel(SingleModel):
         os.rename(self.file_name, f"{self.run_path.split('/')[-1]}_{self.file_name}")
 
 # %% ../nbs/04_model.ipynb 24
-@typechecked
 class ExternalCSVs(BaseModel):
     """
     Load external submissions and add to NumerFrame. \n
@@ -267,7 +263,6 @@ class ExternalCSVs(BaseModel):
         return pred_col
 
 # %% ../nbs/04_model.ipynb 31
-@typechecked
 class NumerBayCSVs(BaseModel):
     """
     Load NumerBay submissions and add to NumerFrame. \n
@@ -356,7 +351,6 @@ class NumerBayCSVs(BaseModel):
         return pred_col
 
 # %% ../nbs/04_model.ipynb 37
-@typechecked
 class JoblibModel(DirectoryModel):
     """
     Load and predict for arbitrary models in directory saved as .joblib.
@@ -383,7 +377,6 @@ class JoblibModel(DirectoryModel):
         return [joblib.load(path) for path in self.model_paths]
 
 # %% ../nbs/04_model.ipynb 41
-@typechecked
 class CatBoostModel(DirectoryModel):
     """
     Load and predict with all .cbm models (CatBoostRegressor) in directory.
@@ -408,7 +401,6 @@ class CatBoostModel(DirectoryModel):
         return [CatBoost().load_model(path) for path in self.model_paths]
 
 # %% ../nbs/04_model.ipynb 45
-@typechecked
 class LGBMModel(DirectoryModel):
     """
     Load and predict with all .lgb models (LightGBM) in directory.
@@ -472,7 +464,6 @@ class RandomModel(BaseModel):
         return NumerFrame(dataf)
 
 # %% ../nbs/04_model.ipynb 59
-@typechecked
 class ExamplePredictionsModel(BaseModel):
     """
     Load example predictions and add to NumerFrame. \n
@@ -511,7 +502,6 @@ class ExamplePredictionsModel(BaseModel):
         return pd.read_parquet(self.dest_path, *args, **kwargs)
 
 # %% ../nbs/04_model.ipynb 65
-@typechecked
 class AwesomeModel(BaseModel):
     """
     TEMPLATE - Predict with arbitrary prediction logic and model formats.
@@ -539,7 +529,6 @@ class AwesomeModel(BaseModel):
         return NumerFrame(dataf)
 
 # %% ../nbs/04_model.ipynb 68
-@typechecked
 class AwesomeDirectoryModel(DirectoryModel):
     """
     TEMPLATE - Load in all models of arbitrary file format and predict for all.

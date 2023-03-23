@@ -7,7 +7,6 @@ __all__ = ['ModelPipeline', 'ModelPipelineCollection']
 import uuid
 import pandas as pd
 from tqdm.auto import tqdm
-from typeguard import typechecked
 from typing import List, Union, Dict
 from rich import print as rich_print
 
@@ -17,7 +16,6 @@ from .model import BaseModel, ConstantModel, RandomModel
 from .postprocessing import Standardizer, MeanEnsembler, FeatureNeutralizer
 
 # %% ../nbs/06_modelpipeline.ipynb 8
-@typechecked
 class ModelPipeline:
     """
     Execute all preprocessing, prediction and postprocessing for a given setup.
@@ -86,7 +84,6 @@ class ModelPipeline:
         return self.pipeline(dataf)
 
 # %% ../nbs/06_modelpipeline.ipynb 15
-@typechecked
 class ModelPipelineCollection:
     """
     Execute multiple initialized ModelPipelines in a sequence.

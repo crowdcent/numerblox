@@ -18,7 +18,6 @@ import pandas_ta as ta
 from tqdm.auto import tqdm
 from functools import wraps
 from scipy.stats import rankdata
-from typeguard import typechecked
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 from typing import Union, Tuple, List
@@ -65,7 +64,6 @@ def display_processor_info(func):
     return wrapper
 
 # %% ../nbs/03_preprocessing.ipynb 19
-@typechecked
 class CopyPreProcessor(BaseProcessor):
     """Copy DataFrame to avoid manipulation of original DataFrame."""
 
@@ -77,7 +75,6 @@ class CopyPreProcessor(BaseProcessor):
         return NumerFrame(dataf.copy())
 
 # %% ../nbs/03_preprocessing.ipynb 22
-@typechecked
 class FeatureSelectionPreProcessor(BaseProcessor):
     """
     Keep only features given + all target, predictions and aux columns.
@@ -99,7 +96,6 @@ class FeatureSelectionPreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 # %% ../nbs/03_preprocessing.ipynb 26
-@typechecked
 class TargetSelectionPreProcessor(BaseProcessor):
     """
     Keep only features given + all target, predictions and aux columns.

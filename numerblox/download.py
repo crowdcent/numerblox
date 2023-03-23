@@ -13,13 +13,10 @@ import concurrent
 import pandas as pd
 from tqdm.auto import tqdm
 from rich.tree import Tree
-from functools import partial
 from numerapi import NumerAPI
-import matplotlib.pyplot as plt
 from google.cloud import storage
 from rich.console import Console
 from eod import EodHistoricalData
-from typeguard import typechecked
 from datetime import datetime as dt
 from pathlib import Path, PosixPath
 from abc import ABC, abstractmethod
@@ -30,7 +27,6 @@ from dateutil.relativedelta import relativedelta
 from .numerframe import NumerFrame
 
 # %% ../nbs/01_download.ipynb 7
-@typechecked
 class BaseIO(ABC):
     """
     Basic functionality for IO (downloading and uploading).
@@ -135,7 +131,6 @@ class BaseIO(ABC):
         return not bool(self.get_all_files)
 
 # %% ../nbs/01_download.ipynb 9
-@typechecked
 class BaseDownloader(BaseIO):
     """
     Abstract base class for downloaders.
