@@ -182,15 +182,13 @@ class BaseEvaluator:
         :param stake_compounding_lag: Compounding lag for Numerai rounds (4 for Numerai Classic)
         """
         payout_scores = era_corrs.clip(-0.25, 0.25)
-        payout_daily_value = (payout_scores + 1).cumprod()
-        apy = (
-            ((payout_daily_value.dropna().iloc[-1]) ** (1 / len(payout_scores)))
-            ** (
-                52 - stake_compounding_lag
-            )  # 52 weeks of compounding minus n for stake compounding lag
+        payout_product = (payout_scores + 1).prod()
+        return (
+            payout_product ** (
+                # 52 weeks of compounding minus n for stake compounding lag
+                (52 - stake_compounding_lag) / len(payout_scores))
             - 1
         ) * 100
-        return apy
 
     def example_correlation(
         self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, example_col: str
