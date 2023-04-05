@@ -8,9 +8,8 @@ about software/data engineering and focus more on building great Numerai
 models!
 
 Most of the components in this library are designed for solid weekly
-inference pipelines, but tools like
-[`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe),
-preprocessors and evaluators also greatly simplify the training process.
+inference pipelines, but tools like `NumerFrame`, preprocessors and
+evaluators also greatly simplify the training process.
 
 **Documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
@@ -61,43 +60,27 @@ Notebook environment to quickly test if your installation has succeeded
 `numerblox` features the following functionality:
 
 1.  Downloading data
-2.  A custom data structure extending Pandas DataFrame
-    ([`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe))
+2.  A custom data structure extending Pandas DataFrame (`NumerFrame`)
 3.  A suite of preprocessors for Numerai Classic and Signals (feature
     selection, engineering and manipulation)
 4.  Model objects for easy inference.
 5.  A suite of postprocessors for Numerai Classic and Signals
     (standardization, ensembling, neutralization and penalization)
-6.  Pipelines handling processing and prediction
-    ([`ModelPipeline`](https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipeline)
-    and
-    [`ModelPipelineCollection`](https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipelinecollection))
-7.  Evaluation
-    ([`NumeraiClassicEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraiclassicevaluator)
-    and
-    [`NumeraiSignalsEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraisignalsevaluator))
-8.  Authentication
-    ([`Key`](https://crowdcent.github.io/numerblox/key.html#key) and
-    [`load_key_from_json`](https://crowdcent.github.io/numerblox/key.html#load_key_from_json))
-9.  Submitting
-    ([`NumeraiClassicSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraiclassicsubmitter),
-    [`NumeraiSignalsSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter)
-    and
-    [`NumerBaySubmitter`](https://crowdcent.github.io/numerblox/submission.html#numerbaysubmitter))
-10. Automated staking
-    ([`NumeraiClassicStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraiclassicstaker)
-    and
-    [`NumeraiSignalsStaker`](https://crowdcent.github.io/numerblox/staking.html#numeraisignalsstaker))
+6.  Pipelines handling processing and prediction (`ModelPipeline` and
+    `ModelPipelineCollection`)
+7.  Evaluation (`NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`)
+8.  Authentication (`Key` and `load_key_from_json`)
+9.  Submitting (`NumeraiClassicSubmitter`, `NumeraiSignalsSubmitter` and
+    `NumerBaySubmitter`)
 
 #### 2.1.2. Educational notebooks
 
 Example notebooks can be found in the `nbs/edu_nbs` directory.
 
 `nbs/edu_nbs` currently contains the following examples: -
-`numerframe_tutorial.ipynb`: A deep dive into what
-[`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe)
-has to offer. - `submitting.ipynb`: How to use Submitters for safe and
-easy Numerai submissions. - `google_cloud_storage.ipynb`: How to use
+`numerframe_tutorial.ipynb`: A deep dive into what `NumerFrame` has to
+offer. - `submitting.ipynb`: How to use Submitters for safe and easy
+Numerai submissions. - `google_cloud_storage.ipynb`: How to use
 Downloaders and Submitters to interact with Google Cloud Storage
 (GCS). - `load_model_from_wandb.ipynb`: For [Weights &
 Biases](https://wandb.ai/) users. Easily pull a model from W&B for
