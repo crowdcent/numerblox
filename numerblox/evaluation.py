@@ -102,9 +102,7 @@ class BaseEvaluator:
         mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
         legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
-        legacy_max_drawdown = self.max_drawdown(era_corrs=val_corrs)
         apy = self.apy(era_corrs=val_numerai_corrs)
-        legacy_apy = self.apy(era_corrs=val_corrs)
         example_corr = self.example_correlation(
             dataf=dataf, pred_col=pred_col, example_col=example_col
         )
