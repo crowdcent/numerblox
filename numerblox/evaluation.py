@@ -175,14 +175,18 @@ class BaseEvaluator:
         Computes 'Numerai Corr'.
         More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303
 
-        Assumes original target col specification (i.e. in [0, 1] range).
+        Assumes original target col as input (i.e. in [0, 1] range).
         """
+        # Rank and gaussianize predictions
         ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), 
                                                method="average")
-        target = dataf[target_col]
         gauss_ranked_preds = stats.norm.ppf(ranked_preds)
+        # Transform target from [0...1] to [-2...2] range
+        centered_target = dataf[target_col]*4 - 2
+        # Accentuate tails of predictions and targets
         preds_p15 = np.sign(gauss_ranked_preds) * np.abs(gauss_ranked_preds) ** 1.5
-        target_p15 = target ** 1.5
+        target_p15 = np.sign(centered_target) * np.abs(centered_target) ** 1.5
+        # Pearson correlation
         corr, _ = stats.pearsonr(preds_p15, target_p15)
         return corr
 
@@ -446,11 +450,6 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
-
-    def __load_json(self, json_path: str) -> dict:
-        with open(json_path, 'r') as f:
-            data = json.load(f)
-        return data
 
 # %% ../nbs/07_evaluation.ipynb 15
 class NumeraiSignalsEvaluator(BaseEvaluator):
