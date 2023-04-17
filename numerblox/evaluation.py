@@ -9,6 +9,7 @@ import time
 import json
 import numpy as np
 import pandas as pd
+from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from typing import Tuple, Union
@@ -101,6 +102,9 @@ class BaseEvaluator:
         example_corr = self.example_correlation(
             dataf=dataf, pred_col=pred_col, example_col=example_col
         )
+        numerai_corr = self.numerai_corr(
+            dataf=dataf, pred_col=pred_col, target_col=target_col
+        )
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -108,6 +112,7 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "sharpe"] = sharpe
         col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
         col_stats.loc[pred_col, "apy"] = apy
+        col_stats.loc[pred_col, "numerai_corr"] = numerai_corr
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
 
         # Compute intensive stats
@@ -162,6 +167,28 @@ class BaseEvaluator:
         std = pd.Series(era_corrs.std(ddof=0)).item()
         sharpe = mean / std
         return mean, std, sharpe
+
+    def numerai_corr(
+        self, dataf: pd.DataFrame, pred_col: str, target_col: str
+    ) -> np.float64:
+        """
+        Computes 'Numerai Corr'.
+        More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303
+
+        Assumes original target col as input (i.e. in [0, 1] range).
+        """
+        # Rank and gaussianize predictions
+        ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), 
+                                               method="average")
+        gauss_ranked_preds = stats.norm.ppf(ranked_preds)
+        # Transform target from [0...1] to [-2...2] range
+        centered_target = dataf[target_col]*4 - 2
+        # Accentuate tails of predictions and targets
+        preds_p15 = np.sign(gauss_ranked_preds) * np.abs(gauss_ranked_preds) ** 1.5
+        target_p15 = np.sign(centered_target) * np.abs(centered_target) ** 1.5
+        # Pearson correlation
+        corr, _ = stats.pearsonr(preds_p15, target_p15)
+        return corr
 
     @staticmethod
     def max_drawdown(era_corrs: pd.Series) -> np.float64:
@@ -302,9 +329,9 @@ class BaseEvaluator:
         )
 
     @staticmethod
-    def _normalize_uniform(df: pd.DataFrame) -> pd.Series:
+    def _normalize_uniform(df: pd.DataFrame, method: str = "first") -> pd.Series:
         """Normalize predictions uniformly using ranks."""
-        x = (df.rank(method="first") - 0.5) / len(df)
+        x = (df.rank(method=method) - 0.5) / len(df)
         return pd.Series(x, index=df.index)
 
     def plot_correlations(
@@ -423,11 +450,6 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
-
-    def __load_json(self, json_path: str) -> dict:
-        with open(json_path, 'r') as f:
-            data = json.load(f)
-        return data
 
 # %% ../nbs/07_evaluation.ipynb 15
 class NumeraiSignalsEvaluator(BaseEvaluator):
