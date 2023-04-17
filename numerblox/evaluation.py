@@ -96,14 +96,17 @@ class BaseEvaluator:
         val_corrs = self.per_era_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
         )
-        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
-        max_drawdown = self.max_drawdown(era_corrs=val_corrs)
-        apy = self.apy(era_corrs=val_corrs)
+        val_numerai_corrs = self.per_era_numerai_corrs(
+            dataf=dataf, pred_col=pred_col, target_col=target_col
+        )
+        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
+        legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
+        max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
+        legacy_max_drawdown = self.max_drawdown(era_corrs=val_corrs)
+        apy = self.apy(era_corrs=val_numerai_corrs)
+        legacy_apy = self.apy(era_corrs=val_corrs)
         example_corr = self.example_correlation(
             dataf=dataf, pred_col=pred_col, example_col=example_col
-        )
-        numerai_corr = self.numerai_corr(
-            dataf=dataf, pred_col=pred_col, target_col=target_col
         )
 
         col_stats.loc[pred_col, "target"] = target_col
@@ -112,8 +115,10 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "sharpe"] = sharpe
         col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
         col_stats.loc[pred_col, "apy"] = apy
-        col_stats.loc[pred_col, "numerai_corr"] = numerai_corr
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
+        col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
+        col_stats.loc[pred_col, "legacy_std"] = legacy_std
+        col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
 
         # Compute intensive stats
         if not self.fast_mode:
@@ -155,6 +160,14 @@ class BaseEvaluator:
                 d[target_col]
             )
         )
+    
+    def per_era_numerai_corrs(
+            self, dataf: pd.DataFrame, pred_col: str, target_col: str
+        ) -> pd.Series:
+        """Numerai Corr between prediction and target for each era."""
+        return dataf.groupby(dataf[self.era_col]).apply(
+            lambda d: self.numerai_corr(d.fillna(0.5), pred_col, target_col)
+            )
 
     def mean_std_sharpe(
         self, era_corrs: pd.Series
@@ -248,7 +261,7 @@ class BaseEvaluator:
                                 feature_names=feature_names,
                                 proportion=1.0)
         neutralized_dataf = fn(dataf=dataf)
-        neutral_corrs = self.per_era_corrs(
+        neutral_corrs = self.per_era_numerai_corrs(
             dataf=neutralized_dataf,
             pred_col=f"{pred_col}_neutralized_1.0",
             target_col=target_col,
@@ -356,7 +369,7 @@ class BaseEvaluator:
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
         # Compute per era correlation for each prediction column.
         for pred_col in pred_cols:
-            per_era_corrs = self.per_era_corrs(
+            per_era_corrs = self.per_era_numerai_corrs(
                 dataf, pred_col=pred_col, target_col=target_col
             )
             validation_by_eras.loc[:, pred_col] = per_era_corrs
