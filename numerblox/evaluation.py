@@ -6,7 +6,6 @@ __all__ = ['FNCV4_FEATURES', 'FNCV3_FEATURES', 'MEDIUM_FEATURES', 'BaseEvaluator
 
 # %% ../nbs/07_evaluation.ipynb 4
 import time
-import json
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -293,11 +292,11 @@ class BaseEvaluator:
 
 
     @staticmethod
-    def _neutralize_series(series, by, proportion=1.0):
+    def _neutralize_series(series: pd.Series, by: pd.Series, proportion=1.0) -> pd.Series:
         scores = series.values.reshape(-1, 1)
         exposures = by.values.reshape(-1, 1)
 
-        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
+        # This line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
         exposures = np.hstack(
             (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))
         )
