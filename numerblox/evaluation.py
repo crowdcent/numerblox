@@ -6,7 +6,6 @@ __all__ = ['FNCV4_FEATURES', 'FNCV3_FEATURES', 'MEDIUM_FEATURES', 'BaseEvaluator
 
 # %% ../nbs/07_evaluation.ipynb 4
 import time
-import json
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -96,14 +95,15 @@ class BaseEvaluator:
         val_corrs = self.per_era_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
         )
-        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
-        max_drawdown = self.max_drawdown(era_corrs=val_corrs)
-        apy = self.apy(era_corrs=val_corrs)
+        val_numerai_corrs = self.per_era_numerai_corrs(
+            dataf=dataf, pred_col=pred_col, target_col=target_col
+        )
+        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
+        legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
+        max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
+        apy = self.apy(era_corrs=val_numerai_corrs)
         example_corr = self.example_correlation(
             dataf=dataf, pred_col=pred_col, example_col=example_col
-        )
-        numerai_corr = self.numerai_corr(
-            dataf=dataf, pred_col=pred_col, target_col=target_col
         )
 
         col_stats.loc[pred_col, "target"] = target_col
@@ -112,8 +112,10 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "sharpe"] = sharpe
         col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
         col_stats.loc[pred_col, "apy"] = apy
-        col_stats.loc[pred_col, "numerai_corr"] = numerai_corr
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
+        col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
+        col_stats.loc[pred_col, "legacy_std"] = legacy_std
+        col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
 
         # Compute intensive stats
         if not self.fast_mode:
@@ -155,6 +157,14 @@ class BaseEvaluator:
                 d[target_col]
             )
         )
+    
+    def per_era_numerai_corrs(
+            self, dataf: pd.DataFrame, pred_col: str, target_col: str
+        ) -> pd.Series:
+        """Numerai Corr between prediction and target for each era."""
+        return dataf.groupby(dataf[self.era_col]).apply(
+            lambda d: self.numerai_corr(d.fillna(0.5), pred_col, target_col)
+            )
 
     def mean_std_sharpe(
         self, era_corrs: pd.Series
@@ -181,8 +191,8 @@ class BaseEvaluator:
         ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), 
                                                method="average")
         gauss_ranked_preds = stats.norm.ppf(ranked_preds)
-        # Transform target from [0...1] to [-2...2] range
-        centered_target = dataf[target_col]*4 - 2
+        # Center target from [0...1] to [-0.5...0.5] range
+        centered_target = dataf[target_col] - 0.5
         # Accentuate tails of predictions and targets
         preds_p15 = np.sign(gauss_ranked_preds) * np.abs(gauss_ranked_preds) ** 1.5
         target_p15 = np.sign(centered_target) * np.abs(centered_target) ** 1.5
@@ -248,7 +258,7 @@ class BaseEvaluator:
                                 feature_names=feature_names,
                                 proportion=1.0)
         neutralized_dataf = fn(dataf=dataf)
-        neutral_corrs = self.per_era_corrs(
+        neutral_corrs = self.per_era_numerai_corrs(
             dataf=neutralized_dataf,
             pred_col=f"{pred_col}_neutralized_1.0",
             target_col=target_col,
@@ -282,11 +292,11 @@ class BaseEvaluator:
 
 
     @staticmethod
-    def _neutralize_series(series, by, proportion=1.0):
+    def _neutralize_series(series: pd.Series, by: pd.Series, proportion=1.0) -> pd.Series:
         scores = series.values.reshape(-1, 1)
         exposures = by.values.reshape(-1, 1)
 
-        # this line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
+        # This line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
         exposures = np.hstack(
             (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))
         )
@@ -356,7 +366,7 @@ class BaseEvaluator:
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
         # Compute per era correlation for each prediction column.
         for pred_col in pred_cols:
-            per_era_corrs = self.per_era_corrs(
+            per_era_corrs = self.per_era_numerai_corrs(
                 dataf, pred_col=pred_col, target_col=target_col
             )
             validation_by_eras.loc[:, pred_col] = per_era_corrs
