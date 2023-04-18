@@ -192,8 +192,8 @@ class BaseEvaluator:
         ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), 
                                                method="average")
         gauss_ranked_preds = stats.norm.ppf(ranked_preds)
-        # Transform target from [0...1] to [-2...2] range
-        centered_target = dataf[target_col]*4 - 2
+        # Center target from [0...1] to [-0.5...0.5] range
+        centered_target = dataf[target_col] - 0.5
         # Accentuate tails of predictions and targets
         preds_p15 = np.sign(gauss_ranked_preds) * np.abs(gauss_ranked_preds) ** 1.5
         target_p15 = np.sign(centered_target) * np.abs(centered_target) ** 1.5
