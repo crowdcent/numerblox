@@ -182,7 +182,7 @@ class BaseEvaluator:
         self, dataf: pd.DataFrame, pred_col: str, target_col: str
     ) -> np.float64:
         """
-        Computes 'Numerai Corr'.
+        Computes 'Numerai Corr' aka 'Corrv2'.
         More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303
 
         Assumes original target col as input (i.e. in [0, 1] range).
@@ -192,7 +192,8 @@ class BaseEvaluator:
                                                method="average")
         gauss_ranked_preds = stats.norm.ppf(ranked_preds)
         # Center target from [0...1] to [-0.5...0.5] range
-        centered_target = dataf[target_col] - 0.5
+        targets = dataf[target_col]
+        centered_target = targets - targets.mean()
         # Accentuate tails of predictions and targets
         preds_p15 = np.sign(gauss_ranked_preds) * np.abs(gauss_ranked_preds) ** 1.5
         target_p15 = np.sign(centered_target) * np.abs(centered_target) ** 1.5
