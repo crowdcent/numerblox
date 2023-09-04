@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Union
 from tqdm.auto import tqdm
 from functools import partial
-from numerbay import NumerBay
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
@@ -285,6 +284,7 @@ class NumerBayCSVs(BaseModel):
         self.numerbay_product_full_names = numerbay_product_full_names
         self.numerbay_key_path = numerbay_key_path
         self._api = None
+        from numerbay import NumerBay
         self._get_api_func = lambda: NumerBay(username=numerbay_username, password=numerbay_password)
         self.ticker_col = ticker_col
         self.classic_number = 8
