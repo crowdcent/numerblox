@@ -233,6 +233,10 @@ class FeatureNeutralizer(BasePostProcessor):
         return dataf[columns]
 
 # %% ../nbs/05_postprocessing.ipynb 44
+try:
+    import tensorflow as tf
+except ImportError:
+    print("WARNING: TensorFlow not installed. FeaturePenalizer will not work without Tensorflow installed.")
 class FeaturePenalizer(BasePostProcessor):
     """
     Feature penalization with TensorFlow.
@@ -245,7 +249,6 @@ class FeaturePenalizer(BasePostProcessor):
     :param pred_name: Prediction column to neutralize. \n
     :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
     """
-    import tensorflow as tf
     def __init__(
         self,
         max_exposure: float,
