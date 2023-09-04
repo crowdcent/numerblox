@@ -4,7 +4,7 @@
 __all__ = ['BasePostProcessor', 'Standardizer', 'MeanEnsembler', 'DonateWeightedEnsembler', 'GeometricMeanEnsembler',
            'FeatureNeutralizer', 'FeaturePenalizer', 'AwesomePostProcessor']
 
-# %% ../nbs/05_postprocessing.ipynb 5
+# %% ../nbs/05_postprocessing.ipynb 6
 import scipy
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ try:
 except ImportError:
     print("WARNING: TensorFlow not installed. FeaturePenalizer will not work without Tensorflow installed.")
 
-# %% ../nbs/05_postprocessing.ipynb 8
+# %% ../nbs/05_postprocessing.ipynb 9
 class BasePostProcessor(BaseProcessor):
     """
     Base class for postprocessing objects.
@@ -38,7 +38,7 @@ class BasePostProcessor(BaseProcessor):
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         ...
 
-# %% ../nbs/05_postprocessing.ipynb 14
+# %% ../nbs/05_postprocessing.ipynb 15
 class Standardizer(BasePostProcessor):
     """
     Uniform standardization of prediction columns.
@@ -57,7 +57,7 @@ class Standardizer(BasePostProcessor):
         dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 20
+# %% ../nbs/05_postprocessing.ipynb 21
 class MeanEnsembler(BasePostProcessor):
     """
     Take simple mean of multiple cols and store in new col.
@@ -88,7 +88,7 @@ class MeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 23
+# %% ../nbs/05_postprocessing.ipynb 24
 class DonateWeightedEnsembler(BasePostProcessor):
     """
     Weighted average as per Donate et al.'s formula
@@ -126,7 +126,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
             weights.append(1 / (2 ** (self.n_cols + 1 - j)))
         return weights
 
-# %% ../nbs/05_postprocessing.ipynb 29
+# %% ../nbs/05_postprocessing.ipynb 30
 class GeometricMeanEnsembler(BasePostProcessor):
     """
     Calculate the weighted Geometric mean.
@@ -150,7 +150,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 34
+# %% ../nbs/05_postprocessing.ipynb 35
 class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
@@ -237,7 +237,7 @@ class FeatureNeutralizer(BasePostProcessor):
         dataf[columns] = neutralization_func(dataf, columns, by)
         return dataf[columns]
 
-# %% ../nbs/05_postprocessing.ipynb 44
+# %% ../nbs/05_postprocessing.ipynb 45
 class FeaturePenalizer(BasePostProcessor):
     """
     Feature penalization with TensorFlow.
@@ -368,7 +368,7 @@ class FeaturePenalizer(BasePostProcessor):
         y = y / tf.norm(y, axis=0)
         return tf.matmul(x, y, transpose_a=True)
 
-# %% ../nbs/05_postprocessing.ipynb 54
+# %% ../nbs/05_postprocessing.ipynb 55
 class AwesomePostProcessor(BasePostProcessor):
     """
     TEMPLATE - Do some awesome postprocessing.
