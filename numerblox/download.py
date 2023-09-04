@@ -568,7 +568,7 @@ class EODDownloader(BaseDownloader):
             stock_df = pd.DataFrame()
         return stock_df
 
-# %% ../nbs/01_download.ipynb 48
+# %% ../nbs/01_download.ipynb 49
 class AwesomeCustomDownloader(BaseDownloader):
     """
     TEMPLATE -
