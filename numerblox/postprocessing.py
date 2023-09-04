@@ -245,6 +245,7 @@ class FeaturePenalizer(BasePostProcessor):
     :param pred_name: Prediction column to neutralize. \n
     :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
     """
+    import tensorflow as tf
     def __init__(
         self,
         max_exposure: float,
@@ -285,7 +286,6 @@ class FeaturePenalizer(BasePostProcessor):
         normalize=True,
         gaussianize=True,
     ) -> pd.DataFrame:
-        import tensorflow as tf
         if neutralizers is None:
             neutralizers = [x for x in dataf.columns if x.startswith("feature")]
         neutralized = []
@@ -319,7 +319,6 @@ class FeaturePenalizer(BasePostProcessor):
         return predictions
 
     def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
-        import tensorflow as tf
         model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.Input(input_size),
@@ -346,8 +345,8 @@ class FeaturePenalizer(BasePostProcessor):
             if loss < 1e-7:
                 break
 
+    @tf.function(experimental_relax_shapes=True)
     def __train_loop_body(self, model, feats, pred, target_exps):
-        import tensorflow as tf
         with tf.GradientTape() as tape:
             exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
             loss = tf.reduce_sum(
@@ -357,8 +356,8 @@ class FeaturePenalizer(BasePostProcessor):
         return loss, tape.gradient(loss, model.trainable_variables)
 
     @staticmethod
+    @tf.function(experimental_relax_shapes=True, experimental_compile=True)
     def __exposures(x, y):
-        import tensorflow as tf
         x = x - tf.math.reduce_mean(x, axis=0)
         x = x / tf.norm(x, axis=0)
         y = y - tf.math.reduce_mean(y, axis=0)
