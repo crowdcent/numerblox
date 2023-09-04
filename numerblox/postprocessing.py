@@ -4,7 +4,7 @@
 __all__ = ['BasePostProcessor', 'Standardizer', 'MeanEnsembler', 'DonateWeightedEnsembler', 'GeometricMeanEnsembler',
            'FeatureNeutralizer', 'FeaturePenalizer', 'AwesomePostProcessor']
 
-# %% ../nbs/05_postprocessing.ipynb 6
+# %% ../nbs/05_postprocessing.ipynb 5
 import scipy
 import numpy as np
 import pandas as pd
@@ -17,12 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, display_processor_info
 
-try:
-    import tensorflow as tf
-except ImportError:
-    print("WARNING: TensorFlow not installed. FeaturePenalizer will not work without Tensorflow installed.")
-
-# %% ../nbs/05_postprocessing.ipynb 9
+# %% ../nbs/05_postprocessing.ipynb 8
 class BasePostProcessor(BaseProcessor):
     """
     Base class for postprocessing objects.
@@ -38,7 +33,7 @@ class BasePostProcessor(BaseProcessor):
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         ...
 
-# %% ../nbs/05_postprocessing.ipynb 15
+# %% ../nbs/05_postprocessing.ipynb 14
 class Standardizer(BasePostProcessor):
     """
     Uniform standardization of prediction columns.
@@ -57,7 +52,7 @@ class Standardizer(BasePostProcessor):
         dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 21
+# %% ../nbs/05_postprocessing.ipynb 20
 class MeanEnsembler(BasePostProcessor):
     """
     Take simple mean of multiple cols and store in new col.
@@ -88,7 +83,7 @@ class MeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 24
+# %% ../nbs/05_postprocessing.ipynb 23
 class DonateWeightedEnsembler(BasePostProcessor):
     """
     Weighted average as per Donate et al.'s formula
@@ -126,7 +121,7 @@ class DonateWeightedEnsembler(BasePostProcessor):
             weights.append(1 / (2 ** (self.n_cols + 1 - j)))
         return weights
 
-# %% ../nbs/05_postprocessing.ipynb 30
+# %% ../nbs/05_postprocessing.ipynb 29
 class GeometricMeanEnsembler(BasePostProcessor):
     """
     Calculate the weighted Geometric mean.
@@ -150,7 +145,7 @@ class GeometricMeanEnsembler(BasePostProcessor):
         )
         return NumerFrame(dataf)
 
-# %% ../nbs/05_postprocessing.ipynb 35
+# %% ../nbs/05_postprocessing.ipynb 34
 class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
@@ -237,7 +232,7 @@ class FeatureNeutralizer(BasePostProcessor):
         dataf[columns] = neutralization_func(dataf, columns, by)
         return dataf[columns]
 
-# %% ../nbs/05_postprocessing.ipynb 45
+# %% ../nbs/05_postprocessing.ipynb 44
 class FeaturePenalizer(BasePostProcessor):
     """
     Feature penalization with TensorFlow.
@@ -290,6 +285,7 @@ class FeaturePenalizer(BasePostProcessor):
         normalize=True,
         gaussianize=True,
     ) -> pd.DataFrame:
+        import tensorflow as tf
         if neutralizers is None:
             neutralizers = [x for x in dataf.columns if x.startswith("feature")]
         neutralized = []
@@ -323,6 +319,7 @@ class FeaturePenalizer(BasePostProcessor):
         return predictions
 
     def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
+        import tensorflow as tf
         model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.Input(input_size),
@@ -349,8 +346,8 @@ class FeaturePenalizer(BasePostProcessor):
             if loss < 1e-7:
                 break
 
-    @tf.function(experimental_relax_shapes=True)
     def __train_loop_body(self, model, feats, pred, target_exps):
+        import tensorflow as tf
         with tf.GradientTape() as tape:
             exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
             loss = tf.reduce_sum(
@@ -360,15 +357,15 @@ class FeaturePenalizer(BasePostProcessor):
         return loss, tape.gradient(loss, model.trainable_variables)
 
     @staticmethod
-    @tf.function(experimental_relax_shapes=True, experimental_compile=True)
     def __exposures(x, y):
+        import tensorflow as tf
         x = x - tf.math.reduce_mean(x, axis=0)
         x = x / tf.norm(x, axis=0)
         y = y - tf.math.reduce_mean(y, axis=0)
         y = y / tf.norm(y, axis=0)
         return tf.matmul(x, y, transpose_a=True)
 
-# %% ../nbs/05_postprocessing.ipynb 55
+# %% ../nbs/05_postprocessing.ipynb 54
 class AwesomePostProcessor(BasePostProcessor):
     """
     TEMPLATE - Do some awesome postprocessing.
