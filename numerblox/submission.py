@@ -17,7 +17,6 @@ from abc import abstractmethod
 from string import ascii_uppercase
 from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
-from numerbay import NumerBay
 from dateutil.relativedelta import relativedelta, FR
 
 from .download import BaseIO
@@ -295,6 +294,7 @@ class NumerBaySubmitter(BaseSubmitter):
         super().__init__(
             directory_path=str(tournament_submitter.dir), api=tournament_submitter.api
         )
+        from numerbay import NumerBay
         self.numerbay_api = NumerBay(username=numerbay_username, password=numerbay_password)
         self.tournament_submitter = tournament_submitter
         self.upload_to_numerai = upload_to_numerai

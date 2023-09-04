@@ -9,17 +9,14 @@ __all__ = ['BaseModel', 'DirectoryModel', 'SingleModel', 'WandbKerasModel', 'Ext
 import os
 import gc
 import uuid
-import wandb
 import joblib
 import pickle
 import numpy as np
 import pandas as pd
-import lightgbm as lgb
 from pathlib import Path
 from typing import Union
 from tqdm.auto import tqdm
 from functools import partial
-from catboost import CatBoost
 from numerbay import NumerBay
 from abc import ABC, abstractmethod
 from rich import print as rich_print
@@ -136,6 +133,7 @@ class SingleModel(BaseModel):
                  feature_cols: list = None
                  ):
         import tensorflow as tf
+        from catboost import CatBoost
         self.model_file_path = Path(model_file_path)
         assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
         assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
@@ -231,6 +229,7 @@ class WandbKerasModel(SingleModel):
             consider moving it or set 'replace=True' at initialization to overwrite. [/red] :warning:")
         else:
             rich_print(f":page_facing_up: [green] Downloading '{self.file_name}' from '{self.run_path}' in W&B Cloud. [/green] :page_facing_up:")
+        import wandb
         run = wandb.Api().run(self.run_path)
         run.file(name=self.file_name).download(replace=self.replace)
         os.rename(self.file_name, f"{self.run_path.split('/')[-1]}_{self.file_name}")
@@ -390,6 +389,7 @@ class CatBoostModel(DirectoryModel):
                  model_name: str = None,
                  feature_cols: list = None
                  ):
+        from catboost import CatBoost
         file_suffix = 'cbm'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
@@ -422,6 +422,7 @@ class LGBMModel(DirectoryModel):
                          )
 
     def load_models(self) -> list:
+        import lightgbm as lgb
         return [lgb.Booster(model_file=str(path)) for path in self.model_paths]
 
 # %% ../nbs/04_model.ipynb 51
@@ -468,11 +469,15 @@ class ExamplePredictionsModel(BaseModel):
     """
     Load example predictions and add to NumerFrame. \n
     :param file_name: File to download from NumerAPI.
+    By default this is example predictions for v4.2 data.
+    Other example of example predictions in previous version:
+    - v4.1. -> "v4.1/validation_example_preds.parquet"
+    - v4. -> "v4/validation_example_preds.parquet"
     'example_validation_predictions.parquet' by default. \n
     :param data_directory: Directory path to download example predictions to or directory where example data already exists. \n
     :param round_num: Optional round number. Downloads most recent round by default.
     """
-    def __init__(self, file_name: str = "example_validation_predictions.parquet",
+    def __init__(self, file_name: str = "v4.2/validation_example_preds.parquet",
                  data_directory: str = "example_predictions_model",
                  round_num: int = None):
         super().__init__(model_directory="",
