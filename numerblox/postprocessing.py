@@ -17,6 +17,11 @@ from sklearn.preprocessing import MinMaxScaler
 from .numerframe import NumerFrame, create_numerframe
 from .preprocessing import BaseProcessor, display_processor_info
 
+try:
+    import tensorflow as tf
+except ImportError:
+    print("WARNING: TensorFlow not installed. FeaturePenalizer will not work without Tensorflow installed.")
+
 # %% ../nbs/05_postprocessing.ipynb 8
 class BasePostProcessor(BaseProcessor):
     """
@@ -233,10 +238,6 @@ class FeatureNeutralizer(BasePostProcessor):
         return dataf[columns]
 
 # %% ../nbs/05_postprocessing.ipynb 44
-try:
-    import tensorflow as tf
-except ImportError:
-    print("WARNING: TensorFlow not installed. FeaturePenalizer will not work without Tensorflow installed.")
 class FeaturePenalizer(BasePostProcessor):
     """
     Feature penalization with TensorFlow.
