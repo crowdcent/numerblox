@@ -13,7 +13,6 @@ import warnings
 import numpy as np
 import pandas as pd
 import datetime as dt
-from umap import UMAP
 import pandas_ta as ta
 from tqdm.auto import tqdm
 from functools import wraps
@@ -226,6 +225,7 @@ class UMAPFeatureGenerator(BaseProcessor):
         *args,
         **kwargs,
     ):
+        from umap import UMAP
         super().__init__()
         self.n_components = n_components
         self.n_neighbors = n_neighbors
