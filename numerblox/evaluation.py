@@ -506,11 +506,11 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "sharpe"] = sharpe
         col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
         col_stats.loc[pred_col, "apy"] = apy
+        col_stats.loc[pred_col, "calmar_ratio"] = calmar
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
         col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
         col_stats.loc[pred_col, "legacy_std"] = legacy_std
         col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
-        col_stats.loc[pred_col, "calmar_ratio"] = calmar
 
         # Compute intensive stats
         if not self.fast_mode:
