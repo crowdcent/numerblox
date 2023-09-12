@@ -1,14 +1,9 @@
-import os
-import uuid
 import numpy as np
 import pandas as pd
 from typing import Union
 from copy import deepcopy
-from random import choices
 from tqdm.auto import tqdm
-from datetime import datetime
 from abc import abstractmethod
-from string import ascii_uppercase
 from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
