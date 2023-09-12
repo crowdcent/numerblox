@@ -1,4 +1,5 @@
 import os
+import pytest
 import numpy as np
 import pandas as pd
 from uuid import uuid4
@@ -52,7 +53,7 @@ def test_classic_submitter():
     assert combined.columns == [TARGET_NAME]
 
     # Test that saving breaks if range is invalid.
-    try:
+    with pytest.raises(ValueError):
         invalid_signal = deepcopy(test_dataf)
         invalid_signal.iloc[0][TARGET_NAME] += 10
         num_sub.save_csv(
@@ -60,8 +61,6 @@ def test_classic_submitter():
             file_name="should_not_save.csv",
             cols=TARGET_NAME,
         )
-    except ValueError:
-        pass
     
     # Wind down
     num_sub.remove_base_directory()
@@ -92,7 +91,7 @@ def test_signals_submitter():
     assert combined_signals.columns == ['signal']
 
     # Test that saving breaks if range is invalid.
-    try:
+    with pytest.raises(ValueError):
         invalid_signal = deepcopy(test_dataf)
         invalid_signal.loc[0, "signal"] += 10
         signals_sub.save_csv(
@@ -100,11 +99,9 @@ def test_signals_submitter():
             file_name="should_not_save.csv",
             cols=list(invalid_signal.columns),
         )
-    except ValueError:
-        pass
-    
+
     # Test that saving breaks if ticker is invalid.
-    try:
+    with pytest.raises(NotImplementedError):
         invalid_ticker = deepcopy(test_dataf)
         invalid_ticker = invalid_ticker.rename(
             {"ticker": "not_a_valid_ticker_format"}, axis=1
@@ -114,9 +111,6 @@ def test_signals_submitter():
             file_name="should_not_save.csv",
             cols=list(invalid_ticker.columns),
         )
-    except NotImplementedError:
-        pass
-
     # Wind down
     signals_sub.remove_base_directory()
     assert not os.path.exists(test_dir)
