@@ -6,10 +6,8 @@ import shutil
 import concurrent
 import pandas as pd
 from tqdm.auto import tqdm
-from rich.tree import Tree
 from numerapi import NumerAPI
 from google.cloud import storage
-from rich.console import Console
 from eod import EodHistoricalData
 from datetime import datetime as dt
 from pathlib import Path, PosixPath
@@ -165,7 +163,7 @@ class BaseDownloader(BaseIO):
 
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    WARNING: Versions 1 and 2 (legacy data) are deprecated. Only supporting version 3+.
+    WARNING: Versions 1-3 (legacy data) are deprecated. Only supporting version 4+.
 
     Downloading from NumerAPI for Numerai Classic data. \n
     :param directory_path: Base folder to download files to. \n
@@ -176,27 +174,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
-        self.version_mapping = {"3": {
-            "train": {
-                "int8": [
-                    "v3/numerai_training_data_int8.parquet",
-                    "v3/numerai_validation_data_int8.parquet"
-                ],
-                "float": [
-                    "v3/numerai_training_data.parquet",
-                    "v3/numerai_validation_data.parquet"
-                ]
-            },
-            "inference": {
-                "int8": ["v3/numerai_tournament_data_int8.parquet"],
-                "float": ["v3/numerai_tournament_data.parquet"]
-            },
-            "live": {
-                "int8": ["v3/numerai_live_data_int8.parquet"],
-                "float": ["v3/numerai_live_data.parquet"]
-            },
-        },
-            "4": {
+        self.version_mapping = {"4": {
                 "train": {
                     "int8": [
                         "v4/train_int8.parquet",
@@ -267,7 +245,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         }
 
     def download_training_data(
-        self, subfolder: str = "", version: str = "4.2", int8: bool = False
+        self, subfolder: str = "", version: str = "4.2", int8: bool = True
     ):
         """
         Get Numerai classic training and validation data.
@@ -297,7 +275,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self,
         subfolder: str = "",
         version: str = "4.2",
-        int8: bool = False,
+        int8: bool = True,
         round_num: int = None,
     ):
         """
@@ -312,6 +290,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         data_type = "int8" if int8 else "float"
+        if data_type == "float" and version == "4.2":
+            raise NotImplementedError("""No float version of training data is available for version 4.2. If you would like to download the 4.2 (Rain) dataset make sure to explicitly pass `int8=True`.""")
         inference_files = self._get_version_mapping(str(version))["inference"][data_type]
         for file in inference_files:
             dest_path = self.__get_dest_path(subfolder, file)
