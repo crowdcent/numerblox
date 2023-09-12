@@ -15,43 +15,32 @@ from multiprocessing.pool import Pool
 from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.preprocessing import QuantileTransformer
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_X_y, check_array
+
 
 from .numerframe import NumerFrame
 from .features import V4_2_FEATURE_GROUP_MAPPING
 
-class BaseProcessor(ABC):
+class BaseProcessor(BaseEstimator, TransformerMixin):
     """Common functionality for preprocessors and postprocessors."""
 
     def __init__(self):
         ...
 
+    def fit(self, X, y=None):
+        return self
+
     @abstractmethod
     def transform(
-        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs
+        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
     ) -> NumerFrame:
         ...
 
     def __call__(
-        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs
+        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
     ) -> NumerFrame:
-        return self.transform(dataf=dataf, *args, **kwargs)
-
-
-def display_processor_info(func):
-    """Fancy console output for data processing."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        tic = dt.datetime.now()
-        result = func(*args, **kwargs)
-        time_taken = str(dt.datetime.now() - tic)
-        class_name = func.__qualname__.split(".")[0]
-        rich_print(
-            f":white_check_mark: Finished step [bold]{class_name}[/bold]. Output shape={result.shape}. Time taken for step: [blue]{time_taken}[/blue]. :white_check_mark:"
-        )
-        return result
-
-    return wrapper
+        return self.transform(X=X, y=y, **kwargs)
 
 
 class CopyPreProcessor(BaseProcessor):
@@ -60,9 +49,8 @@ class CopyPreProcessor(BaseProcessor):
     def __init__(self):
         super().__init__()
 
-    @display_processor_info
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
-        return NumerFrame(dataf.copy())
+    def transform(self, X: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+        return NumerFrame(X.copy())
 
 
 class FeatureSelectionPreProcessor(BaseProcessor):
@@ -74,16 +62,15 @@ class FeatureSelectionPreProcessor(BaseProcessor):
         super().__init__()
         self.feature_cols = feature_cols
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
         keep_cols = (
             self.feature_cols
-            + dataf.target_cols
-            + dataf.prediction_cols
-            + dataf.aux_cols
+            + X.target_cols
+            + X.prediction_cols
+            + X.aux_cols
         )
-        dataf = dataf.loc[:, keep_cols]
-        return NumerFrame(dataf)
+        X = X.loc[:, keep_cols]
+        return NumerFrame(X)
 
 
 class TargetSelectionPreProcessor(BaseProcessor):
@@ -95,7 +82,6 @@ class TargetSelectionPreProcessor(BaseProcessor):
         super().__init__()
         self.target_cols = target_cols
 
-    @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         keep_cols = (
             self.target_cols
@@ -122,7 +108,6 @@ class ReduceMemoryProcessor(BaseProcessor):
         super().__init__()
         self.deep_mem_inspect = deep_mem_inspect
 
-    @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         dataf = self._reduce_mem_usage(dataf)
         return NumerFrame(dataf)
@@ -218,7 +203,6 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         self.ridge = Ridge(fit_intercept=False)
         self.bins = [0, 0.05, 0.25, 0.75, 0.95, 1]
 
-    @display_processor_info
     def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
         all_eras = dataf[dataf.meta.era_col].unique()
         coefs = self._get_coefs(dataf=dataf, all_eras=all_eras)
@@ -301,7 +285,6 @@ class GroupStatsPreProcessor(BaseProcessor):
         self.group_names = groups if groups else self.all_groups
         self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
 
-    @display_processor_info
     def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:
         """Check validity and add group features."""
         dataf = dataf.pipe(self._add_group_features)
@@ -347,7 +330,6 @@ class KatsuFeatureGenerator(BaseProcessor):
         self.close_col = close_col
         self.num_cores = num_cores if num_cores else os.cpu_count()
 
-    @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """Multiprocessing feature engineering."""
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
@@ -432,73 +414,39 @@ class KatsuFeatureGenerator(BaseProcessor):
 
 
 class EraQuantileProcessor(BaseProcessor):
-    """
-    Transform features into quantiles on a per-era basis
-
-    :param num_quantiles: Number of buckets to split data into. \n
-    :param era_col: Era column name in the dataframe to perform each transformation. \n
-    :param features: All features that you want quantized. All feature cols by default. \n
-    :param num_cores: CPU cores to allocate for quantile transforming. All available cores by default. \n
-    :param random_state: Seed for QuantileTransformer. \n
-    :param batch_size: How many feature to process at the same time.
-    For Numerai Signals scale data it is advisable to process features one by one. 
-    This is the default setting.
-    """
-
     def __init__(
         self,
         num_quantiles: int = 50,
-        era_col: str = "friday_date",
+        era_col: str = "date",
         features: list = None,
-        num_cores: int = None,
-        random_state: int = 0,
-        batch_size: int = 1
+        random_state: int = 0
     ):
         super().__init__()
         self.num_quantiles = num_quantiles
         self.era_col = era_col
-        self.num_cores = num_cores if num_cores else os.cpu_count()
         self.features = features 
         self.random_state = random_state
-        self.batch_size = batch_size 
 
-    def _process_eras(self, groupby_object):
+    def _process_feature(self, group_data: pd.Series, feature: str) -> pd.Series:
         quantizer = QuantileTransformer(
             n_quantiles=self.num_quantiles, random_state=self.random_state
         )
-        qt = lambda x: quantizer.fit_transform(x.values.reshape(-1, 1)).ravel()
+        transformed_data = quantizer.fit_transform(group_data.to_frame()).ravel()
+        return pd.Series(transformed_data, index=group_data.index)
 
-        column = groupby_object.transform(qt)
-        return column
 
-    @display_processor_info
     def transform(
         self,
         dataf: Union[pd.DataFrame, NumerFrame],
-    ) -> NumerFrame:
-        """Multiprocessing quantile transforms by era."""
-        features = self.features if self.features else dataf.feature_cols
-        rich_print(
-            f"Quantiling for {len(features)} features using {self.num_cores} CPU cores."
-        )
+    ) -> pd.DataFrame:
+        features = self.features if self.features else [col for col in dataf.columns if col != self.era_col]
+        print(f"Quantiling for {len(features)} features.")
 
-        date_groups = dataf.groupby(self.era_col)
-        for batch_start in tqdm(range(0, len(features), self.batch_size), total=len(features)):
-            # Create batch of features. Default is to process features on by one.
-            batch_end = min(batch_start + self.batch_size, len(features))
-            batch_features = features[batch_start:batch_end]
-            groupby_objects = [date_groups[feature] for feature in batch_features]
-
-            with Pool() as p:
-                results = list(
-                        p.imap(self._process_eras, groupby_objects),
-                )
-
-            quantiles = pd.concat(results, axis=1)
-            dataf[
-                [f"{feature}_quantile{self.num_quantiles}" for feature in batch_features]
-            ] = quantiles
-            return NumerFrame(dataf)
+        date_groups = dataf.groupby(self.era_col, group_keys=False)
+        for feature in tqdm(features):
+            group_data = date_groups[feature].apply(lambda x: self._process_feature(x, feature))
+            dataf[f"{feature}_quantile{self.num_quantiles}"] = group_data
+        return dataf
 
 
 class TickerMapper(BaseProcessor):
@@ -533,9 +481,8 @@ class TickerMapper(BaseProcessor):
             self.ticker_map[[self.ticker_col, self.target_ticker_format]].values
         )
 
-    @display_processor_info
     def transform(
-        self, dataf: Union[pd.DataFrame, NumerFrame], *args, **kwargs
+        self, dataf: Union[pd.DataFrame, NumerFrame], **kwargs
     ) -> NumerFrame:
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
@@ -566,7 +513,6 @@ class SignalsTargetProcessor(BaseProcessor):
         self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
         self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
 
-    @display_processor_info
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
             dataf.loc[:, f"target_{window}d_raw"] = (
@@ -608,8 +554,7 @@ class LagPreProcessor(BaseProcessor):
         self.ticker_col = ticker_col
         self.feature_names = feature_names
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
         ticker_groups = dataf.groupby(self.ticker_col)
         for feature in tqdm(feature_names, desc="Lag feature generation"):
@@ -643,8 +588,7 @@ class DifferencePreProcessor(BaseProcessor):
         self.pct_diff = pct_diff
         self.abs_diff = abs_diff
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def transform(self, dataf: NumerFrame) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
         for feature in tqdm(feature_names, desc="Difference feature generation"):
             lag_columns = dataf.get_pattern_data(f"{feature}_lag").columns
@@ -667,7 +611,7 @@ class DifferencePreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 
-class PandasTaFeatureGenerator:
+class PandasTaFeatureGenerator(BaseProcessor):
     """
     Generate features with pandas-ta.
     https://github.com/twopirllc/pandas-ta
@@ -693,7 +637,6 @@ class PandasTaFeatureGenerator:
                                             {"kind": "rsi", "length": 60, "col_names": ("feature_RSI_60")}])
         self.strategy = strategy if strategy is not None else standard_strategy
 
-    @display_processor_info
     def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
         """
         Main feature generation method. \n 
@@ -742,8 +685,7 @@ class AwesomePreProcessor(BaseProcessor):
     def __init__(self):
         super().__init__()
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def transform(self, dataf: NumerFrame, **kwargs) -> NumerFrame:
         # Do processing
         ...
         # Parse all contents of NumerFrame to the next pipeline step
