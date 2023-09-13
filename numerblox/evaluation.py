@@ -84,6 +84,7 @@ class BaseEvaluator:
         against given target and example prediction column.
         """
         col_stats = pd.DataFrame()
+        col_stats["target"] = pd.Series(dtype=str)
         # Compute stats
         val_corrs = self.per_era_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
@@ -98,7 +99,7 @@ class BaseEvaluator:
         example_corr = self.example_correlation(
             dataf=dataf, pred_col=pred_col, example_col=example_col
         )
-        # Max. drawdown should be have an additional minus because we use negative numbers for max. drawdown.
+        # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
         calmar = apy / -max_drawdown
 
         col_stats.loc[pred_col, "target"] = target_col

@@ -4,7 +4,7 @@ from tqdm.auto import tqdm
 from typing import List, Union, Dict
 
 from .numerframe import NumerFrame
-from .preprocessing import BaseProcessor, CopyPreProcessor
+from .preprocessing import BasePreProcessor, CopyPreProcessor
 from .model import BaseModel
 from .postprocessing import Standardizer
 
@@ -23,8 +23,8 @@ class ModelPipeline:
     """
     def __init__(self,
                  models: List[BaseModel],
-                 preprocessors: List[BaseProcessor] = [],
-                 postprocessors: List[BaseProcessor] = [],
+                 preprocessors: List[BasePreProcessor] = [],
+                 postprocessors: List[BasePreProcessor] = [],
                  copy_first = True,
                  standardize = True,
                  pipeline_name: str = None, 

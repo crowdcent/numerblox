@@ -10,16 +10,18 @@ from typing import Union
 from tqdm.auto import tqdm
 from functools import partial
 from numerbay import NumerBay
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
+from sklearn.base import BaseEstimator, RegressorMixin
+
 
 from .download import NumeraiClassicDownloader
 from .numerframe import NumerFrame
 from .preprocessing import display_processor_info
 
 
-class BaseModel(ABC):
+class BaseModel(BaseEstimator, RegressorMixin):
     """
     Setup for model prediction on a Dataset.
 
@@ -34,11 +36,14 @@ class BaseModel(ABC):
         self.prediction_col_name = f"prediction_{self.model_name}"
         self.description = f"{self.__class__.__name__}: '{self.model_name}' prediction"
 
+    def fit(self, X: Union[pd.DataFrame, NumerFrame], y=None) -> NumerFrame:
+        return self
+
     @abstractmethod
-    def predict(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+    def predict(self, X: Union[pd.DataFrame, NumerFrame], y=None) -> NumerFrame:
         """ Return NumerFrame with column added for prediction. """
         ...
-        return NumerFrame(dataf)
+        return NumerFrame(X)
 
     def get_prediction_col_names(self, pred_shape: tuple) -> list:
         """ Create multiple columns if predictions are multi-target. """

@@ -1,14 +1,11 @@
 import os
-import time
 import warnings
 import numpy as np
 import pandas as pd
-import datetime as dt
 import pandas_ta as ta
 from tqdm.auto import tqdm
-from functools import wraps
 from scipy.stats import rankdata
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from rich import print as rich_print
 from typing import Union, Tuple, List
 from multiprocessing.pool import Pool
@@ -16,13 +13,12 @@ from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_X_y, check_array
-
 
 from .numerframe import NumerFrame
 from .features import V4_2_FEATURE_GROUP_MAPPING
 
-class BaseProcessor(BaseEstimator, TransformerMixin):
+
+class BasePreProcessor(BaseEstimator, TransformerMixin):
     """Common functionality for preprocessors and postprocessors."""
 
     def __init__(self):
@@ -43,7 +39,7 @@ class BaseProcessor(BaseEstimator, TransformerMixin):
         return self.transform(X=X, y=y, **kwargs)
 
 
-class CopyPreProcessor(BaseProcessor):
+class CopyPreProcessor(BasePreProcessor):
     """Copy DataFrame to avoid manipulation of original DataFrame."""
 
     def __init__(self):
@@ -53,7 +49,7 @@ class CopyPreProcessor(BaseProcessor):
         return NumerFrame(X.copy())
 
 
-class FeatureSelectionPreProcessor(BaseProcessor):
+class FeatureSelectionPreProcessor(BasePreProcessor):
     """
     Keep only features given + all target, predictions and aux columns.
     """
@@ -73,7 +69,7 @@ class FeatureSelectionPreProcessor(BaseProcessor):
         return NumerFrame(X)
 
 
-class TargetSelectionPreProcessor(BaseProcessor):
+class TargetSelectionPreProcessor(BasePreProcessor):
     """
     Keep only features given + all target, predictions and aux columns.
     """
@@ -93,7 +89,7 @@ class TargetSelectionPreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 
-class ReduceMemoryProcessor(BaseProcessor):
+class ReduceMemoryProcessor(BasePreProcessor):
     """
     Reduce memory usage as much as possible.
 
@@ -179,7 +175,7 @@ class ReduceMemoryProcessor(BaseProcessor):
         return dataf
 
 
-class BayesianGMMTargetProcessor(BaseProcessor):
+class BayesianGMMTargetProcessor(BasePreProcessor):
     """
     Generate synthetic (fake) target using a Bayesian Gaussian Mixture model. \n
     Based on Michael Oliver's GitHub Gist implementation: \n
@@ -261,7 +257,7 @@ class BayesianGMMTargetProcessor(BaseProcessor):
         return features, target
 
 
-class GroupStatsPreProcessor(BaseProcessor):
+class GroupStatsPreProcessor(BasePreProcessor):
     """
     WARNING: Only supported for v4.2 (Rain) data. The Rain dataset (re)introduced feature groups. \n
     
@@ -302,7 +298,7 @@ class GroupStatsPreProcessor(BaseProcessor):
         return dataf
 
 
-class KatsuFeatureGenerator(BaseProcessor):
+class KatsuFeatureGenerator(BasePreProcessor):
     """
     Effective feature engineering setup based on Katsu's starter notebook.
     Based on source by Katsu1110: https://www.kaggle.com/code1110/numeraisignals-starter-for-beginners
@@ -413,7 +409,7 @@ class KatsuFeatureGenerator(BaseProcessor):
         return series.ewm(alpha=a).mean()
 
 
-class EraQuantileProcessor(BaseProcessor):
+class EraQuantileProcessor(BasePreProcessor):
     def __init__(
         self,
         num_quantiles: int = 50,
@@ -449,7 +445,7 @@ class EraQuantileProcessor(BaseProcessor):
         return dataf
 
 
-class TickerMapper(BaseProcessor):
+class TickerMapper(BasePreProcessor):
     """
     Map ticker from one format to another. \n
     :param ticker_col: Column used for mapping. Must already be present in the input data. \n
@@ -487,8 +483,8 @@ class TickerMapper(BaseProcessor):
         dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
         return NumerFrame(dataf)
 
-# %% ../nbs/03_preprocessing.ipynb 66
-class SignalsTargetProcessor(BaseProcessor):
+
+class SignalsTargetProcessor(BasePreProcessor):
     """
     Engineer targets for Numerai Signals. \n
     More information on implements Numerai Signals targets: \n
@@ -533,7 +529,7 @@ class SignalsTargetProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 
-class LagPreProcessor(BaseProcessor):
+class LagPreProcessor(BasePreProcessor):
     """
     Add lag features based on given windows.
 
@@ -565,7 +561,7 @@ class LagPreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 
-class DifferencePreProcessor(BaseProcessor):
+class DifferencePreProcessor(BasePreProcessor):
     """
     Add difference features based on given windows. Run LagPreProcessor first.
 
@@ -611,7 +607,7 @@ class DifferencePreProcessor(BaseProcessor):
         return NumerFrame(dataf)
 
 
-class PandasTaFeatureGenerator(BaseProcessor):
+class PandasTaFeatureGenerator(BasePreProcessor):
     """
     Generate features with pandas-ta.
     https://github.com/twopirllc/pandas-ta
@@ -680,7 +676,7 @@ class PandasTaFeatureGenerator(BaseProcessor):
         return ticker_df
 
 
-class AwesomePreProcessor(BaseProcessor):
+class AwesomePreProcessor(BasePreProcessor):
     """ TEMPLATE - Do some awesome preprocessing. """
     def __init__(self):
         super().__init__()

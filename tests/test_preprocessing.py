@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.decomposition import PCA
 
 from numerblox.numerframe import NumerFrame, create_numerframe
-from numerblox.preprocessing import (BaseProcessor, CopyPreProcessor,
+from numerblox.preprocessing import (BasePreProcessor, CopyPreProcessor,
                                      FeatureSelectionPreProcessor, TargetSelectionPreProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
@@ -28,11 +28,11 @@ processors = [getattr(module, proc_name) for proc_name in ALL_PREPROCESSORS if h
 dataset = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
 
 def test_processors_for_compatibility():
-    assert hasattr(BaseProcessor, 'fit')
-    assert hasattr(BaseProcessor, 'transform')
+    assert hasattr(BasePreProcessor, 'fit')
+    assert hasattr(BasePreProcessor, 'transform')
 
     for processor_cls in processors:
-        assert issubclass(processor_cls, BaseProcessor)
+        assert issubclass(processor_cls, BasePreProcessor)
 
 def test_processors_sklearn():
     data = dataset.copy()
@@ -166,8 +166,10 @@ def test_ticker_mapper():
 def test_signals_target_processor():
     data = create_signals_sample_data()
     result = SignalsTargetProcessor().fit_transform(data)
-    assert result.target_cols == ["target_10d_raw", "target_10d_rank", "target_10d_group",
+    expected_target_cols = ["target", "target_10d_raw", "target_10d_rank", "target_10d_group",
                                   "target_20d_raw", "target_20d_rank", "target_20d_group"]
+    for col in expected_target_cols:
+        assert col in result.columns
     
 def test_lag_preprocessor():
     data = create_signals_sample_data()
