@@ -38,22 +38,10 @@ class BasePreProcessor(BaseEstimator, TransformerMixin):
     ) -> NumerFrame:
         return self.transform(X=X, y=y, **kwargs)
 
-
-class CopyPreProcessor(BasePreProcessor):
-    """Copy DataFrame to avoid manipulation of original DataFrame."""
-
-    def __init__(self):
-        super().__init__()
-
-    def transform(self, X: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
-        return NumerFrame(X.copy())
-
-
 class FeatureSelectionPreProcessor(BasePreProcessor):
     """
     Keep only features given + all target, predictions and aux columns.
     """
-
     def __init__(self, feature_cols: Union[str, list]):
         super().__init__()
         self.feature_cols = feature_cols
