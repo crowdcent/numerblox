@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 from numerblox.numerframe import NumerFrame, create_numerframe
-from numerblox.preprocessing import (BasePreProcessor, CopyPreProcessor,
+from numerblox.preprocessing import (BasePreProcessor,
                                      FeatureSelectionPreProcessor, TargetSelectionPreProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
@@ -16,7 +16,7 @@ from numerblox.preprocessing import (BasePreProcessor, CopyPreProcessor,
 
 from utils import create_signals_sample_data
 
-CLASSIC_PREPROCESSORS = ['CopyPreProcessor', 'FeatureSelectionPreProcessor',
+CLASSIC_PREPROCESSORS = ['FeatureSelectionPreProcessor',
                      'TargetSelectionPreProcessor', 'ReduceMemoryProcessor',
                      'BayesianGMMTargetProcessor', 
                      'GroupStatsPreProcessor']
@@ -76,12 +76,6 @@ def test_processors_sklearn():
             ('pca', PCA())
         ])
         _ = combined_features.fit(data.fillna(0.5))
-
-def test_copypreprocessor():
-    data = dataset.copy()
-    copied_dataset = CopyPreProcessor().transform(dataset)
-    assert copied_dataset.equals(dataset)
-    assert dataset.meta == copied_dataset.meta
 
 def test_feature_selection_preprocessor():
     data = dataset.copy()

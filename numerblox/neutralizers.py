@@ -72,30 +72,30 @@ class FeatureNeutralizer(BaseNeutralizer):
         cuda = False,
         verbose: bool = True,
     ):
+        self.pred_name = pred_name
+        self.proportion = proportion
         assert (
-            0.0 <= proportion <= 1.0
-        ), f"'proportion' should be a float in range [0...1]. Got '{proportion}'."
+            0.0 <= self.proportion <= 1.0
+        ), f"'proportion' should be a float in range [0...1]. Got '{self.proportion}'."
         new_col_name = (
             f"{self.pred_name}_neutralized_{self.proportion}_{suffix}"
             if suffix
             else f"{self.pred_name}_neutralized_{self.proportion}"
         )
         super().__init__(new_col_name=new_col_name)
-        self.pred_name = pred_name
         self.era_col = era_col
-        self.proportion = proportion
         self.feature_names = feature_names
         self.cuda = cuda
         self.verbose = verbose
 
-    def predict(self, X: pd.DataFrame, y=None) -> np.array:
-        neutralized_preds = X.groupby(self.era_col, group_keys=False).apply(
-            lambda x: self.normalize_and_neutralize(x, [self.pred_name], self.feature_names)
+    def predict(self, X: NumerFrame, y=None) -> np.array:
+        feature_names = self.feature_names if self.feature_names else X.feature_cols
+        neutralized_preds = X.groupby(X.meta.era_col, group_keys=False).apply(
+            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)
         )
-        if self.verbose:
-            print(
-            f" Neutralized '{self.pred_name}' with proportion '{self.proportion}'"
-            )
+        neutralized_preds = MinMaxScaler().fit_transform(
+            neutralized_preds
+        )
         return neutralized_preds
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
@@ -123,6 +123,7 @@ class FeatureNeutralizer(BaseNeutralizer):
     @staticmethod
     def normalize(dataf: pd.DataFrame) -> np.ndarray:
         normalized_ranks = (dataf.rank(method="first") - 0.5) / len(dataf)
+        # Gaussianized
         return sp.norm.ppf(normalized_ranks)
 
     def normalize_and_neutralize(

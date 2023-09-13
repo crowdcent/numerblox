@@ -8,7 +8,7 @@ from typing import Tuple, Union
 from numerapi import SignalsAPI
 
 from .numerframe import NumerFrame
-from .postprocessing import FeatureNeutralizer
+from .neutralizers import FeatureNeutralizer
 from .key import Key
 from .features import FNCV3_FEATURES
 
@@ -149,7 +149,7 @@ class BaseEvaluator:
         self, dataf: pd.DataFrame, pred_col: str, target_col: str
     ) -> pd.Series:
         """Correlation between prediction and target for each era."""
-        return dataf.groupby(dataf[self.era_col]).apply(
+        return dataf.groupby(self.era_col).apply(
             lambda d: self._normalize_uniform(d[pred_col].fillna(0.5)).corr(
                 d[target_col]
             )
@@ -159,7 +159,7 @@ class BaseEvaluator:
             self, dataf: pd.DataFrame, pred_col: str, target_col: str
         ) -> pd.Series:
         """Numerai Corr between prediction and target for each era."""
-        return dataf.groupby(dataf[self.era_col]).apply(
+        return dataf.groupby(self.era_col).apply(
             lambda d: self.numerai_corr(d.fillna(0.5), pred_col, target_col)
             )
 
@@ -254,11 +254,18 @@ class BaseEvaluator:
         """
         fn = FeatureNeutralizer(pred_name=pred_col,
                                 feature_names=feature_names,
+                                era_col=self.era_col,
                                 proportion=1.0)
-        neutralized_dataf = fn(X=dataf)
+        neutralized_preds = fn(X=dataf)
+        # Construct new DataFrame with era col, target col and preds
+        neutralized_dataf = pd.DataFrame(columns=[self.era_col, target_col, pred_col])
+        neutralized_dataf[self.era_col] = dataf[self.era_col]
+        neutralized_dataf[target_col] = dataf[target_col]
+        neutralized_dataf[pred_col] = neutralized_preds
+
         neutral_corrs = self.per_era_numerai_corrs(
             dataf=neutralized_dataf,
-            pred_col=f"{pred_col}_neutralized_1.0",
+            pred_col=pred_col,
             target_col=target_col,
         )
         mean, std, sharpe = self.mean_std_sharpe(era_corrs=neutral_corrs)
