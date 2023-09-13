@@ -20,7 +20,7 @@ class BasePredictionLoader(BaseEstimator, RegressorMixin):
     def __init__(self):
         ...
 
-    def fit(self, X: =None, y=None) -> NumerFrame:
+    def fit(self, X=None, y=None) -> NumerFrame:
         return self
 
     @abstractmethod
