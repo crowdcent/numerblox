@@ -155,18 +155,18 @@ class FeaturePenalizer(BaseNeutralizer):
         era_col: str = "era",
         suffix: str = None,
     ):
+        self.max_exposure = max_exposure
+        self.pred_name = pred_name
         assert (
             0.0 <= max_exposure <= 1.0
-        ), f"'max_exposure' should be a float in range [0...1]. Got '{max_exposure}'."
+        ), f"'max_exposure' should be a float in range [0...1]. Got '{self.max_exposure}'."
         new_col_name = (
             f"{self.pred_name}_penalized_{self.max_exposure}_{suffix}"
             if suffix
             else f"{self.pred_name}_penalized_{self.max_exposure}"
         )
         super().__init__(new_col_name=new_col_name)
-        self.max_exposure = max_exposure
         self.feature_names = feature_names
-        self.pred_name = pred_name
         self.era_col = era_col
 
     def predict(self, X: pd.DataFrame, y=None) -> np.array:
