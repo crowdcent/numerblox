@@ -1,8 +1,11 @@
 import importlib
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.decomposition import PCA
+from sklearn.base import BaseEstimator, TransformerMixin
+
 
 from numerblox.numerframe import NumerFrame, create_numerframe
 from numerblox.preprocessing import (BasePreProcessor, CopyPreProcessor,
@@ -13,13 +16,16 @@ from numerblox.preprocessing import (BasePreProcessor, CopyPreProcessor,
 
 from utils import create_signals_sample_data
 
-ALL_PREPROCESSORS = ['CopyPreProcessor', 'FeatureSelectionPreProcessor',
+CLASSIC_PREPROCESSORS = ['CopyPreProcessor', 'FeatureSelectionPreProcessor',
                      'TargetSelectionPreProcessor', 'ReduceMemoryProcessor',
-                     'BayesianGMMTargetProcessor', 'GroupStatsPreProcessor','KatsuFeatureGenerator', 'EraQuantileProcessor',
+                     'BayesianGMMTargetProcessor', 
+                     'GroupStatsPreProcessor']
+SIGNALS_PREPROCESSORS = ['KatsuFeatureGenerator', 'EraQuantileProcessor',
                      'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'PandasTaFeatureGenerator', 'AwesomePreProcessor']
+ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
 FEATURE_COL_PROCESSORS = ["FeatureSelectionPreProcessor"]
 TARGET_COL_PROCESSORS = ["TargetSelectionPreProcessor"]
-WINDOW_COL_PROCESSORS = ["KatsuFeatureGenerator", "LagPrePrecessor", "DifferencePreProcessor"]
+WINDOW_COL_PROCESSORS = ["KatsuFeatureGenerator", "LagPreProcessor", "DifferencePreProcessor"]
 
 
 MODULE = "numerblox.preprocessing"
@@ -27,22 +33,19 @@ module = importlib.import_module(MODULE)
 processors = [getattr(module, proc_name) for proc_name in ALL_PREPROCESSORS if hasattr(module, proc_name)]
 dataset = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
 
-def test_processors_for_compatibility():
+def test_base_preprocessor():
     assert hasattr(BasePreProcessor, 'fit')
     assert hasattr(BasePreProcessor, 'transform')
+    assert issubclass(BasePreProcessor, (BaseEstimator, TransformerMixin))
 
-    for processor_cls in processors:
-        assert issubclass(processor_cls, BasePreProcessor)
 
 def test_processors_sklearn():
-    data = dataset.copy()
+    data = NumerFrame(dataset.copy().loc[:, dataset.feature_cols + dataset.target_cols].sample(10))
     feature_names = ["feature_tallish_grimier_tumbrel",
                      "feature_partitive_labyrinthine_sard"]
     target_names = ["target_jerome_v4_20"]
-    features = data.get_feature_data.loc[:, feature_names]
-    targets = data.get_target_data.loc[:, target_names].fillna(0.5).to_numpy().ravel()
-    
-    for processor_cls in processors:
+
+    for processor_cls in tqdm(processors, desc="Testing processors for scikit-learn compatability"):
         # Initialization
         if processor_cls.__name__ in FEATURE_COL_PROCESSORS:
             processor = processor_cls(feature_cols=feature_names)
@@ -53,18 +56,26 @@ def test_processors_sklearn():
         else:
             processor = processor_cls()
 
+        # Test fit returns self
+        assert processor.fit(X=pd.DataFrame()) == processor
+
+        # Inherits from BasePreProcessor
+        assert issubclass(processor_cls, BasePreProcessor)
+        # Has fit_transform
+        assert hasattr(processor_cls, 'fit_transform')
+
         # Pipeline
         pipeline = Pipeline([
             ('processor', processor)
         ])
-        _ = pipeline.fit(features, targets)
+        _ = pipeline.fit(data)
 
         # FeatureUnion
         combined_features = FeatureUnion([
             ('processor', processor),
             ('pca', PCA())
         ])
-        _ = combined_features.fit(features, targets)
+        _ = combined_features.fit(data.fillna(0.5))
 
 def test_copypreprocessor():
     data = dataset.copy()

@@ -18,7 +18,6 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 from .download import NumeraiClassicDownloader
 from .numerframe import NumerFrame
-from .preprocessing import display_processor_info
 
 
 class BaseModel(BaseEstimator, RegressorMixin):
@@ -84,26 +83,25 @@ class DirectoryModel(BaseModel):
         self.feature_cols = feature_cols
         self.combine_preds = combine_preds
 
-    @display_processor_info
-    def predict(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def predict(self, X: NumerFrame, **kwargs) -> NumerFrame:
         """
         Use all recognized models to make predictions and average them out.
-        :param dataf: A Preprocessed DataFrame where all its features can be passed to the model predict method.
-        *args, **kwargs will be parsed into the model.predict method.
+        :param X: A Preprocessed DataFrame where all its features can be passed to the model predict method.
+        **kwargs will be parsed into the model.predict method.
         :return: A new dataset with prediction column added.
         """
-        dataf.loc[:, self.prediction_col_name] = np.zeros(len(dataf))
+        X.loc[:, self.prediction_col_name] = np.zeros(len(X))
         models = self.load_models()
-        feature_cols = self.feature_cols if self.feature_cols else dataf.feature_cols
+        feature_cols = self.feature_cols if self.feature_cols else X.feature_cols
         for model in tqdm(models, desc=self.description, position=1):
-            predictions = model.predict(dataf[feature_cols], *args, **kwargs)
+            predictions = model.predict(X[feature_cols], **kwargs)
             # Check for if model output is a Pandas DataFrame
             predictions = predictions.values if isinstance(predictions, pd.DataFrame) else predictions
             predictions = predictions.mean(axis=1) if self.combine_preds and len(predictions.shape) > 1 else predictions
             prediction_cols = self.get_prediction_col_names(predictions.shape)
-            dataf.loc[:, prediction_cols] = dataf.loc[:, prediction_cols] + (predictions / self.total_models)
+            X.loc[:, prediction_cols] = X.loc[:, prediction_cols] + (predictions / self.total_models)
         del models; gc.collect()
-        return NumerFrame(dataf)
+        return NumerFrame(X)
 
     @abstractmethod
     def load_models(self) -> list:
@@ -467,14 +465,14 @@ class ExamplePredictionsModel(BaseModel):
     Load example predictions and add to NumerFrame. \n
     :param file_name: File to download from NumerAPI.
     By default this is example predictions for v4.2 data.
-    Other example of example predictions in previous version:
-    - v4.1. -> "v4.1/validation_example_preds.parquet"
-    - v4. -> "v4/validation_example_preds.parquet"
-    'example_validation_predictions.parquet' by default. \n
+    Example predictions in previous versions:
+    - v4.1. -> "v4.1/live_example_preds.parquet"
+    - v4. -> "v4/live_example_preds.parquet"
+    'v4.2/example_validation_predictions.parquet' by default. \n
     :param data_directory: Directory path to download example predictions to or directory where example data already exists. \n
     :param round_num: Optional round number. Downloads most recent round by default.
     """
-    def __init__(self, file_name: str = "v4.2/validation_example_preds.parquet",
+    def __init__(self, file_name: str = "v4.2/live_example_preds.parquet",
                  data_directory: str = "example_predictions_model",
                  round_num: int = None):
         super().__init__(model_directory="",
@@ -484,14 +482,13 @@ class ExamplePredictionsModel(BaseModel):
         self.data_directory = data_directory
         self.round_num = round_num
 
-    @display_processor_info
-    def predict(self, dataf: NumerFrame) -> NumerFrame:
+    def predict(self, X: NumerFrame) -> NumerFrame:
         """ Return NumerFrame with added example predictions. """
         self._download_example_preds()
         example_preds = self._load_example_preds()
-        dataf.loc[:, self.prediction_col_name] = dataf.merge(example_preds, on='id', how='left')['prediction']
+        X.loc[:, self.prediction_col_name] = X.merge(example_preds, on='id', how='left')['prediction']
         self.downloader.remove_base_directory()
-        return NumerFrame(dataf)
+        return NumerFrame(X)
 
     def _download_example_preds(self):
         self.downloader = NumeraiClassicDownloader(directory_path=self.data_directory)
@@ -519,7 +516,6 @@ class AwesomeModel(BaseModel):
                          )
         self.feature_cols = feature_cols
 
-    @display_processor_info
     def predict(self, dataf: NumerFrame) -> NumerFrame:
         """ Return NumerFrame with column(s) added for prediction(s). """
         # Get all features
