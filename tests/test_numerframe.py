@@ -1,18 +1,6 @@
-import pytest
-import pandas as pd
 from numerblox.numerframe import NumerFrame, create_numerframe
 
-# Fixture to create a dummy dataframe
-@pytest.fixture
-def dummy_dataframe():
-    df = pd.DataFrame({
-        'feature_1': [1, 2, 3],
-        'feature_2': [4, 5, 6],
-        'target': [7, 8, 9],
-        'era': ['001', '002', '002'],
-        'prediction': [0.2, 0.4, 0.8]
-    })
-    return df
+from utils import dummy_dataframe
 
 def test_numerframe_initialization(dummy_dataframe):
     nf = NumerFrame(dummy_dataframe)

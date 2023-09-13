@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, Union
 from numerapi import SignalsAPI
 
-from .numerframe import NumerFrame, create_numerframe
+from .numerframe import NumerFrame
 from .postprocessing import FeatureNeutralizer
 from .key import Key
 from .features import FNCV3_FEATURES
@@ -16,6 +16,18 @@ class BaseEvaluator:
     """
     Evaluation functionality that is relevant for both
     Numerai Classic and Numerai Signals.
+
+    Metrics include:
+    - Mean, Standard Deviation and Sharpe for era returns.
+    - Max drawdown.
+    - Annual Percentage Yield (APY).
+    - Correlation with example predictions.
+    - Max feature exposure: https://forum.numer.ai/t/model-diagnostics-feature-exposure/899.
+    - Feature Neutral Mean, Standard deviation and Sharpe: https://docs.numer.ai/tournament/feature-neutral-correlation .
+    - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
+    - Calmar Ratio.
+    - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
+    - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
 
     :param era_col: Column name pointing to eras. \n
     Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
@@ -46,7 +58,7 @@ class BaseEvaluator:
         val_stats = pd.DataFrame()
         cat_cols = dataf.get_feature_data.select_dtypes(include=['category']).columns.to_list()
         if cat_cols:
-            rich_print(f":warning: WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation. :warning:")
+            print(f"WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation.")
             dataf.loc[:, dataf.feature_cols] = dataf.get_feature_data.select_dtypes(exclude=['category'])
         dataf = dataf.fillna(0.5)
         pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
@@ -242,7 +254,7 @@ class BaseEvaluator:
         fn = FeatureNeutralizer(pred_name=pred_col,
                                 feature_names=feature_names,
                                 proportion=1.0)
-        neutralized_dataf = fn(dataf=dataf)
+        neutralized_dataf = fn(X=dataf)
         neutral_corrs = self.per_era_numerai_corrs(
             dataf=neutralized_dataf,
             pred_col=f"{pred_col}_neutralized_1.0",
@@ -438,7 +450,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
-# %% ../nbs/07_evaluation.ipynb 14
+
 class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
     def __init__(self, era_col: str = "friday_date", fast_mode=False):

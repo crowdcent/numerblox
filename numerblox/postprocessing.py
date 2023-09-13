@@ -1,32 +1,52 @@
 import scipy
+from abc import abstractmethod
+from typing import Union
 import numpy as np
 import pandas as pd
 import scipy.stats as sp
 from tqdm.auto import tqdm
 import tensorflow as tf
-from rich import print as rich_print
 from scipy.stats.mstats import gmean
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from .numerframe import NumerFrame
-from .preprocessing import BaseProcessor, display_processor_info
 
 
-class BasePostProcessor(BaseProcessor):
+class BasePostProcessor(BaseEstimator, TransformerMixin):
     """
     Base class for postprocessing objects.
 
     Postprocessors manipulate or introduce new prediction columns in a NumerFrame.
+    :param final_col_name: Column name to store manipulated or ensembled predictions in.
+    :param verbose: Whether to print info about ensembling.
     """
-    def __init__(self, final_col_name: str):
+    def __init__(self, final_col_name: str, verbose: bool = True):
         super().__init__()
         self.final_col_name = final_col_name
+        self.verbose = verbose
         if not final_col_name.startswith("prediction"):
-            rich_print(f":warning: WARNING: final_col_name should start with 'prediction'. Column output will be: '{final_col_name}'. :warning:")
+            print(f"WARNING: final_col_name should start with 'prediction'. Column output will be: '{final_col_name}'.")
 
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def fit(self, X, y=None):
+        return self
+
+    @abstractmethod
+    def transform(
+        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
+    ) -> NumerFrame:
         ...
+    
+    def __call__(
+        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
+    ) -> NumerFrame:
+        return self.transform(X=X, y=y, **kwargs)
 
+    def _verbose_print_ensemble(self, cols: list):
+        if self.verbose:
+            print(
+                f"Ensembled '{cols}' with '{self.__class__.__name__}' and saved in '{self.final_col_name}'"
+            )
 
 class Standardizer(BasePostProcessor):
     """
@@ -35,16 +55,14 @@ class Standardizer(BasePostProcessor):
 
     :param cols: All prediction columns that should be standardized. Use all prediction columns by default.
     """
-
     def __init__(self, cols: list = None):
         super().__init__(final_col_name="prediction")
         self.cols = cols
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        cols = dataf.prediction_cols if not self.cols else self.cols
-        dataf.loc[:, cols] = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
-        return NumerFrame(dataf)
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
+        cols = X.prediction_cols if not self.cols else self.cols
+        X.loc[:, cols] = X.groupby(X.meta.era_col)[cols].rank(pct=True)
+        return NumerFrame(X)
 
 
 class MeanEnsembler(BasePostProcessor):
@@ -55,27 +73,25 @@ class MeanEnsembler(BasePostProcessor):
     final_col_name should start with "prediction". \n
     :param cols: Column names to average. \n
     :param standardize: Whether to standardize by era before averaging. Highly recommended as columns that are averaged may have different distributions.
+    :param verbose: Whether to print info about ensembling.
     """
 
     def __init__(
-        self, final_col_name: str, cols: list = None, standardize: bool = False
+        self, final_col_name: str, cols: list = None, standardize: bool = False, verbose: bool = True
     ):
         self.cols = cols
         self.standardize = standardize
-        super().__init__(final_col_name=final_col_name)
+        super().__init__(final_col_name=final_col_name, verbose=verbose)
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        cols = self.cols if self.cols else dataf.prediction_cols
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
+        cols = self.cols if self.cols else X.prediction_cols
         if self.standardize:
-            to_average = dataf.groupby(dataf.meta.era_col)[cols].rank(pct=True)
+            to_average = X.groupby(X.meta.era_col)[cols].rank(pct=True)
         else:
-            to_average = dataf[cols]
-        dataf.loc[:, self.final_col_name] = to_average.mean(axis=1)
-        rich_print(
-            f":stew: Ensembled [blue]'{cols}'[blue] with simple mean and saved in [bold]'{self.final_col_name}'[bold] :stew:"
-        )
-        return NumerFrame(dataf)
+            to_average = X[cols]
+        X.loc[:, self.final_col_name] = to_average.mean(axis=1)
+        self._verbose_print_ensemble(self.cols)
+        return NumerFrame(X)
 
 
 class DonateWeightedEnsembler(BasePostProcessor):
@@ -89,23 +105,21 @@ class DonateWeightedEnsembler(BasePostProcessor):
     :param cols: Prediction columns to ensemble.
     Uses all prediction columns by default. \n
     :param final_col_name: New column name for ensembled values.
+    :param verbose: Whether to print info about ensembling.
     """
-    def __init__(self, final_col_name: str, cols: list = None):
-        super().__init__(final_col_name=final_col_name)
+    def __init__(self, final_col_name: str, cols: list = None, verbose: bool = True):
+        super().__init__(final_col_name=final_col_name, verbose=verbose)
         self.cols = cols
         self.n_cols = len(cols)
         self.weights = self._get_weights()
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        cols = self.cols if self.cols else dataf.prediction_cols
-        dataf.loc[:, self.final_col_name] = np.average(
-            dataf.loc[:, cols], weights=self.weights, axis=1
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
+        cols = self.cols if self.cols else X.prediction_cols
+        X.loc[:, self.final_col_name] = np.average(
+            X.loc[:, cols], weights=self.weights, axis=1
         )
-        rich_print(
-            f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:"
-        )
-        return NumerFrame(dataf)
+        self._verbose_print_ensemble(self.cols)
+        return NumerFrame(X)
 
     def _get_weights(self) -> list:
         """Exponential weights."""
@@ -123,34 +137,33 @@ class GeometricMeanEnsembler(BasePostProcessor):
     :param cols: Prediction columns to ensemble.
     Uses all prediction columns by default. \n
     :param final_col_name: New column name for ensembled values.
+    :param verbose: Whether to print info about ensembling.
     """
 
-    def __init__(self, final_col_name: str, cols: list = None):
-        super().__init__(final_col_name=final_col_name)
+    def __init__(self, final_col_name: str, cols: list = None, verbose: bool = True):
+        super().__init__(final_col_name=final_col_name, verbose=verbose)
         self.cols = cols
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
-        cols = self.cols if self.cols else dataf.prediction_cols
-        new_col = dataf.loc[:, cols].apply(gmean, axis=1)
-        dataf.loc[:, self.final_col_name] = new_col
-        rich_print(
-            f":stew: Ensembled [blue]'{cols}'[/blue] with [bold]{self.__class__.__name__}[/bold] and saved in [bold]'{self.final_col_name}'[bold] :stew:"
-        )
-        return NumerFrame(dataf)
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
+        cols = self.cols if self.cols else X.prediction_cols
+        new_col = X.loc[:, cols].apply(gmean, axis=1)
+        X.loc[:, self.final_col_name] = new_col
+        self._verbose_print_ensemble(self.cols)
+        return NumerFrame(X)
 
 
 class FeatureNeutralizer(BasePostProcessor):
     """
     Classic feature neutralization by subtracting linear model.
 
-    :param feature_names: List of column names to neutralize against. Uses all feature columns by default. \n
+    :param feature_names: List of column names to neutralize against. Selects all feature columns by default. \n
     :param pred_name: Prediction column to neutralize. \n
     :param proportion: Number in range [0...1] indicating how much to neutralize. \n
     :param suffix: Optional suffix that is added to new column name. \n
     :param cuda: Do neutralization on the GPU \n
     Make sure you have CuPy installed when setting cuda to True. \n
     Installation docs: docs.cupy.dev/en/stable/install.html
+    :param verbose: Whether to print info about neutralization.
     """
     def __init__(
         self,
@@ -159,6 +172,7 @@ class FeatureNeutralizer(BasePostProcessor):
         proportion: float = 0.5,
         suffix: str = None,
         cuda = False,
+        verbose: bool = True,
     ):
         self.pred_name = pred_name
         self.proportion = proportion
@@ -170,26 +184,28 @@ class FeatureNeutralizer(BasePostProcessor):
             if suffix
             else f"{self.pred_name}_neutralized_{self.proportion}"
         )
-        super().__init__(final_col_name=self.new_col_name)
+        super().__init__(final_col_name=self.new_col_name, verbose=verbose)
         self.feature_names = feature_names
         self.cuda = cuda
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
-        neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(
+    def transform(self, X: Union[pd.DataFrame, NumerFrame], y=None) -> NumerFrame:
+        if not isinstance(X, NumerFrame): X = NumerFrame(X)
+        feature_names = self.feature_names if self.feature_names else X.feature_cols
+
+        neutralized_preds = X.groupby(X.meta.era_col, group_keys=False).apply(
             lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)
         )
-        dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(
+        X.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(
             neutralized_preds
         )
-        rich_print(
-            f":robot: Neutralized [bold blue]'{self.pred_name}'[bold blue] with proportion [bold]'{self.proportion}'[/bold] :robot:"
-        )
-        rich_print(
-            f"New neutralized column = [bold green]'{self.new_col_name}'[/bold green]."
-        )
-        return NumerFrame(dataf)
+        if self.verbose:
+            print(
+            f" Neutralized '{self.pred_name}' with proportion '{self.proportion}'"
+            )
+            print(
+            f"New neutralized column = '{self.new_col_name}'."
+            )
+        return NumerFrame(X)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         """ Neutralize on CPU. """
@@ -260,16 +276,15 @@ class FeaturePenalizer(BasePostProcessor):
 
         self.feature_names = feature_names
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
+    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
         feature_names = (
-            dataf.feature_cols if not self.feature_names else self.feature_names
+            X.feature_cols if not self.feature_names else self.feature_names
         )
         penalized_data = self.reduce_all_exposures(
-            dataf=dataf, column=self.pred_name, neutralizers=feature_names
+            dataf=X, column=self.pred_name, neutralizers=feature_names
         )
-        dataf.loc[:, self.new_col_name] = penalized_data[self.pred_name]
-        return NumerFrame(dataf)
+        X.loc[:, self.new_col_name] = penalized_data[self.pred_name]
+        return NumerFrame(X)
 
     def reduce_all_exposures(
         self,
@@ -332,7 +347,7 @@ class FeaturePenalizer(BasePostProcessor):
         return pred[:, None] - model(feats), model.get_weights()
 
     def _train_loop(self, model, optimizer, feats, pred, target_exps):
-        for i in range(1000000):
+        for _ in range(1000000):
             loss, grads = self.__train_loop_body(model, feats, pred, target_exps)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
             if loss < 1e-7:
@@ -365,11 +380,10 @@ class AwesomePostProcessor(BasePostProcessor):
     :param final_col_name: Column name to store manipulated or ensembled predictions in.
     """
 
-    def __init__(self, final_col_name: str, *args, **kwargs):
+    def __init__(self, final_col_name: str, **kwargs):
         super().__init__(final_col_name=final_col_name)
 
-    @display_processor_info
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
+    def transform(self, dataf: NumerFrame, **kwargs) -> NumerFrame:
         # Do processing
         ...
         # Add new column(s) for manipulated data

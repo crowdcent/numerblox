@@ -9,7 +9,9 @@ from numerblox.preprocessing import (BaseProcessor, CopyPreProcessor,
                                      FeatureSelectionPreProcessor, TargetSelectionPreProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator,)
+                                     DifferencePreProcessor, PandasTaFeatureGenerator)
+
+from utils import create_signals_sample_data
 
 ALL_PREPROCESSORS = ['CopyPreProcessor', 'FeatureSelectionPreProcessor',
                      'TargetSelectionPreProcessor', 'ReduceMemoryProcessor',
@@ -24,27 +26,6 @@ MODULE = "numerblox.preprocessing"
 module = importlib.import_module(MODULE)
 processors = [getattr(module, proc_name) for proc_name in ALL_PREPROCESSORS if hasattr(module, proc_name)]
 dataset = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
-
-def create_signals_sample_data():
-    instances = []
-    tickers = ["ABC.US", "DEF.US", "GHI.US"]
-    for ticker in tickers:
-        price = np.random.randint(10, 100)
-        for i in range(100):
-            price += np.random.uniform(-1, 1)
-            instances.append(
-                {
-                    "ticker": ticker,
-                    "date": pd.Timestamp("2020-01-01") + pd.Timedelta(days=i),
-                    "open": price - 0.05,
-                    "high": price + 0.02,
-                    "low": price - 0.01,
-                    "close": price,
-                    "volume": np.random.randint(1000, 10000),
-                }
-            )
-    dummy_df = NumerFrame(instances)
-    return dummy_df
 
 def test_processors_for_compatibility():
     assert hasattr(BaseProcessor, 'fit')

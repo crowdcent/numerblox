@@ -6,7 +6,7 @@
 about software/data engineering and focus more on building great Numerai
 models!
 
-Most of the components in this library are designed for solid weekly
+Most of the components in this library are designed for solid daily
 inference pipelines, but tools like
 [`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe),
 preprocessors and evaluators also greatly simplify the training process.
@@ -44,14 +44,9 @@ development mode running the following from the root of the repository:
 
 ### 1.2 Running Notebooks
 
-Start by spinning up your favorite Jupyter Notebook environment. Here
-we’ll use:
-
-`jupyter notebook`
-
 Test your installation using one of the education notebooks in
 `nbs/edu_nbs`. A good example is `numerframe_tutorial`. Run it in your
-Notebook environment to quickly test if your installation has succeeded
+Notebook environment to quickly test if your installation has succeeded.
 
 ### 2.1. Contents
 
@@ -64,21 +59,16 @@ Notebook environment to quickly test if your installation has succeeded
     ([`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe))
 3.  A suite of preprocessors for Numerai Classic and Signals (feature
     selection, engineering and manipulation)
-4.  Model objects for easy inference.
-5.  A suite of postprocessors for Numerai Classic and Signals
+4.  A suite of postprocessors for Numerai Classic and Signals
     (standardization, ensembling, neutralization and penalization)
-6.  Pipelines handling processing and prediction
-    ([`ModelPipeline`](https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipeline)
-    and
-    [`ModelPipelineCollection`](https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipelinecollection))
-7.  Evaluation
+5.  Evaluation
     ([`NumeraiClassicEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraiclassicevaluator)
     and
     [`NumeraiSignalsEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraisignalsevaluator))
-8.  Authentication
+6.  Authentication
     ([`Key`](https://crowdcent.github.io/numerblox/key.html#key) and
     [`load_key_from_json`](https://crowdcent.github.io/numerblox/key.html#load_key_from_json))
-9.  Submitting
+7.  Submitting
     ([`NumeraiClassicSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraiclassicsubmitter),
     [`NumeraiSignalsSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter)
     and
@@ -86,9 +76,9 @@ Notebook environment to quickly test if your installation has succeeded
 
 #### 2.1.2. Educational notebooks
 
-Example notebooks can be found in the `nbs/edu_nbs` directory.
+Example notebooks can be found in the `edu_nbs` directory.
 
-`nbs/edu_nbs` currently contains the following examples: -
+`edu_nbs` currently contains the following examples: -
 `numerframe_tutorial.ipynb`: A deep dive into what
 [`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe)
 has to offer. - `submitting.ipynb`: How to use Submitters for safe and
@@ -101,9 +91,6 @@ download and upload predictions listed on
 [NumerBay](https://numerbay.ai). - `synthetic_data_generation.ipynb`:
 Tutorial for generating synthetic data for training Numerai models.
 
-Development notebooks are also in the `nbs` directory. These notebooks
-are also used to generate the documentation.
-
 **Full documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
 
@@ -111,7 +98,7 @@ are also used to generate the documentation.
 
 Below we will illustrate a common use case for inference pipelines. To
 learn more in-depth about the features of this library, check out
-notebooks in `nbs/edu_nbs`.
+notebooks in `edu_nbs`.
 
 #### 2.2.1. Numerai Classic
 
@@ -133,15 +120,7 @@ downloader.download_inference_data("current_round")
 dataf = create_numerframe(file_path="data/current_round/live.parquet")
 
 # --- 3. Define and run pipeline ---
-models = [SingleModel("test_assets/joblib_v2_example_model.joblib",
-                      model_name="test")]
-# No preprocessing and 0.5 feature neutralization
-postprocessors = [FeatureNeutralizer(pred_name=f"prediction_test",
-                                     proportion=0.5)]
-pipeline = ModelPipeline(preprocessors=[],
-                         models=models,
-                         postprocessors=postprocessors)
-dataf = pipeline(dataf)
+...
 
 # --- 4. Submit ---
 # Load credentials from .json (random credentials in this example)
@@ -156,19 +135,6 @@ submitter.full_submission(dataf=dataf,
 downloader.remove_base_directory()
 submitter.remove_base_directory()
 ```
-
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json
-</pre>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round
-<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv
-</pre>
 
 #### 2.2.2. Numerai Signals
 
@@ -190,13 +156,7 @@ kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signa
 dataf = create_numerframe("data/full_data.parquet")
 
 # --- 3. Define and run pipeline ---
-models = [SingleModel("models/signals_model.cbm", model_name="cb")]
-# Simple and fast feature generator based on Katsu Signals starter notebook
-# https://www.kaggle.com/code1110/numeraisignals-starter-for-beginners
-pipeline = ModelPipeline(preprocessors=[KatsuFeatureGenerator(windows=[20, 40, 60])],
-                         models=models,
-                         postprocessors=[])
-dataf = pipeline(dataf)
+...
 
 # --- 4. Submit ---
 # Load credentials from .json (random credentials in this example)
@@ -214,19 +174,6 @@ kd.remove_base_directory()
 submitter.remove_base_directory()
 ```
 
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 test_assets
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 test_credentials.json
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 models
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 signals_model.cbm
-</pre>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 full_data.parquet
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 submission.csv
-</pre>
-
 ## 3. Contributing
 
 Be sure to read `CONTRIBUTING.md` for detailed instructions on
@@ -235,23 +182,7 @@ contributing.
 If you have questions or want to discuss new ideas for `numerblox`,
 please create a Github issue first.
 
-## 4. Branch structure
-
-Every new feature should be implemented in a branch that branches from
-`dev` and has the naming convention `feature/{FEATURE_DESCRIPTION}`.
-Explicit bugfixes should be named `bugfix/{FIX_DESCRIPTION}`. An example
-structure is given below.
-
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management
-<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix
-</pre>
-
-## 5. Crediting sources
+## 4. Crediting sources
 
 Some of the components in this library may be based on forum posts,
 notebooks or ideas made public by the Numerai community. We have done
