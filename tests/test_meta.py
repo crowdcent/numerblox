@@ -2,13 +2,16 @@
 
 import numpy as np
 import pytest
+import pandas as pd
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression, Ridge
 from scipy.stats import rankdata, norm
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, RegressorMixin
 
-from numerblox.meta import NumeraiEnsemble
+from numerblox.numerframe import NumerFrame, create_numerframe
+from numerblox.meta import NumeraiEnsemble, NeutralizedEstimator
+from numerblox.neutralizers import FeatureNeutralizer
 
 @pytest.fixture
 def sample_data():
@@ -172,5 +175,21 @@ def test_donate_weights_sum_to_one():
         # Assert that the sum of weights is close to 1
         assert np.isclose(sum(ensemble.weights), 1.0)
 
+def test_neutralized_estimator():
+    df = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
+    X = df.get_feature_data
+    y = df["target"]
+    base_estimator = LinearRegression()
+    base_estimator.fit(X, y=y)
+    vanilla_predictions = base_estimator.predict(X)
 
-                   
+    neutralizer = FeatureNeutralizer()
+    meta_estimator = NeutralizedEstimator(base_estimator, neutralizer)
+    meta_estimator.fit(X, y=y)
+    eras = df["era"]
+    predictions = meta_estimator.predict(X, eras)
+    # Make sure predictions are between 0 and 1
+    assert predictions.min() >= 0
+    assert predictions.max() <= 1
+    # Make sure predictions are different from vanilla predictions
+    assert not np.allclose(predictions, vanilla_predictions)

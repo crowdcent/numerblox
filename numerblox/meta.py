@@ -1,11 +1,13 @@
 
-# TODO Create metaestimator that inherits from VotingRegressor and does (weighted) averaging of predictions
 import scipy
 import numpy as np
 import pandas as pd
 from typing import Union, List
 from sklearn.ensemble import VotingRegressor
 from sklearn.utils.validation import check_is_fitted
+from sklearn.base import BaseEstimator, RegressorMixin, clone
+
+from numerblox.neutralizers import BaseNeutralizer
 
 
 class NumeraiEnsemble(VotingRegressor):
@@ -103,3 +105,29 @@ class NumeraiEnsemble(VotingRegressor):
             j = 2 if j == 1 else j
             weights.append(1 / (2 ** (len(self.estimators) + 1 - j)))
         return weights
+
+class NeutralizedEstimator(BaseEstimator, RegressorMixin):
+    """
+    Neutralize predictions in an estimator.
+    :param estimator: Estimator to neutralize.
+    :param neutralizer: An initalized neutralizer object.
+    Must be one of the objects defined in numerblox.neutralizers.
+    """
+    def __init__(self, estimator, neutralizer: BaseNeutralizer):
+        self.estimator = estimator
+        self.neutralizer = neutralizer
+
+    def fit(self, X, y):
+        # Clone the original estimator to ensure the original object isn't modified
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        return self
+
+    def predict(self, X, eras: np.array):
+        assert len(X) == len(eras), "X and eras must have the same length."
+        check_is_fitted(self)
+        predictions = self.estimator_.predict(X)
+        X['prediction'] = predictions
+        X['era'] = eras
+        adjusted_predictions = self.neutralizer.predict(X)
+        return adjusted_predictions
