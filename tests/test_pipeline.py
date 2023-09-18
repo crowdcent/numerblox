@@ -12,14 +12,13 @@ setup_data = create_classic_sample_data
 
 def test_feature_neutralizer_pipeline(setup_data):
     lr1 = Ridge()
-    fn = FeatureNeutralizer()
+    fn = FeatureNeutralizer(proportion=0.5)
     pipeline = make_numerai_pipeline(lr1, fn)
-    pipeline.fit(setup_data[["feature1", "feature2"]], setup_data["target"])
-    features = setup_data[["feature1", "feature2"]]
+    X, y = setup_data[["feature1", "feature2"]], setup_data["target"]
+    pipeline.fit(X, y)
     eras = setup_data["era"]
 
-    result = pipeline.predict(setup_data[["feature1", "feature2"]],
-                              features=features, eras=eras)
+    result = pipeline.predict(X, features=X, eras=eras)
     assert isinstance(result, np.ndarray)
     assert len(result) == len(setup_data)
     assert result.min() >= 0
@@ -27,19 +26,17 @@ def test_feature_neutralizer_pipeline(setup_data):
 
 def test_feature_neutralizer_featureunion(setup_data):
     onehot = OneHotEncoder(sparse_output=False)
-    pipeline = make_numerai_pipeline(Ridge(), FeatureNeutralizer())
+    pipeline = make_numerai_pipeline(Ridge(), FeatureNeutralizer(proportion=0.5))
     union = make_numerai_union(onehot, pipeline)
 
     # Fitting the union
-    union.fit(setup_data[["feature1", "feature2"]], setup_data["target"])
+    X, y = setup_data[["feature1", "feature2"]], setup_data["target"]
+    union.fit(X, y)
 
-    # Getting the features and eras
-    features = setup_data[["feature1", "feature2"]]
     eras = setup_data["era"]
 
     # Making predictions
-    result = union.transform(setup_data[["feature1", "feature2"]], 
-                             numeraipipeline={"features": features, "eras": eras})
+    result = union.transform(X, numeraipipeline={"features": X, "eras": eras})
 
     # Your assertions
     assert isinstance(result, np.ndarray)
