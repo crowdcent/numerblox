@@ -12,10 +12,14 @@ from multiprocessing.pool import Pool
 from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.preprocessing import QuantileTransformer
+from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from .numerframe import NumerFrame
 from .features import V4_2_FEATURE_GROUP_MAPPING
+
+# Ignore Pandas SettingWithCopyWarning
+pd.options.mode.chained_assignment = None
 
 
 class BasePreProcessor(BaseEstimator, TransformerMixin):
@@ -30,52 +34,18 @@ class BasePreProcessor(BaseEstimator, TransformerMixin):
     @abstractmethod
     def transform(
         self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
-    ) -> NumerFrame:
+    ) -> pd.DataFrame:
         ...
 
     def __call__(
         self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
-    ) -> NumerFrame:
+    ) -> pd.DataFrame:
         return self.transform(X=X, y=y, **kwargs)
-
-class FeatureSelectionPreProcessor(BasePreProcessor):
-    """
-    Keep only features given + all target, predictions and aux columns.
-    """
-    def __init__(self, feature_cols: Union[str, list]):
-        super().__init__()
-        self.feature_cols = feature_cols
-
-    def transform(self, X: NumerFrame, y=None) -> NumerFrame:
-        keep_cols = (
-            self.feature_cols
-            + X.target_cols
-            + X.prediction_cols
-            + X.aux_cols
-        )
-        X = X.loc[:, keep_cols]
-        return NumerFrame(X)
-
-
-class TargetSelectionPreProcessor(BasePreProcessor):
-    """
-    Keep only features given + all target, predictions and aux columns.
-    """
-
-    def __init__(self, target_cols: Union[str, list]):
-        super().__init__()
-        self.target_cols = target_cols
-
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        keep_cols = (
-            self.target_cols
-            + dataf.feature_cols
-            + dataf.prediction_cols
-            + dataf.aux_cols
-        )
-        dataf = dataf.loc[:, keep_cols]
-        return NumerFrame(dataf)
-
+    
+    @abstractmethod
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        ...
+    
 
 class ReduceMemoryProcessor(BasePreProcessor):
     """
@@ -92,15 +62,15 @@ class ReduceMemoryProcessor(BasePreProcessor):
         super().__init__()
         self.deep_mem_inspect = deep_mem_inspect
 
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
-        dataf = self._reduce_mem_usage(dataf)
-        return NumerFrame(dataf)
+    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
+        return self._reduce_mem_usage(dataf)
 
     def _reduce_mem_usage(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """
         Iterate through all columns and modify the numeric column types
         to reduce memory usage.
         """
+        self.output_cols = dataf.columns.tolist()
         start_memory_usage = (
             dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
         )
@@ -161,6 +131,10 @@ class ReduceMemoryProcessor(BasePreProcessor):
             f"[green] Usage decreased by [bold]{round(100 * (start_memory_usage - end_memory_usage) / start_memory_usage, 2)}%[/bold][/green]"
         )
         return dataf
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        return self.output_cols if not input_features else input_features
 
 
 class BayesianGMMTargetProcessor(BasePreProcessor):
@@ -169,65 +143,76 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
     Based on Michael Oliver's GitHub Gist implementation: \n
     https://gist.github.com/the-moliver/dcdd2862dc2c78dda600f1b449071c93
 
-    :param target_col: Column from which to create fake target. \n
-    :param feature_names: Selection of features used for Bayesian GMM. All features by default.
     :param n_components: Number of components for fitting Bayesian Gaussian Mixture Model.
     """
-
     def __init__(
         self,
-        target_col: str = "target",
-        feature_names: list = None,
-        n_components: int = 6,
+        n_components: int = 3,
     ):
         super().__init__()
-        self.target_col = target_col
-        self.feature_names = feature_names
         self.n_components = n_components
         self.ridge = Ridge(fit_intercept=False)
         self.bins = [0, 0.05, 0.25, 0.75, 0.95, 1]
 
-    def transform(self, dataf: NumerFrame, *args, **kwargs) -> NumerFrame:
-        all_eras = dataf[dataf.meta.era_col].unique()
-        coefs = self._get_coefs(dataf=dataf, all_eras=all_eras)
-        bgmm = self._fit_bgmm(coefs=coefs)
-        fake_target = self._generate_target(dataf=dataf, bgmm=bgmm, all_eras=all_eras)
-        dataf[f"{self.target_col}_fake"] = fake_target
-        return NumerFrame(dataf)
+    def fit(self, X: pd.DataFrame, y: pd.Series, eras: pd.Series):
+        """
+        Fit Bayesian Gaussian Mixture model on coefficients and normalize.
+        :param X: DataFrame containing features.
+        :param y: Series containing real target.
+        :param eras: Series containing era information.
+        """
+        bgmm = BayesianGaussianMixture(n_components=self.n_components)
+        coefs = self._get_coefs(dataf=X, y=y, eras=eras)
+        bgmm.fit(coefs)
+        # make probability of sampling each component equal to better balance rare regimes
+        bgmm.weights_[:] = 1 / self.n_components
+        self.bgmm = bgmm
+        return self
 
-    def _get_coefs(self, dataf: NumerFrame, all_eras: list) -> np.ndarray:
+    def transform(self, X: pd.DataFrame, eras: pd.Series) -> np.array:
+        """
+        Main method for generating fake target.
+        :param X: DataFrame containing features.
+        :param eras: Series containing era information.
+        """
+        assert len(X) == len(eras), "X and eras must be same length."
+        all_eras = eras.unique().tolist()
+        # Scale data between 0 and 1
+        X /= X.max()
+        X -= 0.5
+        X.loc[:, 'era'] = eras
+
+        fake_target = self._generate_target(dataf=X, all_eras=all_eras)
+        return fake_target
+
+    def _get_coefs(self, dataf: pd.DataFrame, y: pd.Series, eras: pd.Series) -> np.ndarray:
         """
         Generate coefficients for BGMM.
-        Data should already be scaled between 0 and 1
-        (Already done with Numerai Classic data)
+        :param dataf: DataFrame containing features.
+        :param y: Series containing real target.
         """
         coefs = []
+        dataf.loc[:, 'era'] = eras
+        dataf.loc[:, 'target'] = y
+        all_eras = dataf['era'].unique().tolist()
         for era in all_eras:
-            features, target = self.__get_features_target(dataf=dataf, era=era)
-            self.ridge.fit(features, target)
+            era_df = dataf[dataf['era'] == era]
+            era_y = era_df.loc[:, 'target']
+            era_df = era_df.drop(columns=["era", "target"])
+            self.ridge.fit(era_df, era_y)
             coefs.append(self.ridge.coef_)
         stacked_coefs = np.vstack(coefs)
         return stacked_coefs
 
-    def _fit_bgmm(self, coefs: np.ndarray) -> BayesianGaussianMixture:
-        """
-        Fit Bayesian Gaussian Mixture model on coefficients and normalize.
-        """
-        bgmm = BayesianGaussianMixture(n_components=self.n_components)
-        bgmm.fit(coefs)
-        # make probability of sampling each component equal to better balance rare regimes
-        bgmm.weights_[:] = 1 / self.n_components
-        return bgmm
-
     def _generate_target(
-        self, dataf: NumerFrame, bgmm: BayesianGaussianMixture, all_eras: list
+        self, dataf: pd.DataFrame, all_eras: list
     ) -> np.ndarray:
         """Generate fake target using Bayesian Gaussian Mixture model."""
         fake_target = []
         for era in tqdm(all_eras, desc="Generating fake target"):
-            features, _ = self.__get_features_target(dataf=dataf, era=era)
+            features = dataf[dataf['era'] == era]
             # Sample a set of weights from GMM
-            beta, _ = bgmm.sample(1)
+            beta, _ = self.bgmm.sample(1)
             # Create fake continuous target
             fake_targ = features @ beta[0]
             # Bin fake target like real target
@@ -235,14 +220,10 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
             fake_targ = (np.digitize(fake_targ, self.bins) - 1) / 4
             fake_target.append(fake_targ)
         return np.concatenate(fake_target)
-
-    def __get_features_target(self, dataf: NumerFrame, era) -> tuple:
-        """Get features and target for one era and center data."""
-        sub_df = dataf[dataf[dataf.meta.era_col] == era]
-        features = self.feature_names if self.feature_names else sub_df.feature_cols
-        target = sub_df[self.target_col].values - 0.5
-        features = sub_df[features].values - 0.5
-        return features, target
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        return ["fake_target"] if not input_features else input_features
 
 
 class GroupStatsPreProcessor(BasePreProcessor):
@@ -269,21 +250,32 @@ class GroupStatsPreProcessor(BasePreProcessor):
         self.group_names = groups if groups else self.all_groups
         self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
 
-    def transform(self, dataf: pd.DataFrame, *args, **kwargs) -> NumerFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Check validity and add group features."""
-        dataf = dataf.pipe(self._add_group_features)
-        return NumerFrame(dataf)
+        dataf = self._add_group_features(X)
+        return dataf
 
-    def _add_group_features(self, dataf: pd.DataFrame) -> pd.DataFrame:
+    def _add_group_features(self, X: pd.DataFrame) -> pd.DataFrame:
         """Mean, standard deviation and skew for each group."""
-        dataf = dataf.copy()
+        dataf = pd.DataFrame()
         for group in self.group_names:
             cols = self.feature_group_mapping[group]
-            dataf.loc[:, f"feature_{group}_mean"] = dataf[cols].mean(axis=1)
-            dataf.loc[:, f"feature_{group}_std"] = dataf[cols].std(axis=1)
-            dataf.loc[:, f"feature_{group}_skew"] = dataf[cols].skew(axis=1)
-            
+            dataf.loc[:, f"feature_{group}_mean"] = X[cols].mean(axis=1)
+            dataf.loc[:, f"feature_{group}_std"] = X[cols].std(axis=1)
+            dataf.loc[:, f"feature_{group}_skew"] = X[cols].skew(axis=1)
         return dataf
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        if not input_features:
+            feature_names = []
+            for group in self.group_names:
+                feature_names.append(f"feature_{group}_mean")
+                feature_names.append(f"feature_{group}_std")
+                feature_names.append(f"feature_{group}_skew")
+        else:
+            feature_names = input_features
+        return feature_names
 
 
 class KatsuFeatureGenerator(BasePreProcessor):
@@ -300,7 +292,6 @@ class KatsuFeatureGenerator(BasePreProcessor):
     """
 
     warnings.filterwarnings("ignore")
-
     def __init__(
         self,
         windows: list,
@@ -314,8 +305,12 @@ class KatsuFeatureGenerator(BasePreProcessor):
         self.close_col = close_col
         self.num_cores = num_cores if num_cores else os.cpu_count()
 
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
-        """Multiprocessing feature engineering."""
+    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
+        """
+        Multiprocessing feature engineering.
+        
+        :param dataf: DataFrame with columns: [ticker, date, open, high, low, close, volume] \n
+        """
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
         rich_print(
             f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores."
@@ -327,7 +322,8 @@ class KatsuFeatureGenerator(BasePreProcessor):
             )
         ]
         dataf = self._generate_features(dataf_list=dataf_list)
-        return NumerFrame(dataf)
+        output_cols = self.get_feature_names_out()
+        return dataf[output_cols]
 
     def feature_engineering(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """Feature engineering for single ticker."""
@@ -395,42 +391,67 @@ class KatsuFeatureGenerator(BasePreProcessor):
         """Exponential moving average"""
         a = 2 / (span + 1)
         return series.ewm(alpha=a).mean()
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        if not input_features:
+            feature_names = []
+            for x in self.windows:
+                feature_names += [
+                    f"feature_{self.close_col}_ROCP_{x}",
+                    f"feature_{self.close_col}_VOL_{x}",
+                    f"feature_{self.close_col}_MA_gap_{x}",
+                ]
+            feature_names += [
+                "feature_RSI",
+                "feature_MACD",
+                "feature_MACD_signal",
+            ]
+        else:
+            feature_names = input_features
+        return feature_names
 
 
 class EraQuantileProcessor(BasePreProcessor):
     def __init__(
         self,
         num_quantiles: int = 50,
-        era_col: str = "date",
-        features: list = None,
         random_state: int = 0
     ):
         super().__init__()
         self.num_quantiles = num_quantiles
-        self.era_col = era_col
-        self.features = features 
         self.random_state = random_state
 
-    def _process_feature(self, group_data: pd.Series, feature: str) -> pd.Series:
+    def _process_feature(self, group_data: pd.Series) -> pd.Series:
         quantizer = QuantileTransformer(
             n_quantiles=self.num_quantiles, random_state=self.random_state
         )
         transformed_data = quantizer.fit_transform(group_data.to_frame()).ravel()
         return pd.Series(transformed_data, index=group_data.index)
 
-
     def transform(
-        self,
-        dataf: Union[pd.DataFrame, NumerFrame],
+        self, dataf: pd.DataFrame,
+        eras: pd.Series,
     ) -> pd.DataFrame:
-        features = self.features if self.features else [col for col in dataf.columns if col != self.era_col]
-        print(f"Quantiling for {len(features)} features.")
-
-        date_groups = dataf.groupby(self.era_col, group_keys=False)
-        for feature in tqdm(features):
-            group_data = date_groups[feature].apply(lambda x: self._process_feature(x, feature))
-            dataf[f"{feature}_quantile{self.num_quantiles}"] = group_data
-        return dataf
+        self.features = [col for col in dataf.columns if col not in ['era', 'target']]
+        print(f"Quantiling for {len(self.features)} features.")
+        dataf.loc[:, "era"] = eras
+        date_groups = dataf.groupby('era', group_keys=False)
+        output_df = pd.DataFrame()
+        for feature in tqdm(self.features):
+            group_data = date_groups[feature].apply(lambda x: self._process_feature(x))
+            output_df[f"{feature}_quantile{self.num_quantiles}"] = group_data
+        return output_df
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        if not input_features:
+            feature_names = []
+            for feature in self.features:
+                feature_names.append(f"{feature}_quantile{self.num_quantiles}")
+        else:
+            feature_names = input_features
+        return feature_names
 
 
 class TickerMapper(BasePreProcessor):
@@ -465,11 +486,18 @@ class TickerMapper(BasePreProcessor):
             self.ticker_map[[self.ticker_col, self.target_ticker_format]].values
         )
 
-    def transform(
-        self, dataf: Union[pd.DataFrame, NumerFrame], **kwargs
-    ) -> NumerFrame:
-        dataf[self.target_ticker_format] = dataf[self.ticker_col].map(self.mapping)
-        return NumerFrame(dataf)
+    def transform(self, X: Union[np.array, pd.Series]) -> pd.Series:
+        """
+        Transform ticker column.
+        :param X: Ticker column
+        :return tickers: Mapped tickers
+        """
+        tickers = pd.DataFrame(X, columns=[self.ticker_col])[self.ticker_col].map(self.mapping)
+        return tickers
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        return [self.target_ticker_format] if not input_features else input_features
+    
 
 
 class SignalsTargetProcessor(BasePreProcessor):
@@ -497,7 +525,7 @@ class SignalsTargetProcessor(BasePreProcessor):
         self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
         self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
 
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
+    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
             dataf.loc[:, f"target_{window}d_raw"] = (
                 dataf[self.price_col].pct_change(periods=window).shift(-window)
@@ -514,7 +542,20 @@ class SignalsTargetProcessor(BasePreProcessor):
                     group, bins=self.bins, labels=self.labels, include_lowest=True
                 )
             )
-        return NumerFrame(dataf)
+        output_cols = self.get_feature_names_out()
+        return dataf[output_cols]
+
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names of Signals targets. """
+        if not input_features:
+            feature_names = []
+            for window in self.windows:
+                feature_names.append(f"target_{window}d_raw")
+                feature_names.append(f"target_{window}d_rank")
+                feature_names.append(f"target_{window}d_group")
+        else:
+            feature_names = input_features
+        return feature_names
 
 
 class LagPreProcessor(BasePreProcessor):
@@ -523,30 +564,29 @@ class LagPreProcessor(BasePreProcessor):
 
     :param windows: All lag windows to process for all features. \n
     [5, 10, 15, 20] by default (4 weeks lookback) \n
-    :param ticker_col: Column name for grouping by tickers. \n
-    :param feature_names: All features for which you want to create lags. All features by default.
     """
 
-    def __init__(
-        self,
-        windows: list = None,
-        ticker_col: str = "bloomberg_ticker",
-        feature_names: list = None,
-    ):
+    def __init__(self, windows: list = None,):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
-        self.ticker_col = ticker_col
-        self.feature_names = feature_names
 
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
-        ticker_groups = dataf.groupby(self.ticker_col)
-        for feature in tqdm(feature_names, desc="Lag feature generation"):
+    def transform(self, X: pd.DataFrame, tickers: pd.Series) -> pd.DataFrame:
+        feature_cols = X.columns.tolist()
+        X["ticker"] = tickers
+        ticker_groups = X.groupby("ticker")
+        output_features = []
+        for feature in tqdm(feature_cols, desc="Lag feature generation"):
             feature_group = ticker_groups[feature]
             for day in self.windows:
                 shifted = feature_group.shift(day, axis=0)
-                dataf.loc[:, f"{feature}_lag{day}"] = shifted
-        return NumerFrame(dataf)
+                X.loc[:, f"{feature}_lag{day}"] = shifted
+                output_features.append(f"{feature}_lag{day}")
+        self.output_features = output_features
+        return X[output_features]
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        """Return feature names."""
+        return self.output_features if not input_features else input_features
 
 
 class DifferencePreProcessor(BasePreProcessor):
@@ -562,37 +602,43 @@ class DifferencePreProcessor(BasePreProcessor):
     def __init__(
         self,
         windows: list = None,
-        feature_names: list = None,
         pct_diff: bool = False,
         abs_diff: bool = False,
     ):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
-        self.feature_names = feature_names
         self.pct_diff = pct_diff
         self.abs_diff = abs_diff
 
-    def transform(self, dataf: NumerFrame) -> NumerFrame:
-        feature_names = self.feature_names if self.feature_names else dataf.feature_cols
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create difference feature from lag features.
+        :param X: DataFrame with lag features.
+        NOTE: Make sure only lag features are present in the DataFrame.
+        """
+        feature_names = X.columns.tolist()
+        for col in feature_names:
+            assert "_lag" in col, "DifferencePreProcessor expects only lag features. Got feature: '{col}'"
+        output_features = []
         for feature in tqdm(feature_names, desc="Difference feature generation"):
-            lag_columns = dataf.get_pattern_data(f"{feature}_lag").columns
-            if not lag_columns.empty:
-                for day in self.windows:
-                    differenced_values = (
-                        (dataf[feature] / dataf[f"{feature}_lag{day}"]) - 1
+            for day in self.windows:
+                differenced_values = (
+                        (X[feature] / X[feature]) - 1
                         if self.pct_diff
-                        else dataf[feature] - dataf[f"{feature}_lag{day}"]
+                        else X[feature] - X[feature]
                     )
-                    dataf[f"{feature}_diff{day}"] = differenced_values
-                    if self.abs_diff:
-                        dataf[f"{feature}_absdiff{day}"] = np.abs(
-                            dataf[f"{feature}_diff{day}"]
+                X[f"{feature}_diff{day}"] = differenced_values
+                output_features.append(f"{feature}_diff{day}")
+                if self.abs_diff:
+                    X[f"{feature}_absdiff{day}"] = np.abs(
+                            X[f"{feature}_diff{day}"]
                         )
-            else:
-                rich_print(
-                    f":warning: WARNING: Skipping {feature}. Lag features for feature: {feature} were not detected. Have you already run LagPreProcessor? :warning:"
-                )
-        return NumerFrame(dataf)
+                    output_features.append(f"{feature}_absdiff{day}")
+        self.output_features = output_features
+        return X[self.output_features]
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        return self.output_features if not input_features else input_features
 
 
 class PandasTaFeatureGenerator(BasePreProcessor):
@@ -621,20 +667,24 @@ class PandasTaFeatureGenerator(BasePreProcessor):
                                             {"kind": "rsi", "length": 60, "col_names": ("feature_RSI_60")}])
         self.strategy = strategy if strategy is not None else standard_strategy
 
-    def transform(self, dataf: Union[pd.DataFrame, NumerFrame]) -> NumerFrame:
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Main feature generation method. \n 
-        :param dataf: DataFrame with columns: [ticker, date, open, high, low, close, volume] \n
-        :return: DataFrame with features added.
+        :param X: DataFrame with columns: [ticker, date, open, high, low, close, volume] \n
+        :return: PandasTA features
         """
+        initial_features = X.columns.tolist()
         dataf_list = [
             x
             for _, x in tqdm(
-                dataf.groupby(self.ticker_col), desc="Generating ticker DataFrames"
+                X.groupby(self.ticker_col), desc="Generating ticker DataFrames"
             )
         ]
-        dataf = self._generate_features(dataf_list=dataf_list)
-        return NumerFrame(dataf)
+        X = self._generate_features(dataf_list=dataf_list)
+        output_df = X.drop(columns=initial_features)
+        self.output_cols = output_df.columns.tolist()
+        return output_df
     
     def _generate_features(self, dataf_list: List[pd.DataFrame]) -> pd.DataFrame:
         """
@@ -660,17 +710,9 @@ class PandasTaFeatureGenerator(BasePreProcessor):
         """
         # We use a different multiprocessing engine so shutting off pandas_ta's multiprocessing
         ticker_df.ta.cores = 0
+        # Run strategy
         ticker_df.ta.strategy(self.strategy)
         return ticker_df
-
-
-class AwesomePreProcessor(BasePreProcessor):
-    """ TEMPLATE - Do some awesome preprocessing. """
-    def __init__(self):
-        super().__init__()
-
-    def transform(self, dataf: NumerFrame, **kwargs) -> NumerFrame:
-        # Do processing
-        ...
-        # Parse all contents of NumerFrame to the next pipeline step
-        return NumerFrame(dataf)
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        return self.output_cols if not input_features else input_features

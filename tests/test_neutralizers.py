@@ -7,17 +7,10 @@ from sklearn.preprocessing import OneHotEncoder
 from numerblox.meta import make_numerai_pipeline, make_numerai_union
 from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer, FeaturePenalizer
 
-@pytest.fixture
-def setup_data():
-    data = {
-        "feature1": [1, 2, 3, 4],
-        "feature2": [4, 3, 2, 1],
-        "prediction": [0.5, 0.6, 0.7, 0.8],
-        "target": [0, 1, 0, 1],
-        "era": ["era1", "era2", "era1", "era2"]
-    }
-    return pd.DataFrame(data)
+from utils import create_classic_sample_data
 
+
+setup_data = create_classic_sample_data
 
 def test_base_neutralizer_initialization():
     bn = BaseNeutralizer(new_col_name="test")

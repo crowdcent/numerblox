@@ -17,6 +17,18 @@ def dummy_dataframe():
     return df
 
 
+@pytest.fixture
+def create_classic_sample_data():
+    data = {
+        "feature1": [1, 2, 3, 4],
+        "feature2": [4, 3, 2, 1],
+        "prediction": [0.5, 0.6, 0.7, 0.8],
+        "target": [0, 1, 0, 1],
+        "era": ["era1", "era2", "era1", "era2"]
+    }
+    return pd.DataFrame(data)
+
+@pytest.fixture
 def create_signals_sample_data():
     instances = []
     tickers = ["ABC.US", "DEF.US", "GHI.US"]
