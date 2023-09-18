@@ -21,7 +21,7 @@ class NumeraiPipeline(Pipeline):
 
         # Make sure the last step requires features and eras arguments
         if not self._has_required_args(steps[-1][1], "features", "eras"):
-            warnings.warn(f"""NumeraiPipeline is mostly used for use cases where the last arguments are 'features' and 'eras'. For example, FeatureNeutralizer. Got '{steps[-1][1].__class__.__name__}'. Be sure to pass the right arguments into the .predict method and consider if a regular sklearn.pipeline.Pipeline also works.""")
+            warnings.warn(f"""NumeraiPipeline is mostly used for use cases where the last step in the pipeline requires the arguments `'features'` and `'eras'`. For example, `numerblox.neutralizers.FeatureNeutralizer`. Got '{steps[-1][1].__class__.__name__}'. Be sure to pass the right arguments into the .predict method and consider if a regular `sklearn.pipeline.Pipeline` also works.""")
 
         self.steps = steps
         self.memory = memory
