@@ -30,14 +30,14 @@ class BaseNeutralizer(BaseEstimator, RegressorMixin):
 
     @abstractmethod
     def predict(
-        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
+        self, X: Union[pd.DataFrame, NumerFrame], **kwargs
     ) -> np.array:
         ...
     
     def __call__(
-        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
+        self, X: Union[pd.DataFrame, NumerFrame], **kwargs
     ) -> np.array:
-        return self.predict(X=X, y=y, **kwargs)
+        return self.predict(X=X, **kwargs)
     
     def get_feature_names_out(self, input_features: list = None) -> list:
         """ 
@@ -78,6 +78,7 @@ class FeatureNeutralizer(BaseNeutralizer):
             else f"{self.pred_name}_neutralized_{self.proportion}"
         )
         super().__init__(new_col_name=new_col_name)
+        self.suffix = suffix
         self.cuda = cuda
 
     def predict(self, X: np.array, features: pd.DataFrame, eras: pd.Series) -> np.array:
@@ -168,6 +169,7 @@ class FeaturePenalizer(BaseNeutralizer):
             else f"{self.pred_name}_penalized_{self.max_exposure}"
         )
         super().__init__(new_col_name=new_col_name)
+        self.suffix = suffix
 
     def predict(self, X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series) -> np.array:
         """

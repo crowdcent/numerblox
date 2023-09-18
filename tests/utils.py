@@ -16,6 +16,7 @@ def dummy_dataframe():
     })
     return df
 
+
 def create_signals_sample_data():
     instances = []
     tickers = ["ABC.US", "DEF.US", "GHI.US"]
