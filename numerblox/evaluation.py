@@ -119,8 +119,9 @@ class BaseEvaluator:
             max_feature_exposure = self.max_feature_exposure(
                 dataf=dataf, pred_col=pred_col
             )
+            # Using all features for plain FNC
             fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(
-                dataf=dataf, pred_col=pred_col, target_col=target_col
+                dataf=dataf, pred_col=pred_col, target_col=target_col, feature_names=dataf.feature_cols
             )
             tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
@@ -246,17 +247,15 @@ class BaseEvaluator:
         return max_feature_exposure
 
     def feature_neutral_mean_std_sharpe(
-        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, target_col: str, feature_names: list = None
+        self, dataf: pd.DataFrame, pred_col: str, target_col: str, feature_names: list
     ) -> Tuple[np.float64, np.float64, np.float64]:
         """
         Feature neutralized mean performance.
         More info: https://docs.numer.ai/tournament/feature-neutral-correlation
         """
-        fn = FeatureNeutralizer(pred_name=pred_col,
-                                feature_names=feature_names,
-                                era_col=self.era_col,
-                                proportion=1.0)
-        neutralized_preds = fn(X=dataf)
+        fn = FeatureNeutralizer(pred_name=pred_col, proportion=1.0)
+        neutralized_preds = fn.predict(dataf[pred_col], features=dataf[feature_names],
+                               eras=dataf[self.era_col])
         # Construct new DataFrame with era col, target col and preds
         neutralized_dataf = pd.DataFrame(columns=[self.era_col, target_col, pred_col])
         neutralized_dataf[self.era_col] = dataf[self.era_col]
@@ -449,6 +448,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             )
             # Numerai Classic specific metrics
             if not self.fast_mode and valid_features:
+                # Using only valid features defined in FNCV3_FEATURES
                 fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
                     dataf=dataf, pred_col=col, target_col=target_col, feature_names=valid_features
                 )

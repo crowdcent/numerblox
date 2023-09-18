@@ -16,6 +16,8 @@ CLASSIC_SPECIFIC_STATS_COLS = ['feature_neutral_mean_v3', 'feature_neutral_std_v
 CLASSIC_STATS_COLS = BASE_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS
 SIGNALS_STATS_COLS = BASE_STATS_COLS
 
+df = create_signals_sample_data
+
 def test_numerai_classic_evaluator():
     df = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
@@ -30,9 +32,10 @@ def test_numerai_classic_evaluator():
     )
     for col in CLASSIC_STATS_COLS:
         assert col in val_stats.columns
+    for col in CLASSIC_SPECIFIC_STATS_COLS:
+        val_stats[col]
 
-def test_numerai_signals_evaluator():
-    df = create_signals_sample_data()
+def test_numerai_signals_evaluator(df):
 
     evaluator = NumeraiSignalsEvaluator(era_col="date", fast_mode=False)
     val_stats = evaluator.full_evaluation(
@@ -59,8 +62,7 @@ def mock_api():
         mock_instance.diagnostics.return_value = [{"status": "done", "perEraDiagnostics": [{"era": "2023-09-01", "validationCorr": 0.6}]}]
         yield mock_instance
 
-def test_get_neutralized_corr(mock_api):
-    df = create_signals_sample_data()
+def test_get_neutralized_corr(df, mock_api):
     obj = NumeraiSignalsEvaluator(era_col="date", fast_mode=True)  
     result = obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"))
     
