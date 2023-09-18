@@ -111,10 +111,7 @@ def test_feature_neutralizer_featureunion(setup_data):
     # All pipeline predictions should be between 0 and 1.
     assert np.all((0 <= result[:, -1]) & (result[:, -1] <= 1))
 
-
-
-
-# TODO Test that these object work well within other Pipelines, FeatureUnions, and ColumnTransformers.
+# TODO Test that these objects work well within other Pipelines, FeatureUnions, and ColumnTransformers.
 
 # TODO Fast FeaturePenalizer tests
 # def test_feature_penalizer_predict(setup_data):
