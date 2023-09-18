@@ -1,9 +1,10 @@
+import pytest
 import numpy as np 
-import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import OneHotEncoder
 
-from numerblox.pipeline import make_numerai_pipeline, make_numerai_union
+from numerblox.pipeline import (make_numerai_pipeline, make_numerai_union,
+                                NumeraiPipeline, NumeraiFeatureUnion)
 from numerblox.neutralizers import FeatureNeutralizer, FeaturePenalizer
 
 from utils import create_classic_sample_data
@@ -23,6 +24,13 @@ def test_feature_neutralizer_pipeline(setup_data):
     assert len(result) == len(setup_data)
     assert result.min() >= 0
     assert result.max() <= 1
+
+def test_numerai_pipeline_warning():
+    # Some mock steps where the last step doesn't require 'features' and 'eras' arguments
+    steps = [("ridge", Ridge())]  
+    
+    with pytest.warns(UserWarning, match=r".*NumeraiPipeline is mostly used for.*"):
+        pipeline = NumeraiPipeline(steps)
 
 def test_feature_neutralizer_featureunion(setup_data):
     onehot = OneHotEncoder(sparse_output=False)
@@ -45,6 +53,8 @@ def test_feature_neutralizer_featureunion(setup_data):
     assert np.all(np.isin(result[:, :-1], [0, 1]))
     # All pipeline predictions should be between 0 and 1.
     assert np.all((0 <= result[:, -1]) & (result[:, -1] <= 1))
+
+
 
 
 # TODO Test that these object work well within other Pipelines, FeatureUnions, and ColumnTransformers.
