@@ -47,7 +47,7 @@ def test_processors_sklearn():
                      "feature_partitive_labyrinthine_sard"]
     X = data[feature_names]
 
-    for processor_cls in tqdm(processors, desc="Testing processors for scikit-learn compatability"):
+    for processor_cls in tqdm(processors, desc="Testing processors for scikit-learn compatibility"):
         # Initialization
         if processor_cls.__name__ in WINDOW_COL_PROCESSORS:
             processor = processor_cls(windows=[20, 40])
@@ -93,10 +93,29 @@ def test_reduce_memory_preprocessor(dummy_classic_data):
     assert rmp.get_feature_names_out() == dummy_classic_data.columns.tolist()
 
 
-# TODO Proper BayesianGMMTargetProcessor test
 def test_bayesian_gmm_target_preprocessor():
     bgmm = BayesianGMMTargetProcessor(n_components=2)
+
+    y = dataset["target_jerome_v4_20"].fillna(0.5)
+    eras = dataset["era"]
+    feature_names = ["feature_tallish_grimier_tumbrel",
+                     "feature_partitive_labyrinthine_sard"]
+    X = dataset[feature_names]
+
+    bgmm.fit(X, y, eras=eras)
+
+    result = bgmm.transform(X, eras=eras)
     assert bgmm.get_feature_names_out() == ["fake_target"]
+    assert len(result) == len(dataset)
+    assert result.min() >= 0.0
+    assert result.max() <= 1.0
+
+    # _get_coefs
+    coefs = bgmm._get_coefs(X, y, eras=eras)
+    assert coefs.shape == (5, 2)
+    assert coefs.min() >= 0.0
+    assert coefs.max() <= 1.0
+
 
 def test_group_stats_preprocessor():
 

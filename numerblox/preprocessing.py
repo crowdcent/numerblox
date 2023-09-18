@@ -178,6 +178,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         assert len(X) == len(eras), "X and eras must be same length."
         all_eras = eras.unique().tolist()
         # Scale data between 0 and 1
+        X = X.astype(float)
         X /= X.max()
         X -= 0.5
         X.loc[:, 'era'] = eras
@@ -211,6 +212,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         fake_target = []
         for era in tqdm(all_eras, desc="Generating fake target"):
             features = dataf[dataf['era'] == era]
+            features = features.drop(columns=["era", "target"])
             # Sample a set of weights from GMM
             beta, _ = self.bgmm.sample(1)
             # Create fake continuous target

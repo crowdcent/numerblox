@@ -1,7 +1,3 @@
-
-# TODO Inherit from VotingRegressor to create meta estimators.
-
-
 import scipy
 from abc import abstractmethod
 from typing import Union
