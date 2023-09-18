@@ -53,24 +53,19 @@ class FeatureNeutralizer(BaseNeutralizer):
     """
     Classic feature neutralization by subtracting a linear model.
 
-    :param feature_names: List of column names to neutralize against. Selects all feature columns by default. \n
-    :param pred_name: Prediction column to neutralize. \n
+    :param pred_name: Name of prediction column. For creating the new column name. \n
     :param proportion: Number in range [0...1] indicating how much to neutralize. \n
     :param suffix: Optional suffix that is added to new column name. \n
     :param cuda: Do neutralization on the GPU \n
     Make sure you have CuPy installed when setting cuda to True. \n
     Installation docs: docs.cupy.dev/en/stable/install.html
-    :param verbose: Whether to print info about neutralization.
     """
     def __init__(
         self,
-        feature_names: list = None,
         pred_name: str = "prediction",
-        era_col: str = "era",
         proportion: float = 0.5,
         suffix: str = None,
         cuda = False,
-        verbose: bool = True,
     ):
         self.pred_name = pred_name
         self.proportion = proportion
@@ -83,15 +78,24 @@ class FeatureNeutralizer(BaseNeutralizer):
             else f"{self.pred_name}_neutralized_{self.proportion}"
         )
         super().__init__(new_col_name=new_col_name)
-        self.era_col = era_col
-        self.feature_names = feature_names
         self.cuda = cuda
-        self.verbose = verbose
 
-    def predict(self, X: NumerFrame, y=None) -> np.array:
-        feature_names = self.feature_names if self.feature_names else X.feature_cols
-        neutralized_preds = X.groupby(X.meta.era_col, group_keys=False).apply(
-            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)
+    def predict(self, X: np.array, features: pd.DataFrame, eras: pd.Series) -> np.array:
+        """
+        Main prediction function.
+        :param X: Input predictions to neutralize. \n
+        :param features: DataFrame with features for neutralization. \n
+        :param eras: Series with era labels for each row in features. \n
+        Features, eras and the prediction column must all have the same length.
+        :return: Neutralized predictions.
+        """
+        assert len(X) == len(features), "Input predictions must have same length as features."
+        assert len(X) == len(eras), "Input predictions must have same length as eras."
+        df = features.copy()
+        df["prediction"] = X
+        df["era"] = eras
+        neutralized_preds = df.groupby("era", group_keys=False).apply(
+            lambda x: self.normalize_and_neutralize(x, ["prediction"], list(features.columns))
         )
         neutralized_preds = MinMaxScaler().fit_transform(
             neutralized_preds
@@ -143,16 +147,14 @@ class FeaturePenalizer(BaseNeutralizer):
 
     Source of first PyTorch implementation (by Michael Oliver / mdo): https://forum.numer.ai/t/model-diagnostics-feature-exposure/899/12
 
-    :param feature_names: List of column names to reduce feature exposure. Uses all feature columns by default. \n
-    :param pred_name: Prediction column to neutralize. \n
     :param max_exposure: Number in range [0...1] indicating how much to reduce max feature exposure to.
+    :param pred_name: Prediction column name. Used for new column name. \n
+    :param suffix: Optional suffix that is added to new column name.
     """
     def __init__(
         self,
         max_exposure: float,
-        feature_names: list = None,
         pred_name: str = "prediction",
-        era_col: str = "era",
         suffix: str = None,
     ):
         self.max_exposure = max_exposure
@@ -166,29 +168,38 @@ class FeaturePenalizer(BaseNeutralizer):
             else f"{self.pred_name}_penalized_{self.max_exposure}"
         )
         super().__init__(new_col_name=new_col_name)
-        self.feature_names = feature_names
-        self.era_col = era_col
 
-    def predict(self, X: pd.DataFrame, y=None) -> np.array:
-        penalized_data = self.reduce_all_exposures(
-            dataf=X, column=self.pred_name, neutralizers=self.feature_names
+    def predict(self, X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series) -> np.array:
+        """
+        Main prediction method.
+        :param X: Input predictions to neutralize. 
+        :param features: DataFrame with features for neutralization. 
+        :param eras: Series with era labels for each row in features. 
+        Features, eras and the prediction column must all have the same length.
+        :return: Penalized predictions.
+        """
+        assert len(X) == len(features), "Input predictions must have same length as features."
+        assert len(X) == len(eras), "Input predictions must have same length as eras."
+        df = features.copy()
+        df["prediction"] = X
+        df["era"] = eras
+        penalized_data = self._reduce_all_exposures(
+            dataf=df, column=self.pred_name, neutralizers=list(features.columns)
         )
         return penalized_data
 
-    def reduce_all_exposures(
+    def _reduce_all_exposures(
         self,
-        dataf: NumerFrame,
+        dataf: pd.DataFrame,
         column: str = "prediction",
         neutralizers: list = None,
         normalize=True,
         gaussianize=True,
     ) -> pd.DataFrame:
-        if neutralizers is None:
-            neutralizers = [x for x in dataf.columns if x.startswith("feature")]
         neutralized = []
 
-        for era in tqdm(dataf[self.era_col].unique()):
-            dataf_era = dataf[dataf[self.era_col] == era]
+        for era in tqdm(dataf["era"].unique()):
+            dataf_era = dataf[dataf["era"] == era]
             scores = dataf_era[[column]].values
             exposure_values = dataf_era[neutralizers].values
 
@@ -201,7 +212,7 @@ class FeaturePenalizer(BaseNeutralizer):
                     scores2.append(x)
                 scores = np.array(scores2)[0]
 
-            scores, weights = self._reduce_exposure(
+            scores, _ = self._reduce_exposure(
                 scores, exposure_values, len(neutralizers), None
             )
 
