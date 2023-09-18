@@ -21,6 +21,7 @@ SIGNALS_PREPROCESSORS = ['KatsuFeatureGenerator', 'EraQuantileProcessor',
                      'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'PandasTaFeatureGenerator', 'AwesomePreProcessor']
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
 WINDOW_COL_PROCESSORS = ["KatsuFeatureGenerator", "LagPreProcessor", "DifferencePreProcessor"]
+# Preprocessors that need eras for fitting.
 ERA_COL_PROCESSORS = ["BayesianGMMTargetProcessor"]
 
 
