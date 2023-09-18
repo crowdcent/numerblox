@@ -56,4 +56,9 @@ def test_example_predictions_feature_union():
     assert X_transformed.shape[0] == X.shape[0]
     assert X_transformed.shape[1] == 3
 
+def test_example_predictions_get_feature_names_out():
+    ep = ExamplePredictions()
+    assert ep.get_feature_names_out() == ["v4.2/live_example_preds"]
+    assert ep.get_feature_names_out(['a', 'b']) == ['a', 'b']
+
 

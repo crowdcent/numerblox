@@ -2,13 +2,10 @@
 
 import numpy as np
 from scipy import sparse
-from sklearn.pipeline import Pipeline, _name_estimators
-from sklearn.utils.validation import check_is_fitted
-from sklearn.pipeline import FeatureUnion
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators
 
-from numerblox.neutralizers import BaseNeutralizer
 from numerblox.meta import MetaEstimator
+from numerblox.neutralizers import BaseNeutralizer
 
 
 class NumeraiPipeline(Pipeline):

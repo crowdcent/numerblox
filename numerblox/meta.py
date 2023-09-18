@@ -2,15 +2,22 @@
 import scipy
 import numpy as np
 import pandas as pd
-from scipy import sparse
 
 from typing import Union, List
-from sklearn.pipeline import Pipeline, _name_estimators
+from sklearn import clone
 from sklearn.ensemble import VotingRegressor
 from sklearn.utils.validation import check_is_fitted
-from sklearn.pipeline import FeatureUnion
-from sklearn.compose import ColumnTransformer
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+    MetaEstimatorMixin,
+)
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_X_y,
+    FLOAT_DTYPES,
+)
 
 
 
@@ -113,18 +120,38 @@ class NumeraiEnsemble(VotingRegressor):
         return weights
     
 
-class MetaEstimator(BaseEstimator, RegressorMixin):
-    def __init__(self, estimator):
+class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
+    """
+    Helper for NumeraiPipeline and NumeraiFeatureUnion to use a model as a transformer.
+
+    :param estimator: Underlying estimator like XGBoost, Catboost, scikit-learn, etc.
+    :param predict_func: Name of the function that will be used for prediction.
+    Must be one of 'predict', 'predict_proba', 'predict_log_proba'.
+    For example, XGBRegressor has 'predict' and 'predict_proba' functions.
+    The estimator should have the function you define.
+    """
+
+    def __init__(self, estimator, predict_func="predict"):
         self.estimator = estimator
+        assert predict_func in ["predict", "predict_proba", "predict_log_proba"], "predict_func must be one of 'predict', 'predict_proba', 'predict_log_proba'"
+        self.predict_func = predict_func
         
-    def fit(self, X, y, **fit_params):
-        self.estimator.fit(X, y, **fit_params)
+    def fit(self, X, y, **kwargs):
+        """
+        Fit underlying estimator and set attributes.
+        """
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
+        self.multi_output_ = len(y.shape) > 1
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y, **kwargs)
         return self
     
-    def transform(self, X, **predict_params):
-        return self.estimator.predict(X, **predict_params)
-    
-    def predict(self, X, **predict_params):
-        check_is_fitted(self)
-        return self.estimator_.predict(X, **predict_params)
-    
+    def transform(self, X: Union[np.array, pd.DataFrame]) -> np.array:
+        """
+        Apply the `predict_func` on the fitted estimator.
+
+        Shape `(X.shape[0], )` if estimator is not multi output and else `(X.shape[0], y.shape[1])`.
+        """
+        check_is_fitted(self, "estimator_")
+        output = getattr(self.estimator_, self.predict_func)(X)
+        return output if self.multi_output_ else output.reshape(-1, 1)

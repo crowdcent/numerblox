@@ -1,5 +1,6 @@
 import pandas as pd
 from uuid import uuid4
+from pathlib import Path
 from abc import abstractmethod
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -21,6 +22,11 @@ class BasePredictionLoader(BaseEstimator, TransformerMixin):
 
     def __call__(self, X=None, y=None) -> pd.DataFrame:
         return self.predict(X=X)
+    
+    @abstractmethod
+    def get_feature_names_out(self, input_features=None):
+        """ Return feature names. """
+        ...
 
 class ExamplePredictions(BasePredictionLoader):
     """
@@ -57,3 +63,6 @@ class ExamplePredictions(BasePredictionLoader):
 
     def _load_example_preds(self, *args, **kwargs):
         return pd.read_parquet(self.dest_path, *args, **kwargs)
+
+    def get_feature_names_out(self, input_features=None):
+        return [Path(self.file_name).with_suffix('').as_posix()] if not input_features else input_features
