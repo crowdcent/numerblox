@@ -5,15 +5,13 @@ import pandas as pd
 from typing import Union, List
 from sklearn.ensemble import VotingRegressor
 from sklearn.utils.validation import check_is_fitted
-from sklearn.base import BaseEstimator, RegressorMixin, clone
-
-from numerblox.neutralizers import BaseNeutralizer
 
 
 class NumeraiEnsemble(VotingRegressor):
     """
     Ensembler that standardizes predictions by era and averages them.
     :param estimators: List of (name, estimator) tuples.
+    :param eras: Era labels (strings) for each row in X.
     :param weights: Sequence of weights (float or int), optional, default: None.
     If None, then uniform weights are used.
     :param n_jobs: The number of jobs to run in parallel for fit.
@@ -26,9 +24,11 @@ class NumeraiEnsemble(VotingRegressor):
     Example donate weighting for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
     :param verbose: Whether to print info about ensembling.
     """
-    def __init__(self, estimators, weights=None, n_jobs=None, gaussianize=True, 
+    def __init__(self, estimators: list, eras: np.array,
+                 weights=None, n_jobs=None, gaussianize=True, 
                  donate_weighted=False, verbose=False):
         super().__init__(estimators=estimators, weights=weights, n_jobs=n_jobs, verbose=verbose)
+        self.eras = eras
         self.gaussianize = gaussianize
         self.donate_weighted = donate_weighted
         # Override weights if donate_weighted is True
@@ -38,14 +38,13 @@ class NumeraiEnsemble(VotingRegressor):
             weights = self._weights_not_none
         self.weights = weights
 
-    def predict(self, X: Union[np.array, pd.DataFrame], eras: np.array) -> np.array:
+    def predict(self, X: Union[np.array, pd.DataFrame]) -> np.array:
         """ 
         Standardize by era and average. 
         :param X: Input data.
-        :param eras: Era labels (strings) for each row in X.
         :return: Ensembled predictions.
         """
-        assert len(X) == len(eras), "X and eras must have the same length."
+        assert len(X) == len(self.eras), "input X and eras must have the same length."
         check_is_fitted(self)
         # Get raw predictions for each estimator
         pred_list = [est.predict(X) for est in self.estimators_]
@@ -56,7 +55,7 @@ class NumeraiEnsemble(VotingRegressor):
             if np.all(pred == pred[0]):
                 print("Warning: Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
             else:
-                standardized_pred = self.standardize_by_era(pred, eras)
+                standardized_pred = self._standardize_by_era(pred)
                 standardized_pred_list.append(standardized_pred)
 
         if len(standardized_pred_list) == 0:
@@ -72,7 +71,7 @@ class NumeraiEnsemble(VotingRegressor):
         
         return ensembled_predictions
 
-    def standardize(self, X: np.array) -> np.array:
+    def _standardize(self, X: np.array) -> np.array:
         """ 
         Standardize single era.
         :param X: Predictions for a single era.
@@ -83,15 +82,15 @@ class NumeraiEnsemble(VotingRegressor):
             percentile_X = scipy.stats.norm.ppf(percentile_X)
         return percentile_X
     
-    def standardize_by_era(self, X: np.array, eras: np.array) -> np.array:
+    def _standardize_by_era(self, X: np.array) -> np.array:
         """
         Standardize predictions of a single estimator by era.
         :param X: All predictions of a single estimator.
         :param eras: Era labels (strings) for each row in X.
         :return: Standardized predictions.
         """
-        df = pd.DataFrame({'prediction': X, 'era': eras})
-        df['standardized_prediction'] = df.groupby('era')['prediction'].transform(self.standardize)
+        df = pd.DataFrame({'prediction': X, 'era': self.eras})
+        df['standardized_prediction'] = df.groupby('era')['prediction'].transform(self._standardize)
         return df['standardized_prediction'].values
     
     def _get_donate_weights(self) -> list:
@@ -105,29 +104,4 @@ class NumeraiEnsemble(VotingRegressor):
             j = 2 if j == 1 else j
             weights.append(1 / (2 ** (len(self.estimators) + 1 - j)))
         return weights
-
-class NeutralizedEstimator(BaseEstimator, RegressorMixin):
-    """
-    Neutralize predictions in an estimator.
-    :param estimator: Estimator to neutralize.
-    :param neutralizer: An initalized neutralizer object.
-    Must be one of the objects defined in numerblox.neutralizers.
-    """
-    def __init__(self, estimator, neutralizer: BaseNeutralizer):
-        self.estimator = estimator
-        self.neutralizer = neutralizer
-
-    def fit(self, X, y):
-        # Clone the original estimator to ensure the original object isn't modified
-        self.estimator_ = clone(self.estimator)
-        self.estimator_.fit(X, y)
-        return self
-
-    def predict(self, X, eras: np.array):
-        assert len(X) == len(eras), "X and eras must have the same length."
-        check_is_fitted(self)
-        predictions = self.estimator_.predict(X)
-        X['prediction'] = predictions
-        X['era'] = eras
-        adjusted_predictions = self.neutralizer.predict(X)
-        return adjusted_predictions
+    
