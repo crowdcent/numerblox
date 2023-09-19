@@ -151,15 +151,22 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         self.estimator_.fit(X, y, **kwargs)
         return self
     
-    def transform(self, X: Union[np.array, pd.DataFrame]) -> np.array:
+    def transform(self, X: Union[np.array, pd.DataFrame], **kwargs) -> np.array:
         """
         Apply the `predict_func` on the fitted estimator.
 
         Shape `(X.shape[0], )` if estimator is not multi output and else `(X.shape[0], y.shape[1])`.
+        All additional kwargs are passed to the underlying estimator's predict function.
         """
         check_is_fitted(self, "estimator_")
-        output = getattr(self.estimator_, self.predict_func)(X)
+        output = getattr(self.estimator_, self.predict_func)(X, **kwargs)
         return output if self.multi_output_ else output.reshape(-1, 1)
+    
+    def predict(self, X: Union[np.array, pd.DataFrame], **kwargs) -> np.array:
+        """ 
+        For if a MetaEstimator happens to be the last step in the pipeline. Has same behavior as transform.
+        """
+        return self.transform(X, **kwargs)
     
     def get_feature_names_out(self, input_features = None) -> List[str]:
         return [f"{self.estimator.__class__.__name__}_{self.predict_func}_predictions"] if not input_features else input_features

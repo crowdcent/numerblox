@@ -1,6 +1,5 @@
 import pandas as pd
 
-from numerblox.pipeline import make_numerai_pipeline, make_numerai_union
 from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer, FeaturePenalizer
 
 from utils import create_classic_sample_data

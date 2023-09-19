@@ -1,10 +1,10 @@
 
 
-import numpy as np
 import pytest
+import numpy as np
+from scipy.stats import rankdata, norm
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression, Ridge
-from scipy.stats import rankdata, norm
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.ensemble import RandomForestRegressor
