@@ -28,12 +28,17 @@ class MetaPipeline(Pipeline):
         :return: Modified steps with all estimators wrapped as transformers.
         """
         transformed_steps = []
-        for name, step in steps:
-            if hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
+        for i, (name, step) in enumerate(steps):
+            # Check if it's the last step and it's not supposed to be a transformer
+            if i == len(steps) - 1 and not hasattr(step, 'transform'):
+                transformed_steps.append((name, step))
+            # Wrap if the step has a prediction method but no transform method
+            elif hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
                 transformed_steps.append((name, MetaEstimator(step, predict_func=self.predict_func)))
             else:
                 transformed_steps.append((name, step))
         return transformed_steps
+
 
 def make_meta_pipeline(*steps, memory=None, verbose=False) -> MetaPipeline:
     """ 

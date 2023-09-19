@@ -17,14 +17,8 @@ class MockTransform(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
     
-    def transform(self, X, eras):
-        return X
-    
     def predict(self, X, eras):
         return self.transform(X, eras)
-    
-    def get_params(self, deep=True):
-        return {}  # or return actual parameters if any
 
 class MockFinalStep(BaseEstimator, RegressorMixin):
     """A mock final step for the pipeline that requires 'features' and 'eras' in its predict method."""
@@ -82,13 +76,6 @@ def test_meta_pipeline_missing_eras_for_final_step(setup_data):
     with pytest.raises(TypeError, match=re.escape("predict() missing 1 required positional argument: 'eras'")):
         pipeline.fit(X, y).predict(X, features=[])
 
-def test_wrap_estimator():
-    # MockTransform has both predict and transform methods.
-    # When passed to the MetaPipeline, it should be wrapped into a MetaEstimator
-    steps = [("mock_transform", MockTransform())]
-    pipeline = MetaPipeline(steps, predict_func="predict")
-    assert isinstance(pipeline.steps[0][1], MetaEstimator), "Estimator was not wrapped by MetaEstimator!"
-
 def test_do_not_wrap_transformer():
     # Define a custom mock transformer with only a transform method (not an estimator)
     class MockOnlyTransformer(BaseEstimator, TransformerMixin):
@@ -115,7 +102,6 @@ def test_combination_of_transformer_and_estimator():
     assert isinstance(pipeline.steps[0][1], MetaEstimator), "Estimator was not wrapped by MetaEstimator!"
     assert isinstance(pipeline.steps[1][1], MockFinalStep), "Final step should remain unchanged!"
 
-# TODO Test that these objects work well within other Pipelines, FeatureUnions, and ColumnTransformers.
 
 # TODO Fast FeaturePenalizer tests
 # def test_feature_penalizer_predict(setup_data):

@@ -71,9 +71,8 @@ def test_kaggle_downloader():
     except OSError:
         pass
 
-# TODO Valid EOD tests with working test key
 def test_eod():
-    eod = EODDownloader("test_eod", key="test", tickers=["AAPL.US"])
+    eod = EODDownloader("test_eod", key="DEMO", tickers=["AAPL.US"])
     eod.download_inference_data()
     eod.download_training_data()
     eod.remove_base_directory()
