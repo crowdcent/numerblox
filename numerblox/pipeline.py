@@ -16,6 +16,8 @@ class NumeraiPipeline(Pipeline):
     """
     def __init__(self, steps, memory=None, verbose=False):
         # Wrap model into a MetaEstimator so a neutralizer can come after it.
+        # TODO loop over steps and check if step is an estimator/model (Has a predict method, but not a transform.). If so, wrap it in a MetaEstimator.
+        # TODO also support predict_proba
         if len(steps) >= 2 and not isinstance(steps[-2][1], MetaEstimator):
             steps[-2] = (steps[-2][0], MetaEstimator(steps[-2][1]))
 
@@ -49,6 +51,7 @@ class NumeraiPipeline(Pipeline):
                 Xt = method(Xt)
 
         # Check if features and eras are passed for final step.
+        # TODO Check which arguments last step requires and only check those.
         if "features" not in params:
             raise ValueError(f"Argument 'features' is required for {self.steps[-1][0]}.")
         if "eras" not in params:

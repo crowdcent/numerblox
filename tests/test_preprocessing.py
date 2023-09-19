@@ -1,3 +1,4 @@
+import warnings
 import importlib
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from numerblox.preprocessing import (BasePreProcessor, BayesianGMMTargetProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator)
+                                     DifferencePreProcessor, PandasTaFeatureGenerator, V4_2_FEATURE_GROUP_MAPPING)
 
 from utils import create_signals_sample_data, create_classic_sample_data
 
@@ -77,7 +78,7 @@ def test_processors_sklearn():
                 ('pca', PCA())
             ])
             _ = combined_features.fit(data.fillna(0.5))
-        # TODO Test with NumeraiPipeline and NumeraiFeatureUnion
+        # TODO Test with NumeraiPipeline
         else:
             ...
 
@@ -141,10 +142,37 @@ def test_group_stats_preprocessor():
         if col.endswith("std"):
             assert result[col].min() >= 0.0
             assert result[col].max() <= 2.0
-                    
+
+    random_rain_features = np.random.choice(V4_2_FEATURE_GROUP_MAPPING['rain'], size=10).tolist()
+    # Warn if not all columns of a group are in the dataset
+    processor = GroupStatsPreProcessor(groups=['rain'])
+    with warnings.catch_warnings(record=True) as w:
+        result = processor.transform(dataset[random_rain_features])
+        assert issubclass(w[-1].category, UserWarning)
+        assert f"Not all columns of 'rain' are in the input data" in str(w[-1].message)
+        # Check output has no nans
+        assert not result.isna().any().any()
+        # Check Mean between 0 and 4
+        assert result["feature_rain_mean"].min() >= 0.0
+        assert result["feature_rain_mean"].max() <= 4.0
+        # Check Std between 0 and 2
+        assert result["feature_rain_std"].min() >= 0.0
+        assert result["feature_rain_std"].max() <= 2.0
+
+    # Warn if none of the columns of a group are in the dataset
+    processor = GroupStatsPreProcessor(groups=['intelligence'])
+    with warnings.catch_warnings(record=True) as w:
+        result = processor.transform(dataset[random_rain_features])
+        assert issubclass(w[-1].category, UserWarning)
+        assert "None of the columns of 'intelligence' are in the input data. Output will be nans for the group features." in str(w[-1].message)
+        # Check result contains only nans
+        assert result.isna().all().all()
 
     # Test get_feature_names_out
     assert test_group_processor.get_feature_names_out() == expected_cols
+
+
+
 
 def test_katsu_feature_generator(dummy_signals_data):
     kfg = KatsuFeatureGenerator(windows=[20, 40])

@@ -249,7 +249,8 @@ class GroupStatsPreProcessor(BasePreProcessor):
             'sunshine', 
             'rain'
         ]
-        self.group_names = groups if groups else self.all_groups
+        self.groups = groups 
+        self.group_names = groups if self.groups else self.all_groups
         self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -262,9 +263,14 @@ class GroupStatsPreProcessor(BasePreProcessor):
         dataf = pd.DataFrame()
         for group in self.group_names:
             cols = self.feature_group_mapping[group]
-            dataf.loc[:, f"feature_{group}_mean"] = X[cols].mean(axis=1)
-            dataf.loc[:, f"feature_{group}_std"] = X[cols].std(axis=1)
-            dataf.loc[:, f"feature_{group}_skew"] = X[cols].skew(axis=1)
+            valid_cols = [col for col in cols if col in X.columns]
+            if not valid_cols:
+                warnings.warn(f"None of the columns of '{group}' are in the input data. Output will be nans for the group features.")
+            elif len(cols) != len(valid_cols):
+                warnings.warn(f"Not all columns of '{group}' are in the input data ({len(valid_cols)} < {len(cols)}). Use remaining columns for stats features.")
+            dataf.loc[:, f"feature_{group}_mean"] = X[valid_cols].mean(axis=1)
+            dataf.loc[:, f"feature_{group}_std"] = X[valid_cols].std(axis=1)
+            dataf.loc[:, f"feature_{group}_skew"] = X[valid_cols].skew(axis=1)
         return dataf
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
