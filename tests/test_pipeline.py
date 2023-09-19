@@ -2,6 +2,8 @@ import re
 import pytest
 import numpy as np 
 from sklearn.linear_model import Ridge
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 
 from numerblox.pipeline import make_meta_pipeline, MetaPipeline
@@ -27,6 +29,15 @@ class MockFinalStep(BaseEstimator, RegressorMixin):
 
     def predict(self, X, features, eras):
         return X
+    
+class MockEstimator:
+    """ A mock estimator without extra arguments. """
+    def fit(self, X, y=None):
+        return self
+
+    def predict(self, X):
+        return [1 for _ in range(len(X))]
+
 
 def test_feature_neutralizer_pipeline(setup_data):
     lr1 = Ridge()
@@ -102,6 +113,109 @@ def test_combination_of_transformer_and_estimator():
     assert isinstance(pipeline.steps[0][1], MetaEstimator), "Estimator was not wrapped by MetaEstimator!"
     assert isinstance(pipeline.steps[1][1], MockFinalStep), "Final step should remain unchanged!"
 
+def test_meta_pipeline_wrap():
+    # Simple pipeline
+    pipe = Pipeline([
+        ("mock1", MockTransform()),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1], MetaEstimator)  # First step should be wrapped
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)  # Last step should be unchanged
+
+def test_meta_pipeline_nested_pipeline():
+    nested_pipe = Pipeline([
+        ("mock1", MockTransform()),
+        ("mock2", MockTransform())
+    ])
+
+    pipe = Pipeline([
+        ("nested", nested_pipe),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1].steps[0][1], MetaEstimator)  # Nested last steps should be wrapped
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)  # Last step should be unchanged
+
+def test_meta_pipeline_feature_union():
+    union = FeatureUnion([
+        ("mock1", MockTransform()),
+        ("mock2", MockTransform())
+    ])
+
+    pipe = Pipeline([
+        ("union", union),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1].transformer_list[0][1], MetaEstimator)
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)
+
+def test_meta_pipeline_column_transformer():
+    col_trans = ColumnTransformer([
+        ("mock1", MockTransform(), [0]),
+        ("mock2", MockTransform(), [1])
+    ])
+
+    pipe = Pipeline([
+        ("col_trans", col_trans),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1].transformers[0][1], MetaEstimator)
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)
+
+def test_meta_pipeline_deeply_nested():
+    deep_nested_pipe = Pipeline([
+        ("mock1", MockTransform()),
+        ("union", FeatureUnion([
+            ("mock2", MockTransform()),
+            ("mock3", MockTransform())
+        ]))
+    ])
+
+    pipe = Pipeline([
+        ("nested", deep_nested_pipe),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1].steps[1][1].transformer_list[0][1], MetaEstimator)
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)
+
+def test_meta_pipeline_mixed_structures():
+    mixed = Pipeline([
+        ("union", FeatureUnion([
+            ("mock1", MockTransform()),
+            ("col_trans", ColumnTransformer([
+                ("mock2", MockTransform(), [0]),
+                ("mock3", MockTransform(), [1])
+            ]))
+        ])),
+        ("mock4", MockTransform())
+    ])
+
+    pipe = Pipeline([
+        ("mixed", mixed),
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1].steps[0][1].transformer_list[1][1].transformers[0][1], MetaEstimator)
+    assert isinstance(meta_pipe.steps[1][1], MockFinalStep)
+
+def test_meta_pipeline_estimator_as_transformer():
+    pipe = Pipeline([
+        ("mock_est", MockEstimator()),  # A mock estimator that doesn't have a transform method but might have a predict method
+        ("final", MockFinalStep())
+    ])
+
+    meta_pipe = MetaPipeline(pipe.steps)
+    assert isinstance(meta_pipe.steps[0][1], MetaEstimator)
 
 # TODO Fast FeaturePenalizer tests
 # def test_feature_penalizer_predict(setup_data):

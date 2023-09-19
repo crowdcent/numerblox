@@ -1,5 +1,6 @@
 
-from sklearn.pipeline import Pipeline, _name_estimators
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators
 
 from numerblox.meta import MetaEstimator
 
@@ -28,15 +29,37 @@ class MetaPipeline(Pipeline):
         :return: Modified steps with all estimators wrapped as transformers.
         """
         transformed_steps = []
-        for i, (name, step) in enumerate(steps):
-            # Check if it's the last step and it's not supposed to be a transformer
-            if i == len(steps) - 1 and not hasattr(step, 'transform'):
+        for i, step_tuple in enumerate(steps):
+            if len(step_tuple) == 3:  # This is a ColumnTransformer step
+                name, step, _ = step_tuple
+            else:  # Standard 2-tuple (name, step)
+                name, step = step_tuple
+            # Handle nested Pipelines, FeatureUnions, and ColumnTransformers
+            if isinstance(step, Pipeline):
+                transformed_steps.append(
+                    (name, step.__class__(self.wrap_estimators_as_transformers(step.steps)))
+                )
+            elif isinstance(step, FeatureUnion):
+                transformed_steps.append(
+                    (name, FeatureUnion(self.wrap_estimators_as_transformers(step.transformer_list)))
+                )
+            elif isinstance(step, ColumnTransformer):
+                wrapped_transformers = self.wrap_estimators_as_transformers(step.transformers)
+                # Since wrapped_transformers will now be in the format [(name, transformer, columns), ...]
+                # you can directly use it to instantiate the new ColumnTransformer.
+                transformed_steps.append((name, ColumnTransformer(wrapped_transformers)))
+
+            # For the last step of any structure (main or nested), if it's not supposed to be a transformer
+            elif i == len(steps) - 1 and not hasattr(step, 'transform'):
                 transformed_steps.append((name, step))
+            
             # Wrap if the step has a prediction method but no transform method
             elif hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
                 transformed_steps.append((name, MetaEstimator(step, predict_func=self.predict_func)))
+            
             else:
                 transformed_steps.append((name, step))
+                
         return transformed_steps
 
 
