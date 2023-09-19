@@ -1,8 +1,10 @@
+import numpy as np
 import pandas as pd
 from uuid import uuid4
 from pathlib import Path
 from abc import abstractmethod
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_X_y, check_array
 
 from .download import NumeraiClassicDownloader
 
@@ -37,14 +39,12 @@ class ExamplePredictions(BasePredictionLoader):
     Example predictions in previous versions:
     - v4.1. -> "v4.1/live_example_preds.parquet"
     - v4. -> "v4/live_example_preds.parquet"
-    :param data_directory: Directory path to download example predictions to or directory where example data already exists. 
     :param round_num: Optional round number. Downloads most recent round by default.
     """
     def __init__(self, file_name: str = "v4.2/live_example_preds.parquet",
                  round_num: int = None):
         super().__init__()
         self.file_name = file_name
-        self.data_directory = f"example_predictions_loader_{uuid4()}"
         self.round_num = round_num
 
     def transform(self, X=None, y=None) -> pd.DataFrame:
@@ -55,7 +55,8 @@ class ExamplePredictions(BasePredictionLoader):
         return example_preds
 
     def _download_example_preds(self):
-        self.downloader = NumeraiClassicDownloader(directory_path=self.data_directory)
+        data_directory = f"example_predictions_loader_{uuid4()}"
+        self.downloader = NumeraiClassicDownloader(directory_path=data_directory)
         self.dest_path = f"{str(self.downloader.dir)}/{self.file_name}"
         self.downloader.download_single_dataset(filename=self.file_name,
                                                 dest_path=self.dest_path,

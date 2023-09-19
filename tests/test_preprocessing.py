@@ -7,7 +7,6 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-from numerblox.numerframe import NumerFrame, create_numerframe
 from numerblox.preprocessing import (BasePreProcessor, BayesianGMMTargetProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
@@ -81,6 +80,9 @@ def test_processors_sklearn():
         # TODO Test with NumeraiPipeline and NumeraiFeatureUnion
         else:
             ...
+
+        # Test every processor has get_feature_names_out
+        assert hasattr(processor, 'get_feature_names_out'), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessors should have this method."
 
 def test_reduce_memory_preprocessor(dummy_classic_data):
     # Reduce memory

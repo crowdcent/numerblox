@@ -1,4 +1,5 @@
 
+from numpy import ndarray
 import scipy
 import numpy as np
 import pandas as pd
@@ -118,7 +119,10 @@ class NumeraiEnsemble(VotingRegressor):
             j = 2 if j == 1 else j
             weights.append(1 / (2 ** (len(self.estimators) + 1 - j)))
         return weights
-    
+
+    def get_feature_names_out(self, input_features = None) -> List[str]:
+        return ["numerai_ensemble_predictions"] if not input_features else input_features
+        
 
 class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
     """
@@ -133,8 +137,9 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
 
     def __init__(self, estimator, predict_func="predict"):
         self.estimator = estimator
-        assert predict_func in ["predict", "predict_proba", "predict_log_proba"], "predict_func must be one of 'predict', 'predict_proba', 'predict_log_proba'"
+        assert predict_func in ["predict", "predict_proba", "predict_log_proba"], "predict_func must be 'predict', 'predict_proba' or 'predict_log_proba'."
         self.predict_func = predict_func
+        assert hasattr(self.estimator, self.predict_func), f"Estimator {self.estimator.__class__.__name__} does not have {self.predict_func} function."
         
     def fit(self, X, y, **kwargs):
         """
@@ -155,3 +160,6 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         check_is_fitted(self, "estimator_")
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
+    
+    def get_feature_names_out(self, input_features = None) -> List[str]:
+        return [f"{self.estimator.__class__.__name__}_{self.predict_func}_predictions"] if not input_features else input_features
