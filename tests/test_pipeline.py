@@ -4,7 +4,8 @@ import numpy as np
 from sklearn.linear_model import Ridge
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 
-from numerblox.pipeline import (make_meta_pipeline, MetaPipeline)
+from numerblox.pipeline import make_meta_pipeline, MetaPipeline
+from numerblox.meta import MetaEstimator
 from numerblox.neutralizers import FeatureNeutralizer, FeaturePenalizer
 
 from utils import create_classic_sample_data
@@ -80,6 +81,39 @@ def test_meta_pipeline_missing_eras_for_final_step(setup_data):
     # Predict without providing 'eras' for the final step should raise an error.
     with pytest.raises(TypeError, match=re.escape("predict() missing 1 required positional argument: 'eras'")):
         pipeline.fit(X, y).predict(X, features=[])
+
+def test_wrap_estimator():
+    # MockTransform has both predict and transform methods.
+    # When passed to the MetaPipeline, it should be wrapped into a MetaEstimator
+    steps = [("mock_transform", MockTransform())]
+    pipeline = MetaPipeline(steps, predict_func="predict")
+    assert isinstance(pipeline.steps[0][1], MetaEstimator), "Estimator was not wrapped by MetaEstimator!"
+
+def test_do_not_wrap_transformer():
+    # Define a custom mock transformer with only a transform method (not an estimator)
+    class MockOnlyTransformer(BaseEstimator, TransformerMixin):
+        def fit(self, X, y=None):
+            return self
+
+        def transform(self, X):
+            return X
+
+    # When passed to the MetaPipeline, it should not be wrapped into a MetaEstimator
+    steps = [("mock_only_transform", MockOnlyTransformer())]
+    pipeline = MetaPipeline(steps, predict_func="predict")
+    assert not isinstance(pipeline.steps[0][1], MetaEstimator), "Transformer was incorrectly wrapped by MetaEstimator!"
+    assert isinstance(pipeline.steps[0][1], MockOnlyTransformer), "Transformer class has changed unexpectedly!"
+
+def test_combination_of_transformer_and_estimator():
+    # Test that when we have a combination of transformers and estimators, the behavior is as expected
+    steps = [
+        ("mock_transform", MockTransform()),  # This should be wrapped
+        ("mock_only_transform", MockFinalStep())  # This should not be wrapped as it's the final step
+    ]
+    pipeline = MetaPipeline(steps, predict_func="predict")
+    
+    assert isinstance(pipeline.steps[0][1], MetaEstimator), "Estimator was not wrapped by MetaEstimator!"
+    assert isinstance(pipeline.steps[1][1], MockFinalStep), "Final step should remain unchanged!"
 
 # TODO Test that these objects work well within other Pipelines, FeatureUnions, and ColumnTransformers.
 
