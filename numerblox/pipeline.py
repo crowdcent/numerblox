@@ -24,43 +24,45 @@ class MetaPipeline(Pipeline):
     
     def wrap_estimators_as_transformers(self, steps):
         """
-        Converts all estimator steps into transformers by wrapping them in MetaEstimator.
+        Converts all estimator steps (except the last step) into transformers by wrapping them in MetaEstimator.
         :param steps: List of (name, transform) tuples specifying the pipeline steps.
         :return: Modified steps with all estimators wrapped as transformers.
         """
         transformed_steps = []
         for i, step_tuple in enumerate(steps):
-            if len(step_tuple) == 3:  # This is a ColumnTransformer step
-                name, step, _ = step_tuple
-            else:  # Standard 2-tuple (name, step)
-                name, step = step_tuple
-            # Handle nested Pipelines, FeatureUnions, and ColumnTransformers
-            if isinstance(step, Pipeline):
-                transformed_steps.append(
-                    (name, step.__class__(self.wrap_estimators_as_transformers(step.steps)))
-                )
-            elif isinstance(step, FeatureUnion):
-                transformed_steps.append(
-                    (name, FeatureUnion(self.wrap_estimators_as_transformers(step.transformer_list)))
-                )
-            elif isinstance(step, ColumnTransformer):
-                wrapped_transformers = self.wrap_estimators_as_transformers(step.transformers)
-                # Since wrapped_transformers will now be in the format [(name, transformer, columns), ...]
-                # you can directly use it to instantiate the new ColumnTransformer.
-                transformed_steps.append((name, ColumnTransformer(wrapped_transformers)))
-
-            # For the last step of any structure (main or nested), if it's not supposed to be a transformer
-            elif i == len(steps) - 1 and not hasattr(step, 'transform'):
-                transformed_steps.append((name, step))
+            is_last_step = i == len(steps) - 1
             
-            # Wrap if the step has a prediction method but no transform method
-            elif hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
-                transformed_steps.append((name, MetaEstimator(step, predict_func=self.predict_func)))
-            
+            if len(step_tuple) == 3:
+                name, step, columns = step_tuple
+                transformed_steps.append(self._wrap_step(name, step, columns, is_last_step))
             else:
-                transformed_steps.append((name, step))
+                name, step = step_tuple
+                transformed_steps.append(self._wrap_step(name, step, is_last_step=is_last_step))
                 
         return transformed_steps
+    
+    def _wrap_step(self, name, step, columns=None, is_last_step=False):
+            """ Recursive function to wrap steps """
+            # Recursive call
+            if isinstance(step, (Pipeline, FeatureUnion, ColumnTransformer)):
+                if isinstance(step, Pipeline):
+                    transformed = step.__class__(self.wrap_estimators_as_transformers(step.steps))
+                elif isinstance(step, FeatureUnion):
+                    transformed = FeatureUnion(self.wrap_estimators_as_transformers(step.transformer_list))
+                elif isinstance(step, ColumnTransformer):
+                    transformed_transformers = self.wrap_estimators_as_transformers(step.transformers)
+                    transformed = ColumnTransformer(transformed_transformers)
+                return (name, transformed, columns) if columns else (name, transformed)
+
+            # If it's the last step and it doesn't have a transform method, don't wrap it
+            if is_last_step and not hasattr(step, 'transform'):
+                return (name, step, columns) if columns else (name, step)
+
+            # Wrap estimator that has the predict function but not the transform function
+            elif hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
+                return (name, MetaEstimator(step, predict_func=self.predict_func))
+
+            return (name, step, columns) if columns else (name, step)
 
 
 def make_meta_pipeline(*steps, memory=None, verbose=False) -> MetaPipeline:
