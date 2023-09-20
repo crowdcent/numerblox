@@ -8,14 +8,14 @@ import pandas as pd
 from tqdm.auto import tqdm
 from numerapi import NumerAPI
 from google.cloud import storage
-from eod import EodHistoricalData
 from datetime import datetime as dt
-from pathlib import Path, PosixPath
+from pathlib import Path
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from dateutil.relativedelta import relativedelta
 
 from .numerframe import NumerFrame
+
 
 class BaseIO(ABC):
     """
@@ -452,11 +452,14 @@ class KaggleDownloader(BaseDownloader):
         except OSError:
             raise OSError("Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.")
 
-# %% ../nbs/01_download.ipynb 37
+
 class EODDownloader(BaseDownloader):
     """
     Download data from EOD historical data. \n
     More info: https://eodhistoricaldata.com/
+
+    Make sure you have the underlying Python package installed.
+    `pip install eod`.
 
     :param directory_path: Base folder to download files to. \n
     :param key: Valid EOD client key. \n
@@ -472,6 +475,10 @@ class EODDownloader(BaseDownloader):
         super().__init__(directory_path=directory_path)
         self.key = key
         self.tickers = tickers
+        try: 
+            from eod import EodHistoricalData
+        except ImportError:
+            raise ImportError("Could not import eod package. Please install eod package with 'pip install eod'")
         self.client = EodHistoricalData(self.key)
         self.frequency = frequency
         self.current_time = dt.now()
