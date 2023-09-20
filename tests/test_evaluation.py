@@ -80,8 +80,4 @@ def test_await_diagnostics_timeout(mock_api):
     mock_api.diagnostics.return_value = [{"status": "not_done"}]  # Simulate timeout scenario
     
     with pytest.raises(Exception, match=r"Diagnostics couldn't be retrieved within .* minutes after uploading."):
-        obj._NumeraiSignalsEvaluator__await_diagnostics(api=mock_api, model_id="test_model_id", diagnostics_id="test_diag_id", timeout_min=0.001)
-
-
-
-
+        obj._NumeraiSignalsEvaluator__await_diagnostics(api=mock_api, model_id="test_model_id", diagnostics_id="test_diag_id", timeout_min=0.001, interval_sec=2)
