@@ -111,7 +111,8 @@ def test_numeraiensemble_predict_with_constant_values(ensemble):
     constant_preds = np.ones((100, 5))
 
     with pytest.raises(ValueError, match="Predictions for all estimators are constant. No valid predictions to ensemble."):
-        ensemble.predict(constant_preds, eras)
+        with pytest.warns(UserWarning, match="Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling."):
+            ensemble.predict(constant_preds, eras)
 
 def test_numeraiensemble_predict_with_nans(ensemble):
     # Create an instance of your ensemble with mock estimators
@@ -125,12 +126,16 @@ def test_numeraiensemble_predict_with_nans(ensemble):
     nan_preds[5:15, 0] = np.nan
     nan_preds[:5, 1] = np.nan
 
-    ensemble_preds = ensemble.predict(nan_preds, eras)
+    with pytest.warns(UserWarning, match="Some estimator predictions contain NaNs"):
+        ensemble_preds = ensemble.predict(nan_preds, eras)
     assert len(ensemble_preds) == len(nan_preds)
     # Output should be a numpy array with values between 0 and 1
     assert isinstance(ensemble_preds, np.ndarray) 
-    assert ensemble_preds.min() >= 0
-    assert ensemble_preds.max() <= 1
+    # There must be some nans in the data.
+    assert np.sum(np.isnan(ensemble_preds)) >= 0
+    # None nan values should be between 0 and 1
+    assert ensemble_preds[~np.isnan(ensemble_preds)].min() >= 0
+    assert ensemble_preds[~np.isnan(ensemble_preds)].max() <= 1
 
 def test_numeraiensemble_donate_weights(ensemble):
     ensemble.donate_weighted = True

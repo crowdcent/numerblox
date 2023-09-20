@@ -1,4 +1,5 @@
 import scipy
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -38,37 +39,45 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     def transform(self, X: Union[np.array, pd.DataFrame], eras: pd.Series) -> np.array:
         """ 
         Standardize by era and ensemble. 
-        :param X: Input data.
+        :param X: Input data where each column contains predictions from an estimator.
         :param eras: Era labels (strings) for each row in X.
         :return: Ensembled predictions.
         """
         assert len(X) == len(eras), f"input X and eras must have the same length. Got {len(X)} != {len(eras)}."
+
         if len(X.shape) == 1:
             raise ValueError("NumeraiEnsemble requires at least 2 prediction columns. Got 1.")
+        
         n_models = X.shape[1]
         if n_models <= 1:
             raise ValueError(f"NumeraiEnsemble requires at least 2 predictions columns. Got {len(n_models)}.")
+        
         # Override weights if donate_weighted is True
         if self.donate_weighted:
             weights = self._get_donate_weights(n=n_models)
         else:
             weights = self.weights
+            
+        if isinstance(X, pd.DataFrame):
+            X = X.values
         # Standardize predictions by era
         standardized_pred_list = []
         for i in range(n_models):
             # Skip standardization if all predictions are the same
             pred = X[:, i]
+            if np.isnan(pred).any():
+                warnings.warn("Warning: Some estimator predictions contain NaNs. Consider checking your estimators. Ensembled predictions will also be a NaN.")
             if np.all(pred == pred[0]):
-                print("Warning: Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
+                warnings.warn("Warning: Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
             else:
                 standardized_pred = self._standardize_by_era(pred, eras)
                 standardized_pred_list.append(standardized_pred)
         standardized_pred_arr = np.asarray(standardized_pred_list).T
 
-        # Average out predictions
         if not standardized_pred_list:
             raise ValueError("Predictions for all estimators are constant. No valid predictions to ensemble.")
 
+        # Average out predictions
         ensembled_predictions = np.average(standardized_pred_arr, axis=1, weights=weights)
         return ensembled_predictions
     
