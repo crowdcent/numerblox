@@ -19,7 +19,8 @@ preprocessors and evaluators also greatly simplify the training process.
 ![](https://img.shields.io/github/contributors/crowdcent/numerblox.png)
 ![](https://img.shields.io/github/issues-raw/crowdcent/numerblox.png)
 ![](https://img.shields.io/github/repo-size/crowdcent/numerblox.png)
-![](https://img.shields.io/github/workflow/status/crowdcent/numerblox/CI.png)
+![](https://img.shields.io/codecov/c/github/crowdcent/numerblox.png)
+
 
 ## 1. Install
 
@@ -60,15 +61,12 @@ Notebook environment to quickly test if your installation has succeeded.
 3.  A suite of preprocessors for Numerai Classic and Signals (feature
     selection, engineering and manipulation)
 4.  A suite of postprocessors for Numerai Classic and Signals
-    (standardization, ensembling, neutralization and penalization)
+    (ensembling, neutralization and penalization)
 5.  Evaluation
     ([`NumeraiClassicEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraiclassicevaluator)
     and
     [`NumeraiSignalsEvaluator`](https://crowdcent.github.io/numerblox/evaluation.html#numeraisignalsevaluator))
-6.  Authentication
-    ([`Key`](https://crowdcent.github.io/numerblox/key.html#key) and
-    [`load_key_from_json`](https://crowdcent.github.io/numerblox/key.html#load_key_from_json))
-7.  Submitting
+6.  Submitting
     ([`NumeraiClassicSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraiclassicsubmitter),
     [`NumeraiSignalsSubmitter`](https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter)
     and
@@ -76,20 +74,7 @@ Notebook environment to quickly test if your installation has succeeded.
 
 #### 2.1.2. Educational notebooks
 
-Example notebooks can be found in the `edu_nbs` directory.
-
-`edu_nbs` currently contains the following examples: -
-`numerframe_tutorial.ipynb`: A deep dive into what
-[`NumerFrame`](https://crowdcent.github.io/numerblox/numerframe.html#numerframe)
-has to offer. - `submitting.ipynb`: How to use Submitters for safe and
-easy Numerai submissions. - `google_cloud_storage.ipynb`: How to use
-Downloaders and Submitters to interact with Google Cloud Storage
-(GCS). - `load_model_from_wandb.ipynb`: For [Weights &
-Biases](https://wandb.ai/) users. Easily pull a model from W&B for
-inference. - `numerbay_integration.ipynb`: How to use `NumerBlox` to
-download and upload predictions listed on
-[NumerBay](https://numerbay.ai). - `synthetic_data_generation.ipynb`:
-Tutorial for generating synthetic data for training Numerai models.
+Example notebooks can be found in the `examples` directory.
 
 **Full documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox/)
@@ -98,7 +83,7 @@ Tutorial for generating synthetic data for training Numerai models.
 
 Below we will illustrate a common use case for inference pipelines. To
 learn more in-depth about the features of this library, check out
-notebooks in `edu_nbs`.
+notebooks in `examples`.
 
 #### 2.2.1. Numerai Classic
 
@@ -109,25 +94,26 @@ from numerblox.numerframe import create_numerframe
 from numerblox.postprocessing import FeatureNeutralizer
 from numerblox.model import SingleModel
 from numerblox.model_pipeline import ModelPipeline
-from numerblox.key import load_key_from_json
+from numerblox.key import Key
 from numerblox.submission import NumeraiClassicSubmitter
 
-# --- 1. Download version 4 data ---
+# --- 1. Download version 4.2 data ---
 downloader = NumeraiClassicDownloader("data")
 downloader.download_inference_data("current_round")
 
-# --- 2. Initialize NumerFrame ---
+# --- 2. Initialize NumerFrame (optional) ---
 dataf = create_numerframe(file_path="data/current_round/live.parquet")
 
-# --- 3. Define and run pipeline ---
-...
+# --- 3. Define and run pipeline. ---
+# All numerblox pre- and postprocessors are compatible with scikit-learn
+result_dataf = ...
 
 # --- 4. Submit ---
-# Load credentials from .json (random credentials in this example)
-key = load_key_from_json("test_assets/test_credentials.json")
+# Set credentials
+key = Key(pub_id="Hello", secret_key="World")
 submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
 # full_submission checks contents, saves as csv and submits.
-submitter.full_submission(dataf=dataf,
+submitter.full_submission(dataf=result_dataf,
                           cols=f"prediction_test_neutralized_0.5",
                           model_name="test")
 
@@ -145,27 +131,27 @@ from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import KatsuFeatureGenerator
 from numerblox.model import SingleModel
 from numerblox.model_pipeline import ModelPipeline
-from numerblox.key import load_key_from_json
+from numerblox.key import Key
 from numerblox.submission import NumeraiSignalsSubmitter
 
 # --- 1. Download Katsu1110 yfinance dataset from Kaggle ---
 kd = KaggleDownloader("data")
 kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 
-# --- 2. Initialize NumerFrame ---
+# --- 2. Initialize NumerFrame (optional) ---
 dataf = create_numerframe("data/full_data.parquet")
 
 # --- 3. Define and run pipeline ---
-...
+# All numerblox pre- and postprocessors are compatible with scikit-learn
+result_dataf = ...
 
 # --- 4. Submit ---
-# Load credentials from .json (random credentials in this example)
-key = load_key_from_json("test_assets/test_credentials.json")
+# Set credentials
+key = Key(pub_id="Hello", secret_key="World")
 submitter = NumeraiSignalsSubmitter(directory_path="sub_current_round", key=key)
 # full_submission checks contents, saves as csv and submits.
 # cols selection must at least contain 1 ticker column and a signal column.
-dataf['signal'] = dataf['prediction_cb']
-submitter.full_submission(dataf=dataf,
+submitter.full_submission(dataf=result_dataf,
                           cols=['bloomberg_ticker', 'signal'],
                           model_name="test_model1")
 
