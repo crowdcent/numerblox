@@ -4,7 +4,6 @@ from typing import Union
 from copy import deepcopy
 from tqdm.auto import tqdm
 from abc import abstractmethod
-from rich import print as rich_print
 from numerapi import NumerAPI, SignalsAPI
 from dateutil.relativedelta import relativedelta, FR
 
@@ -49,14 +48,14 @@ class BaseSubmitter(BaseIO):
         full_path = str(self.dir / file_name)
         model_id = self._get_model_id(model_name=model_name)
         api_type = str(self.api.__class__.__name__)
-        rich_print(
-            f":airplane: {api_type}: Uploading predictions from '{full_path}' for model [bold blue]'{model_name}'[/bold blue] (model_id='{model_id}') :airplane:"
+        print(
+            f"{api_type}: Uploading predictions from '{full_path}' for model '{model_name}' (model_id='{model_id}')"
         )
         self.api.upload_predictions(
             file_path=full_path, model_id=model_id, *args, **kwargs
         )
-        rich_print(
-            f":thumbs_up: {api_type} submission of '{full_path}' for [bold blue]{model_name}[/bold blue] is successful! :thumbs_up:"
+        print(
+            f"{api_type} submission of '{full_path}' for '{model_name}' is successful!"
         )
 
     def full_submission(
@@ -194,8 +193,8 @@ class NumeraiClassicSubmitter(BaseSubmitter):
         self._check_value_range(dataf=sub_dataf, cols=cols)
 
         full_path = str(self.dir / file_name)
-        rich_print(
-            f":page_facing_up: Saving predictions CSV to '{full_path}'. :page_facing_up:"
+        print(
+            f"Saving predictions CSV to '{full_path}'."
         )
         sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]
         sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
@@ -249,8 +248,8 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
         self._check_value_range(dataf=dataf, cols="signal")
 
         full_path = str(self.dir / file_name)
-        rich_print(
-            f":page_facing_up: Saving Signals predictions CSV to '{full_path}'. :page_facing_up:"
+        print(
+            f"Saving Signals predictions CSV to '{full_path}'."
         )
         dataf.loc[:, cols].reset_index(drop=True).to_csv(
             full_path, index=False, *args, **kwargs
@@ -306,19 +305,19 @@ class NumerBaySubmitter(BaseSubmitter):
 
         full_path = str(self.dir / file_name)
         api_type = str(self.numerbay_api.__class__.__name__)
-        rich_print(
-            f":airplane: {api_type}: Uploading predictions from '{full_path}' for NumerBay product [bold blue]'{numerbay_product_full_name}'[/bold blue] :airplane:"
+        print(
+            f"{api_type}: Uploading predictions from '{full_path}' for NumerBay product '{numerbay_product_full_name}'"
         )
         artifact = self.numerbay_api.upload_artifact(
             str(full_path), product_full_name=numerbay_product_full_name
         )
         if artifact:
-            rich_print(
-                f":thumbs_up: {api_type} submission of '{full_path}' for NumerBay product [bold blue]{numerbay_product_full_name}[/bold blue] is successful! :thumbs_up:"
+            print(
+                f"{api_type} submission of '{full_path}' for NumerBay product [bold blue]{numerbay_product_full_name} is successful!"
             )
         else:
-            rich_print(f":warning: [red] Upload skipped for NumerBay product '{numerbay_product_full_name}', the product uses buyer-side encryption "
-                        "but does not have any active sale order to upload for. [/red] :warning:")
+            print(f"""WARNING: Upload skipped for NumerBay product '{numerbay_product_full_name}', 
+                  the product uses buyer-side encryption but does not have any active sale order to upload for.""")
 
     def full_submission(
         self,

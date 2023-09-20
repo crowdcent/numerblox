@@ -1,10 +1,8 @@
-import numpy as np
 import pandas as pd
 from uuid import uuid4
 from pathlib import Path
 from abc import abstractmethod
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_X_y, check_array
 
 from .download import NumeraiClassicDownloader
 

@@ -12,7 +12,6 @@ from eod import EodHistoricalData
 from datetime import datetime as dt
 from pathlib import Path, PosixPath
 from abc import ABC, abstractmethod
-from rich import print as rich_print
 from concurrent.futures import ThreadPoolExecutor
 from dateutil.relativedelta import relativedelta
 
@@ -31,8 +30,8 @@ class BaseIO(ABC):
     def remove_base_directory(self):
         """Remove directory with all contents."""
         abs_path = self.dir.resolve()
-        rich_print(
-            f":warning: [red]Deleting directory for '{self.__class__.__name__}[/red]' :warning:\nPath: '{abs_path}'"
+        print(
+            f"WARNING: Deleting directory for '{self.__class__.__name__}'\nPath: '{abs_path}'"
         )
         shutil.rmtree(abs_path)
 
@@ -44,8 +43,8 @@ class BaseIO(ABC):
         blob_path = str(self.dir.resolve())
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
         blob.download_to_filename(gcs_path)
-        rich_print(
-            f":cloud: :page_facing_up: Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'. :page_facing_up: :cloud:"
+        print(
+            f"Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'."
         )
 
     def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
@@ -55,8 +54,8 @@ class BaseIO(ABC):
         """
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
         blob.upload_from_filename(local_path)
-        rich_print(
-            f":cloud: :page_facing_up: Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}:page_facing_up: :cloud:"
+        print(
+            f"Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}"
         )
 
     def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):
@@ -69,8 +68,8 @@ class BaseIO(ABC):
         for gcs_file in glob.glob(gcs_path + "/**", recursive=True):
             if os.path.isfile(gcs_file):
                 blob.download_to_filename(blob_path)
-        rich_print(
-            f":cloud: :folder: Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}' :folder: :cloud:"
+        print(
+            f"Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}'"
         )
 
     def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):
@@ -82,8 +81,8 @@ class BaseIO(ABC):
         for local_path in glob.glob(str(self.dir) + "/**", recursive=True):
             if os.path.isfile(local_path):
                 blob.upload_from_filename(local_path)
-        rich_print(
-            f":cloud: :folder: Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id} :folder: :cloud:"
+        print(
+            f"Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}"
         )
 
     def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:
@@ -106,8 +105,8 @@ class BaseIO(ABC):
     def _create_directory(self):
         """ Create base directory if it does not exist. """
         if not self.dir.is_dir():
-            rich_print(
-                f"No existing directory found at '[blue]{self.dir}[/blue]'. Creating directory..."
+            print(
+                f"No existing directory found at '{self.dir}'. Creating directory..."
             )
             self.dir.mkdir(parents=True, exist_ok=True)
 
@@ -147,7 +146,7 @@ class BaseDownloader(BaseIO):
         with open(Path(file_path)) as json_file:
             json_data = json.load(json_file, *args, **kwargs)
         if verbose:
-            rich_print(json_data)
+            print(json_data)
         return json_data
 
     def _default_save_path(self, start: dt, end: dt, backend: str):
@@ -311,8 +310,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param dest_path: Full path where file will be saved.
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        rich_print(
-            f":file_folder: [green]Downloading[/green] '{filename}' :file_folder:"
+        print(
+            f"Downloading '{filename}'."
         )
         self.napi.download_dataset(
             filename=filename,
@@ -537,7 +536,7 @@ class EODDownloader(BaseDownloader):
             stock_df = pd.DataFrame(resp).set_index('date')
             stock_df['ticker'] = ticker
         except Exception as e:
-            rich_print(f":warning: WARNING: Date pull failed on ticker: [red]'{ticker}'[/red]. :warning: Exception: {e}")
+            print(f"WARNING: Date pull failed on ticker: '{ticker}'. Exception: {e}")
             stock_df = pd.DataFrame()
         return stock_df
 

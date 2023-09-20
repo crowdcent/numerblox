@@ -6,7 +6,6 @@ import pandas_ta as ta
 from tqdm.auto import tqdm
 from scipy.stats import rankdata
 from abc import abstractmethod
-from rich import print as rich_print
 from typing import Union, Tuple, List
 from multiprocessing.pool import Pool
 from sklearn.linear_model import Ridge
@@ -56,11 +55,13 @@ class ReduceMemoryProcessor(BasePreProcessor):
 
     :param deep_mem_inspect: Introspect the data deeply by interrogating object dtypes.
     Yields a more accurate representation of memory usage if you have complex object columns.
+    :param verbose: Print memory usage before and after optimization.
     """
 
-    def __init__(self, deep_mem_inspect=False):
+    def __init__(self, deep_mem_inspect=False, verbose=True):
         super().__init__()
         self.deep_mem_inspect = deep_mem_inspect
+        self.verbose = verbose
 
     def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
         return self._reduce_mem_usage(dataf)
@@ -74,9 +75,10 @@ class ReduceMemoryProcessor(BasePreProcessor):
         start_memory_usage = (
             dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
         )
-        rich_print(
-            f"Memory usage of DataFrame is [bold]{round(start_memory_usage, 2)} MB[/bold]"
-        )
+        if self.verbose:
+            print(
+                f"Memory usage of DataFrame is {round(start_memory_usage, 2)} MB"
+            )
 
         for col in dataf.columns:
             col_type = dataf[col].dtype.name
@@ -124,12 +126,13 @@ class ReduceMemoryProcessor(BasePreProcessor):
         end_memory_usage = (
             dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
         )
-        rich_print(
-            f"Memory usage after optimization is: [bold]{round(end_memory_usage, 2)} MB[/bold]"
-        )
-        rich_print(
-            f"[green] Usage decreased by [bold]{round(100 * (start_memory_usage - end_memory_usage) / start_memory_usage, 2)}%[/bold][/green]"
-        )
+        if self.verbose:
+            print(
+                f"Memory usage after optimization is: {round(end_memory_usage, 2)} MB"
+            )
+            print(
+                f"Usage decreased by {round(100 * (start_memory_usage - end_memory_usage) / start_memory_usage, 2)}%"
+            )
         return dataf
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
@@ -298,6 +301,8 @@ class KatsuFeatureGenerator(BasePreProcessor):
     3. Moving Average gap \n
     :param ticker_col: Columns with tickers to iterate over. \n
     :param close_col: Column name where you have closing price stored.
+    :param num_cores: Number of cores to use for multiprocessing. \n
+    :param verbose: Print additional information.
     """
 
     warnings.filterwarnings("ignore")
@@ -307,12 +312,14 @@ class KatsuFeatureGenerator(BasePreProcessor):
         ticker_col: str = "ticker",
         close_col: str = "close",
         num_cores: int = None,
+        verbose=True
     ):
         super().__init__()
         self.windows = windows
         self.ticker_col = ticker_col
         self.close_col = close_col
         self.num_cores = num_cores if num_cores else os.cpu_count()
+        self.verbose = verbose
 
     def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """
@@ -321,9 +328,10 @@ class KatsuFeatureGenerator(BasePreProcessor):
         :param dataf: DataFrame with columns: [ticker, date, open, high, low, close, volume] \n
         """
         tickers = dataf.loc[:, self.ticker_col].unique().tolist()
-        rich_print(
-            f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores."
-        )
+        if self.verbose:
+            print(
+                f"Feature engineering for {len(tickers)} tickers using {self.num_cores} CPU cores."
+            )
         dataf_list = [
             x
             for _, x in tqdm(
