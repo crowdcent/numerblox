@@ -175,6 +175,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         :param X: DataFrame containing features.
         :param eras: Series containing era information.
         """
+        check_is_fitted(self)
         assert len(X) == len(eras), "X and eras must be same length."
         all_eras = eras.unique().tolist()
         # Scale data between 0 and 1
