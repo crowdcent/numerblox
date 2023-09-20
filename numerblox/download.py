@@ -290,7 +290,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         data_type = "int8" if int8 else "float"
         if data_type == "float" and version == "4.2":
-            raise NotImplementedError("""No float version of training data is available for version 4.2. If you would like to download the 4.2 (Rain) dataset make sure to explicitly pass `int8=True`.""")
+            raise NotImplementedError("""No float version of training data is available for version 4.2. onwards. If you would like to download the 4.2 (Rain) dataset make sure to explicitly pass `int8=True`.""")
         inference_files = self._get_version_mapping(str(version))["inference"][data_type]
         for file in inference_files:
             dest_path = self.__get_dest_path(subfolder, file)
@@ -441,7 +441,7 @@ class KaggleDownloader(BaseDownloader):
         Download arbitrary Kaggle dataset.
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
         """
-        import kaggle
+        self.__check_kaggle_import()
         kaggle.api.dataset_download_files(kaggle_dataset_path,
                                           path=self.dir, unzip=True)
 

@@ -1,11 +1,13 @@
 import os
+import pytest
+from uuid import uuid4
 from pathlib import PosixPath
 
 from numerblox.download import NumeraiClassicDownloader, KaggleDownloader, EODDownloader
 
 CURRENT_VERSION = "4.2"
 ALL_DATASET_VERSIONS = ["4", "4.1", "4.2"]
-TEST_DIR = "test_numclassic_general"
+TEST_DIR = f"test_numclassic_general_{uuid4()}"
 
 def test_base():
     numer_classic_downloader = NumeraiClassicDownloader(TEST_DIR)
@@ -62,6 +64,25 @@ def test_classic():
     assert os.path.exists(dl.dir / "meta_model.parquet")
 
     dl.remove_base_directory()
+
+def test_classic_version_mapping():
+    downloader = NumeraiClassicDownloader(directory_path="some_path")
+
+    # Test supported versions
+    supported_versions = ["4", "4.1", "4.2"]
+    for version in supported_versions:
+        mapping = downloader._get_version_mapping(version)
+        assert isinstance(mapping, dict), f"Mapping for version {version} should return a dictionary."
+        assert "train" in mapping, f"Version {version} mapping should contain 'train' key."
+        assert "inference" in mapping, f"Version {version} mapping should contain 'inference' key."
+        assert "live" in mapping, f"Version {version} mapping should contain 'live' key."
+        assert "example" in mapping, f"Version {version} mapping should contain 'example' key."
+
+    # Test unsupported versions
+    unsupported_versions = ["3", "5", "4.3"]
+    for version in unsupported_versions:
+        with pytest.raises(NotImplementedError, match=f"Version '{version}' is not available"):
+            downloader._get_version_mapping(version)
 
 def test_kaggle_downloader():
     try:
