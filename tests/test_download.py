@@ -86,14 +86,14 @@ def test_classic_version_mapping():
 
 def test_kaggle_downloader():
     try:
-        kd = KaggleDownloader("test_kaggle")
+        kd = KaggleDownloader(f"test_kaggle_{uuid4()}")
         assert os.path.exists(kd.dir)
         kd.remove_base_directory()
     except OSError:
         pass
 
 def test_eod():
-    eod = EODDownloader("test_eod", key="DEMO", tickers=["AAPL.US"])
+    eod = EODDownloader(f"test_eod_{uuid4()}", key="DEMO", tickers=["AAPL.US"])
     eod.download_inference_data()
     eod.download_training_data()
     eod.remove_base_directory()
