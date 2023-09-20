@@ -166,7 +166,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         bgmm.fit(coefs)
         # make probability of sampling each component equal to better balance rare regimes
         bgmm.weights_[:] = 1 / self.n_components
-        self.bgmm = bgmm
+        self.bgmm_ = bgmm
         return self
 
     def transform(self, X: pd.DataFrame, eras: pd.Series) -> np.array:
@@ -175,7 +175,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         :param X: DataFrame containing features.
         :param eras: Series containing era information.
         """
-        check_is_fitted(self)
+        check_is_fitted(self, "bgmm_")
         assert len(X) == len(eras), "X and eras must be same length."
         all_eras = eras.unique().tolist()
         # Scale data between 0 and 1
@@ -215,7 +215,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
             features = dataf[dataf['era'] == era]
             features = features.drop(columns=["era", "target"])
             # Sample a set of weights from GMM
-            beta, _ = self.bgmm.sample(1)
+            beta, _ = self.bgmm_.sample(1)
             # Create fake continuous target
             fake_targ = features @ beta[0]
             # Bin fake target like real target
