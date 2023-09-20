@@ -66,16 +66,16 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
             # Skip standardization if all predictions are the same
             pred = X[:, i]
             if np.isnan(pred).any():
-                warnings.warn("Warning: Some estimator predictions contain NaNs. Consider checking your estimators. Ensembled predictions will also be a NaN.")
+                warnings.warn(f"Warning: Some predictions in column '{i}' contain NaNs. Consider checking your estimators. Ensembled predictions will also be a NaN.")
             if np.all(pred == pred[0]):
-                warnings.warn("Warning: Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
+                warnings.warn(f"Warning: Predictions in column '{i}' are all constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
             else:
                 standardized_pred = self._standardize_by_era(pred, eras)
                 standardized_pred_list.append(standardized_pred)
         standardized_pred_arr = np.asarray(standardized_pred_list).T
 
         if not standardized_pred_list:
-            raise ValueError("Predictions for all estimators are constant. No valid predictions to ensemble.")
+            raise ValueError("Predictions for all columns are constant. No valid predictions to ensemble.")
 
         # Average out predictions
         ensembled_predictions = np.average(standardized_pred_arr, axis=1, weights=weights)

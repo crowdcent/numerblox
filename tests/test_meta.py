@@ -110,7 +110,7 @@ def test_numeraiensemble_predict_with_constant_values(ensemble):
 
     constant_preds = np.ones((100, 5))
 
-    with pytest.raises(ValueError, match="Predictions for all estimators are constant. No valid predictions to ensemble."):
+    with pytest.raises(ValueError, match="Predictions for all columns are constant. No valid predictions to ensemble."):
         with pytest.warns(UserWarning, match="Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling."):
             ensemble.predict(constant_preds, eras)
 
@@ -126,7 +126,7 @@ def test_numeraiensemble_predict_with_nans(ensemble):
     nan_preds[5:15, 0] = np.nan
     nan_preds[:5, 1] = np.nan
 
-    with pytest.warns(UserWarning, match="Some estimator predictions contain NaNs"):
+    with pytest.warns(UserWarning, match="Predictions in column"):
         ensemble_preds = ensemble.predict(nan_preds, eras)
     assert len(ensemble_preds) == len(nan_preds)
     # Output should be a numpy array with values between 0 and 1
