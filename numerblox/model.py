@@ -12,6 +12,7 @@ import uuid
 import gcsfs
 import joblib
 import pickle
+import cloudpickle
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -152,8 +153,8 @@ class SingleModel(BaseModel):
         self.model_suffix = self.model_file_path.suffix
         self.suffix_to_model_mapping = {".joblib": joblib.load,
                                         ".cbm": CatBoost().load_model,
-                                        ".pkl": pickle.load,
-                                        ".pickle": pickle.load,
+                                        ".pkl": cloudpickle.load,
+                                        ".pickle": cloudpickle.load,
                                         ".h5": partial(tf.keras.models.load_model, compile=False)
                                         }
         self.__check_valid_suffix()
