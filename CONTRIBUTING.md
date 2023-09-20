@@ -20,7 +20,7 @@ pip install -e .
 
 ## Developing considerations
 
-### Introducing a new component
+### 1. Introducing a new component
 
 If you want to build a new component. Please consider the following steps:
 1. Place the new component in the appropriate section. Is it a Downloader (`downloa.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)?
@@ -28,7 +28,7 @@ If you want to build a new component. Please consider the following steps:
 3. When making a preprocessor or postprocessor, make sure the component follows [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator). The core things to implement are inheriting from `BaseEstimator` and implementing `fit`, `transform` and `get_feature_names_out` methods. 
 
 
-### Fixing bugs
+### 2. Fixing bugs
 Even though most of the components in this library are tested, users will still likely run into issues. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
 
 - Ensure the bug was not already reported by searching on GitHub under Issues.
@@ -36,7 +36,18 @@ Even though most of the components in this library are tested, users will still 
 - Be sure to add the complete error messages.
 - Be sure to add tests that fail without your patch, and pass with it.
 
-### Did you write a patch that fixes a bug?
+### 3. Create an example notebook.
+
+We welcome example notebooks that demonstrate the use of `numerblox`. If you want to create an example notebook, please make a notebook in the `example/` folder. Make sure to add appropriate descriptions and explain the process of using the various components. Before committing please run the notebook from top to bottom. If it runs without errors, you can commit the notebook.
+Lastly, if the notebook uses additional libraries, please note this at the top of the notebook and create a code block with `!pip install <library>`.
+
+Example pip install cell:
+
+```
+!pip install scikit-lego plotly
+```
+
+#### Did you write a patch that fixes a bug?
 - Open a new GitHub pull request with the patch.
 - Ensure that your PR includes a test that fails without your patch, and pass with it.
 - Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
