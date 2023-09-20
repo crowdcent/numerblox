@@ -9,6 +9,7 @@ __all__ = ['BaseModel', 'DirectoryModel', 'SingleModel', 'WandbKerasModel', 'Ext
 import os
 import gc
 import uuid
+import gcsfs
 import joblib
 import pickle
 import numpy as np
@@ -18,6 +19,7 @@ from typing import Union
 from tqdm.auto import tqdm
 from functools import partial
 from numerbay import NumerBay
+from urllib.parse import urlparse
 from abc import ABC, abstractmethod
 from rich import print as rich_print
 from sklearn.dummy import DummyRegressor
@@ -119,6 +121,7 @@ class SingleModel(BaseModel):
     Load single model from file and perform prediction logic.
 
     :param model_file_path: Full path to model file. \n
+    Support loading directly from GCS if path starts with 'gs://'. \n
     :param model_name: Name that will be used to create column names and for display purposes. \n
     :param combine_preds: Whether to average predictions along column axis. Only relevant for multi target models.
     Convenient when you want to predict the main target by averaging a multi-target model. \n
@@ -134,9 +137,15 @@ class SingleModel(BaseModel):
                  ):
         import tensorflow as tf
         from catboost import CatBoost
+        # Replace 'gs://' with 'gcs://' if it exists in the model_file_path
+        self.is_gcs = model_file_path.startswith('gs://')
         self.model_file_path = Path(model_file_path)
-        assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
-        assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
+        if not self.is_gcs:
+            assert self.model_file_path.exists(), f"File path '{self.model_file_path}' does not exist."
+            assert self.model_file_path.is_file(), f"File path must point to file. Not valid for '{self.model_file_path}'."
+        else:
+            fs = gcsfs.GCSFileSystem()
+            assert fs.exists(model_file_path), f"File path '{model_file_path}' does not exist on GCS."
         super().__init__(model_directory=str(self.model_file_path.parent),
                          model_name=model_name,
                          )
@@ -166,8 +175,21 @@ class SingleModel(BaseModel):
         return NumerFrame(dataf)
 
     def _load_model(self, *args, **kwargs):
-        """ Load arbitrary model from path using suffix to model mapping. """
-        return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)
+        """ 
+        Load arbitrary model from path using suffix to model mapping. 
+        *args, **kwargs are passed into the model loading function.
+        """
+
+        if self.is_gcs:
+            if self.model_suffix == ".cbm":
+                raise NotImplementedError("CatBoost models are not supported to load from GCS.")
+            fs = gcsfs.GCSFileSystem()
+            parsed = urlparse(str(self.model_file_path))
+            gcs_path = Path(parsed.netloc + parsed.path)
+            with fs.open(gcs_path, 'rb') as f:
+                return self.suffix_to_model_mapping[self.model_suffix](f, *args, **kwargs)
+        else:
+            return self.suffix_to_model_mapping[self.model_suffix](str(self.model_file_path), *args, **kwargs)
 
     def __check_valid_suffix(self):
         """ Detailed message if model is not supported in this class. """
@@ -178,7 +200,7 @@ class SingleModel(BaseModel):
                 f"Format '{self.model_suffix}' is not available. Available versions are {list(self.suffix_to_model_mapping.keys())}"
             )
 
-# %% ../nbs/04_model.ipynb 21
+# %% ../nbs/04_model.ipynb 23
 class WandbKerasModel(SingleModel):
     """
     Download best .h5 model from Weights & Biases (W&B) run in local directory and make predictions.
@@ -234,7 +256,7 @@ class WandbKerasModel(SingleModel):
         run.file(name=self.file_name).download(replace=self.replace)
         os.rename(self.file_name, f"{self.run_path.split('/')[-1]}_{self.file_name}")
 
-# %% ../nbs/04_model.ipynb 24
+# %% ../nbs/04_model.ipynb 26
 class ExternalCSVs(BaseModel):
     """
     Load external submissions and add to NumerFrame. \n
@@ -261,7 +283,7 @@ class ExternalCSVs(BaseModel):
             raise ValueError(f"Prediction values must be between 0 and 1. Does not hold for '{path.name}'.")
         return pred_col
 
-# %% ../nbs/04_model.ipynb 31
+# %% ../nbs/04_model.ipynb 33
 class NumerBayCSVs(BaseModel):
     """
     Load NumerBay submissions and add to NumerFrame. \n
@@ -349,7 +371,7 @@ class NumerBayCSVs(BaseModel):
             raise ValueError(f"Prediction values must be between 0 and 1. Does not hold for '{path.name}'.")
         return pred_col
 
-# %% ../nbs/04_model.ipynb 37
+# %% ../nbs/04_model.ipynb 39
 class JoblibModel(DirectoryModel):
     """
     Load and predict for arbitrary models in directory saved as .joblib.
@@ -375,7 +397,7 @@ class JoblibModel(DirectoryModel):
     def load_models(self) -> list:
         return [joblib.load(path) for path in self.model_paths]
 
-# %% ../nbs/04_model.ipynb 41
+# %% ../nbs/04_model.ipynb 43
 class CatBoostModel(DirectoryModel):
     """
     Load and predict with all .cbm models (CatBoostRegressor) in directory.
@@ -400,7 +422,7 @@ class CatBoostModel(DirectoryModel):
     def load_models(self) -> list:
         return [CatBoost().load_model(path) for path in self.model_paths]
 
-# %% ../nbs/04_model.ipynb 45
+# %% ../nbs/04_model.ipynb 47
 class LGBMModel(DirectoryModel):
     """
     Load and predict with all .lgb models (LightGBM) in directory.
@@ -425,7 +447,7 @@ class LGBMModel(DirectoryModel):
         import lightgbm as lgb
         return [lgb.Booster(model_file=str(path)) for path in self.model_paths]
 
-# %% ../nbs/04_model.ipynb 51
+# %% ../nbs/04_model.ipynb 53
 class ConstantModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes. \n
@@ -446,7 +468,7 @@ class ConstantModel(BaseModel):
         dataf.loc[:, self.prediction_col_name] = self.clf.predict(dataf.get_feature_data)
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 55
+# %% ../nbs/04_model.ipynb 57
 class RandomModel(BaseModel):
     """
     WARNING: Only use this Model for testing purposes. \n
@@ -464,7 +486,7 @@ class RandomModel(BaseModel):
         dataf.loc[:, self.prediction_col_name] = np.random.uniform(size=len(dataf))
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 59
+# %% ../nbs/04_model.ipynb 61
 class ExamplePredictionsModel(BaseModel):
     """
     Load example predictions and add to NumerFrame. \n
@@ -506,7 +528,7 @@ class ExamplePredictionsModel(BaseModel):
     def _load_example_preds(self, *args, **kwargs):
         return pd.read_parquet(self.dest_path, *args, **kwargs)
 
-# %% ../nbs/04_model.ipynb 65
+# %% ../nbs/04_model.ipynb 67
 class AwesomeModel(BaseModel):
     """
     TEMPLATE - Predict with arbitrary prediction logic and model formats.
@@ -533,7 +555,7 @@ class AwesomeModel(BaseModel):
         # Parse all contents of NumerFrame to the next pipeline step
         return NumerFrame(dataf)
 
-# %% ../nbs/04_model.ipynb 68
+# %% ../nbs/04_model.ipynb 70
 class AwesomeDirectoryModel(DirectoryModel):
     """
     TEMPLATE - Load in all models of arbitrary file format and predict for all.
