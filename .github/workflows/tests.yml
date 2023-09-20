@@ -22,4 +22,12 @@ jobs:
         pip install .
     - name: Run tests
       run: |
-        pytest -s --import-mode=append tests/
+        pytest -s --import-mode=append tests/ --cov=./ --cov-report=xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./coverage/reports/
+        fail_ci_if_error: false
+        verbose: true
+        files: ./coverage.xml
+        
