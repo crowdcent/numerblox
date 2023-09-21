@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Union, List
+from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, TransformerMixin
         
 
@@ -26,7 +27,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         self.donate_weighted = donate_weighted
 
     def fit(self, X, y=None):
-        self._is_fitted = True
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: Union[np.array, pd.DataFrame], eras: pd.Series) -> np.array:
@@ -36,6 +37,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         :param eras: Era labels (strings) for each row in X.
         :return: Ensembled predictions.
         """
+        check_is_fitted(self)
         assert len(X) == len(eras), f"input X and eras must have the same length. Got {len(X)} != {len(eras)}."
 
         if len(X.shape) == 1:
@@ -117,10 +119,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
 
     def get_feature_names_out(self, input_features = None) -> List[str]:
         return ["numerai_ensemble_predictions"] if not input_features else input_features
-    
-    def __sklearn_is_fitted__(self) -> bool:
-        """ Check fitted status. """
-        return hasattr(self, "_is_fitted") and self._is_fitted
+
 
 class PredictionReducer(BaseEstimator, TransformerMixin):
     """ 
@@ -150,6 +149,7 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
         :param X: Input predictions.
         :return: Reduced predictions of shape (X.shape[0], self.n_models).
         """
+        check_is_fitted(self)
         reduced = []
         expected_n_cols = self.n_models * self.n_classes
         if len(X.shape) != 2:

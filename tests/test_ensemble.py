@@ -165,7 +165,7 @@ def test_prediction_reducer():
     ])
     
     reducer = PredictionReducer(n_models=2, n_classes=3)
-    reduced_X = reducer.transform(X)
+    reduced_X = reducer.fit_transform(X)
 
     # The expected result is a 3x2 matrix
     expected_result = np.array([
