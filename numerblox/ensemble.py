@@ -118,8 +118,6 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     def get_feature_names_out(self, input_features = None) -> List[str]:
         return ["numerai_ensemble_predictions"] if not input_features else input_features
     
-    def __sklearn_is_fitted__(self):
-        """
-        Check fitted status and return a Boolean value.
-        """
+    def __sklearn_is_fitted__(self) -> bool:
+        """ Check fitted status. """
         return hasattr(self, "_is_fitted") and self._is_fitted

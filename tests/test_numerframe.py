@@ -18,7 +18,7 @@ def test_get_pattern_data(dummy_dataframe):
 
 def test_get_target_data(dummy_dataframe):
     nf = NumerFrame(dummy_dataframe)
-    assert nf.get_target_data.columns.tolist() == ['target']
+    assert nf.get_target_data.columns.tolist() == ['target', 'target2']
 
 def test_get_single_target_data(dummy_dataframe):
     nf = NumerFrame(dummy_dataframe)
@@ -50,7 +50,7 @@ def test_get_feature_target_pair_multi_target(dummy_dataframe):
     nf = NumerFrame(dummy_dataframe)
     X, y = nf.get_feature_target_pair(multi_target=True)
     assert X.columns.tolist() == ['feature_1', 'feature_2']
-    assert y.columns.tolist() == ['target']
+    assert y.columns.tolist() == ['target', 'target2']
 
 # Test get_era_batch functionality
 def test_get_era_batch(dummy_dataframe):
@@ -58,7 +58,7 @@ def test_get_era_batch(dummy_dataframe):
     eras = ['001', '002']
     X, y = nf.get_era_batch(eras=eras, convert_to_tf=False)
     assert X.shape == (3, 2)
-    assert y.shape == (3, 1)
+    assert y.shape == (3, 2)
 
 def test_create_numerframe():
     # Here you would use the provided "test_assets/train_int8_5_eras.parquet" file
