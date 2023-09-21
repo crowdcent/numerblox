@@ -133,7 +133,11 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
     """
     def __init__(self, n_models: int, n_classes: int):
         super().__init__()
+        if n_models < 1:
+            raise ValueError(f"n_models must be >= 1. Got '{n_models}'.")
         self.n_models = n_models
+        if n_classes < 2:
+            raise ValueError(f"n_classes must be >= 2. If n_classes = 1 you don't need PredictionReducer. Got '{n_classes}'.")
         self.n_classes = n_classes
         self.dot_array = [i for i in range(self.n_classes)]
 
@@ -147,6 +151,11 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
         :return: Reduced predictions of shape (X.shape[0], self.n_models).
         """
         reduced = []
+        expected_n_cols = self.n_models * self.n_classes
+        if len(X.shape) != 2:
+            raise ValueError(f"Expected X to be a 2D array. Got '{len(X.shape)}' dimension(s).")
+        if X.shape[1] != expected_n_cols:
+            raise ValueError(f"Input X must have {expected_n_cols} columns. Got {X.shape[1]} columns while n_models={self.n_models} * n_classes={self.n_classes} = {expected_n_cols}. ")
         for i in range(self.n_models):
             # Extracting the predictions of the i-th model
             model_preds = X[:, i*self.n_classes:(i+1)*self.n_classes]
