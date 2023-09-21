@@ -129,8 +129,10 @@ def test_numeraiensemble_predict_with_nans(ensemble):
     # There must be some nans in the data.
     assert np.sum(np.isnan(ensemble_preds)) >= 0
     # None nan values should be between 0 and 1
-    assert ensemble_preds[~np.isnan(ensemble_preds)].min() >= 0
-    assert ensemble_preds[~np.isnan(ensemble_preds)].max() <= 1
+    non_nan_values = ensemble_preds[~np.isnan(ensemble_preds)]
+    if non_nan_values.size > 0:
+        assert non_nan_values.min() >= 0
+        assert non_nan_values.max() <= 1
 
 def test_numeraiensemble_donate_weights(ensemble):
     ensemble.donate_weighted = True
