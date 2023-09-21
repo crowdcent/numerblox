@@ -1,9 +1,10 @@
 import pytest
 import numpy as np
-from sklearn.datasets import make_regression
+from sklearn.datasets import make_regression, make_classification
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.multioutput import MultiOutputRegressor
+from sklearn.linear_model import LogisticRegression
 
 from numerblox.meta import MetaEstimator, CrossValEstimator
 from sklearn.model_selection import TimeSeriesSplit, KFold
@@ -155,3 +156,17 @@ def test_custom_evaluation_func(setup_data):
     
     for result in cve.eval_results_:
         assert "custom_metric" in result, "Custom metric should be in evaluation results."
+
+def test_cross_val_estimator_multiclass_proba():
+    # Create mock data
+    X, y = make_classification(n_samples=200, n_features=10, n_classes=3, n_clusters_per_class=1, random_state=42)
+    
+    # Define the cross-validation object and the estimator
+    cv = KFold(n_splits=5)
+    estimator = LogisticRegression(solver="saga", max_iter=5000, random_state=0, multi_class="multinomial")
+    
+    # Create an instance of the CrossValEstimator with predict_proba as the predict function
+    cross_val_estimator = CrossValEstimator(cv=cv, estimator=estimator, predict_func="predict_proba", verbose=False)
+    with pytest.raises(NotImplementedError):
+        cross_val_estimator.fit(X, y)
+

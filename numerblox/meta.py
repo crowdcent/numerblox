@@ -115,6 +115,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                     print(f"Running evaluation on fold {len(self.estimators_)}")
 
                 y_pred = getattr(estimator, self.predict_func)(X[val_idx])
+                y_pred = self._postprocess_pred(y_pred)
                 eval_fold = self.eval_func(y[val_idx], y_pred)
                 if self.verbose:
                     print(f"CrossValEstimator (estimator='{self.estimator_name}'): Fold '{i}' evaluation results: '{eval_fold}'")
@@ -125,6 +126,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
             # Store output shape by doing inference on 1st sample of training set
             if i == 0:
                 sample_prediction = getattr(estimator, self.predict_func)(X[train_idx][:1])
+                sample_prediction = self._postprocess_pred(sample_prediction)
                 self.output_shape_ = sample_prediction.shape[1:]
                 self.multi_output_ = len(y.shape) > 1
                 self.n_outputs_per_model_ = np.prod(self.output_shape_)
@@ -146,9 +148,11 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
         for estimator in tqdm(inference_estimators, 
                               desc=f"CrossValEstimator Inference. Estimator='{self.estimator_name}'", 
                               disable=not self.verbose):
-            predictions.append(getattr(estimator, self.predict_func)(X, **kwargs))
+            pred = getattr(estimator, self.predict_func)(X, **kwargs)
+            pred = self._postprocess_pred(pred)
+            predictions.append(pred)
 
-        if self.multi_output_ or "proba" in self.predict_func:
+        if self.multi_output_:
             # Reshape each prediction to a flat vector
             predictions = np.hstack([pred.reshape(pred.shape[0], -1) for pred in predictions])
         else:
@@ -172,6 +176,16 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                 for j in range(self.n_outputs_per_model_):
                     feature_names.append(f"{base_str}_{i}_output_{j}")
         return feature_names
+    
+    def _postprocess_pred(self, pred):
+        if "proba" in self.predict_func:
+            if pred.shape[1] > 2:
+                 # Multiclass case
+                raise NotImplementedError("Multiclass predict_proba case is not implemented.")
+            else:
+                # Binary class proba case
+                pred = pred[:, 1]
+        return pred
     
     def __sklearn_is_fitted__(self) -> bool:
         """ Check fitted status. """
