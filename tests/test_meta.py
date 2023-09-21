@@ -7,7 +7,6 @@ from sklearn.multioutput import MultiOutputRegressor
 
 from numerblox.meta import MetaEstimator, CrossValEstimator
 from sklearn.model_selection import TimeSeriesSplit, KFold
-from sklego.model_selection import TimeGapSplit
 
 from utils import create_classic_sample_data
 
