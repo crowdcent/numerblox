@@ -121,3 +121,48 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     def __sklearn_is_fitted__(self) -> bool:
         """ Check fitted status. """
         return hasattr(self, "_is_fitted") and self._is_fitted
+
+class PredictionReducer(BaseEstimator, TransformerMixin):
+    """ 
+    Reduce multiclassification and proba preds to 1 column per model. 
+    If predictions were generated with a regressor or regular predict you don't need this step.
+    :param n_models: Number of resulting columns. 
+    This indicates how many models were trained to generate the prediction array.
+    :param n_classes: Number of classes for each prediction.
+    If predictions were generated with predict_proba and binary classification -> n_classes = 2.-
+    """
+    def __init__(self, n_models: int, n_classes: int):
+        super().__init__()
+        self.n_models = n_models
+        self.n_classes = n_classes
+        self.dot_array = [i for i in range(self.n_classes)]
+
+    def fit(self, X, y=None):
+        self.is_fitted_ = True
+        return self
+
+    def transform(self, X: np.array):
+        """
+        :param X: Input predictions.
+        :return: Reduced predictions of shape (X.shape[0], self.n_models).
+        """
+        reduced = []
+        for i in range(self.n_models):
+            # Extracting the predictions of the i-th model
+            model_preds = X[:, i*self.n_classes:(i+1)*self.n_classes]
+            r = model_preds @ self.dot_array
+            reduced.append(r)
+        reduced_arr = np.column_stack(reduced)
+        return reduced_arr
+    
+    def predict(self, X: np.array):
+        """ 
+        For if PredictionReducer happens to be the last step in the pipeline. Has same behavior as transform.
+        :param X: Input predictions.
+        :return: Reduced predictions of shape (X.shape[0], self.n_models).
+        """
+        return self.transform(X)
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        return [f"reduced_prediction_{i}" for i in range(self.n_models)] if not input_features else input_features
+    

@@ -5,7 +5,7 @@ from sklearn.datasets import make_regression
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, RegressorMixin
 
-from numerblox.ensemble import NumeraiEnsemble
+from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
 
 ##### Mock objects #####
 @pytest.fixture
@@ -153,3 +153,33 @@ def test_numeraiensemble_get_feature_names_out(ensemble):
     ensemble.fit(X, y)
     assert ensemble.get_feature_names_out() == ["numerai_ensemble_predictions"]
     assert ensemble.get_feature_names_out(['a', 'b']) == ['a', 'b']
+
+##### PredictionReducer #####
+
+def test_prediction_reducer():
+    # Simulated probability predictions for 3 samples, 2 models and 3 classes
+    X = np.array([
+        [0.1, 0.7, 0.2,  0.2, 0.5, 0.3],
+        [0.2, 0.5, 0.3,  0.3, 0.3, 0.4],
+        [0.6, 0.2, 0.2,  0.4, 0.4, 0.2]
+    ])
+    
+    reducer = PredictionReducer(n_models=2, n_classes=3)
+    reduced_X = reducer.transform(X)
+
+    # The expected result is a 3x2 matrix
+    expected_result = np.array([
+        [0.7 * 1 + 0.2 * 2,  0.5 * 1 + 0.3 * 2],
+        [0.5 * 1 + 0.3 * 2,  0.3 * 1 + 0.4 * 2],
+        [0.2 * 1 + 0.2 * 2,  0.4 * 1 + 0.2 * 2]
+    ])
+
+    assert reduced_X.shape == (3, 2)
+    np.testing.assert_array_almost_equal(reduced_X, expected_result)
+
+def test_feature_names_out():
+    reducer = PredictionReducer(n_models=3, n_classes=4)
+    feature_names = reducer.get_feature_names_out()
+    expected_names = ["reduced_prediction_0", "reduced_prediction_1", "reduced_prediction_2"]
+    
+    assert feature_names == expected_names

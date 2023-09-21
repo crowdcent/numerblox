@@ -129,7 +129,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                 sample_prediction = self._postprocess_pred(sample_prediction)
                 self.output_shape_ = sample_prediction.shape[1:]
                 self.multi_output_ = len(y.shape) > 1
-                self.n_outputs_per_model_ = np.prod(self.output_shape_)
+                self.n_outputs_per_model_ = np.prod(self.output_shape_).astype(int)
         return self
     
     def transform(self, X, model_idxs: List[int] = None, **kwargs) -> np.array:
@@ -144,21 +144,20 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
         check_is_fitted(self)        
         inference_estimators = [self.estimators_[i] for i in model_idxs] if model_idxs else self.estimators_
 
-        predictions = []
-        for estimator in tqdm(inference_estimators, 
-                              desc=f"CrossValEstimator Inference. Estimator='{self.estimator_name}'", 
-                              disable=not self.verbose):
+        # Create an empty array to store predictions
+        final_predictions = np.zeros((X.shape[0], len(inference_estimators) * self.n_outputs_per_model_))
+        # Iterate through models to get predictions
+        for idx, estimator in enumerate(inference_estimators):
             pred = getattr(estimator, self.predict_func)(X, **kwargs)
             pred = self._postprocess_pred(pred)
-            predictions.append(pred)
+            
+            # Calculate where to place these predictions in the final array
+            start_idx = idx * self.n_outputs_per_model_
+            end_idx = (idx + 1) * self.n_outputs_per_model_
+            
+            final_predictions[:, start_idx:end_idx] = pred
 
-        if self.multi_output_:
-            # Reshape each prediction to a flat vector
-            predictions = np.hstack([pred.reshape(pred.shape[0], -1) for pred in predictions])
-        else:
-            predictions = np.asarray(predictions).T
-        # Stack predictions
-        return predictions
+        return final_predictions
 
     def predict(self, X, model_idxs: List[int] = None, **kwargs) -> np.array:
         return self.transform(X, model_idxs, **kwargs)
@@ -178,13 +177,9 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
         return feature_names
     
     def _postprocess_pred(self, pred):
-        if "proba" in self.predict_func:
-            if pred.shape[1] > 2:
-                 # Multiclass case
-                raise NotImplementedError("Multiclass predict_proba case is not implemented.")
-            else:
-                # Binary class proba case
-                pred = pred[:, 1]
+        # Make sure predictions are 2D
+        if len(pred.shape) == 1:
+            pred = pred.reshape(-1, 1)
         return pred
     
     def __sklearn_is_fitted__(self) -> bool:

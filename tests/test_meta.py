@@ -1,13 +1,13 @@
 import pytest
 import numpy as np
+from sklearn.metrics import log_loss
 from sklearn.datasets import make_regression, make_classification
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.multioutput import MultiOutputRegressor
-from sklearn.linear_model import LogisticRegression
 
 from numerblox.meta import MetaEstimator, CrossValEstimator
-from sklearn.model_selection import TimeSeriesSplit, KFold
+from sklearn.model_selection import TimeSeriesSplit, KFold, StratifiedKFold
 
 from utils import create_classic_sample_data
 
@@ -15,6 +15,10 @@ from utils import create_classic_sample_data
 @pytest.fixture
 def sample_data():
     return make_regression(n_samples=100, n_features=20, noise=0.1)
+
+@pytest.fixture
+def multiclass_sample_data():
+    return make_classification(n_samples=100, n_features=20, n_classes=3, n_informative=3)
 
 class MockEstimator(BaseEstimator, RegressorMixin):
     """ A mock estimator that always predicts a constant value. """
@@ -67,6 +71,10 @@ def dummy_evaluation_func(y_true, y_pred):
     """Example evaluation function."""
     accuracy = np.mean(y_true == y_pred)
     return {"accuracy": accuracy}
+
+# Evaluation function that computes the log loss
+def multiclass_evaluation_func(y_true, y_pred_proba):
+    return {"log_loss": log_loss(y_true, y_pred_proba, labels=[0, 1, 2])}
 
 @pytest.mark.parametrize('cv, estimator', [
     (TimeSeriesSplit(n_splits=2), RandomForestRegressor()),
@@ -157,16 +165,56 @@ def test_custom_evaluation_func(setup_data):
     for result in cve.eval_results_:
         assert "custom_metric" in result, "Custom metric should be in evaluation results."
 
-def test_cross_val_estimator_multiclass_proba():
-    # Create mock data
-    X, y = make_classification(n_samples=200, n_features=10, n_classes=3, n_clusters_per_class=1, random_state=42)
+# Test for multiclass predict_proba
+def test_multiclass_predict_proba(multiclass_sample_data):
+    X, y = multiclass_sample_data
+    cv = StratifiedKFold(n_splits=3)
+    estimator = RandomForestClassifier()
     
-    # Define the cross-validation object and the estimator
-    cv = KFold(n_splits=5)
-    estimator = LogisticRegression(solver="saga", max_iter=5000, random_state=0, multi_class="multinomial")
+    cve = CrossValEstimator(cv=cv, estimator=estimator, predict_func="predict_proba", evaluation_func=multiclass_evaluation_func, verbose=False)
+    cve.fit(X, y)
     
-    # Create an instance of the CrossValEstimator with predict_proba as the predict function
-    cross_val_estimator = CrossValEstimator(cv=cv, estimator=estimator, predict_func="predict_proba", verbose=False)
-    with pytest.raises(NotImplementedError):
-        cross_val_estimator.fit(X, y)
+    # Verify the shape and values of the transformation
+    transformed = cve.transform(X)
+    # We expect each model to produce 3 columns of class probabilities (for 3 classes).
+    expected_num_features = len(cve.estimators_) * 3  # n_classes
+    assert transformed.shape == (len(X), expected_num_features), f"Expected shape {(len(X), expected_num_features)}, but got {transformed.shape}"
+    
+    # The probabilities should sum up to 1 for each instance
+    for i in range(len(X)):
+        assert np.isclose(transformed[i, :3].sum(), 1), f"Probabilities do not sum to 1 for instance {i}."
+    
+    # Evaluation results should contain the log loss
+    for result in cve.eval_results_:
+        assert "log_loss" in result, f"Log loss not found in evaluation results for fold {cve.eval_results_.index(result)}."
 
+# Test for multiclass predict_log_proba
+def test_multiclass_predict_log_proba(multiclass_sample_data):
+    X, y = multiclass_sample_data
+    cv = StratifiedKFold(n_splits=3)
+    estimator = RandomForestClassifier()
+    
+    cve = CrossValEstimator(cv=cv, estimator=estimator, predict_func="predict_log_proba", evaluation_func=None, verbose=False)
+    cve.fit(X, y)
+    
+    # Verify the shape and values of the transformation
+    transformed = cve.transform(X)
+    # We expect each model to produce 3 columns of class log-probabilities.
+    expected_num_features = len(cve.estimators_) * 3  # n_classes
+    assert transformed.shape == (len(X), expected_num_features), f"Expected shape {(len(X), expected_num_features)}, but got {transformed.shape}"
+
+# Test for binary class predict_proba postprocessing
+def test_binary_class_postprocess():
+    X, y = make_classification(n_samples=100, n_features=20, n_classes=2)
+    cv = StratifiedKFold(n_splits=3)
+    estimator = RandomForestClassifier()
+    
+    cve = CrossValEstimator(cv=cv, estimator=estimator, predict_func="predict_proba", verbose=False)
+    cve.fit(X, y)
+    
+    # For binary classes, only probabilities of the positive class should be kept
+    transformed = cve.transform(X)
+    # We predict_proba we get 2 columns per estimator.
+    expected_num_features = len(cve.estimators_) * 2
+    assert transformed.shape == (len(X), expected_num_features), f"Expected shape {(len(X), expected_num_features)}, but got {transformed.shape}"
+    assert (transformed >= 0).all() and (transformed <= 1).all(), "Probabilities should be between 0 and 1."
