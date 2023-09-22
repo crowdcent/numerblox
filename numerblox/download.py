@@ -394,7 +394,6 @@ class NumeraiClassicDownloader(BaseDownloader):
             dest_path=dest_path,
             )
 
-
     def _get_version_mapping(self, version: int) -> dict:
         """ Check if data version is supported and return file mapping for version. """
         try:
@@ -414,7 +413,7 @@ class NumeraiClassicDownloader(BaseDownloader):
 
 class KaggleDownloader(BaseDownloader):
     """
-    Download awesome financial data from Kaggle.
+    Download financial data from Kaggle.
 
     For authentication, make sure you have a directory called .kaggle in your home directory
     with therein a kaggle.json file. kaggle.json should have the following structure: \n
@@ -509,7 +508,7 @@ class EODDownloader(BaseDownloader):
 
     def get_live_data(self, start: str) -> NumerFrame:
         """
-        Get NumerFrame containing one year of data.
+        Get NumerFrame data from some starting date.
         start: Starting data in %Y-%m-%d format.
         """
         dataf = self.generate_full_dataf(start=start)
@@ -546,22 +545,3 @@ class EODDownloader(BaseDownloader):
             print(f"WARNING: Date pull failed on ticker: '{ticker}'. Exception: {e}")
             stock_df = pd.DataFrame()
         return stock_df
-
-
-class AwesomeCustomDownloader(BaseDownloader):
-    """
-    TEMPLATE -
-    Download awesome financial data from who knows where.
-
-    :param directory_path: Base folder to download files to.
-    """
-    def __init__(self, directory_path: str):
-        super().__init__(directory_path=directory_path)
-
-    def download_inference_data(self, *args, **kwargs):
-        """ (minimal) weekly inference downloading here. """
-        ...
-
-    def download_training_data(self, *args, **kwargs):
-        """ Training + validation dataset downloading here. """
-        ...
