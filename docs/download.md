@@ -6,7 +6,7 @@ For `NumeraiClassicDownloader` versions `4`, `4.1` (sunshine) and `4.2` (rain) a
 
 NOTE: For the `4.2` data only an int8 version is available.
 
-```python3
+```py
 from numerblox.download import NumeraiClassicDownloader
 
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
@@ -20,7 +20,7 @@ dl.download_inference_data("live", version="4.2", int8=True)
 
 Besides these common use cases you can also get feature sets and meta model predictions with `NumeraiClassicDownloader`. 
 
-```python3
+```py
 from numerblox.download import NumeraiClassicDownloader
 
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
@@ -54,7 +54,7 @@ For EOD you also need to define credentials in the form of an API key.
 
 More information: [https://eodhd.com/pricing](https://eodhd.com/pricing)
 
-```python3
+```py
 from numerblox.download import EODDownloader
 
 eod_api_key = "MY_EOD_API_KEY"
@@ -87,7 +87,7 @@ Also make sure you have the `kaggle` Python package installed.
 pip install kaggle
 ```
 
-```python3
+```py
 from numerblox.download import KaggleDownloader
 
 kd = KaggleDownloader(directory_path="my_numerai_signals_folder")
@@ -103,7 +103,7 @@ We invite users to build out their own downloaders for Numerai Signals. The only
 
 If you have a downloader that you would like to share with the community, please open a Pull Request in NumerBlox.
 
-```python3
+```py
 class AwesomeCustomDownloader(BaseDownloader):
     """
     TEMPLATE -
