@@ -135,9 +135,6 @@ def test_group_stats_preprocessor():
     # Test get_feature_names_out
     assert test_group_processor.get_feature_names_out() == expected_cols
 
-
-
-
 def test_katsu_feature_generator(dummy_signals_data):
     kfg = KatsuFeatureGenerator(windows=[20, 40])
     result = kfg.fit_transform(dummy_signals_data)
@@ -154,7 +151,6 @@ def test_katsu_feature_generator(dummy_signals_data):
 ]
     assert result.columns.tolist() == expected_cols
     assert kfg.get_feature_names_out() == expected_cols
-
 
 def test_era_quantile_processor(dummy_signals_data):
     eqp = EraQuantileProcessor(num_quantiles=2)
