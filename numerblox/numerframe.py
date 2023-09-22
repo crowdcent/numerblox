@@ -4,6 +4,8 @@ from typing import Union, Tuple, Any, List
 
 from .misc import AttrDict
 
+from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
+
 
 class NumerFrame(pd.DataFrame):
     """
@@ -80,6 +82,12 @@ class NumerFrame(pd.DataFrame):
     def get_prediction_aux_data(self):
         """ All predictions columns and aux columns (for ensembling, etc.). """
         return self.get_column_selection(cols=self.prediction_cols+self.aux_cols)
+    
+    def get_feature_group(self, group: str):
+        """ Get feature group based on name or list of names. """
+        assert group in V4_2_FEATURE_GROUP_MAPPING.keys(), \
+            f"Group '{group}' not found in {V4_2_FEATURE_GROUP_MAPPING.keys()}"
+        return self.get_column_selection(cols=V4_2_FEATURE_GROUP_MAPPING[group])
 
     def get_pattern_data(self, pattern: str):
         """
