@@ -1,4 +1,4 @@
-# How to contribute
+# How To Contribute
 
 First of all I would like to thank you for considering to contribute to `numerblox`! This document provides some general guidelines to streamline the contribution process.
 

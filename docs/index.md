@@ -47,7 +47,7 @@ Notebook environment to quickly test if your installation has succeeded.
 3. A suite of preprocessors.
 4. Target engineering.
 5. A suite of postprocessors (ensembling, neutralization and penalization)
-6. A custom scikit-learn Pipeline (MetaPipeline) so postprocessors can be fitted end to end with your preprocessing and model.
+6. A custom scikit-learn Pipeline (`MetaPipeline`) to fit postprocessors end-to-end with your preprocessing and models.
 7. A suite of meta-estimators like `CrossValEstimator` that allows you to fit multiple folds end-to-end in a scikit-learn pipeline.
 8. A full evaluation suite with all metrics used by Numerai.
 9. Submitting predictions.

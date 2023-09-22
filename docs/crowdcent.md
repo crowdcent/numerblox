@@ -4,4 +4,4 @@ CrowdCent is on a mission to decentralize investment management by changing the 
 
 More information about CrowdCent can be found on [https://crowdcent.com](https://crowdcent.com)
 
-![CrowdCent](images/company_logo.png)
+![CrowdCent](.icons/images/company_logo.png)
