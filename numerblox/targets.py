@@ -7,8 +7,7 @@ from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import check_is_fitted
 
-from numerblox.preprocessing import BasePreProcessor
-
+from .preprocessing import BasePreProcessor
 
 
 class BayesianGMMTargetProcessor(BasePreProcessor):

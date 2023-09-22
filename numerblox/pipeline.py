@@ -1,7 +1,7 @@
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators
 
-from numerblox.meta import MetaEstimator
+from .meta import MetaEstimator
 
 
 class MetaPipeline(Pipeline):

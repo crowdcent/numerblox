@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 
 from numerblox.numerframe import NumerFrame, create_numerframe
-from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
+from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES
 
 dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
 
@@ -57,6 +57,12 @@ def test_get_feature_target_pair_multi_target():
     X, y = nf.get_feature_target_pair(multi_target=True)
     assert X.columns.tolist() == nf.get_feature_data.columns.tolist()
     assert y.columns.tolist() == nf.get_target_data.columns.tolist()
+
+def test_get_fncv3_features():
+    nf = NumerFrame(dataset)
+    result = nf.get_fncv3_features
+    assert result.columns.tolist() == FNCV3_FEATURES
+
 
 def test_get_feature_group():
     # Test with a valid group name
