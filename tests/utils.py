@@ -50,4 +50,4 @@ def create_signals_sample_data():
                     "prediction_random": np.random.uniform(),
                 }
             )
-    return instances
+    return pd.DataFrame(instances)

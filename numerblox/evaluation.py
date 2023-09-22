@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, Union, List
+from typing import Tuple, List
 from numerapi import SignalsAPI
 
 from .neutralizers import FeatureNeutralizer
@@ -47,7 +47,7 @@ class BaseEvaluator:
         self,
         dataf: pd.DataFrame,
         example_col: str,
-        pred_cols: list = None,
+        pred_cols: List[str],
         target_col: str = "target",
     ) -> pd.DataFrame:
         """
@@ -62,7 +62,6 @@ class BaseEvaluator:
             print(f"WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation.")
             dataf.loc[:, feature_cols] = dataf[feature_cols].select_dtypes(exclude=['category'])
         dataf = dataf.fillna(0.5)
-        pred_cols = pred_cols if pred_cols else ["prediction"]
         for col in tqdm(pred_cols, desc="Evaluation: "):
             col_stats = self.evaluation_one_col(
                 dataf=dataf,
@@ -357,7 +356,7 @@ class BaseEvaluator:
     def plot_correlations(
         self,
         dataf: pd.DataFrame,
-        pred_cols: list = None,
+        pred_cols: List[str],
         corr_cols: list = None,
         target_col: str = "target",
         roll_mean: int = 20,
@@ -366,14 +365,12 @@ class BaseEvaluator:
         Plot per era correlations over time.
         :param dataf: DataFrame that contains at least all pred_cols, target_col and corr_cols.
         :param pred_cols: List of prediction columns to calculate per era correlations for and plot.
-        By default, `["prediction"]` is used as the prediction column. 
         :param corr_cols: Per era correlations already prepared to include in the plot.
         This is optional for if you already have per era correlations prepared in your input dataf.
         :param target_col: Target column name to compute per era correlations against.
         :param roll_mean: How many eras should be averaged to compute a rolling score.
         """
         validation_by_eras = pd.DataFrame()
-        pred_cols = pred_cols if pred_cols else ["prediction"]
         # Compute per era correlation for each prediction column.
         for pred_col in pred_cols:
             per_era_corrs = self.per_era_numerai_corrs(
@@ -428,12 +425,11 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         self,
         dataf: pd.DataFrame,
         example_col: str,
-        pred_cols: list = None,
+        pred_cols: List[str],
         target_col: str = "target",
     ) -> pd.DataFrame:
         val_stats = pd.DataFrame()
         dataf = dataf.fillna(0.5)
-        pred_cols = pred_cols if pred_cols else ["prediction"]
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
 
         # Check if sufficient columns are present in dataf to compute FNC
