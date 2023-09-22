@@ -4,43 +4,14 @@ import numpy as np
 import pandas as pd
 import pandas_ta as ta
 from tqdm.auto import tqdm
-from abc import abstractmethod
 from typing import Union, Tuple, List
 from multiprocessing.pool import Pool
 from sklearn.preprocessing import QuantileTransformer
-from sklearn.base import BaseEstimator, TransformerMixin
 
-from .numerframe import NumerFrame
-from .feature_groups import V4_2_FEATURE_GROUP_MAPPING
+from numerblox.preprocessing.base import BasePreProcessor
 
 # Ignore Pandas SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
-
-
-class BasePreProcessor(BaseEstimator, TransformerMixin):
-    """Common functionality for preprocessors and postprocessors."""
-
-    def __init__(self):
-        ...
-
-    def fit(self, X, y=None):
-        return self
-
-    @abstractmethod
-    def transform(
-        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
-    ) -> pd.DataFrame:
-        ...
-
-    def __call__(
-        self, X: Union[pd.DataFrame, NumerFrame], y=None, **kwargs
-    ) -> pd.DataFrame:
-        return self.transform(X=X, y=y, **kwargs)
-    
-    @abstractmethod
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        ...
-    
 
 class ReduceMemoryProcessor(BasePreProcessor):
     """
@@ -134,64 +105,6 @@ class ReduceMemoryProcessor(BasePreProcessor):
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
         return self.output_cols if not input_features else input_features
-
-
-class GroupStatsPreProcessor(BasePreProcessor):
-    """
-    WARNING: Only supported for v4.2 (Rain) data. The Rain dataset (re)introduced feature groups. \n
-    
-    Calculates group statistics for all data groups. \n
-    :param groups: Groups to create features for. All groups by default. \n
-    """
-    def __init__(self, groups: list = None):
-        super().__init__()
-        self.all_groups = [
-            'intelligence', 
-            'charisma', 
-            'strength', 
-            'dexterity', 
-            'constitution', 
-            'wisdom', 
-            'agility', 
-            'serenity', 
-            'sunshine', 
-            'rain'
-        ]
-        self.groups = groups 
-        self.group_names = groups if self.groups else self.all_groups
-        self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Check validity and add group features."""
-        dataf = self._add_group_features(X)
-        return dataf
-
-    def _add_group_features(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Mean, standard deviation and skew for each group."""
-        dataf = pd.DataFrame()
-        for group in self.group_names:
-            cols = self.feature_group_mapping[group]
-            valid_cols = [col for col in cols if col in X.columns]
-            if not valid_cols:
-                warnings.warn(f"None of the columns of '{group}' are in the input data. Output will be nans for the group features.")
-            elif len(cols) != len(valid_cols):
-                warnings.warn(f"Not all columns of '{group}' are in the input data ({len(valid_cols)} < {len(cols)}). Use remaining columns for stats features.")
-            dataf.loc[:, f"feature_{group}_mean"] = X[valid_cols].mean(axis=1)
-            dataf.loc[:, f"feature_{group}_std"] = X[valid_cols].std(axis=1)
-            dataf.loc[:, f"feature_{group}_skew"] = X[valid_cols].skew(axis=1)
-        return dataf
-    
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        """Return feature names."""
-        if not input_features:
-            feature_names = []
-            for group in self.group_names:
-                feature_names.append(f"feature_{group}_mean")
-                feature_names.append(f"feature_{group}_std")
-                feature_names.append(f"feature_{group}_skew")
-        else:
-            feature_names = input_features
-        return feature_names
 
 
 class KatsuFeatureGenerator(BasePreProcessor):

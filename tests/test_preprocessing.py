@@ -6,12 +6,13 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-
-from numerblox.preprocessing import (BasePreProcessor,
-                                     ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
+from numerblox.preprocessing.base import BasePreProcessor
+from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcessor,
+                                     KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper,
                                      LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator, V4_2_FEATURE_GROUP_MAPPING)
+                                     DifferencePreProcessor, PandasTaFeatureGenerator)
+from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
 
 from utils import create_signals_sample_data, create_classic_sample_data
 
