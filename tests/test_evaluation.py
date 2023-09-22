@@ -3,9 +3,7 @@ import numpy as np
 import pandas as pd
 from unittest.mock import patch
 
-from numerblox.key import Key
-from numerblox.evaluation import NumeraiSignalsEvaluator
-from numerblox.numerframe import create_numerframe
+from numerblox.misc import Key
 from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluator
 
 from utils import create_signals_sample_data
@@ -19,7 +17,7 @@ SIGNALS_STATS_COLS = BASE_STATS_COLS
 df = create_signals_sample_data
 
 def test_numerai_classic_evaluator():
-    df = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
+    df = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
 
@@ -36,7 +34,6 @@ def test_numerai_classic_evaluator():
         val_stats[col]
 
 def test_numerai_signals_evaluator(df):
-
     evaluator = NumeraiSignalsEvaluator(era_col="date", fast_mode=False)
     val_stats = evaluator.full_evaluation(
         dataf=df,

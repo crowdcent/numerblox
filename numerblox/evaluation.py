@@ -9,7 +9,7 @@ from numerapi import SignalsAPI
 
 from .numerframe import NumerFrame
 from .neutralizers import FeatureNeutralizer
-from .key import Key
+from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
 class BaseEvaluator:

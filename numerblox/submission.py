@@ -7,7 +7,7 @@ from abc import abstractmethod
 from numerapi import NumerAPI, SignalsAPI
 
 from .download import BaseIO
-from .key import Key
+from .misc import Key
 
 
 class BaseSubmitter(BaseIO):

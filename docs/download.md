@@ -77,9 +77,9 @@ For authentication, make sure you have a directory called .kaggle in your home d
 with therein a kaggle.json file. kaggle.json should have the following structure:
 `{"username": USERNAME, "key": KAGGLE_API_KEY}`
 
-More info on authentication: [github.com/Kaggle/kaggle-api#api-credentials](github.com/Kaggle/kaggle-api#api-credentials)
+More info on authentication: [github.com/Kaggle/kaggle-api#api-credentials](https://github.com/Kaggle/kaggle-api#api-credentials)
 
-More info on the Kaggle Python API: [kaggle.com/donkeys/kaggle-python-api](kaggle.com/donkeys/kaggle-python-api)
+More info on the Kaggle Python API: [kaggle.com/donkeys/kaggle-python-api](https://kaggle.com/donkeys/kaggle-python-api)
 
 Also make sure you have the `kaggle` Python package installed.
 
