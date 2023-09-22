@@ -1,6 +1,6 @@
 import pandas as pd
 
-from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer, FeaturePenalizer
+from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer
 
 from utils import create_classic_sample_data
 
@@ -20,11 +20,6 @@ def test_base_neutralizer_fit(setup_data):
 def test_feature_neutralizer_initialization():
     fn = FeatureNeutralizer()
     assert fn.new_col_name.startswith("prediction_neutralized_")
-
-def test_feature_penalizer_initialization():
-    fp = FeaturePenalizer(max_exposure=0.5)
-    assert fp.new_col_name.startswith("prediction_penalized_")
-    assert fp.max_exposure == 0.5
 
 def test_feature_neutralizer_predict(setup_data):
     fn = FeatureNeutralizer()
@@ -54,18 +49,6 @@ def test_feature_neutralizer_get_feature_names_out_complex():
 
 def test_feature_neutralizer_get_feature_names_out_with_input_features():
     names = FeatureNeutralizer().get_feature_names_out(input_features=["prediction_fancy1"])
-    assert names == ["prediction_fancy1"]
-
-def test_feature_penalizer_get_feature_names_out():
-    names = FeaturePenalizer(max_exposure=0.5).get_feature_names_out()
-    assert names == ["prediction_penalized_0.5"]
-
-def test_feature_penalizer_get_feature_names_out_complex():
-    names = FeaturePenalizer(max_exposure=0.7, pred_name="fancy", suffix="blob").get_feature_names_out()
-    assert names == ["fancy_penalized_0.7_blob"]
-
-def test_feature_penalizer_get_feature_names_out_with_input_features():
-    names = FeaturePenalizer(max_exposure=0.5).get_feature_names_out(input_features=["prediction_fancy1"])
     assert names == ["prediction_fancy1"]
 
 # TODO Test for ColumnTransformer

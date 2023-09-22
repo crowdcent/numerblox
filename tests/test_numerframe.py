@@ -63,7 +63,6 @@ def test_get_fncv3_features():
     result = nf.get_fncv3_features
     assert result.columns.tolist() == FNCV3_FEATURES
 
-
 def test_get_feature_group():
     # Test with a valid group name
     nf = NumerFrame(dataset)
@@ -82,7 +81,6 @@ def test_get_era_batch():
     assert y.shape == (4805, 49)
 
 def test_create_numerframe():
-    # Here you would use the provided "test_assets/train_int8_5_eras.parquet" file
     file_path = "tests/test_assets/train_int8_5_eras.parquet"
     nf = create_numerframe(file_path)
     assert isinstance(nf, NumerFrame)

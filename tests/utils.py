@@ -17,7 +17,6 @@ def dummy_dataframe():
     })
     return df
 
-
 @pytest.fixture
 def create_classic_sample_data():
     data = {
