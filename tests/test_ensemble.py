@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from scipy.stats import rankdata, norm
+from scipy.stats import rankdata
 from sklearn.datasets import make_regression
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, RegressorMixin

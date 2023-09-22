@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import make_regression
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline, FeatureUnion
 
 from numerblox.prediction_loaders import ExamplePredictions
 
