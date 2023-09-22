@@ -5,7 +5,6 @@ from copy import deepcopy
 from tqdm.auto import tqdm
 from abc import abstractmethod
 from numerapi import NumerAPI, SignalsAPI
-from dateutil.relativedelta import relativedelta, FR
 
 from .download import BaseIO
 from .key import Key
@@ -199,7 +198,7 @@ class NumeraiClassicSubmitter(BaseSubmitter):
         sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]
         sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
 
-# %% ../nbs/09_submission.ipynb 26
+
 class NumeraiSignalsSubmitter(BaseSubmitter):
     """
     Submit for Numerai Signals.

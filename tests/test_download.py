@@ -66,7 +66,7 @@ def test_classic():
     dl.remove_base_directory()
 
 def test_classic_version_mapping():
-    downloader = NumeraiClassicDownloader(directory_path="some_path")
+    downloader = NumeraiClassicDownloader(directory_path="some_path_{uuid4()}")
 
     # Test supported versions
     supported_versions = ["4", "4.1", "4.2"]
@@ -83,6 +83,8 @@ def test_classic_version_mapping():
     for version in unsupported_versions:
         with pytest.raises(NotImplementedError, match=f"Version '{version}' is not available"):
             downloader._get_version_mapping(version)
+            
+    downloader.remove_base_directory()
 
 def test_kaggle_downloader():
     try:

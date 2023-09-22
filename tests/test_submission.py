@@ -9,7 +9,7 @@ from datetime import datetime
 from string import ascii_uppercase
 from dateutil.relativedelta import relativedelta, FR
 
-from numerblox.submission import (BaseSubmitter, NumeraiClassicSubmitter, NumeraiSignalsSubmitter, Key)
+from numerblox.submission import (NumeraiClassicSubmitter, NumeraiSignalsSubmitter, Key)
 
 
 TARGET_NAME = "prediction"
