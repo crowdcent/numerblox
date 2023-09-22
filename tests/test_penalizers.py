@@ -28,3 +28,29 @@ def test_feature_penalizer_get_feature_names_out_complex():
 def test_feature_penalizer_get_feature_names_out_with_input_features():
     names = FeaturePenalizer(max_exposure=0.5).get_feature_names_out(input_features=["prediction_fancy1"])
     assert names == ["prediction_fancy1"]
+
+# TODO Fast FeaturePenalizer tests
+# def test_feature_penalizer_predict(setup_data):
+#     fp = FeaturePenalizer(max_exposure=0.5)
+#     features = setup_data[["feature1", "feature2"]]
+#     eras = setup_data["era"]
+#     X = setup_data["prediction"]
+#     result = fp.predict(X, features=features, eras=eras)
+#     assert len(result) == len(setup_data)
+#     assert result['prediction'].min() >= 0
+#     assert result['prediction'].max() <= 1
+
+# def test_feature_penalizer_pipeline(setup_data):
+#     lr1 = Ridge()
+#     fp = FeaturePenalizer(max_exposure=0.5)
+#     pipeline = make_numerai_pipeline(lr1, fp)
+#     pipeline.fit(setup_data[["feature1", "feature2"]], setup_data["target"])
+#     features = setup_data[["feature1", "feature2"]]
+#     eras = setup_data["era"]
+
+#     result = pipeline.predict(setup_data[["feature1", "feature2"]],
+#                               features=features, eras=eras)
+#     assert isinstance(result, np.ndarray)
+#     assert len(result) == len(setup_data)
+#     assert result.min() >= 0
+#     assert result.max() <= 1

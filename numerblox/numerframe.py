@@ -93,7 +93,6 @@ class NumerFrame(pd.DataFrame):
             f"Group '{group}' not found in {V4_2_FEATURE_GROUP_MAPPING.keys()}"
         return self.get_column_selection(cols=V4_2_FEATURE_GROUP_MAPPING[group])
 
-
     def get_pattern_data(self, pattern: str):
         """
         Get columns based on pattern (for example '_20' to get all 20-day Numerai targets).
