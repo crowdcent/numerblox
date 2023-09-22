@@ -4,8 +4,14 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-import tensorflow as tf
 from sklearn.base import BaseEstimator, RegressorMixin
+
+try:
+    import tensorflow as tf
+except ImportError:
+    raise ImportError(
+        "TensorFlow is required for NumerBlox Penalizers. `pip install tensorflow` first."
+    )
 
 class BasePenalizer(BaseEstimator, RegressorMixin):
     """

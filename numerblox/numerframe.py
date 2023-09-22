@@ -138,7 +138,10 @@ class NumerFrame(pd.DataFrame):
             y = [X.copy(), y.copy(), y.copy()]
 
         if convert_to_tf:
-            import tensorflow as tf
+            try:
+                import tensorflow as tf
+            except ImportError:
+                raise ImportError("TensorFlow is not installed. Please make sure to have Tensorflow installed when setting `convert_to_tf=True`.")
             X = tf.convert_to_tensor(X, *args, **kwargs)
             if aemlp_batch:
                 y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]
