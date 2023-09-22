@@ -127,12 +127,12 @@ class SignalsTargetProcessor(BasePreProcessor):
         self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
         self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
 
-    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, dataf: pd.DataFrame, eras: pd.Series) -> pd.DataFrame:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
             dataf.loc[:, f"target_{window}d_raw"] = (
                 dataf[self.price_col].pct_change(periods=window).shift(-window)
             )
-            era_groups = dataf.groupby(dataf.meta.era_col)
+            era_groups = dataf.groupby(eras)
 
             dataf.loc[:, f"target_{window}d_rank"] = era_groups[
                 f"target_{window}d_raw"

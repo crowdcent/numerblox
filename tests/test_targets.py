@@ -26,7 +26,7 @@ def test_processors_sklearn():
         processor = processor_cls()
 
         # Test fit returns self
-        try: 
+        try:
             assert processor.fit(X=X, y=y, eras=eras) == processor
         except TypeError:
             assert processor.fit(X=X, y=y) == processor
@@ -73,7 +73,9 @@ def test_bayesian_gmm_target_preprocessor():
 
 def test_signals_target_processor(dummy_signals_data):
     stp = SignalsTargetProcessor()
-    result = stp.fit_transform(dummy_signals_data)
+    eras = dummy_signals_data["date"]
+    stp.fit(dummy_signals_data)
+    result = stp.transform(dummy_signals_data, eras=eras)
     expected_target_cols = ["target_10d_raw", "target_10d_rank", "target_10d_group", "target_20d_raw", "target_20d_rank", "target_20d_group"]
     for col in expected_target_cols:
         assert col in result.columns
