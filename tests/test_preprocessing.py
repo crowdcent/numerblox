@@ -8,26 +8,21 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-from numerblox.preprocessing import (BasePreProcessor, BayesianGMMTargetProcessor,
+from numerblox.preprocessing import (BasePreProcessor,
                                      ReduceMemoryProcessor, GroupStatsPreProcessor, KatsuFeatureGenerator,
-                                     EraQuantileProcessor, TickerMapper, SignalsTargetProcessor, LagPreProcessor, 
+                                     EraQuantileProcessor, TickerMapper,
+                                     LagPreProcessor, 
                                      DifferencePreProcessor, PandasTaFeatureGenerator, V4_2_FEATURE_GROUP_MAPPING)
 
 from utils import create_signals_sample_data, create_classic_sample_data
 
-CLASSIC_PREPROCESSORS = ['ReduceMemoryProcessor', 'BayesianGMMTargetProcessor',
-                         'GroupStatsPreProcessor']
-SIGNALS_PREPROCESSORS = ['KatsuFeatureGenerator', 'EraQuantileProcessor',
-                     'TickerMapper', 'SignalsTargetProcessor', 'LagPreProcessor', 'DifferencePreProcessor', 'PandasTaFeatureGenerator', 'AwesomePreProcessor']
+CLASSIC_PREPROCESSORS = [ReduceMemoryProcessor, GroupStatsPreProcessor]
+SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper,
+                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator]
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
-WINDOW_COL_PROCESSORS = ["KatsuFeatureGenerator", "LagPreProcessor", "DifferencePreProcessor"]
-# Preprocessors that need eras for fitting.
-ERA_COL_PROCESSORS = ["BayesianGMMTargetProcessor"]
+WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, 
+                         DifferencePreProcessor]
 
-
-MODULE = "numerblox.preprocessing"
-module = importlib.import_module(MODULE)
-processors = [getattr(module, proc_name) for proc_name in ALL_PREPROCESSORS if hasattr(module, proc_name)]
 dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
 dummy_classic_data = create_classic_sample_data
 dummy_signals_data = create_signals_sample_data
@@ -42,45 +37,38 @@ def test_processors_sklearn():
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
     y = data["target_jerome_v4_20"].fillna(0.5)
-    eras = data["era"]
     feature_names = ["feature_tallish_grimier_tumbrel",
                      "feature_partitive_labyrinthine_sard"]
     X = data[feature_names]
 
-    for processor_cls in tqdm(processors, desc="Testing processors for scikit-learn compatibility"):
+    for processor_cls in tqdm(ALL_PREPROCESSORS, desc="Testing processors for scikit-learn compatibility"):
         # Initialization
-        if processor_cls.__name__ in WINDOW_COL_PROCESSORS:
+        if processor_cls in WINDOW_COL_PROCESSORS:
             processor = processor_cls(windows=[20, 40])
         else:
             processor = processor_cls()
 
         # Test fit returns self
-        if processor_cls.__name__ in ERA_COL_PROCESSORS:
-            assert processor.fit(X=X, y=y, eras=eras) == processor
-        else:
-            assert processor.fit(X=X, y=y) == processor
+        assert processor.fit(X=X, y=y) == processor
 
         # Inherits from BasePreProcessor
         assert issubclass(processor_cls, BasePreProcessor)
         # Has fit_transform
         assert hasattr(processor_cls, 'fit_transform')
 
-        if processor_cls.__name__ not in ERA_COL_PROCESSORS:
-            # Pipeline
-            pipeline = Pipeline([
+        # Pipeline
+        pipeline = Pipeline([
                 ('processor', processor)
             ])
-            _ = pipeline.fit(data)
+        _ = pipeline.fit(data)
 
-            # FeatureUnion
-            combined_features = FeatureUnion([
+        # FeatureUnion
+        combined_features = FeatureUnion([
                 ('processor', processor),
                 ('pca', PCA())
             ])
-            _ = combined_features.fit(data.fillna(0.5))
+        _ = combined_features.fit(data.fillna(0.5))
         # TODO Test with NumeraiPipeline
-        else:
-            ...
 
         # Test every processor has get_feature_names_out
         assert hasattr(processor, 'get_feature_names_out'), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessors should have this method."
@@ -94,30 +82,6 @@ def test_reduce_memory_preprocessor(dummy_classic_data):
     assert reduced_data.feature2.dtype == "int16"
     assert reduced_data.era.dtype == "O"
     assert rmp.get_feature_names_out() == dummy_classic_data.columns.tolist()
-
-
-def test_bayesian_gmm_target_preprocessor():
-    bgmm = BayesianGMMTargetProcessor(n_components=2)
-
-    y = dataset["target_jerome_v4_20"].fillna(0.5)
-    eras = dataset["era"]
-    feature_names = ["feature_tallish_grimier_tumbrel",
-                     "feature_partitive_labyrinthine_sard"]
-    X = dataset[feature_names]
-
-    bgmm.fit(X, y, eras=eras)
-
-    result = bgmm.transform(X, eras=eras)
-    assert bgmm.get_feature_names_out() == ["fake_target"]
-    assert len(result) == len(dataset)
-    assert result.min() >= 0.0
-    assert result.max() <= 1.0
-
-    # _get_coefs
-    coefs = bgmm._get_coefs(X, y, eras=eras)
-    assert coefs.shape == (5, 2)
-    assert coefs.min() >= 0.0
-    assert coefs.max() <= 1.0
 
 
 def test_group_stats_preprocessor():
@@ -218,13 +182,6 @@ def test_ticker_mapper():
     result = mapper.transform(test_dataf)
     assert result.tolist() == ["LLB.SW", "DRAK.AS", "5211.KLSE", "ELEKTRA.MX", np.nan]
 
-def test_signals_target_processor(dummy_signals_data):
-    stp = SignalsTargetProcessor()
-    result = stp.fit_transform(dummy_signals_data)
-    expected_target_cols = ["target_10d_raw", "target_10d_rank", "target_10d_group", "target_20d_raw", "target_20d_rank", "target_20d_group"]
-    for col in expected_target_cols:
-        assert col in result.columns
-    assert stp.get_feature_names_out() == expected_target_cols
     
 def test_lag_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
