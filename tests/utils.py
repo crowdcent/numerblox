@@ -2,8 +2,6 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from numerblox.numerframe import NumerFrame
-
 # Fixture to create a dummy dataframe
 @pytest.fixture
 def dummy_dataframe():
@@ -52,5 +50,4 @@ def create_signals_sample_data():
                     "prediction_random": np.random.uniform(),
                 }
             )
-    dummy_df = NumerFrame(instances)
-    return dummy_df
+    return instances

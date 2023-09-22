@@ -4,10 +4,9 @@ import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 from numerapi import SignalsAPI
 
-from .numerframe import NumerFrame
 from .neutralizers import FeatureNeutralizer
 from .misc import Key
 from .feature_groups import FNCV3_FEATURES
@@ -46,26 +45,29 @@ class BaseEvaluator:
 
     def full_evaluation(
         self,
-        dataf: NumerFrame,
+        dataf: pd.DataFrame,
         example_col: str,
         pred_cols: list = None,
         target_col: str = "target",
     ) -> pd.DataFrame:
         """
-        Perform evaluation for each prediction column in the NumerFrame
-        against give target and example prediction column.
+        Perform evaluation for each prediction column in pred_cols.
+        By default only the "prediction" column is evaluated.
+        Evaluation is done against given target and example prediction column.
         """
         val_stats = pd.DataFrame()
-        cat_cols = dataf.get_feature_data.select_dtypes(include=['category']).columns.to_list()
+        feature_cols = [col for col in dataf.columns if col.startswith("feature")]
+        cat_cols = dataf[feature_cols].select_dtypes(include=['category']).columns.to_list()
         if cat_cols:
             print(f"WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation.")
-            dataf.loc[:, dataf.feature_cols] = dataf.get_feature_data.select_dtypes(exclude=['category'])
+            dataf.loc[:, feature_cols] = dataf[feature_cols].select_dtypes(exclude=['category'])
         dataf = dataf.fillna(0.5)
-        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
+        pred_cols = pred_cols if pred_cols else ["prediction"]
         for col in tqdm(pred_cols, desc="Evaluation: "):
             col_stats = self.evaluation_one_col(
                 dataf=dataf,
                 pred_col=col,
+                feature_cols=feature_cols,
                 target_col=target_col,
                 example_col=example_col,
             )
@@ -74,7 +76,8 @@ class BaseEvaluator:
 
     def evaluation_one_col(
         self,
-        dataf: NumerFrame,
+        dataf: pd.DataFrame,
+        feature_cols: list,
         pred_col: str,
         target_col: str,
         example_col: str,
@@ -117,11 +120,12 @@ class BaseEvaluator:
         # Compute intensive stats
         if not self.fast_mode:
             max_feature_exposure = self.max_feature_exposure(
-                dataf=dataf, pred_col=pred_col
+                dataf=dataf, feature_cols=feature_cols,
+                pred_col=pred_col
             )
             # Using all features for plain FNC
             fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(
-                dataf=dataf, pred_col=pred_col, target_col=target_col, feature_names=dataf.feature_cols
+                dataf=dataf, pred_col=pred_col, target_col=target_col, feature_names=feature_cols
             )
             tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
@@ -227,7 +231,7 @@ class BaseEvaluator:
         ) * 100
 
     def example_correlation(
-        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str, example_col: str
+        self, dataf: pd.DataFrame, pred_col: str, example_col: str
     ):
         """Correlations with example predictions."""
         return self.per_era_corrs(
@@ -237,11 +241,12 @@ class BaseEvaluator:
         ).mean()
 
     def max_feature_exposure(
-        self, dataf: Union[pd.DataFrame, NumerFrame], pred_col: str
+        self, dataf: pd.DataFrame, 
+        feature_cols: List[str], pred_col: str
     ) -> np.float64:
         """Maximum exposure over all features."""
         max_per_era = dataf.groupby(self.era_col).apply(
-            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max()
+            lambda d: d[feature_cols].corrwith(d[pred_col]).abs().max()
         )
         max_feature_exposure = max_per_era.mean(skipna=True)
         return max_feature_exposure
@@ -284,13 +289,14 @@ class BaseEvaluator:
         )
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
-    def exposure_dissimilarity(self, dataf: NumerFrame, pred_col: str, example_col: str) -> np.float32:
+    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, example_col: str) -> np.float32:
         """
         Model pattern of feature exposure to the example column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
         """
-        U = dataf.get_feature_data.corrwith(dataf[pred_col]).values
-        E = dataf.get_feature_data.corrwith(dataf[example_col]).values
+        feature_cols = [col for col in dataf.columns if col.startswith("feature")]
+        U = dataf[feature_cols].corrwith(dataf[pred_col]).values
+        E = dataf[feature_cols].corrwith(dataf[example_col]).values
         exp_dis = 1 - np.dot(U, E) / np.dot(E, E)
         return exp_dis
 
@@ -350,7 +356,7 @@ class BaseEvaluator:
 
     def plot_correlations(
         self,
-        dataf: NumerFrame,
+        dataf: pd.DataFrame,
         pred_cols: list = None,
         corr_cols: list = None,
         target_col: str = "target",
@@ -358,16 +364,16 @@ class BaseEvaluator:
     ):
         """
         Plot per era correlations over time.
-        :param dataf: NumerFrame that contains at least all pred_cols, target_col and corr_cols.
-        :param pred_cols: List of prediction columns that per era correlations of and plot.
-        By default, all predictions_cols in the NumerFrame are used. 
+        :param dataf: DataFrame that contains at least all pred_cols, target_col and corr_cols.
+        :param pred_cols: List of prediction columns to calculate per era correlations for and plot.
+        By default, `["prediction"]` is used as the prediction column. 
         :param corr_cols: Per era correlations already prepared to include in the plot.
         This is optional for if you already have per era correlations prepared in your input dataf.
         :param target_col: Target column name to compute per era correlations against.
         :param roll_mean: How many eras should be averaged to compute a rolling score.
         """
         validation_by_eras = pd.DataFrame()
-        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
+        pred_cols = pred_cols if pred_cols else ["prediction"]
         # Compute per era correlation for each prediction column.
         for pred_col in pred_cols:
             per_era_corrs = self.per_era_numerai_corrs(
@@ -420,14 +426,15 @@ class NumeraiClassicEvaluator(BaseEvaluator):
 
     def full_evaluation(
         self,
-        dataf: NumerFrame,
+        dataf: pd.DataFrame,
         example_col: str,
         pred_cols: list = None,
         target_col: str = "target",
     ) -> pd.DataFrame:
         val_stats = pd.DataFrame()
         dataf = dataf.fillna(0.5)
-        pred_cols = dataf.prediction_cols if not pred_cols else pred_cols
+        pred_cols = pred_cols if pred_cols else ["prediction"]
+        feature_cols = [col for col in dataf.columns if col.startswith("feature")]
 
         # Check if sufficient columns are present in dataf to compute FNC
         feature_set = set(dataf.columns)
@@ -442,6 +449,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             # Metrics that can be calculated for both Numerai Classic and Signals
             col_stats = self.evaluation_one_col(
                 dataf=dataf,
+                feature_cols=feature_cols,
                 pred_col=col,
                 target_col=target_col,
                 example_col=example_col,
