@@ -412,7 +412,6 @@ class CatBoostModel(DirectoryModel):
                  model_name: str = None,
                  feature_cols: list = None
                  ):
-        from catboost import CatBoost
         file_suffix = 'cbm'
         super().__init__(model_directory=model_directory,
                          file_suffix=file_suffix,
@@ -421,6 +420,7 @@ class CatBoostModel(DirectoryModel):
                          )
 
     def load_models(self) -> list:
+        from catboost import CatBoost
         return [CatBoost().load_model(path) for path in self.model_paths]
 
 # %% ../nbs/04_model.ipynb 47
