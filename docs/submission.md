@@ -4,9 +4,15 @@ NumerBlox provides submitters for both Numerai Classic and Signals.
 Also check out `example/submitting.ipynb` for more information on Numerai submission.
 
 ## Why?
+- **Simplified Workflow**: Instead of managing multiple manual steps for submissions, `Submitters` allow you to simplify the submission process down to a few lines of code.
 
+- **Integrated Validation Checks**: Before submitting, `Submitters` performs a series of checks to ensure the submission format is correct and prevent common mistakes that could lead to invalid submissions.
 
+- **Security**: By providing a way to load credentials from a `.json` file, `Submitters` ensures that you're not hard-coding your secret credentials in the main code, reducing the risk of accidental exposure.
 
+- **Automatic Cleanup**: For users who run automated jobs, the ability to automatically clean up the environment post-submission ensures that your workspace remains clutter-free.
+
+With `Submitters`, you can focus more on developing and refining your model and spend less time on the manual aspects of the submission process.
 
 ## Instantiation
 
@@ -44,8 +50,6 @@ Submissions can be done in 2 lines of code. To initialize the submitter object, 
 
 The `dataf` argument can be either a `pd.DataFrame` or `NumerFrame`.
 
-For multi-target, specify a list of targets in `cols`.
-
 ```py
 from numerblox.submission import NumeraiClassicSubmitter
 submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
@@ -74,6 +78,31 @@ submitter.full_submission(dataf=dataf,
                           cols=["bloomberg_ticker", "signal"],
                           file_name="submission.csv",
                           model_name="my_model")
+```
+
+## NumerBay
+
+NumerBlox also offers functionality to submit predictions from [NumerBay](https://numerbay.ai). This is a marketplace where Numerai predictions are bought and sold. Uploading from Numerbay is similar, but also requires authentication with your NumerBay account.
+
+Also make sure `numerbay` is installed with `!pip install numerbay`.
+
+```py
+from numerblox.submission import NumeraiClassicSubmitter, NumerBaySubmitter
+# Your prediction DataFrame
+dataf = pd.DataFrame(columns=["prediction"])
+
+# Full submission to both Numerai and NumerBay
+numerbay_submitter = NumerBaySubmitter(
+    tournament_submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key),
+    numerbay_username="yourusername",
+    numerbay_password="yourpassword"
+)
+numerbay_submitter(
+    dataf=dataf,
+    model_name="my_model",
+    numerbay_product_full_name="numerai-predictions-yourproductname",
+    file_name="submission.csv"
+)
 ```
 
 ## Note
