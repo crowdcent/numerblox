@@ -264,13 +264,14 @@ class EraQuantileProcessor(BasePreProcessor):
         return pd.Series(transformed_data, index=group_data.index)
 
     def transform(
-        self, dataf: pd.DataFrame,
+        self, X: Union[np.array, pd.DataFrame],
         eras: pd.Series,
     ) -> np.array:
-        self.features = [col for col in dataf.columns if col not in ['era', 'target']]
+        X = pd.DataFrame(X)
+        self.features = [col for col in X.columns]
         print(f"Quantiling for {len(self.features)} features.")
-        dataf.loc[:, "era"] = eras
-        date_groups = dataf.groupby('era', group_keys=False)
+        X.loc[:, "era"] = eras
+        date_groups = X.groupby('era', group_keys=False)
         output_df = pd.DataFrame()
         for feature in tqdm(self.features):
             group_data = date_groups[feature].apply(lambda x: self._process_feature(x))
@@ -345,7 +346,8 @@ class LagPreProcessor(BasePreProcessor):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
 
-    def transform(self, X: pd.DataFrame, tickers: pd.Series) -> np.array:
+    def transform(self, X: Union[np.array, pd.DataFrame], tickers: pd.Series) -> np.array:
+        X = pd.DataFrame(X)
         feature_cols = X.columns.tolist()
         X["ticker"] = tickers
         ticker_groups = X.groupby("ticker")

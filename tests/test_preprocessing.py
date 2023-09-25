@@ -186,6 +186,11 @@ def test_era_quantile_processor(dummy_signals_data):
         assert result[col].max() <= 1.0
     assert eqp.get_feature_names_out() == quantile_cols
 
+    # Numpy input
+    result = eqp.transform(X.to_numpy(), eras=dummy_signals_data["date"])
+    assert len(result.shape) == 2
+    assert isinstance(result, pd.DataFrame)
+
     # Test set_output API
     eqp.set_output(transform="default")
     result = eqp.transform(X, eras=dummy_signals_data["date"])
@@ -214,6 +219,7 @@ def test_lag_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
     lpp.fit(dummy_signals_data[['close', 'volume']])
+    # DataFrame input
     result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
     expected_cols = [
     "close_lag20",
@@ -223,6 +229,15 @@ def test_lag_preprocessor(dummy_signals_data):
 ]
     assert result.columns.tolist() == expected_cols
     assert lpp.get_feature_names_out() == expected_cols
+
+    # Numpy input
+    result = lpp.transform(dummy_signals_data[['close', 'volume']].to_numpy(), tickers=dummy_signals_data["ticker"])
+    expected_cols = [
+    "0_lag20",
+    "0lag40",
+    "1_lag20",
+    "1_lag40",
+]
 
     # Test set_output API
     lpp.set_output(transform="default")
