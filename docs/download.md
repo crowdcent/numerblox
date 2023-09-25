@@ -1,4 +1,4 @@
-# Downloading
+# Downloaders
 
 ## Classic
 
