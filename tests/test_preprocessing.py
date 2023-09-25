@@ -33,7 +33,6 @@ def test_base_preprocessor():
     assert hasattr(BasePreProcessor, 'transform')
     assert issubclass(BasePreProcessor, (BaseEstimator, TransformerMixin))
 
-
 def test_processors_sklearn():
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
@@ -44,7 +43,6 @@ def test_processors_sklearn():
     X = data[feature_names]
 
     for processor_cls in tqdm(ALL_PREPROCESSORS, desc="Testing processors for scikit-learn compatibility"):
-        print(f"Testing {processor_cls.__name__}")
         # Initialization
         if processor_cls in WINDOW_COL_PROCESSORS:
             processor = processor_cls(windows=[20, 40])
@@ -86,11 +84,10 @@ def test_reduce_memory_preprocessor(dummy_classic_data):
     assert reduced_data.era.dtype == "O"
     assert rmp.get_feature_names_out() == dummy_classic_data.columns.tolist()
 
-    # Test set_output API
+    # Test numpy input and set_output API
     rmp.set_output(transform="default")
-    result = rmp.transform(dummy_classic_data)
-    assert isinstance(result, np.ndarray)
-
+    reduced_data = rmp.transform(dummy_classic_data.to_numpy())
+    assert isinstance(reduced_data, np.ndarray)
 
 def test_group_stats_preprocessor():
     # Test with part groups selects

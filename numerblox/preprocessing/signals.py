@@ -30,14 +30,15 @@ class ReduceMemoryProcessor(BasePreProcessor):
         self.deep_mem_inspect = deep_mem_inspect
         self.verbose = verbose
 
-    def transform(self, dataf: pd.DataFrame) -> np.array:
+    def transform(self, dataf: Union[np.array, pd.DataFrame]) -> np.array:
         return self._reduce_mem_usage(dataf).to_numpy()
 
-    def _reduce_mem_usage(self, dataf: pd.DataFrame) -> np.array:
+    def _reduce_mem_usage(self, dataf: Union[np.array, pd.DataFrame]) -> pd.DataFrame:
         """
         Iterate through all columns and modify the numeric column types
         to reduce memory usage.
         """
+        dataf = pd.DataFrame(dataf)
         self.output_cols = dataf.columns.tolist()
         start_memory_usage = (
             dataf.memory_usage(deep=self.deep_mem_inspect).sum() / 1024**2
@@ -247,6 +248,11 @@ class KatsuFeatureGenerator(BasePreProcessor):
 
 
 class EraQuantileProcessor(BasePreProcessor):
+    """
+    Transform features into quantiles by era.
+    :param num_quantiles: Number of quantiles to use for quantile transformation. 
+    :param random_state: Random state for QuantileTransformer.   
+    """
     def __init__(
         self,
         num_quantiles: int = 50,
@@ -369,6 +375,8 @@ class LagPreProcessor(BasePreProcessor):
 class DifferencePreProcessor(BasePreProcessor):
     """
     Add difference features based on given windows. Run LagPreProcessor first.
+    Usage in Pipeline works only with Pandas API. 
+    Run `.set_output("pandas")` on your pipeline first.
 
     :param windows: All lag windows to process for all features. \n
     :param feature_names: All features for which you want to create differences. All features that also have lags by default. \n
@@ -422,6 +430,8 @@ class PandasTaFeatureGenerator(BasePreProcessor):
     """
     Generate features with pandas-ta.
     https://github.com/twopirllc/pandas-ta
+    Usage in Pipeline works only with Pandas API. 
+    Run `.set_output("pandas")` on your pipeline first.
 
     :param strategy: Valid Pandas Ta strategy. \n
     For more information on creating a strategy, see: \n
