@@ -1,4 +1,5 @@
 import warnings
+import numpy as np
 import pandas as pd
 from typing import List
 
@@ -30,10 +31,10 @@ class GroupStatsPreProcessor(BasePreProcessor):
         self.group_names = groups if self.groups else self.all_groups
         self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> np.array:
         """Check validity and add group features."""
         dataf = self._add_group_features(X)
-        return dataf
+        return dataf.to_numpy()
 
     def _add_group_features(self, X: pd.DataFrame) -> pd.DataFrame:
         """Mean, standard deviation and skew for each group."""

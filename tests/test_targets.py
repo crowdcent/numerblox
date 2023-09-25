@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.pipeline import Pipeline
+from sklearn.base import BaseEstimator, TransformerMixin
 
-from numerblox.preprocessing import BasePreProcessor
 from numerblox.targets import BayesianGMMTargetProcessor, SignalsTargetProcessor
 
 from utils import create_signals_sample_data
@@ -31,10 +32,8 @@ def test_processors_sklearn():
         except TypeError:
             assert processor.fit(X=X, y=y) == processor
 
-        # Inherits from BasePreProcessor
-        assert issubclass(processor_cls, BasePreProcessor)
-        # Has fit_transform
-        assert hasattr(processor_cls, 'fit_transform')
+        # Inherits from Sklearn classes
+        assert issubclass(processor_cls, (BaseEstimator, TransformerMixin))
 
         # Pipeline
         pipeline = Pipeline([
@@ -71,8 +70,17 @@ def test_bayesian_gmm_target_preprocessor():
     assert coefs.min() >= 0.0
     assert coefs.max() <= 1.0
 
+    # Test set_output API
+    bgmm.set_output(transform="pandas")
+    result = bgmm.transform(X, eras=eras)
+    assert isinstance(result, pd.DataFrame)
+    bgmm.set_output(transform="default")
+    result = bgmm.transform(X, eras=eras)
+    assert isinstance(result, np.ndarray)
+
 def test_signals_target_processor(dummy_signals_data):
     stp = SignalsTargetProcessor()
+    stp.set_output(transform="pandas")
     eras = dummy_signals_data["date"]
     stp.fit(dummy_signals_data)
     result = stp.transform(dummy_signals_data, eras=eras)
@@ -80,3 +88,8 @@ def test_signals_target_processor(dummy_signals_data):
     for col in expected_target_cols:
         assert col in result.columns
     assert stp.get_feature_names_out() == expected_target_cols
+
+    # Test set_output API
+    stp.set_output(transform="default")
+    result = stp.transform(dummy_signals_data, eras=eras)
+    assert isinstance(result, np.ndarray)

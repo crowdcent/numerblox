@@ -30,10 +30,10 @@ class ReduceMemoryProcessor(BasePreProcessor):
         self.deep_mem_inspect = deep_mem_inspect
         self.verbose = verbose
 
-    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
-        return self._reduce_mem_usage(dataf)
+    def transform(self, dataf: pd.DataFrame) -> np.array:
+        return self._reduce_mem_usage(dataf).to_numpy()
 
-    def _reduce_mem_usage(self, dataf: pd.DataFrame) -> pd.DataFrame:
+    def _reduce_mem_usage(self, dataf: pd.DataFrame) -> np.array:
         """
         Iterate through all columns and modify the numeric column types
         to reduce memory usage.
@@ -138,7 +138,7 @@ class KatsuFeatureGenerator(BasePreProcessor):
         self.num_cores = num_cores if num_cores else os.cpu_count()
         self.verbose = verbose
 
-    def transform(self, dataf: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, dataf: pd.DataFrame) -> np.array:
         """
         Multiprocessing feature engineering.
         
@@ -157,7 +157,7 @@ class KatsuFeatureGenerator(BasePreProcessor):
         ]
         dataf = self._generate_features(dataf_list=dataf_list)
         output_cols = self.get_feature_names_out()
-        return dataf[output_cols]
+        return dataf[output_cols].to_numpy()
 
     def feature_engineering(self, dataf: pd.DataFrame) -> pd.DataFrame:
         """Feature engineering for single ticker."""
@@ -266,7 +266,7 @@ class EraQuantileProcessor(BasePreProcessor):
     def transform(
         self, dataf: pd.DataFrame,
         eras: pd.Series,
-    ) -> pd.DataFrame:
+    ) -> np.array:
         self.features = [col for col in dataf.columns if col not in ['era', 'target']]
         print(f"Quantiling for {len(self.features)} features.")
         dataf.loc[:, "era"] = eras
@@ -275,7 +275,7 @@ class EraQuantileProcessor(BasePreProcessor):
         for feature in tqdm(self.features):
             group_data = date_groups[feature].apply(lambda x: self._process_feature(x))
             output_df[f"{feature}_quantile{self.num_quantiles}"] = group_data
-        return output_df
+        return output_df.to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
@@ -320,14 +320,14 @@ class TickerMapper(BasePreProcessor):
             self.ticker_map[[self.ticker_col, self.target_ticker_format]].values
         )
 
-    def transform(self, X: Union[np.array, pd.Series]) -> pd.Series:
+    def transform(self, X: Union[np.array, pd.Series]) -> np.array:
         """
         Transform ticker column.
         :param X: Ticker column
         :return tickers: Mapped tickers
         """
         tickers = pd.DataFrame(X, columns=[self.ticker_col])[self.ticker_col].map(self.mapping)
-        return tickers
+        return tickers.to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         return [self.target_ticker_format] if not input_features else input_features
@@ -345,7 +345,7 @@ class LagPreProcessor(BasePreProcessor):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
 
-    def transform(self, X: pd.DataFrame, tickers: pd.Series) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, tickers: pd.Series) -> np.array:
         feature_cols = X.columns.tolist()
         X["ticker"] = tickers
         ticker_groups = X.groupby("ticker")
@@ -357,7 +357,7 @@ class LagPreProcessor(BasePreProcessor):
                 X.loc[:, f"{feature}_lag{day}"] = shifted
                 output_features.append(f"{feature}_lag{day}")
         self.output_features = output_features
-        return X[output_features]
+        return X[output_features].to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
@@ -385,7 +385,7 @@ class DifferencePreProcessor(BasePreProcessor):
         self.pct_diff = pct_diff
         self.abs_diff = abs_diff
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> np.array:
         """
         Create difference feature from lag features.
         :param X: DataFrame with lag features.
@@ -410,7 +410,7 @@ class DifferencePreProcessor(BasePreProcessor):
                         )
                     output_features.append(f"{feature}_absdiff{day}")
         self.output_features = output_features
-        return X[self.output_features]
+        return X[self.output_features].to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         return self.output_features if not input_features else input_features

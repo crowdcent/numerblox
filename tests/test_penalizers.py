@@ -4,11 +4,11 @@ from utils import create_classic_sample_data
 
 setup_data = create_classic_sample_data
 
-def test_base_neutralizer_initialization():
+def test_base_penalizer_initialization():
     bn = BasePenalizer(new_col_name="test")
     assert bn.new_col_name == "test"
 
-def test_base_neutralizer_fit(setup_data):
+def test_base_penalizer_fit(setup_data):
     obj = BasePenalizer(new_col_name="test").fit(setup_data)
     assert isinstance(obj, BasePenalizer)
 

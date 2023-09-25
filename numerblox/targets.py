@@ -1,16 +1,44 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from typing import List
+from copy import deepcopy
+from typing import List, Union
+from abc import abstractmethod
 from scipy.stats import rankdata
 from sklearn.linear_model import Ridge
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import check_is_fitted
 
-from .preprocessing import BasePreProcessor
+# Ignore SettingWithCopyWarning
+pd.options.mode.chained_assignment = None
+
+class BaseTargetProcessor(BaseEstimator, TransformerMixin):
+    """Common functionality for preprocessors and postprocessors."""
+
+    def __init__(self):
+        ...
+
+    def fit(self, X, y=None):
+        return self
+
+    @abstractmethod
+    def transform(
+        self, X: Union[np.array, pd.DataFrame], y=None, **kwargs
+    ) -> pd.DataFrame:
+        ...
+
+    def __call__(
+        self, X: Union[np.array, pd.DataFrame], y=None, **kwargs
+    ) -> pd.DataFrame:
+        return self.transform(X=X, y=y, **kwargs)
+    
+    @abstractmethod
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        ...
 
 
-class BayesianGMMTargetProcessor(BasePreProcessor):
+class BayesianGMMTargetProcessor(BaseTargetProcessor):
     """
     Generate synthetic (fake) target using a Bayesian Gaussian Mixture model. \n
     Based on Michael Oliver's GitHub Gist implementation: \n
@@ -102,7 +130,7 @@ class BayesianGMMTargetProcessor(BasePreProcessor):
         return ["fake_target"] if not input_features else input_features
     
 
-class SignalsTargetProcessor(BasePreProcessor):
+class SignalsTargetProcessor(BaseTargetProcessor):
     """
     Engineer targets for Numerai Signals. \n
     More information on implements Numerai Signals targets: \n
@@ -127,7 +155,7 @@ class SignalsTargetProcessor(BasePreProcessor):
         self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
         self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
 
-    def transform(self, dataf: pd.DataFrame, eras: pd.Series) -> pd.DataFrame:
+    def transform(self, dataf: pd.DataFrame, eras: pd.Series) -> np.array:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
             dataf.loc[:, f"target_{window}d_raw"] = (
                 dataf[self.price_col].pct_change(periods=window).shift(-window)
@@ -145,7 +173,7 @@ class SignalsTargetProcessor(BasePreProcessor):
                 )
             )
         output_cols = self.get_feature_names_out()
-        return dataf[output_cols]
+        return dataf[output_cols].to_numpy()
 
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names of Signals targets. """

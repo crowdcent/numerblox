@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import make_regression
 from sklearn.preprocessing import StandardScaler
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 
 from numerblox.prediction_loaders import ExamplePredictions
@@ -14,6 +15,7 @@ def test_example_predictions_basic():
     assert preds['prediction'].min() >= 0
     assert preds['prediction'].max() <= 1
     assert isinstance(preds, pd.DataFrame)
+    assert issubclass(ExamplePredictions, (BaseEstimator, TransformerMixin))
 
 
 def test_example_predictions_pipeline():

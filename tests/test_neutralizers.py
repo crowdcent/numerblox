@@ -37,8 +37,6 @@ def test_feature_neutralizer_neutralize(setup_data):
     scores = FeatureNeutralizer().neutralize(setup_data, columns, by)
     assert isinstance(scores, pd.DataFrame)
 
-##### Sklearn compatability tests #####
-
 def test_feature_neutralizer_get_feature_names_out():
     names = FeatureNeutralizer().get_feature_names_out()
     assert names == ["prediction_neutralized_0.5"]
