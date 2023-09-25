@@ -97,7 +97,7 @@ numerbay_submitter = NumerBaySubmitter(
     numerbay_username="yourusername",
     numerbay_password="yourpassword"
 )
-numerbay_submitter(
+numerbay_submitter.full_submission(
     dataf=dataf,
     model_name="my_model",
     numerbay_product_full_name="numerai-predictions-yourproductname",

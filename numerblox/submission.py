@@ -301,7 +301,6 @@ class NumerBaySubmitter(BaseSubmitter):
         if self.upload_to_numerai:
             self.tournament_submitter.upload_predictions(file_name, model_name, *args, **kwargs)
 
-
         full_path = str(self.dir / file_name)
         api_type = str(self.numerbay_api.__class__.__name__)
         print(
