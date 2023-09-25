@@ -1,5 +1,7 @@
 # Full API Reference
 
+This section provides a detailed reference to all objects defined in NumerBlox.
+
 ::: numerblox.download
 
 ------------------------------------------------

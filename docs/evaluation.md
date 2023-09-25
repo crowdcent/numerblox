@@ -13,13 +13,13 @@ The following metrics are included for both:
 
 - Correlation with example predictions.
 
-- Max feature exposure: https://forum.numer.ai/t/model-diagnostics-feature-exposure/899.
+- [Max feature exposure](https://forum.numer.ai/t/model-diagnostics-feature-exposure/899).
 
-- Feature Neutral Mean, Standard deviation and Sharpe: https://docs.numer.ai/tournament/feature-neutral-correlation .
+- [Feature Neutral](https://docs.numer.ai/tournament/feature-neutral-correlation) Mean, Standard deviation and Sharpe.
 
-- Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
+- [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4).
 
-- Calmar Ratio.
+- [Calmar Ratio](https://www.investopedia.com/terms/c/calmarratio.asp).
 
 - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
 
@@ -29,7 +29,6 @@ For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fa
 
 ## Numerai Classic specific metrics
 
-
 `NumeraiClassicEvaluator` specifically will also compute the Feature Neutral Mean, Standard deviation and Sharpe based on the FNCV3 Features. The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`.
 
 ## Numerai Signals specific metrics
@@ -38,20 +37,20 @@ For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fa
 
 
 Example of how to get neutralized correlation scores for Numerai Signals:
-```python3
+```py
 from numerblox.misc import Key
 from numerblox.evaluation import NumeraiSignalsEvaluator
 
 evaluator = NumeraiSignalsEvaluator()
 
 # A Numerai Signals model name you use.
-model_name = "MY_MODEL
+model_name = "MY_MODEL"
 # NumerBlox Key for accessing the Numerai API
-key = Key("public_numerai_key", "secret_numerai_key")
-# DataFrame with validation data containing prediction, friday_ate, ticker and data_type columns
+key = Key(pub_id="Hello", secret_key="World")
+# DataFrame with validation data containing prediction, friday_date, ticker and data_type columns
 val_df = pd.DataFrame()
 
-evaluator.get_neutralized_corr(val, model_name)
+evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 # Returns a Pandas Series like this.
 # pd.Series([0.01, ..., 0.02])
 ```
