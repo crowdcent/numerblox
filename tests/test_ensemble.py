@@ -1,9 +1,10 @@
 import pytest
 import numpy as np
+import pandas as pd
 from scipy.stats import rankdata
 from sklearn.datasets import make_regression
 from sklearn.utils.validation import check_is_fitted
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
 
@@ -16,37 +17,13 @@ def sample_data():
 def ensemble():
     return NumeraiEnsemble()
 
-class MockEstimator(BaseEstimator, RegressorMixin):
-    """ A mock estimator that always predicts a constant value. """
-    def fit(self, X, y):
-        pass
-    
-    def predict(self, X):
-        return np.ones(X.shape[0]) * 3
-    
-class ValidMockEstimator(BaseEstimator, RegressorMixin):
-    """A mock estimator that always predicts values within [0, 1] range."""
-    def fit(self, X, y):
-        pass
-
-    def predict(self, X):
-        return np.random.uniform(size=len(X))
-
-class OutOfBoundsMockEstimator(BaseEstimator, RegressorMixin):
-    """A mock estimator that always predicts values out of [0, 1] range."""
-    def fit(self, X, y):
-        pass
-
-    def predict(self, X):
-        return np.array([1.5] * len(X))
-
 ##### NumeraiEnsemble #####
 
 def test_numeraiensemble_fit(ensemble, sample_data):
     X, y = sample_data
     ensemble.fit(X, y)
     check_is_fitted(ensemble)
-    assert hasattr(ensemble, "get_feature_names_out")
+    assert issubclass(type(ensemble), (BaseEstimator, TransformerMixin))
 
 def test_numeraiensemble_predict(ensemble, sample_data):
     X, y = sample_data
@@ -154,6 +131,19 @@ def test_numeraiensemble_get_feature_names_out(ensemble):
     assert ensemble.get_feature_names_out() == ["numerai_ensemble_predictions"]
     assert ensemble.get_feature_names_out(['a', 'b']) == ['a', 'b']
 
+def test_numeraiensemble_set_output(ensemble, sample_data):
+    X, y = sample_data
+    eras = np.array([1]*50 + [2]*50)
+    ens_ins = ensemble
+    ens_ins.fit(X, y)
+
+    ens_ins.set_output(transform="pandas")
+    preds = ens_ins.predict(X, eras=eras)
+    assert isinstance(preds, pd.DataFrame)
+    ens_ins.set_output(transform="default")
+    preds = ens_ins.predict(X, eras=eras)
+    assert isinstance(preds, np.ndarray)
+
 ##### PredictionReducer #####
 
 def test_prediction_reducer():
@@ -177,9 +167,20 @@ def test_prediction_reducer():
     assert reduced_X.shape == (3, 2)
     np.testing.assert_array_almost_equal(reduced_X, expected_result)
 
-def test_feature_names_out():
+    assert issubclass(type(reducer), (BaseEstimator, TransformerMixin))
+
+    # Set output API
+    reducer.set_output(transform="pandas")
+    preds = reducer.predict(X)
+    assert isinstance(preds, pd.DataFrame)
+    reducer.set_output(transform="default")
+    preds = reducer.predict(X)
+    assert isinstance(preds, np.ndarray)
+
+def test_prediction_reducer_feature_names_out():
     reducer = PredictionReducer(n_models=3, n_classes=4)
     feature_names = reducer.get_feature_names_out()
     expected_names = ["reduced_prediction_0", "reduced_prediction_1", "reduced_prediction_2"]
     
     assert feature_names == expected_names
+
