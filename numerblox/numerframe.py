@@ -92,7 +92,7 @@ class NumerFrame(pd.DataFrame):
         return self.get_column_selection(cols=FNCV3_FEATURES)
     
     @property
-    def get_unique_eras(self) -> list:
+    def get_unique_eras(self) -> List[str]:
         """ Get all unique eras in the data. """
         return self[self.meta.era_col].unique().tolist()
     
