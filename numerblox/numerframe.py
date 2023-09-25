@@ -14,7 +14,6 @@ class NumerFrame(pd.DataFrame):
     _metadata = ["meta", "feature_cols", "target_cols",
                  "prediction_cols", "not_aux_cols", "aux_cols"]
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.meta = AttrDict()
@@ -48,59 +47,74 @@ class NumerFrame(pd.DataFrame):
         else:
             self.meta.era_col = None
 
-    def get_column_selection(self, cols: Union[str, list]):
+    def get_column_selection(self, cols: Union[str, list]) -> "NumerFrame":
         """ Return NumerFrame from selection of columns. """
         return self.loc[:, cols if isinstance(cols, list) else [cols]]
 
     @property
-    def get_feature_data(self):
+    def get_feature_data(self) -> "NumerFrame":
         """ All columns for which name starts with 'target'."""
         return self.get_column_selection(cols=self.feature_cols)
 
     @property
-    def get_target_data(self):
+    def get_target_data(self) -> "NumerFrame":
         """ All columns for which name starts with 'target'."""
         return self.get_column_selection(cols=self.target_cols)
 
     @property
-    def get_single_target_data(self):
+    def get_single_target_data(self) -> "NumerFrame":
         """ Column with name 'target' (Main Numerai target column). """
         return self.get_column_selection(cols=['target'])
 
     @property
-    def get_prediction_data(self):
+    def get_prediction_data(self) -> "NumerFrame":
         """ All columns for which name starts with 'prediction'."""
         return self.get_column_selection(cols=self.prediction_cols)
 
     @property
-    def get_aux_data(self):
+    def get_aux_data(self) -> "NumerFrame":
         """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
 
     @property
-    def get_prediction_aux_data(self):
+    def get_prediction_aux_data(self) -> "NumerFrame":
         """ All predictions columns and aux columns (for ensembling, etc.). """
         return self.get_column_selection(cols=self.prediction_cols+self.aux_cols)
     
     @property
-    def get_fncv3_features(self):
+    def get_fncv3_features(self) -> "NumerFrame":
         """ Get FNCv3 features. """
         return self.get_column_selection(cols=FNCV3_FEATURES)
     
-    def get_feature_group(self, group: str):
+    @property
+    def get_unique_eras(self) -> list:
+        """ Get all unique eras in the data. """
+        return self[self.meta.era_col].unique().tolist()
+    
+    def get_last_n_eras(self, n: int) -> "NumerFrame":
+        """ 
+        Get data for the last n eras. 
+        Make sure eras are sorted in the way you prefer.
+        :param n: Number of eras to select.
+        :return: NumerFrame with last n eras.
+        """
+        eras = self[self.meta.era_col].unique()[-n:]
+        return self.loc[self[self.meta.era_col].isin(eras)]
+    
+    def get_feature_group(self, group: str) -> "NumerFrame":
         """ Get feature group based on name or list of names. """
         assert group in V4_2_FEATURE_GROUP_MAPPING.keys(), \
             f"Group '{group}' not found in {V4_2_FEATURE_GROUP_MAPPING.keys()}"
         return self.get_column_selection(cols=V4_2_FEATURE_GROUP_MAPPING[group])
 
-    def get_pattern_data(self, pattern: str):
+    def get_pattern_data(self, pattern: str) -> "NumerFrame":
         """
         Get columns based on pattern (for example '_20' to get all 20-day Numerai targets).
         :param pattern: A 'like' pattern (pattern in column_name == True)
         """
         return self.filter(like=pattern)
 
-    def get_feature_target_pair(self, multi_target=False) -> Tuple[Any, Any]:
+    def get_feature_target_pair(self, multi_target=False) -> Tuple["NumerFrame", "NumerFrame"]:
         """
         Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
@@ -115,7 +129,7 @@ class NumerFrame(pd.DataFrame):
                       aemlp_batch = False,
                       features: list = None,
                       targets: list = None,
-                      *args, **kwargs) -> tuple:
+                      *args, **kwargs) -> Tuple["NumerFrame", "NumerFrame"]:
         """
         Get feature target pair batch of 1 or multiple eras. \n
         :param eras: Selection of era names that should be present in era_col. \n
