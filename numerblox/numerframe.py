@@ -75,6 +75,11 @@ class NumerFrame(pd.DataFrame):
     def get_aux_data(self) -> "NumerFrame":
         """ All columns that are not features, targets or predictions. """
         return self.get_column_selection(cols=self.aux_cols)
+    
+    @property
+    def get_era_data(self) -> "NumerFrame":
+        """ Column of all eras. """
+        return self.get_column_selection(cols=self.meta.era_col)
 
     @property
     def get_prediction_aux_data(self) -> "NumerFrame":

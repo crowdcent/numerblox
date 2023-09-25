@@ -4,7 +4,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
 
 try:
     import tensorflow as tf
@@ -13,7 +13,7 @@ except ImportError:
         "TensorFlow is required for NumerBlox Penalizers. `pip install tensorflow` first."
     )
 
-class BasePenalizer(BaseEstimator, RegressorMixin):
+class BasePenalizer(BaseEstimator, RegressorMixin, TransformerMixin):
     """
     Base class for penalization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.

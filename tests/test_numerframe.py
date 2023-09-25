@@ -51,7 +51,15 @@ def test_get_column_selection():
 
 def test_get_aux_data():
     nf = NumerFrame(dataset)
-    assert nf.get_aux_data.columns.tolist() == ['era', 'data_type']
+    aux_data = nf.get_aux_data
+    assert isinstance(aux_data, NumerFrame)
+    assert aux_data.columns.tolist() == ['era', 'data_type']
+
+def test_get_era_data():
+    nf = NumerFrame(dataset)
+    era_data = nf.get_era_data
+    assert isinstance(era_data, NumerFrame)
+    assert era_data.columns.tolist() == ['era']
 
 def test_get_prediction_aux_data():
     nf = NumerFrame(dataset)

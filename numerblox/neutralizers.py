@@ -4,10 +4,10 @@ from typing import Union
 import scipy.stats as sp
 from abc import abstractmethod
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
 
 
-class BaseNeutralizer(BaseEstimator, RegressorMixin):
+class BaseNeutralizer(BaseEstimator, RegressorMixin, TransformerMixin):
     """
     Base class for neutralization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.
