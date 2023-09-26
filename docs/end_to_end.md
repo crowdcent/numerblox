@@ -33,8 +33,11 @@ External libraries are xgboost and sklego. Make sure to have these dependencies 
 ```py
 from xgboost import XGBRegressor
 from sklego.preprocessing import ColumnSelector
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import make_pipeline, make_union
 
+from sklearn.compose import TransformedTargetRegressor
 from numerblox.preprocessing import GroupStatsPreProcessor
 from numerblox.meta import CrossValEstimator
 from numerblox.ensemble import NumeraiEnsemble
@@ -42,6 +45,8 @@ from numerblox.neutralizers import FeatureNeutralizer
 
 X, y = df.get_feature_target_pair(multi_target=False)
 fncv3_cols = df.get_fncv3_features.columns.tolist()
+val_features = val_df.get_feature_data
+val_eras = val_df.get_era_data
 
 # Preprocessing
 gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
@@ -64,10 +69,23 @@ full_pipe.fit(X, y,
 
 # Inference on validation data
 val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
-val_preds = full_pipe.predict(val_X)
+val_preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
 ```
 
 ## 2. Multi Classification Ensemble
+
+```py
+model = DecisionTreeClassifier()
+crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
+pred_rud = PredictionReducer(n_models=3, n_classes=5)
+ens2 = NumeraiEnsemble(donate_weighted=True)
+pipe2 = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2)
+full_pipe = TransformedTargetRegressor(pipe2, func=lambda x: (x * 4).astype(int), inverse_func=lambda x: x)
+
+full_pipe.fit(X, y)
+
+full_pipe.predict(val_X, eras=val_eras)
+```
 
 
 
