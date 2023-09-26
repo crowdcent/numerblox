@@ -35,11 +35,11 @@ from xgboost import XGBRegressor
 from sklego.preprocessing import ColumnSelector
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.pipeline import make_pipeline, make_union
+from sklearn.pipeline import make_union
 
 from sklearn.compose import TransformedTargetRegressor
 from numerblox.preprocessing import GroupStatsPreProcessor
-from numerblox.meta import CrossValEstimator
+from numerblox.meta import CrossValEstimator, make_meta_pipeline
 from numerblox.ensemble import NumeraiEnsemble
 from numerblox.neutralizers import FeatureNeutralizer
 
@@ -47,6 +47,7 @@ X, y = df.get_feature_target_pair(multi_target=False)
 fncv3_cols = df.get_fncv3_features.columns.tolist()
 val_features = val_df.get_feature_data
 val_eras = val_df.get_era_data
+
 
 # Preprocessing
 gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
@@ -77,14 +78,9 @@ crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), p
 pred_rud = PredictionReducer(n_models=3, n_classes=5)
 ens2 = NumeraiEnsemble(donate_weighted=True)
 neut2 = FeatureNeutralizer(proportion=0.5)
-full_pipe = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
+full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
 full_pipe.fit(X, y)
 
 full_pipe.predict(val_X, eras=val_eras)
 ```
-
-
-
-
-
