@@ -43,7 +43,7 @@ def test_neutralized_xgboost_pipeline(setup_data):
     # Inference
     preds = full_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
-    assert preds.max() <= 1  
+    assert abs(preds.max() - 1) <= 1e-9 
     assert preds.shape[0] == X.shape[0]
     assert len(preds.shape) == 2
 
@@ -67,7 +67,7 @@ def test_multi_classification_ensemble(setup_data):
 
     preds = full_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
-    assert preds.max() <= 1 
+    assert abs(preds.max() - 1) <= 1e-9 
     assert preds.shape[0] == X.shape[0]
     assert len(preds.shape) == 2
 
@@ -90,7 +90,7 @@ def test_feature_union_pipeline(setup_data):
 
     preds = model_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
-    assert preds.max() <= 1  
+    assert abs(preds.max() - 1) <= 1e-9 
     assert preds.shape[0] == X.shape[0]
 
 def test_column_transformer_pipeline(setup_data):
@@ -112,5 +112,5 @@ def test_column_transformer_pipeline(setup_data):
 
     preds = model_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
-    assert preds.max() <= 1  
+    assert abs(preds.max() - 1) <= 1e-9 
     assert preds.shape[0] == X.shape[0]
