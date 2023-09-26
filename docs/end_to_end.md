@@ -57,15 +57,12 @@ preproc_pipe = make_union(gpp, fncv3_selector)
 # Model
 xgb = XGBRegressor()
 cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
-ens = NumeraiEnsemble(donate_weighted=True)
-fn = FeatureNeutralizer()
-full_pipe = make_meta_pipeline(preproc_pipe, XGBRegressor(), fn)
-full_pipe
+fn = FeatureNeutralizer(proportion=0.5)
+ens = NumeraiEnsemble()
+full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
 # Train full model
-full_pipe.fit(X, y, 
-              featureneutralizer__eras=eras,
-              featureneutralizer__features=features)
+full_pipe.fit(X, y, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features);
 
 # Inference on validation data
 val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
@@ -79,7 +76,8 @@ model = DecisionTreeClassifier()
 crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
 pred_rud = PredictionReducer(n_models=3, n_classes=5)
 ens2 = NumeraiEnsemble(donate_weighted=True)
-pipe2 = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2)
+neut2 = FeatureNeutralizer(proportion=0.5)
+pipe2 = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 full_pipe = TransformedTargetRegressor(pipe2, func=lambda x: (x * 4).astype(int), inverse_func=lambda x: x)
 
 full_pipe.fit(X, y)
