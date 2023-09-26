@@ -5,7 +5,7 @@ This section will show NumerBlox in action for some more advanced use cases. If 
 
 
 
-## 1. Numerai Classic: Single Target 5-fold weighted XGBoost with feature neutralization.
+## 1. Neutralized XGBoost pipeline.
 
 First we download the classic data with NumeraiClassicDownloader. We use a NumerFrame for convenience to parse the dataset.
 
@@ -24,7 +24,7 @@ Next let's construct an end-to-end pipeline that does the following:
 - Ensemble them with a weighted average where the more recent folds get a higher weight.
 - Neutralize the prediction with respect to the original features.
 
-External libraries are xgboost and sklego. Make to have these dependencies installed.
+External libraries are xgboost and sklego. Make sure to have these dependencies installed.
 
 ```bash
 !pip install xgboost sklego
@@ -51,22 +51,23 @@ preproc_pipe = make_union(gpp, fncv3_selector)
 
 # Model
 xgb = XGBRegressor()
-cve = CrossValEstimator(xgb, n_splits=5)
+cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
 ens = NumeraiEnsemble(donate_weighted=True)
-neut = FeatureNeutralizer(proportion=0.5)
-model_pipe = make_pipeline(cve, ens, neut)
-
-full_pipe = make_pipeline(preproc_pipe, model_pipe)
+fn = FeatureNeutralizer()
+full_pipe = make_meta_pipeline(preproc_pipe, XGBRegressor(), fn)
+full_pipe
 
 # Train full model
-full_pipe.fit(X, y)
+full_pipe.fit(X, y, 
+              featureneutralizer__eras=eras,
+              featureneutralizer__features=features)
 
 # Inference on validation data
 val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
 val_preds = full_pipe.predict(val_X)
 ```
 
-## 2. Multi Classification ensembling for multiple models
+## 2. Multi Classification Ensemble
 
 
 

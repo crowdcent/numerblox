@@ -26,7 +26,7 @@ def test_feature_neutralizer_predict(setup_data):
     features = setup_data[["feature1", "feature2"]]
     eras = setup_data["era"]
     X = setup_data["prediction"]
-    result = fn.predict(X, features=features, eras=eras)
+    result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
     assert result.min() >= 0
     assert result.max() <= 1

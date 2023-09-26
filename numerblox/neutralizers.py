@@ -4,10 +4,10 @@ from typing import Union
 import scipy.stats as sp
 from abc import abstractmethod
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class BaseNeutralizer(BaseEstimator, RegressorMixin, TransformerMixin):
+class BaseNeutralizer(BaseEstimator, TransformerMixin):
     """
     Base class for neutralization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.
@@ -16,20 +16,29 @@ class BaseNeutralizer(BaseEstimator, RegressorMixin, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X, y=None, features=None, eras=None):
+    def fit(self, X=None, y=None, features=None, eras=None):
         return self
 
     @abstractmethod
-    def predict(
+    def transform(
         self, X: Union[np.array, pd.DataFrame], 
         features: pd.DataFrame, eras: pd.Series, **kwargs
     ) -> np.array:
         ...
+
+    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+        """ Convenience function for scikit-learn compatibility. """
+        return self.transform(X=X, features=features, eras=eras)
+
+    def fit_transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+        """ Convenience function for scikit-learn compatibility. """
+        return self.fit().transform(X=X, features=features, eras=eras)
     
     def __call__(
-        self, X: Union[np.array, pd.DataFrame], **kwargs
+        self, X: Union[np.array, pd.DataFrame],
+        features: pd.DataFrame, eras: pd.Series, **kwargs
     ) -> np.array:
-        return self.predict(X=X, **kwargs)
+        return self.predict(X=X, features=features, eras=eras, **kwargs)
     
     def get_feature_names_out(self, input_features: list = None) -> list:
         """ 
@@ -73,9 +82,9 @@ class FeatureNeutralizer(BaseNeutralizer):
         self.suffix = suffix
         self.cuda = cuda
 
-    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
         """
-        Main prediction function.
+        Main transform function.
         :param X: Input predictions to neutralize. \n
         :param features: DataFrame with features for neutralization. \n
         :param eras: Series with era labels for each row in features. \n
@@ -95,9 +104,9 @@ class FeatureNeutralizer(BaseNeutralizer):
         )
         return neutralized_preds
     
-    def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
-        """ Convenience function for scikit-learn compatibility. """
-        return self.predict(X=X, features=features, eras=eras)
+    # def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    #     """ Convenience function for scikit-learn compatibility. """
+    #     return self.predict(X=X, features=features, eras=eras)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         """ Neutralize on CPU. """

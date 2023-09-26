@@ -4,7 +4,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 
 try:
     import tensorflow as tf
@@ -13,7 +13,7 @@ except ImportError:
         "TensorFlow is required for NumerBlox Penalizers. `pip install tensorflow` first."
     )
 
-class BasePenalizer(BaseEstimator, RegressorMixin, TransformerMixin):
+class BasePenalizer(BaseEstimator, TransformerMixin):
     """
     Base class for penalization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.
@@ -22,19 +22,29 @@ class BasePenalizer(BaseEstimator, RegressorMixin, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X, y=None):
+    def fit(self, X=None, y=None, features=None, eras=None):
         return self
 
     @abstractmethod
-    def predict(
-        self, X: Union[np.array, pd.DataFrame], **kwargs
+    def transform(
+        self, X: Union[np.array, pd.DataFrame], 
+        features: pd.DataFrame, eras: pd.Series, **kwargs
     ) -> np.array:
         ...
+
+    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+        """ Convenience function for scikit-learn compatibility. """
+        return self.transform(X=X, features=features, eras=eras)
+
+    def fit_transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+        """ Convenience function for scikit-learn compatibility. """
+        return self.fit().transform(X=X, features=features, eras=eras)
     
     def __call__(
-        self, X: Union[np.array, pd.DataFrame], **kwargs
+        self, X: Union[np.array, pd.DataFrame],
+        features: pd.DataFrame, eras: pd.Series, **kwargs
     ) -> np.array:
-        return self.predict(X=X, **kwargs)
+        return self.predict(X=X, features=features, eras=eras, **kwargs)
     
     def get_feature_names_out(self, input_features: list = None) -> list:
         """ 
@@ -76,9 +86,9 @@ class FeaturePenalizer(BasePenalizer):
         super().__init__(new_col_name=new_col_name)
         self.suffix = suffix
 
-    def predict(self, X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series) -> np.array:
+    def transform(self, X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series) -> np.array:
         """
-        Main prediction method.
+        Main transform method.
         :param X: Input predictions to neutralize. 
         :param features: DataFrame with features for neutralization. 
         :param eras: Series with era labels for each row in features. 
@@ -94,6 +104,8 @@ class FeaturePenalizer(BasePenalizer):
             dataf=df, column=self.pred_name, neutralizers=list(features.columns)
         )
         return penalized_data
+    
+
 
     def _reduce_all_exposures(
         self,

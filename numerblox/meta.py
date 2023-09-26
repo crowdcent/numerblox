@@ -27,8 +27,8 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
 
     def __init__(self, estimator, predict_func="predict"):
         self.estimator = estimator
-        if predict_func not in ["predict", "predict_proba", "predict_log_proba"]:
-            raise ValueError("predict_func must be 'predict', 'predict_proba', or 'predict_log_proba'.")
+        if predict_func not in ["predict", "predict_proba", "predict_log_proba", "transform"]:
+            raise ValueError("predict_func must be 'predict', 'predict_proba', 'predict_log_proba' or 'transform'.")
         self.predict_func = predict_func
         assert hasattr(self.estimator, self.predict_func), f"Estimator {self.estimator.__class__.__name__} does not have {self.predict_func} function."
         
@@ -77,7 +77,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
     For example, XGBRegressor has 'predict' and 'predict_proba' functions.
     :param verbose: Whether to print progress.
     """
-    def __init__(self, cv: BaseCrossValidator, estimator: BaseEstimator, evaluation_func=None, predict_func="predict", verbose=False):
+    def __init__(self, estimator: BaseEstimator, cv: BaseCrossValidator, evaluation_func=None, predict_func="predict", verbose=False):
         super().__init__()
         self.cv = cv
         if not hasattr(self.cv, "split") or isinstance(self.cv, str):

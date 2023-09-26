@@ -19,7 +19,7 @@ feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 neutralizer = FeatureNeutralizer(pred_name="prediction", proportion=0.5, cuda=False)
-neutralizer.fit(X=predictions)
+neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
 
