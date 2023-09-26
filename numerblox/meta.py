@@ -209,9 +209,7 @@ class MetaPipeline(Pipeline):
     """
     def __init__(self, steps, memory=None, verbose=False, predict_func="predict"):
         self.predict_func = predict_func
-        self._original_steps = deepcopy(steps)
-        self.steps = steps
-        self.steps = self.wrap_estimators_as_transformers(self._original_steps)
+        self.steps = self.wrap_estimators_as_transformers(steps)
         self.memory = memory
         self.verbose = verbose
     

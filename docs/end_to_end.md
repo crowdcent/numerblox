@@ -77,8 +77,7 @@ crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), p
 pred_rud = PredictionReducer(n_models=3, n_classes=5)
 ens2 = NumeraiEnsemble(donate_weighted=True)
 neut2 = FeatureNeutralizer(proportion=0.5)
-pipe2 = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
-full_pipe = TransformedTargetRegressor(pipe2, func=lambda x: (x * 4).astype(int), inverse_func=lambda x: x)
+full_pipe = make_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
 full_pipe.fit(X, y)
 
