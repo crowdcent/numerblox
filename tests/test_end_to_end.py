@@ -1,11 +1,12 @@
 import pytest
-from numerblox.numerframe import create_numerframe
 from xgboost import XGBRegressor
 from sklego.preprocessing import ColumnSelector
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import make_union, make_pipeline, FeatureUnion
 from sklearn.compose import ColumnTransformer
+
+from numerblox.numerframe import create_numerframe
 from numerblox.preprocessing import GroupStatsPreProcessor
 from numerblox.meta import CrossValEstimator, make_meta_pipeline, MetaEstimator
 from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
