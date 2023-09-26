@@ -26,7 +26,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         self.weights = weights
         self.donate_weighted = donate_weighted
 
-    def fit(self, X, y=None):
+    def fit(self, X=None, y=None, eras=None):
         self.is_fitted_ = True
         return self
 
@@ -74,7 +74,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
 
         # Average out predictions
         ensembled_predictions = np.average(standardized_pred_arr, axis=1, weights=weights)
-        return ensembled_predictions
+        return ensembled_predictions.reshape(-1, 1)
     
     def predict(self, X: Union[np.array, pd.DataFrame], eras: pd.Series) -> np.array:
         """ 
@@ -91,16 +91,18 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         percentile_X = (scipy.stats.rankdata(X, method="ordinal") - 0.5) / len(X)
         return percentile_X
     
-    def _standardize_by_era(self, X: np.array, eras: pd.Series) -> np.array:
+    def _standardize_by_era(self, X: np.array, eras: Union[np.array, pd.Series, pd.DataFrame]) -> np.array:
         """
         Standardize predictions of a single estimator by era.
         :param X: All predictions of a single estimator.
         :param eras: Era labels (strings) for each row in X.
         :return: Standardized predictions.
         """
+        if isinstance(eras, (pd.Series, pd.DataFrame)):
+            eras = eras.to_numpy().flatten()
         df = pd.DataFrame({'prediction': X, 'era': eras})
         df['standardized_prediction'] = df.groupby('era')['prediction'].transform(self._standardize)
-        return df['standardized_prediction'].values
+        return df['standardized_prediction'].values.flatten()
     
     def _get_donate_weights(self, n: int) -> list:
         """

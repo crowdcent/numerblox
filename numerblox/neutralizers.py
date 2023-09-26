@@ -16,12 +16,13 @@ class BaseNeutralizer(BaseEstimator, RegressorMixin, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, features=None, eras=None):
         return self
 
     @abstractmethod
     def predict(
-        self, X: Union[np.array, pd.DataFrame], **kwargs
+        self, X: Union[np.array, pd.DataFrame], 
+        features: pd.DataFrame, eras: pd.Series, **kwargs
     ) -> np.array:
         ...
     

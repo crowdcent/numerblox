@@ -36,8 +36,15 @@ def test_numeraiensemble_predict(ensemble, sample_data):
     assert len(ensemble_preds) == len(input_preds)
     # Output should be a numpy array with values between 0 and 1
     assert isinstance(ensemble_preds, np.ndarray) 
+    assert len(ensemble_preds.shape) == 2
     assert ensemble_preds.min() >= 0
     assert ensemble_preds.max() <= 1
+
+    # Test with Pandas Series into
+    input_preds = pd.DataFrame(input_preds)
+    eras = pd.Series(eras)
+    ensemble_preds = ensemble.predict(input_preds, eras)
+    
 
 def test_numeraiensemble_standardize(ensemble, sample_data):
     X, y = sample_data
