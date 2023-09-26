@@ -9,6 +9,8 @@ from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
 class GroupStatsPreProcessor(BasePreProcessor):
     """
     WARNING: Only supported for v4.2 (Rain) data. The Rain dataset (re)introduced feature groups. \n
+    Note that this class only works with `pd.DataFrame` input.
+    We using in a Pipeline, make sure that the Pandas output API is set (`.set_output(transform="pandas")`.
     
     Calculates group statistics for all data groups. \n
     :param groups: Groups to create features for. All groups by default. \n

@@ -84,7 +84,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
             raise ValueError("cv must be a valid sklearn cv object withat least a 'split' function.")
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__name__
-        self.eval_func = evaluation_func
+        self.evaluation_func = evaluation_func
 
         if predict_func not in ["predict", "predict_proba", "predict_log_proba"]:
             raise ValueError("predict_func must be 'predict', 'predict_proba', or 'predict_log_proba'.")
@@ -112,13 +112,13 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
             estimator.fit(X[train_idx], y[train_idx], **kwargs)
 
             # Execute custom evaluation logic
-            if self.eval_func:
+            if self.evaluation_func:
                 if self.verbose:
                     print(f"Running evaluation on fold {len(self.estimators_)}")
 
                 y_pred = getattr(estimator, self.predict_func)(X[val_idx])
                 y_pred = self._postprocess_pred(y_pred)
-                eval_fold = self.eval_func(y[val_idx], y_pred)
+                eval_fold = self.evaluation_func(y[val_idx], y_pred)
                 if self.verbose:
                     print(f"CrossValEstimator (estimator='{self.estimator_name}'): Fold '{i}' evaluation results: '{eval_fold}'")
                 self.eval_results_.append(eval_fold)

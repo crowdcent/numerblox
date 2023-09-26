@@ -10,12 +10,11 @@ If you haven't installed `numerblox` yet, clone the project into your favorite d
 git clone https://github.com/crowdcent/numerblox.git
 ```
 
-And install the repo in editable mode.
+And install the repo in editable mode and with all dev dependencies. This can be done with poetry.
     
 ```bash
-pip install -r requirements.txt
-pip install -r dev_requirements.txt
-pip install -e .
+pip install poetry
+poetry install
 ```
 
 ## Developing considerations
@@ -23,9 +22,10 @@ pip install -e .
 ### 1. Introducing a new component
 
 If you want to build a new component. Please consider the following steps:
-1. Place the new component in the appropriate section. Is it a Downloader (`downloa.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)?
+1. Place the new component in the appropriate section. Is it a Downloader (`download.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)? Also check the documentation on that section to check for templates, conventions and how these blocks are constructed in general.
 2. Add tests for this new component in the appropriate test file. If you are introducing a new Downloader, add tests in `tests/test_downloader.py`. If you are introducing a new Preprocessor, add tests in `tests/test_preprocessing.py`. etc.
 3. When making a preprocessor or postprocessor, make sure the component follows [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator). The core things to implement are inheriting from `BaseEstimator` and implementing `fit`, `transform` and `get_feature_names_out` methods. 
+4. If your component introduces new dependencies, make sure to add them to poetry with `poetry add <library>`.
 
 
 ### 2. Fixing bugs
@@ -38,12 +38,12 @@ Even though most of the components in this library are tested, users will still 
 
 ### 3. Create an example notebook.
 
-We welcome example notebooks that demonstrate the use of `numerblox`. If you want to create an example notebook, please make a notebook in the `example/` folder. Make sure to add appropriate descriptions and explain the process of using the various components. Before committing please run the notebook from top to bottom. If it runs without errors, you can commit the notebook.
+We welcome example notebooks that demonstrate the use of `numerblox`. If you want to create an example notebook, please make a notebook in the `examples/` folder. Make sure to add appropriate descriptions and explain the process of using the various components. Before committing please run the notebook from top to bottom. If it runs without errors, you can commit the notebook.
 Lastly, if the notebook uses additional libraries, please note this at the top of the notebook and create a code block with `!pip install <library>`.
 
 Example pip install cell:
 
-```
+```bash
 !pip install scikit-lego plotly
 ```
 

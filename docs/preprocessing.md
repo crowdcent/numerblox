@@ -128,3 +128,44 @@ from numerblox.preprocessing import PandasTaFeatureGenerator
 ta_gen = PandasTaFeatureGenerator()
 ta_features = ta_gen.transform(dataf)
 ```
+
+## Rolling your own preprocessor
+
+We invite the community to contribute their own preprocessors to NumerBlox. If you have a preprocessor that you think would be useful to others, please open a PR with your code and tests.
+The new preprocessor should adhere to [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html). Here are some the most important things to keep in mind and a template.
+
+- Make sure that your preprocessor inherits from `numerblox.preprocessing.base.BasePreProcessor`. This will automatically implement a blank fit method. It will also inherit from `sklearn.base.TransformerMixin` and `sklearn.base.BaseEstimator`.
+- Make sure your preprocessor implements a `transform` method that can take a `np.array` or `pd.DataFrame` as input and outputs an `np.array`. If your preprocessor can only work with `pd.DataFrame` input, mention this explicitly in the docstring.
+- Implement a `get_feature_names_out` method so it can support `pd.DataFrame` output with valid column names.
+
+```py
+import numpy as np
+import pandas as pd
+from typing import Union
+from sklearn.validation import check_is_fitted, check_X_y
+from numerblox.preprocessing.base import BasePreProcessor
+
+class MyAwesomePreProcessor(BasePreProcessor):
+    def __init__(self, random_state: int = 0):
+        super().__init__()
+        # If you introduce additional arguments be sure to add them as attributes.
+        self.random_state = random_state
+
+    def fit(self, X: Union[np.array, pd.DataFrame], y=None):
+        # Arguments can be set for later use.
+        self.n_cols_ = X.shape[1]
+        return self
+
+    def transform(self, X: Union[np.array, pd.DataFrame]) -> np.array:
+        # Do your preprocessing here.
+        # Can involve additional checks.
+        check_is_fitted(self)
+        X = check_X_y(X)
+        return X
+
+    def get_feature_names_out(self, input_features=None) -> list:
+        # Return a list of feature names.
+        # If you are not using pandas output, you can skip this method.
+        check_is_fitted(self)
+        return ["awesome_output_feature_{i}" for i in range(self.n_cols_)]
+```
