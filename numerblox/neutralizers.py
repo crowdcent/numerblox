@@ -73,7 +73,7 @@ class FeatureNeutralizer(BaseNeutralizer):
         self.suffix = suffix
         self.cuda = cuda
 
-    def predict(self, X: np.array, features: pd.DataFrame, eras: pd.Series) -> np.array:
+    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
         """
         Main prediction function.
         :param X: Input predictions to neutralize. \n
@@ -94,6 +94,10 @@ class FeatureNeutralizer(BaseNeutralizer):
             neutralized_preds
         )
         return neutralized_preds
+    
+    def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+        """ Convenience function for scikit-learn compatibility. """
+        return self.predict(X=X, features=features, eras=eras)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         """ Neutralize on CPU. """
