@@ -209,7 +209,8 @@ class MetaPipeline(Pipeline):
     """
     def __init__(self, steps, memory=None, verbose=False, predict_func="predict"):
         self.predict_func = predict_func
-        self.steps = self.wrap_estimators_as_transformers(steps)
+        self.modified_steps = self.wrap_estimators_as_transformers(steps)
+        self.steps = self.modified_steps
         self.memory = memory
         self.verbose = verbose
     
@@ -302,7 +303,7 @@ class MetaPipeline(Pipeline):
             # Use the needed parameters when calling transform
             Xt = transform.transform(Xt, **params_needed)
         return self.steps[-1][1].predict(Xt, **predict_params)
-
+    
 
 def _fit_transform_one(
         transformer, X, y, weight, message_clsname="", message=None, **fit_params
@@ -313,7 +314,15 @@ def _fit_transform_one(
         be multiplied by ``weight``.
         """
         with _print_elapsed_time(message_clsname, message):
-            res = transformer.fit(X, y, **fit_params).transform(X, **fit_params)
+            sig = inspect.signature(transformer.transform)
+            fit_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
+            # Use the needed parameters when calling fit
+            transformer.fit(X, y, **fit_params_needed)
+
+            sig = inspect.signature(transformer.transform)
+            transform_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
+            # Use the needed parameters when calling transform
+            res = transformer.transform(X, **transform_params_needed)
 
         if weight is None:
             return res, transformer
