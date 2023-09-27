@@ -27,6 +27,7 @@ def test_numeraiensemble_fit(ensemble, sample_data):
 
 def test_numeraiensemble_predict(ensemble, sample_data):
     X, y = sample_data
+    ensemble = NumeraiEnsemble(weights=[0.05, 0.05, 0.3, 0.3, 0.3])
     ensemble.fit(X, y)
     eras = np.array([1]*50 + [2]*50)
     input_preds = np.random.uniform(size=(100, 5))

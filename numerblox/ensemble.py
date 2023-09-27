@@ -24,6 +24,8 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     def __init__(self, weights=None, donate_weighted=False):
         super().__init__()
         self.weights = weights
+        if self.weights and sum(self.weights) != 1:
+            warnings.warn(f"Warning: Weights do not sum to 1. Got {sum(self.weights)}.")
         self.donate_weighted = donate_weighted
 
     def fit(self, X=None, y=None, eras=None):
