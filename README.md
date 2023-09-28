@@ -43,7 +43,7 @@ The documentation contains examples and explanations for each component of Numer
 NumerBlox has the following features for both Numerai Classic and Signals:
 
 1. Downloading data.
-2. A custom data structure extending Pandas DataFrame (`NumerFrame``). It is not mandatory to use this data structure, but it simplifies parsing Numerai data, getting feature groups, targets, etc.
+2. A custom data structure extending Pandas DataFrame (`NumerFrame`). It is not mandatory to use this data structure, but it simplifies parsing Numerai data, getting feature groups, targets, etc.
 3. A suite of preprocessors.
 4. Target engineering.
 5. A suite of postprocessors (ensembling, neutralization and penalization)
@@ -60,12 +60,12 @@ Example notebooks for each of these components can be found in the `examples` di
 
 ## 3. Quick Start
 
-Below are two example of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the homepage of the documentation and its sections. For more advanced examples to leverage NumerBlox in your models check out the `End-To-End Examples` section in the documentation.
+Below are two examples of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the documentation. More advanced examples to leverage NumerBlox to the fullest can be found in the `End-To-End Examples` section in the documentation.
 
 ### 3.1 Simple example
 
 The example below shows how NumerBlox simplifies training and inference on an XGBoost model.
-NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission.
+NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission. You can experiment with this setup yourself in the example notebook `quickstart.ipynb`.
 
 ```python
 import pandas as pd
@@ -121,7 +121,7 @@ submitter.full_submission(dataf=pred_dataf,
 ### 3.2. Advanced NumerBlox modeling
 
 This example showcases how you can really push NumerBlox to create powerful pipelines. This pipeline approaches the Numerai Classic data as a classification problem. It fits multiple cross validation folds, reduces the classification probabilties to single values and create a weighted ensemble of these where the most recent folds get a higher weight. Lastly, the predictions are neutralized. The model is evaluated in validation data, inference is done on live data and a submission is done.
-Lastly, we remove the download and submission directories to clean up the environment. This is especially convenient if you are running daily inference on your own server.
+Lastly, we remove the download and submission directories to clean up the environment. This is especially convenient if you are running daily inference on your own server or a cloud VM.
 
 ```py
 from xgboost import XGBClassifier
