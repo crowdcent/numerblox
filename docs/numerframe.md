@@ -58,27 +58,37 @@ aux_data = nf.get_aux_data
 ```
 
 Additionally it is possible to get groups specific to Numerai Classic like FNCv3 and internal feature groups. The examples below show some advanced functionality in `NumerFrame`.
+
 ```py
+from numerblox.numerframe import create_numerframe
+
+df = create_numerframe(file_path="data/current_round/live.parquet")
+# Get data for features, targets and predictions
+features = df.get_feature_data
+targets = df.get_target_data
+predictions = df.get_prediction_data
+
 # Get specific data groups
-fncv3_features = nf.get_fncv3_features
-group_features = np.get_group_features(group='rain')
+fncv3_features = df.get_fncv3_features
+group_features = df.get_group_features(group='rain')
 
 # Fetch columns by pattern. For example all 20 day targets.
-pattern_data = nf.get_pattern_data(pattern='_20')
+pattern_data = df.get_pattern_data(pattern='_20')
 # Or for example Jerome targets.
-jerome_targets = nf.get_pattern_data(pattern='_jerome_')
+jerome_targets = df.get_pattern_data(pattern='_jerome_')
 
 # Split into feature and target pairs. Will get single target by default.
-X, y = nf.get_feature_target_pair()
+X, y = df.get_feature_target_pair()
 # Optionally get all targets
-X, y = nf.get_feature_target_pair(multi_target=True)
+X, y = df.get_feature_target_pair(multi_target=True)
 
 # Fetch data for specified eras
-X, y = nf.get_era_batch(eras=['0001', '0002'])
+X, y = df.get_era_batch(eras=['0001', '0002'])
 # Optionally get Tensorflow tensors for NN training
 X, y = nf.get_era_batch(eras=['0001', '0002'], convert_to_tf=True)
 
 # Since every operation returns a NumerFrame they can be chained.
-# Like for example getting features and targets for the last 2 eras.
-X, y = nf.get_last_eras(2).get_feature_target_pair()
+# An example chained operation is getting features and targets for the last 2 eras.
+X, y = df.get_last_eras(2).get_feature_target_pair()
 ```
+
