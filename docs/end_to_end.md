@@ -2,8 +2,6 @@
 
 This section will show NumerBlox in action for some more advanced use cases. If you are looking for inspiration to leverage the power of NumerBlox, check out these examples.
 
-## 1. Neutralized XGBoost pipeline.
-
 First we download the classic data with NumeraiClassicDownloader. We use a NumerFrame for convenience to parse the dataset.
 
 ```py
@@ -13,9 +11,18 @@ dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 dl.download_training_data("train_val", version="4.2", int8=True)
 df = create_numerframe("my_numerai_data_folder/train_val/train_int8.parquet")
 val_df = create_numerframe("my_numerai_data_folder/train_val/val_int8.parquet")
+
+X, y = df.get_feature_target_pair(multi_target=False)
+fncv3_cols = df.get_fncv3_features.columns.tolist()
+
+val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
+val_features = val_df.get_feature_data
+val_eras = val_df.get_era_data
 ```
 
-Next let's construct an end-to-end pipeline that does the following:
+## 1. Neutralized XGBoost pipeline.
+
+Let's construct an end-to-end pipeline that does the following:
 - Augment FNCv3 features with group statistics features for the `sunshine` and `rain` data.
 - Fit 5 folds of XGBoost.
 - Ensemble them with a weighted average where the more recent folds get a higher weight.
@@ -39,12 +46,6 @@ from numerblox.meta import CrossValEstimator, make_meta_pipeline
 from numerblox.ensemble import NumeraiEnsemble
 from numerblox.neutralizers import FeatureNeutralizer
 
-X, y = df.get_feature_target_pair(multi_target=False)
-fncv3_cols = df.get_fncv3_features.columns.tolist()
-val_features = val_df.get_feature_data
-val_eras = val_df.get_era_data
-
-
 # Preprocessing
 gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
 fncv3_selector = ColumnSelector(fncv3_cols)
@@ -62,7 +63,6 @@ full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 full_pipe.fit(X, y, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features);
 
 # Inference on validation data
-val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
 val_preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
 ```
 
