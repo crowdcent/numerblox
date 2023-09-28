@@ -39,7 +39,6 @@ val_df = ...
 
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
-                                    era_col="era", 
                                     example_col="example_preds", 
                                     pred_cols=["prediction"], 
                                     target_col="target")

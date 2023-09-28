@@ -52,163 +52,146 @@ NumerBlox has the following features for both Numerai Classic and Signals:
 8. A full evaluation suite with all metrics used by Numerai.
 9. Submitters to easily and safely submit predictions.
 
-Example notebooks for each of these components can be found in the `examples` directory.
+Example notebooks for each of these components can be found in the `examples` directory. Also check out the documentation for more information.
 
 **Full documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
 
 
-## 3. Examples
+## 3. Quick Start
 
-Below we will illustrate some common use cases in NumerBlox. To
-learn more in-depth about the features of this library, check out
-notebooks in `examples`.
+Below are two example of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the homepage of the documentation and its sections. For more advanced examples to leverage NumerBlox in your models check out the `End-To-End Examples` section in the documentation.
 
-### 3.1. Downloading Numerai Classic Data
+### 3.1 Simple example
 
-`NumeraiClassicDownloader` allows you to download just the data you need with a few lines of code and handles the directory structure for you. All data from v4+ is supported. For Numerai Signals we provide downloaders from several sources for which you can find more information in the documentation under the `Downloaders` section.
+The example below shows how NumerBlox simplifies training and inference on an XGBoost model.
+NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission.
 
-```py
+```python
 import pandas as pd
+from xgboost import XGBRegressor
+from numerblox.misc import Key
+from numerblox.numerframe import create_numerframe
 from numerblox.download import NumeraiClassicDownloader
+from numerblox.prediction_loaders import ExamplePredictions
+from numerblox.evaluation import NumeraiClassicEvaluator
+from numerblox.submission import NumeraiClassicSubmitter
 
+# Download data
 downloader = NumeraiClassicDownloader("data")
 # Training and validation data
 downloader.download_training_data("train_val", version="4.2", int8=True)
-# Live data
-downloader.download_inference_data("current_round", version="4.2", int8=True)
-df = pd.read_parquet(file_path="data/current_round/live.parquet")
-```
+df = create_numerframe("data/train_val/train_int8.parquet")
 
-### 3.2. Core NumerFrame features
+# Train
+X, y = df.get_feature_target_pair(multi_target=False)
+xgb = XGBRegressor()
+xgb.fit(X.values, y.values)
 
-NumerFrame is powerful data structure which simplifies working with Numerai data. Below are a few examples of how you can leverage NumerFrame for your Numerai workflow. Under the hood NumerFrame is a Pandas DataFrame so you still have access to all Pandas functionality when using NumerFrame.
-
-NumerFrame usage is completely optional. Other NumerBlox components do not depend on it, though they are compatible with it.
-
-```py
-from numerblox.numerframe import create_numerframe
-
-df = create_numerframe(file_path="data/current_round/live.parquet")
-# Get data for features, targets and predictions
-features = df.get_feature_data
-targets = df.get_target_data
-predictions = df.get_prediction_data
-
-# Get specific data groups
-fncv3_features = df.get_fncv3_features
-group_features = df.get_group_features(group='rain')
-
-# Fetch columns by pattern. For example all 20 day targets.
-pattern_data = df.get_pattern_data(pattern='_20')
-# Or for example Jerome targets.
-jerome_targets = df.get_pattern_data(pattern='_jerome_')
-
-# Split into feature and target pairs. Will get single target by default.
-X, y = df.get_feature_target_pair()
-# Optionally get all targets
-X, y = df.get_feature_target_pair(multi_target=True)
-
-# Fetch data for specified eras
-X, y = df.get_era_batch(eras=['0001', '0002'])
-
-# Since every operation returns a NumerFrame they can be chained.
-# An example chained operation is getting features and targets for the last 2 eras.
-X, y = df.get_last_eras(2).get_feature_target_pair()
-```
-
-### 3.3. Advanced Numerai models
-
-All core processors in `numerblox` are compatible with `scikit-learn` and therefore also `scikit-learn` extension libraries like [scikit-lego](https://github.com/koaning/scikit-lego), [umap](https://github.com/lmcinnes/umap) and [scikit-llm](https://github.com/iryna-kondr/scikit-llm). 
-
-The example below illustrates its seamless integration with `scikit-learn`. Aside from core `scikit-learn` processors we use `ColumnSelector` from the [scikit-lego](https://github.com/koaning/scikit-lego) extension library.
-
-For more examples check out the notebooks in the `examples` directory and the `End-To-End Examples` section in the documentation.
-
-```py
-import pandas as pd
-from xgboost import XGBRegressor
-from sklearn.pipeline import make_union
-from sklearn.model_selection import TimeSeriesSplit
-from sklego.preprocessing import ColumnSelector
-
-from numerblox.meta import CrossValEstimator
-from numerblox.preprocessing import GroupStatsPreProcessor
-from numerblox.numerframe import create_numerframe
-
-# Easy data parsing with NumerFrame
-df = create_numerframe(file_path="data/train_val/train_int8.parquet")
-val_df = create_numerframe(file_path="data/train_val/validation_int8.parquet")
-
-X, y = df.get_feature_target_pair()
-eras = df.get_era_data()
-
-val_X, val_y = val_df.get_feature_target_pair()
-val_eras = val_df.get_era_data()
-
-fncv3_cols = nf.get_fncv3_features.columns.tolist()
-
-# Sunshine/Rain group statistics and FNCv3 features as model input
-gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
-fncv3_selector = ColumnSelector(fncv3_cols)
-preproc_pipe = make_union(gpp, fncv3_selector)
-
-# 5 fold cross validation with XGBoost as model
-model = CrossValEstimator(XGBRegressor(), cv=TimeSeriesSplit(n_splits=5))
-# Ensemble 5 folds with weighted average
-ensembler = NumeraiEnsemble(donate_weighted=True)
-
-full_pipe = make_pipeline(preproc_pipe, model, ensembler)
-
-full_pipe.fit(X, y, numeraiensemble__eras=eras)
-
-val_preds = full_pipe.predict(val_X, eras=val_eras)
-```
-
-### 3.4. Evaluation
-
-`NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` take care of computing all evaluation metrics for you. Below is a quick example of using it for Numerai Classic. 
-For more information on advanced usage and which metrics are computed check the `Evaluators` section in the documentation.
-
-```py
-from numerblox.evaluation import NumeraiClassicEvaluator
-
-# Validation DataFrame to compute metrics on
-val_df = ...
-
+# Evaluate
+val_df = create_numerframe("data/train_val/validation_int8.parquet")
+val_df['prediction'] = xgb.predict(val_df.get_feature_data)
+val_df['example_preds'] = ExamplePredictions("v4.2/validation_example_preds.parquet").fit_transform(None)['prediction'].values
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
-                                    era_col="era", 
                                     example_col="example_preds", 
                                     pred_cols=["prediction"], 
                                     target_col="target")
-```
 
+# Inference
+downloader.download_inference_data("current_round", version="4.2", int8=True)
+live_df = create_numerframe(file_path="data/current_round/live_int8.parquet")
+live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
+preds = xgb.predict(live_X)
 
-### 3.5. Submission
-
-Submission for both Numerai Class and Signals can be done with a few lines of code. Here we illustrate an example for Numerai Classic. Check out the `Submitters` section in the documentation for more information.
-
-```py
-from numerblox.misc import Key
-from numerblox.submission import NumeraiClassicSubmitter
-
+# Submit
 NUMERAI_PUBLIC_ID = "YOUR_PUBLIC_ID"
 NUMERAI_SECRET_KEY = "YOUR_SECRET_KEY"
-
-# Your predictions on the live data
-predictions = ...
-
-# Fill in you public and secret key for Numerai
 key = Key(pub_id=NUMERAI_PUBLIC_ID, secret_key=NUMERAI_SECRET_KEY)
 submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
-# full_submission checks contents, saves as csv and submits.
-submitter.full_submission(dataf=predictions,
+# Your prediction file with 'id' as index and defined 'cols' below.
+pred_dataf = pd.DataFrame(preds, index=live_df.index, columns=["prediction"])
+# Only works with valid key credentials and model_name
+submitter.full_submission(dataf=pred_dataf,
                           cols="prediction",
-                          model_name="YOUR_MODEL_NAME")
-# (optional) Clean up directory after submission
+                          file_name="submission.csv",
+                          model_name="MY_MODEL_NAME")
+```
+
+### 3.2. Advanced NumerBlox modeling.
+
+This example showcases how you can really push NumerBlox to create powerful pipelines. This pipeline approaches the Numerai Classic data as a classification problem. It fits multiple cross validation folds, reduces the classification probabilties to single values and create a weighted ensemble of these where the most recent folds get a higher weight. Lastly, the predictions are neutralized. The model is evaluated in validation data, inference is done on live data and a submission is done.
+Lastly, we remove the download and submission directories to clean up the environment. This is especially convenient if you are running daily inference on your own server.
+
+```py
+from xgboost import XGBClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import TimeSeriesSplit
+from numerblox.meta import CrossValEstimator, make_meta_pipeline
+from numerblox.prediction_loaders import ExamplePredictions
+from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
+from numerblox.neutralizers import FeatureNeutralizer
+
+# Download data
+downloader = NumeraiClassicDownloader("data")
+# Training and validation data
+downloader.download_training_data("train_val", version="4.2", int8=True)
+df = create_numerframe("data/train_val/train_int8.parquet")
+
+# Setup model pipeline
+model = XGBClassifier()
+crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=5), predict_func='predict_proba')
+pred_rud = PredictionReducer(n_models=5, n_classes=5)
+ens2 = NumeraiEnsemble(donate_weighted=True)
+neut2 = FeatureNeutralizer(proportion=0.5)
+full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
+
+# Train
+X, y = df.get_feature_target_pair(multi_target=False)
+y_int = (y * 4).astype(int)
+eras = df.get_era_data
+features = df.get_feature_data
+full_pipe.fit(X.values, y_int.values, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features)
+
+# Evaluate
+val_df = create_numerframe("data/train_val/validation_int8.parquet")
+val_X, _ = val_df.get_feature_target_pair(multi_target=False)
+val_eras = val_df.get_era_data
+val_features = val_df.get_feature_data
+val_df['prediction'] = full_pipe.predict(val_X, eras=val_eras, features=val_features)
+val_df['example_preds'] = ExamplePredictions("v4.2/validation_example_preds.parquet").fit_transform(None)['prediction'].values
+evaluator = NumeraiClassicEvaluator()
+metrics = evaluator.full_evaluation(val_df, 
+                                    example_col="example_preds", 
+                                    pred_cols=["prediction"], 
+                                    target_col="target")
+
+# Inference
+downloader.download_inference_data("current_round", version="4.2", int8=True)
+live_df = create_numerframe(file_path="data/current_round/live_int8.parquet")
+live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
+live_eras = live_df.get_era_data
+live_features = live_df.get_feature_data
+preds = full_pipe.predict(live_X, eras=live_eras, features=live_features)
+
+# Submit
+NUMERAI_PUBLIC_ID = "YOUR_PUBLIC_ID"
+NUMERAI_SECRET_KEY = "YOUR_SECRET_KEY"
+key = Key(pub_id=NUMERAI_PUBLIC_ID, secret_key=NUMERAI_SECRET_KEY)
+submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
+# Your prediction file with 'id' as index and defined 'cols' below.
+pred_dataf = pd.DataFrame(preds, index=live_df.index, columns=["prediction"])
+# Only works with valid key credentials and model_name
+submitter.full_submission(dataf=pred_dataf,
+                          cols="prediction",
+                          file_name="submission.csv",
+                          model_name="MY_MODEL_NAME")
+
+# Clean up environment
+downloader.remove_base_directory()
 submitter.remove_base_directory()
 ```
+
 
 ## 4. Contributing
 

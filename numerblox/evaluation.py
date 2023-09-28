@@ -102,7 +102,7 @@ class BaseEvaluator:
             dataf=dataf, pred_col=pred_col, example_col=example_col
         )
         # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
-        calmar = apy / -max_drawdown
+        calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -176,7 +176,7 @@ class BaseEvaluator:
         """
         mean = pd.Series(era_corrs.mean()).item()
         std = pd.Series(era_corrs.std(ddof=0)).item()
-        sharpe = mean / std
+        sharpe = np.nan if std == 0 else mean / std
         return mean, std, sharpe
 
     def numerai_corr(
