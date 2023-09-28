@@ -112,11 +112,9 @@ X, y = nf.get_feature_target_pair(multi_target=True)
 
 # Fetch data for specified eras
 X, y = nf.get_era_batch(eras=['0001', '0002'])
-# Optionally get Tensorflow tensors for NN training
-X, y = nf.get_era_batch(eras=['0001', '0002'], convert_to_tf=True)
 
 # Since every operation returns a NumerFrame they can be chained.
-# Like for example getting features and targets for the last 2 eras.
+# An example chained operation is getting features and targets for the last 2 eras.
 X, y = nf.get_last_eras(2).get_feature_target_pair()
 ```
 
