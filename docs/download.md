@@ -1,6 +1,6 @@
 # Downloaders
 
-## Classic
+## Numerai Classic
 
 For `NumeraiClassicDownloader` versions `4`, `4.1` (sunshine) and `4.2` (rain) are supported. You can easily download the data with a few lines.
 
