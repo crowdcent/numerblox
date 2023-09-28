@@ -9,7 +9,7 @@
 
 NumerBlox offers components that help with developing strong Numerai models and inference pipelines. From downloading data to submitting predictions, NumerBlox has you covered.
 
-All components can be used standalone and all processors are fully compatible to use within `scikit-learn` pipelines.  
+All components can be used standalone and all processors are fully compatible to use within [scikit-learn](https://scikit-learn.org/) pipelines.  
 
 **Documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
@@ -34,7 +34,7 @@ poetry install
 ### 1.2 Getting Started
 
 Test your installation using one of the education notebooks in
-`examples`. Good places to start are `quickstart.ipynb` and `numerframe_tutorial.ipynb`. Run it in your
+[examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your
 Notebook environment to quickly test if your installation has succeeded.
 The documentation contains examples and explanations for each component of NumerBlox.
 
@@ -42,30 +42,35 @@ The documentation contains examples and explanations for each component of Numer
 
 NumerBlox has the following features for both Numerai Classic and Signals:
 
-1. Downloading data.
-2. A custom data structure extending Pandas DataFrame (`NumerFrame`). It is not mandatory to use this data structure, but it simplifies parsing Numerai data, getting feature groups, targets, etc.
-3. A suite of preprocessors.
-4. Target engineering.
-5. A suite of postprocessors (ensembling, neutralization and penalization)
-6. A custom scikit-learn Pipeline (`MetaPipeline`) to fit postprocessors end-to-end with your preprocessing and models. This is only necessary if you want to use postprocessors in your pipeline.
-7. A suite of meta-estimators like `CrossValEstimator` that allows you to fit multiple folds end-to-end in a scikit-learn pipeline.
-8. A full evaluation suite with all metrics used by Numerai.
-9. Submitters to easily and safely submit predictions.
+**[Data Download](https://crowdcent.github.io/numerblox/download/):** Automated retrieval of Numerai datasets.
 
-Example notebooks for each of these components can be found in the `examples` directory. Also check out the documentation for more information.
+**[NumerFrame](https://crowdcent.github.io/numerblox/numerframe/):** A custom Pandas DataFrame for easier Numerai data manipulation.
 
-**Full documentation:**
-[crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
+**[Preprocessors](https://crowdcent.github.io/numerblox/preprocessing/):** Customizable techniques for data preprocessing.
+
+**[Target Engineering](https://crowdcent.github.io/numerblox/targets/):** Tools for creating new target variables.
+
+**[Postprocessors](https://crowdcent.github.io/numerblox/neutralization/):** Ensembling, neutralization, and penalization.
+
+**[MetaPipeline](https://crowdcent.github.io/numerblox/meta/):** An era-aware pipeline extension of scikit-learn's Pipeline. Specifically designed to integrate with era-specific Postprocessors such as neutralization and ensembling. Can be optionally bypassed for custom implementations.
+
+**[MetaEstimators](https://crowdcent.github.io/numerblox/meta/):** Era-aware estimators that extend scikit-learn's functionality. Includes features like CrossValEstimator which allow for era-specific, multiple-folds fitting seamlessly integrated into the pipeline.
+
+**[Evaluation](https://crowdcent.github.io/numerblox/evaluation/):** Comprehensive metrics aligned with Numerai's evaluation criteria.
+
+**[Submitters](https://crowdcent.github.io/numerblox/submission/):** Facilitates secure and easy submission of predictions.
+
+Example notebooks for each of these components can be found in the [examples](https://github.com/crowdcent/numerblox/examples). Also check out [the documentation](https://crowdcent.github.io/numerblox) for more information.
 
 
 ## 3. Quick Start
 
-Below are two examples of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the documentation. More advanced examples to leverage NumerBlox to the fullest can be found in the `End-To-End Examples` section in the documentation.
+Below are two examples of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the documentation. More advanced examples to leverage NumerBlox to the fullest can be found in the [End-To-End Example section](https://crowdcent.github.io/numerblox/end_to_end/).
 
 ### 3.1 Simple example
 
 The example below shows how NumerBlox simplifies training and inference on an XGBoost model.
-NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission. You can experiment with this setup yourself in the example notebook `quickstart.ipynb`.
+NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission. You can experiment with this setup yourself in the example notebook [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb).
 
 ```python
 import pandas as pd
@@ -195,7 +200,7 @@ submitter.remove_base_directory()
 
 ## 4. Contributing
 
-Be sure to read the `How To Contribute` section in the documentation for detailed instructions on
+Be sure to read the [How To Contribute section](https://crowdcent.github.io/numerblox/contributing/) section in the documentation for detailed instructions on
 contributing.
 
 If you have questions or want to discuss new ideas for NumerBlox,
