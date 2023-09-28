@@ -1,3 +1,10 @@
+![](https://img.shields.io/pypi/v/numerblox.png)
+![](https://img.shields.io/pypi/pyversions/numerblox.png)
+![](https://img.shields.io/github/contributors/crowdcent/numerblox.png)
+![](https://img.shields.io/github/issues-raw/crowdcent/numerblox.png)
+![](https://img.shields.io/codecov/c/github/crowdcent/numerblox.png)
+
+
 # NumerBlox
 
 NumerBlox offers components that help with developing strong Numerai models and inference pipelines. From downloading data to submitting predictions, NumerBlox has you covered.
@@ -6,14 +13,6 @@ All components can be used standalone and all processors are fully compatible to
 
 **Documentation:**
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
-
-![](https://img.shields.io/pypi/v/numerblox.png)
-![](https://img.shields.io/pypi/pyversions/numerblox.png)
-![](https://img.shields.io/github/contributors/crowdcent/numerblox.png)
-![](https://img.shields.io/github/issues-raw/crowdcent/numerblox.png)
-![](https://img.shields.io/github/repo-size/crowdcent/numerblox.png)
-![](https://img.shields.io/codecov/c/github/crowdcent/numerblox.png)
-
 
 ## 1. Installation
 
