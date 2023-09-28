@@ -61,7 +61,7 @@ Example notebooks can be found in the `examples` directory.
 
 Below we will illustrate a common use case for inference pipelines. To
 learn more in-depth about the features of this library, check out
-notebooks in `examples`.
+notebooks in `examples` and check out the `End-To-End Examples` section in the documentation.
 
 #### 2.2.1. Numerai Classic
 
