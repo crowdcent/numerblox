@@ -34,7 +34,7 @@ poetry install
 ### 1.2 Getting Started
 
 Test your installation using one of the education notebooks in
-`examples`. A good example is `numerframe_tutorial`. Run it in your
+`examples`. Good places to start are `quickstart.ipynb` and `numerframe_tutorial.ipynb`. Run it in your
 Notebook environment to quickly test if your installation has succeeded.
 The documentation contains examples and explanations for each component of NumerBlox.
 
@@ -118,7 +118,7 @@ submitter.full_submission(dataf=pred_dataf,
                           model_name="MY_MODEL_NAME")
 ```
 
-### 3.2. Advanced NumerBlox modeling.
+### 3.2. Advanced NumerBlox modeling
 
 This example showcases how you can really push NumerBlox to create powerful pipelines. This pipeline approaches the Numerai Classic data as a classification problem. It fits multiple cross validation folds, reduces the classification probabilties to single values and create a weighted ensemble of these where the most recent folds get a higher weight. Lastly, the predictions are neutralized. The model is evaluated in validation data, inference is done on live data and a submission is done.
 Lastly, we remove the download and submission directories to clean up the environment. This is especially convenient if you are running daily inference on your own server.

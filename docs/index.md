@@ -34,7 +34,7 @@ poetry install
 ### 1.2 Getting Started
 
 Test your installation using one of the education notebooks in
-`examples`. A good example is `numerframe_tutorial`. Run it in your
+`examples`. Good places to start are `quickstart.ipynb` and `numerframe_tutorial.ipynb`. Run it in your
 Notebook environment to quickly test if your installation has succeeded.
 The documentation contains examples and explanations for each component of NumerBlox.
 
