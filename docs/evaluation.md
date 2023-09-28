@@ -31,6 +31,20 @@ For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fa
 
 `NumeraiClassicEvaluator` specifically will also compute the Feature Neutral Mean, Standard deviation and Sharpe based on the FNCV3 Features. The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`.
 
+```py
+from numerblox.evaluation import NumeraiClassicEvaluator
+
+# Validation DataFrame to compute metrics on
+val_df = ...
+
+evaluator = NumeraiClassicEvaluator()
+metrics = evaluator.full_evaluation(val_df, 
+                                    era_col="era", 
+                                    example_col="example_preds", 
+                                    pred_cols=["prediction"], 
+                                    target_col="target")
+```
+
 ## Numerai Signals specific metrics
 
 `NumeraiSignalsEvaluator` specifically offers neutralized correlation scores that are calculated on Numerai diagnostics. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in the regular `full_evaluation`.

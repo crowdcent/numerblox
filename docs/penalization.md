@@ -21,14 +21,3 @@ penalizer = FeaturePenalizer(max_exposure=0.1, pred_name="prediction")
 penalizer.fit(X=predictions)
 penalized_predictions = penalizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
-
-## Initialization:
-- **max_exposure** (float): Specifies the maximum feature exposure (range [0...1]).
-- **pred_name** (str, optional): Prediction column name, default is "prediction".
-- **suffix** (str, optional): Suffix for new column name after penalization.
-
-## Methods:
-- **predict(X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series)**: Neutralize the predictions (`X`) based on the `features` DataFrame and `eras` Series.
-
-## Note
-It's recommended to ensure that `X`, `features`, and `eras` have the same length when using `predict` method.

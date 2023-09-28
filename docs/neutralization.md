@@ -23,18 +23,9 @@ neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
 
-## Initialization:
-- **pred_name** (str, optional): Prediction column name, default is "prediction".
-- **proportion** (float): How much to neutralize (range `[0...1]`).
-- **suffix** (str, optional): Suffix for new column name after neutralization.
-- **cuda** (bool, optional): If true, perform neutralization on the GPU (requires CuPy).
-
-## Methods:
-- **predict(X: np.array, features: pd.DataFrame, eras: pd.Series)**: Neutralize the predictions (`X`) based on the `features` DataFrame and `eras` Series.
-
 ## Note
-Ensure that `X`, `features`, and `eras` have the same length when using the `predict` method. If using `cuda=True`, ensure you have CuPy installed.
+Neutralization can be run on the GPU by setting `cuda=True`. When setting this ensure you have CuPy installed.
 
-```
-!pip install cupy
+```bash
+pip install cupy
 ```

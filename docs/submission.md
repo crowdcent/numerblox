@@ -84,7 +84,11 @@ submitter.full_submission(dataf=dataf,
 
 NumerBlox also offers functionality to submit predictions from [NumerBay](https://numerbay.ai). This is a marketplace where Numerai predictions are bought and sold. Uploading from Numerbay is similar, but also requires authentication with your NumerBay account.
 
-Also make sure `numerbay` is installed with `!pip install numerbay`.
+Also make sure the `numerbay` library is installed.
+
+```bash
+pip install numerbay
+```
 
 ```py
 from numerblox.submission import NumeraiClassicSubmitter, NumerBaySubmitter

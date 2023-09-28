@@ -4,8 +4,6 @@ Target engineering object allows you to easily create synthetic targets to train
 
 ## Why?
 
-### Why use Target Processors?
-
 - **Enhanced Experimentation**: The availability of synthetic targets through the `BayesianGMMTargetProcessor` allows modelers to test new algorithms, techniques, or strategies.
 
 - **Align with Numerai's Methodology**: `SignalsTargetProcessor` ensures that the targets you use are consistent with Numerai's approach. This alignment boosts the relevance of your models, potentially leading to better performance in the competition.

@@ -3,6 +3,7 @@
 Prediction loaders are designed to seamlessly fetch and transform prediction data, especially from Numerai's API. These classes can be integrated into pipelines to automate the prediction generation process for the Numerai competition.
 
 # Why?
+
 Numerai provides example predictions to help participants understand the expected structure and format of predictions. With the ExamplePredictions class, you can easily fetch these example predictions for different data versions, allowing you to quickly evaluate or test your models against the Numerai's standard prediction dataset.
 
 # ExamplePredictions

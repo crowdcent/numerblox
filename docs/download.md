@@ -46,7 +46,7 @@ More information: [https://eodhistoricaldata.com](https://eodhistoricaldata.com)
 
 Make sure you have the underlying Python package for EOD installed.
 
-```
+```bash
 pip install eod
 ```
 
@@ -83,9 +83,11 @@ More info on the Kaggle Python API: [kaggle.com/donkeys/kaggle-python-api](https
 
 Also make sure you have the `kaggle` Python package installed.
 
-```
+```bash
 pip install kaggle
 ```
+
+Below is a quickstart example using Katsu's starter dataset.
 
 ```py
 from numerblox.download import KaggleDownloader
@@ -93,7 +95,6 @@ from numerblox.download import KaggleDownloader
 kd = KaggleDownloader(directory_path="my_numerai_signals_folder")
 
 # A good example of Numerai Signals data on Kaggle Datasets is Katsu1110's yfinance price dataset.
-kaggle_data_path = "code1110/yfinance-stock-price-data-for-numerai-signals"
 kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 ```
 

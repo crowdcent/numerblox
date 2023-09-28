@@ -19,7 +19,7 @@ By using `NumerFrame`, participants can focus more on model development and less
 
 
 ## Initialization:
-A NumerFrame can be initialized either from an existing `pd.DataFrame`` or with `create_numerframe`. The `create_numerframe` function takes a path to a file and returns a `NumerFrame` object. This function automatically parses the file and supports CSV, Parquet, Excel and Pickle formats.
+A NumerFrame can be initialized either from an existing `pd.DataFrame` or with `create_numerframe`. The `create_numerframe` function takes a path to a file and returns a `NumerFrame` object. This function automatically parses the file and supports CSV, Parquet, Excel and Pickle formats.
 
 `NumerFrame` automatically parses columns into groups so you can easily retrieve what you need. It automatically is aware of the `era` column for its operations. 
 
@@ -36,13 +36,14 @@ A NumerFrame can be initialized either from an existing `pd.DataFrame`` or with 
 - Era column is either `era`, `date` or `friday_date`.
 
 ```py
+import pandas as pd
 from numerblox.numerframe import NumerFrame, create_numerframe
 # From DataFrame
 data = pd.read_parquet('train.parquet')
-nf = NumerFrame(data)
+df = NumerFrame(data)
 
 # With create_numerframe
-nf = create_numerframe('train.parquet')
+df = create_numerframe('train.parquet')
 ```
 
 
@@ -51,18 +52,15 @@ nf = create_numerframe('train.parquet')
 Basic functionality: 
 ```py
 # Get data for features, targets, predictions, and aux
-features = nf.get_feature_data
-targets = nf.get_target_data
-predictions = nf.get_prediction_data
-aux_data = nf.get_aux_data
+features = df.get_feature_data
+targets = df.get_target_data
+predictions = df.get_prediction_data
+aux_data = df.get_aux_data
 ```
 
 Additionally it is possible to get groups specific to Numerai Classic like FNCv3 and internal feature groups. The examples below show some advanced functionality in `NumerFrame`.
 
 ```py
-from numerblox.numerframe import create_numerframe
-
-df = create_numerframe(file_path="data/current_round/live.parquet")
 # Get data for features, targets and predictions
 features = df.get_feature_data
 targets = df.get_target_data
