@@ -16,8 +16,6 @@ All components can be used standalone and all processors are fully compatible to
 
 ## 1. Installation
 
-### 1.1 Installation
-
 Install numerblox from PyPi by running:
 
 `pip install numerblox`
@@ -30,8 +28,6 @@ git clone https://github.com/crowdcent/numerblox.git
 pip install poetry
 poetry install
 ```
-
-### 1.2 Getting Started
 
 Test your installation using one of the education notebooks in
 [examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your
