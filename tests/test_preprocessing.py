@@ -146,6 +146,7 @@ def test_group_stats_preprocessor():
 
     # Test get_feature_names_out
     assert test_group_processor.get_feature_names_out() == expected_cols
+    assert test_group_processor.get_feature_names_out(["fancy"]) == ["fancy"]
 
 def test_katsu_feature_generator(dummy_signals_data):
     kfg = KatsuFeatureGenerator(windows=[20, 40])

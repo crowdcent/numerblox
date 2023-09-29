@@ -10,6 +10,7 @@ def test_attrdict():
 def test_key():
     pub_id, secret_key = "Hello", "World"
     example_key = Key(pub_id=pub_id, secret_key=secret_key)
+    assert str(example_key) == example_key.__repr__()
     assert (example_key.pub_id, example_key.secret_key) == (pub_id, secret_key)
 
 def test_load_key_from_json():
