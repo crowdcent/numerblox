@@ -67,8 +67,10 @@ targets = df.get_target_data
 predictions = df.get_prediction_data
 
 # Get specific data groups
-fncv3_features = df.get_fncv3_features
+fncv3_features = df.get_fncv3_feature_data
 group_features = df.get_group_features(group='rain')
+small_features = df.get_small_feature_data
+medium_features = df.get_medium_feature_data
 
 # Fetch columns by pattern. For example all 20 day targets.
 pattern_data = df.get_pattern_data(pattern='_20')

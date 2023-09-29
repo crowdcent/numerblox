@@ -13,7 +13,7 @@ df = create_numerframe("my_numerai_data_folder/train_val/train_int8.parquet")
 val_df = create_numerframe("my_numerai_data_folder/train_val/val_int8.parquet")
 
 X, y = df.get_feature_target_pair(multi_target=False)
-fncv3_cols = df.get_fncv3_features.columns.tolist()
+fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
 
 val_X, val_y = val_df.get_feature_target_pair(multi_target=False)
 val_features = val_df.get_feature_data

@@ -21,7 +21,7 @@ def test_neutralized_xgboost_pipeline(setup_data):
     df = setup_data
 
     X, y = df.get_feature_target_pair(multi_target=False)
-    fncv3_cols = df.get_fncv3_features.columns.tolist()
+    fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
     eras = df.get_era_data
     features = df.get_feature_data
 

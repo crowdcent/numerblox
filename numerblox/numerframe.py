@@ -3,7 +3,9 @@ from pathlib import Path
 from typing import Union, Tuple, Any, List
 
 from .misc import AttrDict
-from .feature_groups import V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES
+from .feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
+                             SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
+                             V3_EQUIVALENT_FEATURES)
 
 
 class NumerFrame(pd.DataFrame):
@@ -87,10 +89,30 @@ class NumerFrame(pd.DataFrame):
         return self.get_column_selection(cols=self.prediction_cols+self.aux_cols)
     
     @property
-    def get_fncv3_features(self) -> "NumerFrame":
+    def get_fncv3_feature_data(self) -> "NumerFrame":
         """ Get FNCv3 features. """
         return self.get_column_selection(cols=FNCV3_FEATURES)
     
+    @property
+    def get_small_feature_data(self) -> "NumerFrame":
+        """ Small subset of the Numerai dataset for v4.2 data. """
+        return self.get_column_selection(cols=SMALL_FEATURES)
+    
+    @property
+    def get_medium_feature_data(self) -> "NumerFrame":
+        """ Medium subset of the Numerai dataset for v4.2 data. """
+        return self.get_column_selection(cols=MEDIUM_FEATURES)
+    
+    @property
+    def get_v2_equivalent_feature_data(self) -> "NumerFrame":
+        """ Features equivalent to the deprecated v2 Numerai data. For v4.2 data. """
+        return self.get_column_selection(cols=V2_EQUIVALENT_FEATURES)
+    
+    @property
+    def get_v3_equivalent_feature_data(self) -> "NumerFrame":
+        """ Features equivalent to the deprecated v3 Numerai data. For v4.2 data. """
+        return self.get_column_selection(cols=V3_EQUIVALENT_FEATURES)
+
     @property
     def get_unique_eras(self) -> List[str]:
         """ Get all unique eras in the data. """

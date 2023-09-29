@@ -3,7 +3,9 @@ import numpy as np
 import pandas as pd
 
 from numerblox.numerframe import NumerFrame, create_numerframe
-from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES
+from numerblox.feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
+                                      SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
+                                      V3_EQUIVALENT_FEATURES)
 
 dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
 
@@ -85,9 +87,33 @@ def test_get_feature_target_pair_multi_target():
 
 def test_get_fncv3_features():
     nf = NumerFrame(dataset)
-    result = nf.get_fncv3_features
+    result = nf.get_fncv3_feature_data
     assert isinstance(result, NumerFrame)
     assert result.columns.tolist() == FNCV3_FEATURES
+
+def test_get_small_features():
+    nf = NumerFrame(dataset)
+    result = nf.get_small_feature_data
+    assert isinstance(result, NumerFrame)
+    assert result.columns.tolist() == SMALL_FEATURES
+
+def test_get_medium_features():
+    nf = NumerFrame(dataset)
+    result = nf.get_medium_feature_data
+    assert isinstance(result, NumerFrame)
+    assert result.columns.tolist() == MEDIUM_FEATURES
+
+def test_get_v2_equivalent_features():
+    nf = NumerFrame(dataset)
+    result = nf.get_v2_equivalent_feature_data
+    assert isinstance(result, NumerFrame)
+    assert result.columns.tolist() == V2_EQUIVALENT_FEATURES
+
+def test_get_v3_equivalent_features():
+    nf = NumerFrame(dataset)
+    result = nf.get_v3_equivalent_feature_data
+    assert isinstance(result, NumerFrame)
+    assert result.columns.tolist() == V3_EQUIVALENT_FEATURES
 
 def test_get_unique_eras():
     nf = NumerFrame(dataset)
