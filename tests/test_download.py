@@ -18,7 +18,6 @@ def test_base():
 
     # Test is_empty
     (numer_classic_downloader.dir / "test.txt").write_text("test")
-    print(f"Directory contents:\n{numer_classic_downloader.get_all_files}")
     assert not numer_classic_downloader.is_empty
 
     # Remove contents
