@@ -48,9 +48,3 @@ def test_feature_neutralizer_get_feature_names_out_complex():
 def test_feature_neutralizer_get_feature_names_out_with_input_features():
     names = FeatureNeutralizer().get_feature_names_out(input_features=["prediction_fancy1"])
     assert names == ["prediction_fancy1"]
-
-# TODO Test for ColumnTransformer
-def test_feature_neutralizer_columntransformer(setup_data):
-    pass
-
-
