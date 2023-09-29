@@ -4,7 +4,8 @@ NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.
 
 ## Common Metrics
 
-The following metrics are included for both:
+The following metrics are included for `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`:
+
 - Mean, Standard Deviation and Sharpe for era returns (Numerai Correlation).
 
 - Max drawdown.
@@ -21,23 +22,22 @@ The following metrics are included for both:
 
 - [Calmar Ratio](https://www.investopedia.com/terms/c/calmarratio.asp).
 
-- Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
+- Mean, Standard Deviation and Sharpe for TB200 and TB500 (Buy top 200/500 stocks and sell bottom 200/500 stocks).
 
-- Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
-
-For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fast_mode=True` to skip max. features exposure, feature neutral mean, standard deviation and sharpe, TB200 and TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.
+For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fast_mode=True` to skip max. feature exposure, [FNCV3 metrics](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website), TB200, TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.
 
 ## Numerai Classic specific metrics
 
-`NumeraiClassicEvaluator` specifically will also compute the Feature Neutral Mean, Standard deviation and Sharpe based on the FNCV3 Features. The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`.
+`NumeraiClassicEvaluator` will also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`. `NumeraiClassicEvaluator` will compute the mean, standard deviation and Sharpe ratio for FNCV3. 
 
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator
 
 # Validation DataFrame to compute metrics on
+# Should have at least era_col, example_col, pred_cols and target_col columns.
 val_df = ...
 
-evaluator = NumeraiClassicEvaluator()
+evaluator = NumeraiClassicEvaluator(era_col="era")
 metrics = evaluator.full_evaluation(val_df, 
                                     example_col="example_preds", 
                                     pred_cols=["prediction"], 
@@ -46,8 +46,7 @@ metrics = evaluator.full_evaluation(val_df,
 
 ## Numerai Signals specific metrics
 
-`NumeraiSignalsEvaluator` specifically offers neutralized correlation scores that are calculated on Numerai diagnostics. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in the regular `full_evaluation`.
-
+`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
 
 Example of how to get neutralized correlation scores for Numerai Signals:
 ```py
