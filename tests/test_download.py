@@ -1,5 +1,6 @@
 import os
 import pytest
+import pandas as pd
 from uuid import uuid4
 from pathlib import PosixPath
 
@@ -59,8 +60,10 @@ def test_classic():
     assert "feature_sets" in features.keys()
 
     # Test metamodel preds
-    dl.download_meta_model_preds()
+    meta_model = dl.download_meta_model_preds()
     assert os.path.exists(dl.dir / "meta_model.parquet")
+    assert isinstance(meta_model, pd.DataFrame)
+    assert "numerai_meta_model" in meta_model.columns
 
     dl.remove_base_directory()
 

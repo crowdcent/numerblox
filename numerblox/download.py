@@ -374,6 +374,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         Saves in base directory root by default.
         :param filename: name for feature overview.
         *args, **kwargs will be passed to the JSON loader.
+        :return: Feature overview dict
         """
         dest_path = self.__get_dest_path(subfolder, filename)
         self.download_single_dataset(filename=filename,
@@ -381,18 +382,20 @@ class NumeraiClassicDownloader(BaseDownloader):
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
-    def download_meta_model_preds(self, subfolder: str = "", filename="v4.2/meta_model.parquet"):
+    def download_meta_model_preds(self, subfolder: str = "", filename="v4.2/meta_model.parquet") -> pd.DataFrame:
         """
         Download Meta model predictions through NumerAPI.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
         :param filename: name for meta model predictions file.
+        :return: Meta model predictions as DataFrame.
         """
         dest_path = self.__get_dest_path(subfolder, filename)
         self.download_single_dataset(
             filename=filename,
             dest_path=dest_path,
             )
+        return pd.read_parquet(dest_path)
 
     def _get_version_mapping(self, version: int) -> dict:
         """ Check if data version is supported and return file mapping for version. """
