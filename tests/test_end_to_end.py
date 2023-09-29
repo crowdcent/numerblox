@@ -52,7 +52,7 @@ def test_multi_classification_ensemble(setup_data):
     X, y = df.get_feature_target_pair(multi_target=False)
     eras = df.get_era_data
     features = df.get_feature_data
-    fncv3_cols = df.get_fncv3_features.columns.tolist()
+    fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
     preproc_pipe = make_union(GroupStatsPreProcessor(groups=['sunshine', 'rain']), ColumnSelector(fncv3_cols))
 
     model = DecisionTreeClassifier()
@@ -76,7 +76,7 @@ def test_feature_union_pipeline(setup_data):
     X, y = df.get_feature_target_pair(multi_target=False)
     eras = df.get_era_data
     features = df.get_feature_data
-    fncv3_cols = df.get_fncv3_features.columns.tolist()
+    fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
 
     gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
     fncv3_selector = ColumnSelector(fncv3_cols)
@@ -99,7 +99,7 @@ def test_column_transformer_pipeline(setup_data):
 
     eras = df.get_era_data
     features = df.get_feature_data
-    fncv3_cols = df.get_fncv3_features.columns.tolist()
+    fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
 
     gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
     preproc_pipe = ColumnTransformer([("gpp", gpp, features.columns.tolist()), 
