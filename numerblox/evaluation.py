@@ -55,6 +55,12 @@ class BaseEvaluator:
         By default only the "prediction" column is evaluated.
         Evaluation is done against given target and example prediction column.
         """
+        assert self.era_col in dataf.columns, f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
+        for pred_col in pred_cols:
+            assert pred_col in dataf.columns, f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
+        assert target_col in dataf.columns, f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
+        assert example_col in dataf.columns, f"Example column '{example_col}' not found in DataFrame. Make sure to set the correct example_col."
+        
         val_stats = pd.DataFrame()
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
         cat_cols = dataf[feature_cols].select_dtypes(include=['category']).columns.to_list()
