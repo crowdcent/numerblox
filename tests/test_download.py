@@ -68,7 +68,7 @@ def test_classic():
     dl.remove_base_directory()
 
 def test_classic_version_mapping():
-    downloader = NumeraiClassicDownloader(directory_path="some_path_{uuid4()}")
+    downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
     # Test supported versions
     supported_versions = ["4", "4.1", "4.2"]

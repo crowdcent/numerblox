@@ -44,7 +44,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
         self.multi_output_ = len(y.shape) > 1
-        self.estimator_ = clone(self.estimator)
+        self.estimator_ = deepcopy(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
     
@@ -110,7 +110,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                                             desc=f"CrossValEstimator Fitting. Estimator='{self.estimator_name}'", 
                                             total=self.cv.get_n_splits(), 
                                             disable=not self.verbose):
-            estimator = clone(self.estimator)
+            estimator = deepcopy(self.estimator)
             if self.verbose:
                 print(f"Fitting {self.estimator_name} on fold {len(self.estimators_)}")
 
