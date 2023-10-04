@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from typing import Union, List
-from copy import deepcopy
 from sklearn import clone
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators, _final_estimator_has
@@ -44,7 +43,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
         self.multi_output_ = len(y.shape) > 1
-        self.estimator_ = deepcopy(self.estimator)
+        self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
     
@@ -110,7 +109,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                                             desc=f"CrossValEstimator Fitting. Estimator='{self.estimator_name}'", 
                                             total=self.cv.get_n_splits(), 
                                             disable=not self.verbose):
-            estimator = deepcopy(self.estimator)
+            estimator = clone(self.estimator)
             if self.verbose:
                 print(f"Fitting {self.estimator_name} on fold {len(self.estimators_)}")
 
