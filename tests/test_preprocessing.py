@@ -11,21 +11,20 @@ from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcess
                                      KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper,
                                      LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator)
+                                     DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster)
 from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
 
-from utils import create_signals_sample_data, create_classic_sample_data
+from utils import create_signals_sample_data
 
 CLASSIC_PREPROCESSORS = [ReduceMemoryProcessor, GroupStatsPreProcessor]
 SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper,
-                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator]
+                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster]
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
 WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, 
                          DifferencePreProcessor]
 TICKER_PROCESSORS = [LagPreProcessor]
 
 dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
-dummy_classic_data = create_classic_sample_data
 dummy_signals_data = create_signals_sample_data
 
 def test_base_preprocessor():
@@ -33,14 +32,15 @@ def test_base_preprocessor():
     assert hasattr(BasePreProcessor, 'transform')
     assert issubclass(BasePreProcessor, (BaseEstimator, TransformerMixin))
 
-def test_processors_sklearn():
+def test_processors_sklearn(dummy_signals_data):
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
     data['ticker'] = ["AAPL US"] * 25 + ["MSFT US"] * 25
     y = data["target_jerome_v4_20"].fillna(0.5)
     feature_names = ["feature_tallish_grimier_tumbrel",
                      "feature_partitive_labyrinthine_sard"]
-    X = data[feature_names]
+    classic_X = data[feature_names].fillna(0.5)
+    signals_X = dummy_signals_data[["open", "high", "low", "close", "volume", "adjusted_close"]]
 
     for processor_cls in tqdm(ALL_PREPROCESSORS, desc="Testing processors for scikit-learn compatibility"):
         # Initialization
@@ -48,6 +48,11 @@ def test_processors_sklearn():
             processor = processor_cls(windows=[20, 40])
         else:
             processor = processor_cls()
+
+        if processor_cls in CLASSIC_PREPROCESSORS:
+            X = classic_X
+        elif processor_cls in SIGNALS_PREPROCESSORS:
+            X = signals_X
 
         # Test fit returns self
         assert processor.fit(X=X, y=y) == processor
@@ -68,25 +73,25 @@ def test_processors_sklearn():
                 ('processor', processor),
                 ('pca', PCA())
             ])
-        _ = combined_features.fit(X.fillna(0.5))
+        _ = combined_features.fit(X)
 
         # Test every processor has get_feature_names_out
         assert hasattr(processor, 'get_feature_names_out'), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessor should have this method."
 
-def test_reduce_memory_preprocessor(dummy_classic_data):
+def test_reduce_memory_preprocessor(dummy_signals_data):
     # Reduce memory
     rmp = ReduceMemoryProcessor()
     rmp.set_output(transform="pandas")
-    reduced_data = rmp.fit_transform(dummy_classic_data)
+    reduced_data = rmp.fit_transform(dummy_signals_data)
     # Check types
-    assert reduced_data.feature1.dtype == "O"
-    assert reduced_data.feature2.dtype == "O"
-    assert reduced_data.era.dtype == "O"
-    assert rmp.get_feature_names_out() == dummy_classic_data.columns.tolist()
+    assert reduced_data.close.dtype == "O"
+    assert reduced_data.volume.dtype == "O"
+    assert reduced_data.date.dtype == "<M8[ns]"
+    assert rmp.get_feature_names_out() == dummy_signals_data.columns.tolist()
 
     # Test numpy input and set_output API
     rmp.set_output(transform="default")
-    reduced_data = rmp.transform(dummy_classic_data.to_numpy())
+    reduced_data = rmp.transform(dummy_signals_data.to_numpy())
     assert isinstance(reduced_data, np.ndarray)
 
 def test_group_stats_preprocessor():
@@ -267,3 +272,24 @@ def test_pandasta_feature_generator(dummy_signals_data):
     expected_cols = ["feature_RSI_14", "feature_RSI_60"]
     assert result.columns.tolist() == expected_cols
     assert ptfg.get_feature_names_out() == expected_cols
+
+def test_hlocv_adjuster_basic(dummy_signals_data):
+    adjuster = HLOCVAdjuster()
+    adjuster.fit(dummy_signals_data)
+    
+    adjusted_array = adjuster.transform(dummy_signals_data)
+    adjusted_df = pd.DataFrame(adjusted_array, columns=adjuster.get_feature_names_out())
+    
+    # Check for column presence
+    assert all(col in adjusted_df.columns for col in adjuster.get_feature_names_out())
+
+    # Check if the ratio is maintained correctly. 
+    original_row = dummy_signals_data.iloc[0]
+    adjusted_row = adjusted_df.iloc[0]
+
+    ratio = original_row["close"] / original_row["adjusted_close"]
+    assert np.isclose(original_row["high"] / ratio, adjusted_row["adjusted_high"])
+    assert np.isclose(original_row["low"] / ratio, adjusted_row["adjusted_low"])
+    assert np.isclose(original_row["open"] / ratio, adjusted_row["adjusted_open"])
+    assert np.isclose(original_row["volume"] * ratio, adjusted_row["adjusted_volume"])
+

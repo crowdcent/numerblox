@@ -2,19 +2,6 @@ import pytest
 import numpy as np
 import pandas as pd
 
-# Fixture to create a dummy dataframe
-@pytest.fixture
-def dummy_dataframe():
-    df = pd.DataFrame({
-        'feature_1': [1, 2, 3],
-        'feature_2': [4, 5, 6],
-        'target': [7, 8, 9],
-        'target2': [10, 11, 12],
-        'era': ['001', '002', '002'],
-        'prediction': np.random.uniform(size=3),
-    })
-    return df
-
 @pytest.fixture
 def create_classic_sample_data():
     data = {
@@ -43,6 +30,7 @@ def create_signals_sample_data():
                     "high": price + 0.02,
                     "low": price - 0.01,
                     "close": price,
+                    "adjusted_close": price * np.random.uniform(0.5, 1.5),
                     "volume": np.random.randint(1000, 10000),
                     "target": np.random.uniform(),
                     "target_2": np.random.uniform(),

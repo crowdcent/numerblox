@@ -503,3 +503,44 @@ class PandasTaFeatureGenerator(BasePreProcessor):
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         return self.output_cols if not input_features else input_features
+
+
+class HLOCVAdjuster(BasePreProcessor):
+    """ 
+    Adjust HLOCV data for splits and dividends based on ratio of unadjusted and adjusted close prices.
+    NOTE: This step only works with DataFrame input. 
+    Usage in intermediate steps of a scikit-learn Pipeline works with the Pandas set_output API.
+    i.e. pipeline.set_output(transform="pandas").
+    """
+    def __init__(self, open_col="open", high_col="high", low_col="low", 
+                 close_col="close", volume_col="volume", adj_close_col="adjusted_close"):
+        super().__init__()
+        self.open_col = open_col
+        self.high_col = high_col
+        self.low_col = low_col
+        self.close_col = close_col
+        self.volume_col = volume_col
+        self.adj_close_col = adj_close_col
+        self.adjusted_col_names = [f"adjusted_{self.high_col}", f"adjusted_{self.low_col}",
+                                   f"adjusted_{self.open_col}", self.adj_close_col, 
+                                   f"adjusted_{self.volume_col}"]
+
+    def fit(self, X: pd.DataFrame, y=None):
+        self.ratio_ = X[self.close_col] / X[self.adj_close_col]
+        return self
+
+    def transform(self, X: pd.DataFrame) -> np.array:
+        """
+        Adjust open, high, low, close and volume for splits and dividends.
+        :param X: DataFrame with columns: [high, low, open, close, volume] (HLOCV)
+        :return: Array with adjusted HLOCV columns
+        """
+        X_copy = X.copy()  
+        X_copy[f"adjusted_{self.high_col}"] = X[self.high_col] / self.ratio_
+        X_copy[f"adjusted_{self.low_col}"] = X[self.low_col] / self.ratio_
+        X_copy[f"adjusted_{self.open_col}"] = X[self.open_col] / self.ratio_
+        X_copy[f"adjusted_{self.volume_col}"] = X[self.volume_col] * self.ratio_
+        return X_copy[self.adjusted_col_names].to_numpy()
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        return self.adjusted_col_names
