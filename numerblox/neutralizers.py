@@ -16,7 +16,7 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X=None, y=None):
+    def fit(self, X=None, y=None, **kwargs):
         return self
 
     @abstractmethod

@@ -55,12 +55,12 @@ preproc_pipe = make_union(gpp, fncv3_selector)
 # Model
 xgb = XGBRegressor()
 cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
-fn = FeatureNeutralizer(proportion=0.5)
 ens = NumeraiEnsemble()
+fn = FeatureNeutralizer(proportion=0.5)
 full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
 # Train full model
-full_pipe.fit(X, y, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features);
+full_pipe.fit(X, y, numeraiensemble__eras=eras);
 
 # Inference on validation data
 val_preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
@@ -88,7 +88,7 @@ ens2 = NumeraiEnsemble(donate_weighted=True)
 neut2 = FeatureNeutralizer(proportion=0.5)
 full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
-full_pipe.fit(X, y, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features)
+full_pipe.fit(X, y, numeraiensemble__eras=eras)
 
 preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
 ```

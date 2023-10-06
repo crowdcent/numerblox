@@ -38,7 +38,7 @@ def test_neutralized_xgboost_pipeline(setup_data):
     full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
     # Train full model
-    full_pipe.fit(X, y, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features)
+    full_pipe.fit(X, y, numeraiensemble__eras=eras)
 
     # Inference
     preds = full_pipe.predict(X, eras=eras, features=features)
@@ -63,7 +63,7 @@ def test_multi_classification_ensemble(setup_data):
     full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
     y_int = (y * 4).astype(int)
-    full_pipe.fit(X, y_int, numeraiensemble__eras=eras, featureneutralizer__eras=eras, featureneutralizer__features=features)
+    full_pipe.fit(X, y_int, numeraiensemble__eras=eras)
 
     preds = full_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
@@ -86,7 +86,7 @@ def test_feature_union_pipeline(setup_data):
     fn = FeatureNeutralizer(proportion=0.5)
     model_pipe = make_pipeline(preproc_pipe, xgb, fn)
 
-    model_pipe.fit(X, y, featureneutralizer__eras=eras, featureneutralizer__features=features)
+    model_pipe.fit(X, y)
 
     preds = model_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0
@@ -108,7 +108,7 @@ def test_column_transformer_pipeline(setup_data):
     fn = FeatureNeutralizer(proportion=0.5)
     model_pipe = make_pipeline(preproc_pipe, xgb, fn)
 
-    model_pipe.fit(X, y, featureneutralizer__eras=eras, featureneutralizer__features=features)
+    model_pipe.fit(X, y)
 
     preds = model_pipe.predict(X, eras=eras, features=features)
     assert preds.min() >= 0

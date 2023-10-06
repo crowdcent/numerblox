@@ -28,7 +28,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
             warnings.warn(f"Warning: Weights do not sum to 1. Got {sum(self.weights)}.")
         self.donate_weighted = donate_weighted
 
-    def fit(self, X=None, y=None, eras=None):
+    def fit(self, X=None, y=None, **kwargs):
         self.is_fitted_ = True
         return self
 
