@@ -56,11 +56,11 @@ def test_multi_classification_ensemble(setup_data):
     preproc_pipe = make_union(GroupStatsPreProcessor(groups=['sunshine', 'rain']), ColumnSelector(fncv3_cols))
 
     model = DecisionTreeClassifier()
-    crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
+    crossval = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
     pred_rud = PredictionReducer(n_models=3, n_classes=5)
-    ens2 = NumeraiEnsemble(donate_weighted=True)
-    neut2 = FeatureNeutralizer(proportion=0.5)
-    full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
+    ens = NumeraiEnsemble(donate_weighted=True)
+    neut = FeatureNeutralizer(proportion=0.5)
+    full_pipe = make_meta_pipeline(preproc_pipe, crossval, pred_rud, ens, neut)
 
     y_int = (y * 4).astype(int)
     full_pipe.fit(X, y_int, numeraiensemble__eras=eras)
