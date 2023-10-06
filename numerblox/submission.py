@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import pandas as pd
 from typing import Union
@@ -12,16 +13,24 @@ from .misc import Key
 
 class BaseSubmitter(BaseIO):
     """
-    Basic functionality for submitting to Numerai. \n
+    Basic functionality for submitting to Numerai. 
     Uses numerapi under the hood.
-    More info: https://numerapi.readthedocs.io/ \n
+    More info: https://numerapi.readthedocs.io/ 
 
-    :param directory_path: Directory to store and read submissions from. \n
+    :param directory_path: Directory to store and read submissions from. 
     :param api: NumerAPI or SignalsAPI
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param sleep_time: Time to sleep between uploading retries.
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     """
-    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI]):
+    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI], max_retries: int, 
+                 sleep_time: int, fail_silently: bool):
         super().__init__(directory_path)
         self.api = api
+        self.max_retries = max_retries
+        self.sleep_time = sleep_time
+        self.fail_silently = fail_silently
 
     @abstractmethod
     def save_csv(
@@ -50,12 +59,27 @@ class BaseSubmitter(BaseIO):
         print(
             f"{api_type}: Uploading predictions from '{full_path}' for model '{model_name}' (model_id='{model_id}')"
         )
-        self.api.upload_predictions(
-            file_path=full_path, model_id=model_id, *args, **kwargs
-        )
-        print(
-            f"{api_type} submission of '{full_path}' for '{model_name}' is successful!"
-        )
+        for attempt in range(self.max_retries):
+            try:
+                self.api.upload_predictions(
+                    file_path=full_path, model_id=model_id, *args, **kwargs
+                )
+                print(
+                    f"{api_type} submission of '{full_path}' for '{model_name}' is successful!"
+                )
+                return
+            except Exception as e:
+                if attempt < self.max_retries - 1:  # i.e. not the last attempt
+                    print(f"Failed to upload '{full_path}' for '{model_name}' to Numerai. Retrying in {self.sleep_time} seconds...")
+                    print(f"Error: {e}")
+                    time.sleep(self.sleep_time)
+                else:
+                    if self.fail_silently:
+                        print(f"Failed to upload'{full_path}' for '{model_name}' to Numerai. Skipping...")
+                        print(f"Error: {e}")
+                    else:
+                        print(f"Failed to upload '{full_path}' for '{model_name}' to Numerai after {self.max_retries} attempts.")
+                        raise e
 
     def full_submission(
         self,
@@ -164,12 +188,20 @@ class NumeraiClassicSubmitter(BaseSubmitter):
 
     :param directory_path: Base directory to save and read prediction files from. \n
     :param key: Key object containing valid credentials for Numerai Classic. \n
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param sleep_time: Time to sleep between uploading retries.
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     *args, **kwargs will be passed to NumerAPI initialization.
     """
-    def __init__(self, directory_path: str, key: Key, *args, **kwargs):
+    def __init__(self, directory_path: str, key: Key, 
+                 max_retries: int = 2, sleep_time: int = 10, 
+                 fail_silently=False, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
         super().__init__(
-            directory_path=directory_path, api=api
+            directory_path=directory_path, api=api,
+            max_retries=max_retries, sleep_time=sleep_time, 
+            fail_silently=fail_silently
         )
 
     def save_csv(
@@ -205,15 +237,22 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
 
     :param directory_path: Base directory to save and read prediction files from. \n
     :param key: Key object containing valid credentials for Numerai Signals. \n
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param sleep_time: Time to sleep between uploading retries.
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     *args, **kwargs will be passed to SignalsAPI initialization.
     """
-
-    def __init__(self, directory_path: str, key: Key, *args, **kwargs):
+    def __init__(self, directory_path: str, key: Key, 
+                 max_retries: int = 2, sleep_time: int = 10, 
+                 fail_silently=False, *args, **kwargs):
         api = SignalsAPI(
             public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs
         )
         super().__init__(
-            directory_path=directory_path, api=api
+            directory_path=directory_path, api=api,
+            max_retries=max_retries, sleep_time=sleep_time,
+            fail_silently=fail_silently
         )
         self.supported_ticker_formats = [
             "cusip",
@@ -279,7 +318,9 @@ class NumerBaySubmitter(BaseSubmitter):
                  numerbay_username: str = None,
                  numerbay_password: str = None):
         super().__init__(
-            directory_path=str(tournament_submitter.dir), api=tournament_submitter.api
+            directory_path=str(tournament_submitter.dir), api=tournament_submitter.api,
+            max_retries=tournament_submitter.max_retries, sleep_time=tournament_submitter.sleep_time,
+            fail_silently=tournament_submitter.fail_silently
         )
         from numerbay import NumerBay
         self.numerbay_api = NumerBay(username=numerbay_username, password=numerbay_password)

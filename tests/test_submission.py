@@ -7,6 +7,7 @@ from random import choices
 from copy import deepcopy
 from datetime import datetime
 from string import ascii_uppercase
+from unittest.mock import patch, Mock
 from dateutil.relativedelta import relativedelta, FR
 
 from numerblox.misc import Key
@@ -16,7 +17,7 @@ from numerblox.submission import NumeraiClassicSubmitter, NumeraiSignalsSubmitte
 TARGET_NAME = "prediction"
 
 def _create_random_classic_df():
-    # Create random dataframe
+    # Create random predictions dataframe
     n_rows = 100
     test_dataf = pd.DataFrame(np.random.uniform(size=n_rows), columns=[TARGET_NAME])
     test_dataf["id"] = [uuid4() for _ in range(n_rows)]
@@ -37,7 +38,7 @@ def create_random_signals_df(n_rows=1000):
 
 def test_classic_submitter():
     # Initialization
-    test_dir = "test_sub"
+    test_dir = f"test_sub_{uuid4()}"
     classic_key = Key(pub_id="Hello", secret_key="World")
     num_sub = NumeraiClassicSubmitter(directory_path=test_dir, key=classic_key)
     assert num_sub.dir.is_dir()
@@ -50,7 +51,7 @@ def test_classic_submitter():
     assert (num_sub.dir / file_name).is_file()
 
     # Combine CSVs
-    combined = num_sub.combine_csvs(["test_sub/test.csv", "test_sub/test2.csv"], aux_cols=['id'])
+    combined = num_sub.combine_csvs([f"{test_dir}/test.csv", f"{test_dir}/test2.csv"], aux_cols=['id'])
     assert combined.columns == [TARGET_NAME]
 
     # Test that saving breaks if range is invalid.
@@ -69,7 +70,7 @@ def test_classic_submitter():
 
 def test_signals_submitter():
     # Initialization
-    test_dir = "test_sub"
+    test_dir = f"test_sub_{uuid4()}"
     signals_key = Key(pub_id="Hello", secret_key="World")
     signals_sub = NumeraiSignalsSubmitter(directory_path=test_dir, key=signals_key)
     assert signals_sub.dir.is_dir()
@@ -82,8 +83,8 @@ def test_signals_submitter():
     signals_sub.save_csv(dataf=test_dataf, file_name="signals_test2.csv", cols=signals_cols)
 
     combined_signals = signals_sub.combine_csvs(csv_paths=[
-        "test_sub/signals_test.csv", 
-        "test_sub/signals_test2.csv"
+        f"{test_dir}/signals_test.csv", 
+        f"{test_dir}/signals_test2.csv"
         ],
         aux_cols=['ticker', 'last_friday', 'data_type'],
         era_col='last_friday',
@@ -115,6 +116,61 @@ def test_signals_submitter():
     # Wind down
     signals_sub.remove_base_directory()
     assert not os.path.exists(test_dir)
+
+def raise_api_error(*args, **kwargs):
+    raise ValueError("Your session is invalid or has expired.")
+
+@patch.object(NumeraiClassicSubmitter, '_get_model_id', return_value="mocked_model_id")
+def test_upload_predictions_retries(mocked_get_model_id):
+    test_dir = f"test_sub_{uuid4()}"
+    classic_key = Key(pub_id="Hello", secret_key="World")
+    num_sub = NumeraiClassicSubmitter(directory_path=test_dir, key=classic_key, sleep_time=0.1, fail_silently=True)
+    file_name = "test.csv"
+    
+    # Save CSV
+    test_dataf = _create_random_classic_df()
+    num_sub.save_csv(dataf=test_dataf, file_name=file_name, cols=TARGET_NAME)
+
+    with patch.object(num_sub.api, 'upload_predictions', side_effect=raise_api_error) as mock_upload:
+        num_sub.upload_predictions(file_name=file_name, model_name="mock_model")
+        # Check if retries happened 'max_retries' times
+        assert mock_upload.call_count == num_sub.max_retries
+    num_sub.remove_base_directory()
+
+@patch.object(NumeraiClassicSubmitter, '_get_model_id', return_value="mocked_model_id")
+def test_upload_predictions_fail_silently(mocked_get_model_id):
+    test_dir = f"test_sub_{uuid4()}"
+    classic_key = Key(pub_id="Hello", secret_key="World")
+    num_sub = NumeraiClassicSubmitter(directory_path=test_dir, key=classic_key, sleep_time=0.1, 
+                                      fail_silently=True)
+    file_name = "test.csv"
+    
+    # Save CSV
+    test_dataf = _create_random_classic_df()
+    num_sub.save_csv(dataf=test_dataf, file_name=file_name, cols=TARGET_NAME)
+
+    with patch.object(num_sub.api, 'upload_predictions', side_effect=raise_api_error):
+        num_sub.upload_predictions(file_name=file_name, model_name="mock_model")
+
+    num_sub.remove_base_directory()
+
+@patch.object(NumeraiClassicSubmitter, '_get_model_id', return_value="mocked_model_id")
+def test_upload_predictions_exception_handling(mocked_get_model_id):
+    test_dir = f"test_sub_{uuid4()}"
+    classic_key = Key(pub_id="Hello", secret_key="World")
+    num_sub = NumeraiClassicSubmitter(directory_path=test_dir, key=classic_key, 
+                                      sleep_time=0.1, fail_silently=True)
+    file_name = "test.csv"
+    
+    # Save CSV
+    test_dataf = _create_random_classic_df()
+    num_sub.save_csv(dataf=test_dataf, file_name=file_name, cols=TARGET_NAME)
+
+    with patch("builtins.print") as mock_print:
+        num_sub.upload_predictions(file_name=file_name, model_name="mock_model")
+        assert mock_print.call_count >= num_sub.max_retries
+
+    num_sub.remove_base_directory()
 
 # Tests for NumerBaySubmitter
 def test_numerbay_submitter():
