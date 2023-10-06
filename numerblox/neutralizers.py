@@ -16,7 +16,7 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X=None, y=None, features=None, eras=None):
+    def fit(self, X=None, y=None):
         return self
 
     @abstractmethod
@@ -31,7 +31,10 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
         return self.transform(X=X, features=features, eras=eras)
 
     def fit_transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
-        """ Convenience function for scikit-learn compatibility. """
+        """ 
+        Convenience function for scikit-learn compatibility.
+        Needed because fit and transform except different arguments here.
+        """
         return self.fit().transform(X=X, features=features, eras=eras)
     
     def __call__(
@@ -103,10 +106,6 @@ class FeatureNeutralizer(BaseNeutralizer):
             neutralized_preds
         )
         return neutralized_preds
-    
-    # def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
-    #     """ Convenience function for scikit-learn compatibility. """
-    #     return self.predict(X=X, features=features, eras=eras)
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list) -> pd.DataFrame:
         """ Neutralize on CPU. """
