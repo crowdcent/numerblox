@@ -4,16 +4,12 @@ First of all I would like to thank you for considering to contribute to `numerbl
 
 ## Installation
 
-If you haven't installed `numerblox` yet, clone the project into your favorite development environment.
+If you haven't installed `numerblox` yet, clone the project into your favorite development environment and install the repo in editable mode and with all dev dependencies. 
 
 ```bash
 git clone https://github.com/crowdcent/numerblox.git
-```
-
-And install the repo in editable mode and with all dev dependencies. This can be done with poetry.
-    
-```bash
 pip install poetry
+cd numerblox
 poetry install
 ```
 

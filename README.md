@@ -26,8 +26,11 @@ development mode by installing using `poetry`:
 ```bash
 git clone https://github.com/crowdcent/numerblox.git
 pip install poetry
+cd numerblox
 poetry install
 ```
+
+Installation without dev dependencies can be done by adding `--only main` to the `poetry install` line.
 
 Test your installation using one of the education notebooks in
 [examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your
