@@ -430,6 +430,23 @@ class BaseEvaluator:
         plt.axhline(y=0.0, color="r", linestyle="--")
         plt.show()
         return
+    
+    def plot_correlation_heatmap(dataf: pd.DataFrame, pred_cols: List[str]):
+        corr_matrix = dataf[pred_cols].corr().to_numpy()
+
+        plt.figure(figsize=(20, 20))
+
+        # Create heatmap
+        plt.imshow(corr_matrix, cmap="coolwarm", interpolation="none")
+        plt.colorbar()
+
+        # Add ticks and labels
+        ticks = np.arange(0, len(pred_cols), 1)
+        plt.xticks(ticks, pred_cols, rotation=90, fontsize=8)
+        plt.yticks(ticks, pred_cols, fontsize=8)
+
+        plt.show()
+        return
 
 
 class NumeraiClassicEvaluator(BaseEvaluator):
