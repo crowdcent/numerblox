@@ -431,6 +431,7 @@ class BaseEvaluator:
         plt.show()
         return
     
+    @staticmethod
     def plot_correlation_heatmap(dataf: pd.DataFrame, pred_cols: List[str]):
         corr_matrix = dataf[pred_cols].corr().to_numpy()
 
