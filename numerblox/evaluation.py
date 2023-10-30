@@ -104,8 +104,8 @@ class BaseEvaluator:
         legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
         apy = self.apy(era_corrs=val_numerai_corrs)
-        example_corr = self.example_correlation(
-            dataf=dataf, pred_col=pred_col, example_col=example_col
+        example_corr = self.cross_correlation(
+            dataf=dataf, pred_col=pred_col, other_col=example_col
         )
         # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
         calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
@@ -235,14 +235,21 @@ class BaseEvaluator:
             - 1
         ) * 100
 
-    def example_correlation(
-        self, dataf: pd.DataFrame, pred_col: str, example_col: str
+    def cross_correlation(
+        self, dataf: pd.DataFrame, pred_col: str, other_col: str
     ):
-        """Correlations with example predictions."""
-        return self.per_era_corrs(
+        """
+        Corrv2 correlation with other predictions (like another model, example predictions or meta model prediction).
+        :param dataf: DataFrame containing both pred_col and other_col.
+        :param pred_col: Main Prediction.
+        :param other_col: Other prediction column to calculate correlation with pred_col.
+
+        :return: Correlation between Corrv2's of pred_col and other_col.
+        """
+        return self.per_era_numerai_corrs(
             dataf=dataf,
             pred_col=pred_col,
-            target_col=example_col,
+            target_col=other_col,
         ).mean()
 
     def max_feature_exposure(
@@ -302,9 +309,13 @@ class BaseEvaluator:
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
         U = dataf[feature_cols].corrwith(dataf[pred_col]).values
         E = dataf[feature_cols].corrwith(dataf[example_col]).values
-        exp_dis = 1 - np.dot(U, E) / np.dot(E, E)
-        return exp_dis
 
+        denominator = np.dot(E, E)
+        if denominator == 0:
+            exp_dis = 0
+        else:
+            exp_dis = 1 - np.dot(U, E) / np.dot(E, E)
+        return exp_dis
 
     @staticmethod
     def _neutralize_series(series: pd.Series, by: pd.Series, proportion=1.0) -> pd.Series:
@@ -422,7 +433,12 @@ class BaseEvaluator:
 
 
 class NumeraiClassicEvaluator(BaseEvaluator):
-    """Evaluator for all metrics that are relevant in Numerai Classic."""
+    """
+    Evaluator for all metrics that are relevant in Numerai Classic.
+    
+    :param meta_model_col: Optional column name pointing to meta model predictions. Will be used to calculate
+    correlation to the metamodel.
+    """
     def __init__(self, era_col: str = "era", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
         self.fncv3_features = FNCV3_FEATURES
@@ -433,6 +449,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         example_col: str,
         pred_cols: List[str],
         target_col: str = "target",
+        meta_model_col: str = None,
     ) -> pd.DataFrame:
         val_stats = pd.DataFrame()
         dataf = dataf.fillna(0.5)
@@ -465,6 +482,13 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
                 col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
+            val_stats = pd.concat([val_stats, col_stats], axis=0)
+            # Corrrelation with the meta model
+            if meta_model_col is not None:
+                meta_model_corr = self.cross_correlation(
+                dataf=dataf, pred_col=col, other_col=meta_model_col
+                )
+                col_stats.loc[col, "corr_with_meta_model"] = meta_model_corr
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 

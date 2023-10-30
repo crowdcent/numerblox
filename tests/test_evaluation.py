@@ -28,10 +28,8 @@ def test_numerai_classic_evaluator():
         pred_cols=["prediction", "prediction_random"],
         example_col="prediction_random",
     )
-    for col in CLASSIC_STATS_COLS:
+    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
-    for col in CLASSIC_SPECIFIC_STATS_COLS:
-        val_stats[col]
 
 def test_numerai_signals_evaluator(df):
     evaluator = NumeraiSignalsEvaluator(era_col="date", fast_mode=False)
@@ -78,3 +76,22 @@ def test_await_diagnostics_timeout(mock_api):
     
     with pytest.raises(Exception, match=r"Diagnostics couldn't be retrieved within .* minutes after uploading."):
         obj._NumeraiSignalsEvaluator__await_diagnostics(api=mock_api, model_id="test_model_id", diagnostics_id="test_diag_id", timeout_min=0.001, interval_sec=2)
+
+def test_numerai_classic_meta_model_corr():
+    df = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df))
+    df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
+
+    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
+    val_stats = evaluator.full_evaluation(
+        dataf=df,
+        target_col="target",
+        pred_cols=["prediction", "prediction_random"],
+        example_col="prediction_random",
+        meta_model_col="prediction_random",
+    )
+    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS + ["corr_with_meta_model"]:
+        assert col in val_stats.columns
+
+    assert val_stats["corr_with_meta_model"].min() >= -1
+    assert val_stats["corr_with_meta_model"].max() <= 1
