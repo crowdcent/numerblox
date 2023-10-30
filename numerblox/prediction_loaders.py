@@ -7,8 +7,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from .download import NumeraiClassicDownloader
 
 class BasePredictionLoader(BaseEstimator, TransformerMixin):
-    """
-    """
+    """ Shared functionality for all Prediction Loaders. """
     def __init__(self):
         ...
 
@@ -30,10 +29,11 @@ class ExamplePredictions(BasePredictionLoader):
     Load example predictions.
     :param file_name: File to download from NumerAPI.
     By default this is example predictions for v4.2 data.
-    'v4.2/example_validation_predictions.parquet' by default. 
+    'v4.2/live_example_preds.parquet' by default. 
     Example predictions in previous versions:
-    - v4.1. -> "v4.1/live_example_preds.parquet"
-    - v4. -> "v4/live_example_preds.parquet"
+    - v4.2. validation examples -> "v4.2/validation_example_preds.parquet"
+    - v4.2. live benchmark models -> "v4.2/live_benchmark_models.parquet"
+    - v4.2. validation benchmark models -> "v4.2/validation_benchmark_models.parquet"
     :param round_num: Optional round number. Downloads most recent round by default.
     """
     def __init__(self, file_name: str = "v4.2/live_example_preds.parquet",
@@ -62,3 +62,4 @@ class ExamplePredictions(BasePredictionLoader):
 
     def get_feature_names_out(self, input_features=None):
         return [Path(self.file_name).with_suffix('').as_posix()] if not input_features else input_features
+    
