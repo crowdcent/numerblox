@@ -183,15 +183,11 @@ class FeatureNeutralizer(BaseNeutralizer):
         feature_exposure_data = pd.DataFrame(index=X["era"].unique(), columns=feature_list)
 
         for era, group in tqdm(X.groupby("era"), desc="Calculating raw feature exposures"):
-            scores = group[f"{self.pred_name}_normalized"].values.reshape(-1, 1)
-            exposures = group[feature_list].values
-            projected_scores = np.linalg.pinv(exposures).dot(scores)
-            feature_exposures_matrix = exposures * projected_scores.T
-            feature_exposure_data.loc[era, :] = feature_exposures_matrix.mean(axis=0)
-        
-        # For ill-conditioned instances, the feature exposure can be very large or small.
-        mask = (feature_exposure_data > 1) | (feature_exposure_data < -1)
-        feature_exposure_data[mask] = np.nan
-
+            data_matrix = group[feature_list + [f"{self.pred_name}_normalized"]].values
+            correlations = np.corrcoef(data_matrix, rowvar=False)
+            
+            # Get the correlations of all features with the predictions (which is the last column)
+            feature_correlations = correlations[:-1, -1]
+            feature_exposure_data.loc[era, :] = feature_correlations
         return feature_exposure_data
     
