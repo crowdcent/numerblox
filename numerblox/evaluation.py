@@ -379,6 +379,9 @@ class BaseEvaluator:
         :param feature_list: List of feature columns in X.
         :return: DataFrame with Pearson feature exposures by era for each feature.
         """
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
         feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
         for era, group in tqdm(dataf.groupby("era"), desc="Calculating Pearson feature exposures"):
@@ -401,6 +404,9 @@ class BaseEvaluator:
         :param feature_list: List of feature columns in X.
         :return: DataFrame with Corrv2 feature exposures by era for each feature.
         """
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
         feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
         for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures"):
@@ -409,14 +415,6 @@ class BaseEvaluator:
                 corr = self.numerai_corr(group, pred_col=f"{pred_col}_normalized", target_col=feature)
                 exposures[feature] = corr
             feature_exposure_data.loc[era, :] = exposures
-        return feature_exposure_data
-    
-    def _get_feature_exposure_data(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
-        """ Get Normalized Gaussian predictions. """
-        # Normalized Gaussian predictions
-        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
-        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
         return feature_exposure_data
 
     def plot_correlations(
