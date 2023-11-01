@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 
 from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer
-from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
 
-from utils import create_classic_sample_data, classic_test_data
+from utils import create_classic_sample_data
 
 
 setup_data = create_classic_sample_data
