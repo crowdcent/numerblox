@@ -403,7 +403,7 @@ class BaseEvaluator:
         """
         feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
-        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures with Numerai Corr"):
+        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures"):
             exposures = {}
             for feature in feature_list:
                 corr = self.numerai_corr(group, pred_col=f"{pred_col}_normalized", target_col=feature)
