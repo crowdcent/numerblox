@@ -1,10 +1,13 @@
 import numpy as np
 import pandas as pd
-from typing import Union
+from tqdm import tqdm
+from typing import Union, List
 import scipy.stats as sp
 from abc import abstractmethod
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from .feature_groups import V4_2_FEATURE_GROUP_MAPPING
 
 
 class BaseNeutralizer(BaseEstimator, TransformerMixin):
@@ -111,9 +114,7 @@ class FeatureNeutralizer(BaseNeutralizer):
         """ Neutralize on CPU. """
         scores = dataf[columns]
         exposures = dataf[by].values
-        scores = scores - self.proportion * exposures.dot(
-            np.linalg.pinv(exposures).dot(scores)
-        )
+        scores = scores - self.proportion * self._get_raw_exposures(exposures, scores)
         return scores / scores.std()
 
     def neutralize_cuda(self, dataf: pd.DataFrame, columns: list, by: list) -> np.ndarray:
@@ -124,9 +125,7 @@ class FeatureNeutralizer(BaseNeutralizer):
             raise ImportError("CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html")
         scores = cupy.array(dataf[columns].values)
         exposures = cupy.array(dataf[by].values)
-        scores = scores - self.proportion * exposures.dot(
-            cupy.linalg.pinv(exposures).dot(scores)
-        )
+        scores = scores - self.proportion * self._get_raw_exposures_cuda(exposures, scores)
         return cupy.asnumpy(scores / scores.std())
 
     @staticmethod
@@ -142,4 +141,57 @@ class FeatureNeutralizer(BaseNeutralizer):
         neutralization_func = self.neutralize if not self.cuda else self.neutralize_cuda
         dataf[columns] = neutralization_func(dataf, columns, by)
         return dataf[columns]
+    
+    @staticmethod
+    def _get_raw_exposures(exposures: np.array, scores: pd.DataFrame) -> np.array:
+        """ 
+        Get raw feature exposures.
+        Make sure predictions are normalized!
+        :param exposures: Exposures for each era. 
+        :param scores: DataFrame with predictions.
+        :return: Raw exposures for each era.
+        """
+        return exposures.dot(np.linalg.pinv(exposures).dot(scores))
+    
+    @staticmethod
+    def _get_raw_exposures_cuda(exposures: np.array, scores: pd.DataFrame) -> np.array:
+        """ 
+        Get raw feature exposures.
+        Make sure predictions are normalized!
+        :param exposures: Exposures for each era. 
+        :param scores: DataFrame with predictions.
+        :return: Raw exposures for each era.
+        """
+        try:
+            import cupy
+        except ImportError:
+            raise ImportError("CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html")
+        return exposures.dot(cupy.linalg.pinv(exposures).dot(scores))
+    
+    def get_raw_feature_exposures(self, X: pd.DataFrame, feature_list: List[str]) -> pd.DataFrame:
+        """
+        Calculate raw feature exposures for each era.
+
+        :param X: DataFrame containing predictions, features, and eras.
+        :param feature_list: List of feature columns in X.
+        :return: DataFrame with raw feature exposures by era for each feature.
+        """
+        # Normalize predictions
+        X[f"{self.pred_name}_normalized"] = self.normalize(X[[self.pred_name]])
+        
+        # Store each feature's exposure data
+        feature_exposure_data = pd.DataFrame(index=X["era"].unique(), columns=feature_list)
+
+        for era, group in tqdm(X.groupby("era"), desc="Calculating raw feature exposures"):
+            scores = group[f"{self.pred_name}_normalized"].values.reshape(-1, 1)
+            exposures = group[feature_list].values
+            projected_scores = np.linalg.pinv(exposures).dot(scores)
+            feature_exposures_matrix = exposures * projected_scores.T
+            feature_exposure_data.loc[era, :] = feature_exposures_matrix.mean(axis=0)
+        
+        # For ill-conditioned instances, the feature exposure can be very large or small.
+        mask = (feature_exposure_data > 1) | (feature_exposure_data < -1)
+        feature_exposure_data[mask] = np.nan
+
+        return feature_exposure_data
     
