@@ -369,6 +369,32 @@ class BaseEvaluator:
         """Normalize predictions uniformly using ranks."""
         x = (df.rank(method=method) - 0.5) / len(df)
         return pd.Series(x, index=df.index)
+    
+    def get_raw_feature_exposures(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+        """
+        Calculate raw feature exposures for each era.
+
+        :param dataf: DataFrame containing predictions, features, and eras.
+        :param pred_col: Prediction column to calculate feature exposures for.
+        :param feature_list: List of feature columns in X.
+        :return: DataFrame with raw feature exposures by era for each feature.
+        """
+        # Normalize predictions
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        # Gaussianized
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        
+        # Store each feature's exposure data
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+
+        for era, group in tqdm(dataf.groupby("era"), desc="Calculating raw feature exposures"):
+            data_matrix = group[feature_list + [f"{pred_col}_normalized"]].values
+            correlations = np.corrcoef(data_matrix, rowvar=False)
+            
+            # Get the correlations of all features with the predictions (which is the last column)
+            feature_correlations = correlations[:-1, -1]
+            feature_exposure_data.loc[era, :] = feature_correlations
+        return feature_exposure_data
 
     def plot_correlations(
         self,

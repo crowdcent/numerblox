@@ -168,26 +168,3 @@ class FeatureNeutralizer(BaseNeutralizer):
             raise ImportError("CuPy not installed. Set cuda=False or install CuPy. Installation docs: docs.cupy.dev/en/stable/install.html")
         return exposures.dot(cupy.linalg.pinv(exposures).dot(scores))
     
-    def get_raw_feature_exposures(self, X: pd.DataFrame, feature_list: List[str]) -> pd.DataFrame:
-        """
-        Calculate raw feature exposures for each era.
-
-        :param X: DataFrame containing predictions, features, and eras.
-        :param feature_list: List of feature columns in X.
-        :return: DataFrame with raw feature exposures by era for each feature.
-        """
-        # Normalize predictions
-        X[f"{self.pred_name}_normalized"] = self.normalize(X[[self.pred_name]])
-        
-        # Store each feature's exposure data
-        feature_exposure_data = pd.DataFrame(index=X["era"].unique(), columns=feature_list)
-
-        for era, group in tqdm(X.groupby("era"), desc="Calculating raw feature exposures"):
-            data_matrix = group[feature_list + [f"{self.pred_name}_normalized"]].values
-            correlations = np.corrcoef(data_matrix, rowvar=False)
-            
-            # Get the correlations of all features with the predictions (which is the last column)
-            feature_correlations = correlations[:-1, -1]
-            feature_exposure_data.loc[era, :] = feature_correlations
-        return feature_exposure_data
-    

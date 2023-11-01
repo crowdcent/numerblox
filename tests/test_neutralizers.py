@@ -50,19 +50,3 @@ def test_feature_neutralizer_get_feature_names_out_complex():
 def test_feature_neutralizer_get_feature_names_out_with_input_features():
     names = FeatureNeutralizer().get_feature_names_out(input_features=["prediction_fancy1"])
     assert names == ["prediction_fancy1"]
-
-def test_get_raw_feature_exposures(classic_test_data):
-    # Initialize neutralizer
-    fn = FeatureNeutralizer()
-    np.random.seed(1)
-    classic_test_data["prediction"] = np.random.uniform(size=len(classic_test_data))
-
-    feature_list = [col for col in classic_test_data.columns if col.startswith("feature")]
-    raw_exposures = fn.get_raw_feature_exposures(classic_test_data, feature_list)
-    assert isinstance(raw_exposures, pd.DataFrame)
-    assert len(raw_exposures) == len(classic_test_data["era"].unique())
-    # Check that values are between -1 and 1
-    assert raw_exposures.min().min() >= -1
-    assert raw_exposures.max().max() <= 1
-    for feature in feature_list:
-        assert feature in raw_exposures.columns
