@@ -382,7 +382,6 @@ class BaseEvaluator:
         normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
         dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
         feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
-        feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
         for era, group in tqdm(dataf.groupby("era"), desc="Calculating Pearson feature exposures"):
             data_matrix = group[feature_list + [f"{pred_col}_normalized"]].values
@@ -407,7 +406,6 @@ class BaseEvaluator:
         normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
         dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
         feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
-        feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
         for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures"):
             exposures = {}
