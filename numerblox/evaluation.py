@@ -370,30 +370,53 @@ class BaseEvaluator:
         x = (df.rank(method=method) - 0.5) / len(df)
         return pd.Series(x, index=df.index)
     
-    def get_raw_feature_exposures(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+    def get_feature_exposures_pearson(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
         """
-        Calculate raw feature exposures for each era.
+        Calculate feature exposures for each era using Pearson correlation.
 
         :param dataf: DataFrame containing predictions, features, and eras.
         :param pred_col: Prediction column to calculate feature exposures for.
         :param feature_list: List of feature columns in X.
-        :return: DataFrame with raw feature exposures by era for each feature.
+        :return: DataFrame with Pearson feature exposures by era for each feature.
         """
-        # Normalize predictions
-        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
-        # Gaussianized
-        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        
-        # Store each feature's exposure data
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+        feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
 
-        for era, group in tqdm(dataf.groupby("era"), desc="Calculating raw feature exposures"):
+        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Pearson feature exposures"):
             data_matrix = group[feature_list + [f"{pred_col}_normalized"]].values
             correlations = np.corrcoef(data_matrix, rowvar=False)
             
             # Get the correlations of all features with the predictions (which is the last column)
             feature_correlations = correlations[:-1, -1]
             feature_exposure_data.loc[era, :] = feature_correlations
+        return feature_exposure_data
+    
+    def get_feature_exposures_corrv2(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+        """
+        Calculate feature exposures for each era using 'Numerai Corr'.
+        Results will be similar to get_feature_exposures() but more accurate.
+        This method will take longer to compute.
+
+        :param dataf: DataFrame containing predictions, features, and eras.
+        :param pred_col: Prediction column to calculate feature exposures for.
+        :param feature_list: List of feature columns in X.
+        :return: DataFrame with Corrv2 feature exposures by era for each feature.
+        """
+        feature_exposure_data = self._get_feature_exposure_data(dataf, pred_col, feature_list)
+
+        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures with Numerai Corr"):
+            exposures = {}
+            for feature in feature_list:
+                corr = self.numerai_corr(group, pred_col=f"{pred_col}_normalized", target_col=feature)
+                exposures[feature] = corr
+            feature_exposure_data.loc[era, :] = exposures
+        return feature_exposure_data
+    
+    def _get_feature_exposure_data(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+        """ Get Normalized Gaussian predictions. """
+        # Normalized Gaussian predictions
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
         return feature_exposure_data
 
     def plot_correlations(
