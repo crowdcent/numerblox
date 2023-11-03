@@ -6,6 +6,7 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from typing import Tuple, List
 from numerapi import SignalsAPI
+from joblib import Parallel, delayed
 
 from .neutralizers import FeatureNeutralizer
 from .misc import Key
@@ -49,17 +50,26 @@ class BaseEvaluator:
         example_col: str,
         pred_cols: List[str],
         target_col: str = "target",
+        benchmark_cols: list = None,
     ) -> pd.DataFrame:
         """
         Perform evaluation for each prediction column in pred_cols.
         By default only the "prediction" column is evaluated.
         Evaluation is done against given target and example prediction column.
+        :param dataf: DataFrame containing era_col, example_col, pred_cols, target_col and optional benchmark_cols.
+        :param example_col: Example prediction column to calculate correlation with.
+        :param pred_cols: List of prediction columns to calculate evaluation metrics for.
+        :param target_col: Target column to evaluate against.
+        :param benchmark_cols: Optional list of benchmark columns to calculate evaluation metrics for.
         """
         assert self.era_col in dataf.columns, f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
         for pred_col in pred_cols:
             assert pred_col in dataf.columns, f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
         assert target_col in dataf.columns, f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
         assert example_col in dataf.columns, f"Example column '{example_col}' not found in DataFrame. Make sure to set the correct example_col."
+        if benchmark_cols:
+            for col in benchmark_cols:
+                assert col in dataf.columns, f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
         
         val_stats = pd.DataFrame()
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
@@ -75,6 +85,7 @@ class BaseEvaluator:
                 feature_cols=feature_cols,
                 target_col=target_col,
                 example_col=example_col,
+                benchmark_cols=benchmark_cols,
             )
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
@@ -86,6 +97,7 @@ class BaseEvaluator:
         pred_col: str,
         target_col: str,
         example_col: str,
+        benchmark_cols: list = None,
     ):
         """
         Perform evaluation for one prediction column
@@ -100,6 +112,9 @@ class BaseEvaluator:
         val_numerai_corrs = self.per_era_numerai_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
         )
+        val_example_corrs = self.per_era_numerai_corrs(
+            dataf=dataf, pred_col=example_col, target_col=target_col
+        )
         mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
         legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
@@ -107,6 +122,7 @@ class BaseEvaluator:
         example_corr = self.cross_correlation(
             dataf=dataf, pred_col=pred_col, other_col=example_col
         )
+        example_mean, example_std, example_sharpe = self.mean_std_sharpe(era_corrs=val_example_corrs)
         # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
         calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
 
@@ -118,9 +134,26 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "apy"] = apy
         col_stats.loc[pred_col, "calmar_ratio"] = calmar
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
+        col_stats.loc[pred_col, "mean_outperformance_vs_example_preds"] = mean - example_mean
+        col_stats.loc[pred_col, "std_outperformance_vs_example_preds"] = std - example_std
+        col_stats.loc[pred_col, "sharpe_outperformance_vs_example_preds"] = sharpe - example_sharpe
         col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
         col_stats.loc[pred_col, "legacy_std"] = legacy_std
         col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
+
+        if benchmark_cols is not None:
+            for bench_col in benchmark_cols:
+                val_bench_corrs = self.per_era_numerai_corrs(
+                    dataf=dataf, pred_col=bench_col, target_col=target_col
+                )
+                bench_mean, bench_std, bench_sharpe = self.mean_std_sharpe(era_corrs=val_bench_corrs)
+                bench_corr = self.cross_correlation(
+                    dataf=dataf, pred_col=bench_col, other_col=bench_col
+                )
+                col_stats.loc[pred_col, f"corr_with_{bench_col}"] = bench_corr
+                col_stats.loc[pred_col, f"mean_outperformance_vs_{bench_col}"] = mean - bench_mean
+                col_stats.loc[pred_col, f"std_outperformance_vs_{bench_col}"] = std - bench_std
+                col_stats.loc[pred_col, f"sharpe_outperformance_vs_{bench_col}"] = sharpe - bench_sharpe
 
         # Compute intensive stats
         if not self.fast_mode:
@@ -370,29 +403,37 @@ class BaseEvaluator:
         x = (df.rank(method=method) - 0.5) / len(df)
         return pd.Series(x, index=df.index)
     
-    def get_feature_exposures_pearson(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+    def get_feature_exposures_pearson(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str], cpu_cores: int = -1) -> pd.DataFrame:
         """
         Calculate feature exposures for each era using Pearson correlation.
 
         :param dataf: DataFrame containing predictions, features, and eras.
         :param pred_col: Prediction column to calculate feature exposures for.
         :param feature_list: List of feature columns in X.
+        :param cpu_cores: Number of CPU cores to use for parallelization.
         :return: DataFrame with Pearson feature exposures by era for each feature.
         """
-        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
-        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
-
-        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Pearson feature exposures"):
-            data_matrix = group[feature_list + [f"{pred_col}_normalized"]].values
+        def calculate_era_pearson_exposure(era, group, feature_list, pred_col_normalized):
+            data_matrix = group[feature_list + [pred_col_normalized]].values
             correlations = np.corrcoef(data_matrix, rowvar=False)
             
             # Get the correlations of all features with the predictions (which is the last column)
             feature_correlations = correlations[:-1, -1]
+            return era, feature_correlations
+
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+
+        grouped_data = list(dataf.groupby("era"))
+
+        results = Parallel(n_jobs=cpu_cores)(delayed(calculate_era_pearson_exposure)(era, group, feature_list, f"{pred_col}_normalized") for era, group in grouped_data)
+
+        for era, feature_correlations in results:
             feature_exposure_data.loc[era, :] = feature_correlations
         return feature_exposure_data
     
-    def get_feature_exposures_corrv2(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str]) -> pd.DataFrame:
+    def get_feature_exposures_corrv2(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str], cpu_cores: int = -1) -> pd.DataFrame:
         """
         Calculate feature exposures for each era using 'Numerai Corr'.
         Results will be similar to get_feature_exposures() but more accurate.
@@ -401,17 +442,25 @@ class BaseEvaluator:
         :param dataf: DataFrame containing predictions, features, and eras.
         :param pred_col: Prediction column to calculate feature exposures for.
         :param feature_list: List of feature columns in X.
+        :param cpu_cores: Number of CPU cores to use for parallelization.
+        Default: -1 (all cores).
         :return: DataFrame with Corrv2 feature exposures by era for each feature.
         """
-        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
-        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
-
-        for era, group in tqdm(dataf.groupby("era"), desc="Calculating Corrv2 feature exposures"):
+        def calculate_era_feature_exposure(era, group, pred_col, feature_list):
             exposures = {}
             for feature in feature_list:
                 corr = self.numerai_corr(group, pred_col=f"{pred_col}_normalized", target_col=feature)
                 exposures[feature] = corr
+            return era, exposures
+
+        normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
+        dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
+        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+
+        grouped_data = list(dataf.groupby("era"))
+
+        results = Parallel(n_jobs=cpu_cores)(delayed(calculate_era_feature_exposure)(era, group, pred_col, feature_list) for era, group in grouped_data)
+        for era, exposures in results:
             feature_exposure_data.loc[era, :] = exposures
         return feature_exposure_data
 
@@ -513,6 +562,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         pred_cols: List[str],
         target_col: str = "target",
         meta_model_col: str = None,
+        benchmark_cols: list = None,
     ) -> pd.DataFrame:
         val_stats = pd.DataFrame()
         dataf = dataf.fillna(0.5)
@@ -535,6 +585,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 pred_col=col,
                 target_col=target_col,
                 example_col=example_col,
+                benchmark_cols=benchmark_cols,
             )
             # Numerai Classic specific metrics
             if not self.fast_mode and valid_features:
