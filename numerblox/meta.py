@@ -28,21 +28,27 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
     :param predict_func: Name of the function that will be used for prediction.
     Must be one of 'predict', 'predict_proba', 'predict_log_proba'.
     For example, XGBRegressor has 'predict' and 'predict_proba' functions.
+    :param model_type: "regressor" or "classifier". Used to determine if the estimator is multi output.
     """
 
-    def __init__(self, estimator, predict_func="predict"):
+    def __init__(self, estimator, predict_func="predict", model_type="regressor"):
         self.estimator = estimator
         if predict_func not in ["predict", "predict_proba", "predict_log_proba", "transform"]:
             raise ValueError("predict_func must be 'predict', 'predict_proba', 'predict_log_proba' or 'transform'.")
         self.predict_func = predict_func
+        assert model_type in ["regressor", "classifier"], "model_type must be 'regressor' or 'classifier'."
         assert hasattr(self.estimator, self.predict_func), f"Estimator {self.estimator.__class__.__name__} does not have {self.predict_func} function."
+        self.model_type = model_type
+        # predict_proba for classifiers -> multi output
+        self.proba_class_ = predict_func == "predict_proba" and model_type == "classifier"
         
     def fit(self, X: Union[np.array, pd.DataFrame], y, **kwargs):
         """
         Fit underlying estimator and set attributes.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
-        self.multi_output_ = len(y.shape) > 1
+        # Either multi target or outputs are probabilities
+        self.multi_output_ = len(y.shape) > 1 or self.proba_class_
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
@@ -65,7 +71,9 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         return self.transform(X, **kwargs)
     
     def get_feature_names_out(self, input_features = None) -> List[str]:
-        return [f"{self.estimator.__class__.__name__}_{self.predict_func}_predictions"] if not input_features else input_features
+        check_is_fitted(self)
+        feature_names = [f"{self.estimator.__class__.__name__}_{self.predict_func}_output"]
+        return feature_names if not input_features else input_features
 
 
 class CrossValEstimator(BaseEstimator, TransformerMixin):

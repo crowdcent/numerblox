@@ -2,7 +2,7 @@ import re
 import pytest
 import numpy as np
 from sklearn.metrics import log_loss
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, LogisticRegression
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.datasets import make_regression, make_classification
@@ -51,9 +51,26 @@ def test_meta_estimator_init():
     with pytest.raises(ValueError):
         MetaEstimator(ValidMockEstimator(), predict_func="hello")
 
+    # Test classifier/regressor
+    estimator = LogisticRegression()
+    meta_est = MetaEstimator(estimator, predict_func="predict", model_type="classifier")
+
+    assert meta_est.predict_func == "predict"
+    assert meta_est.model_type == "classifier"
+    assert meta_est.estimator == estimator
+
+    with pytest.raises(ValueError):
+        MetaEstimator(estimator, predict_func="invalid_func", model_type="classifier")
+
+    with pytest.raises(AssertionError):
+        MetaEstimator(estimator, predict_func="predict", model_type="invalid_type")
+
+    with pytest.raises(AssertionError):
+        MetaEstimator(estimator, predict_func="transform", model_type="classifier")
+
 def test_meta_estimator_multioutput():
     # Create dummy multioutput dataset
-    X, y = make_regression(n_samples=100, n_features=20, n_targets=3, noise=0.1)
+    X, y = make_regression(n_samples=100, n_features=30, n_targets=3, noise=0.1)
 
     # Multioutput model
     model_multi = RandomForestRegressor()
@@ -65,9 +82,20 @@ def test_meta_estimator_multioutput():
 
     assert transformed.shape == (X.shape[0], y.shape[1]), f"Expected shape {(X.shape[0], y.shape[1])}, but got {transformed.shape}"
 
+    # Classification proba
+    model_multi = RandomForestClassifier()
+    X, y = make_classification(n_samples=100, n_features=30, n_classes=5,
+                               n_informative=5)
+    meta_est = MetaEstimator(model_multi, predict_func="predict_proba", model_type="classifier")
+    meta_est.fit(X, y)
+    X_test = np.random.randn(20, 30)
+    output = meta_est.transform(X_test)
+    assert output.shape == (20, 5), f"Output shape is {output.shape}, but expected (20, 5)"
+
 def test_meta_estimator_get_feature_names_out():
     ensemble = MetaEstimator(ValidMockEstimator(), predict_func="predict")
-    assert ensemble.get_feature_names_out() == ["ValidMockEstimator_predict_predictions"]
+    ensemble.fit(np.random.uniform(size=(100, 10)), np.random.uniform(size=100))
+    assert ensemble.get_feature_names_out() == ["ValidMockEstimator_predict_output"]
     assert ensemble.get_feature_names_out(['a', 'b']) == ['a', 'b']
 
 

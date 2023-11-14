@@ -132,7 +132,7 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
     :param n_models: Number of resulting columns. 
     This indicates how many models were trained to generate the prediction array.
     :param n_classes: Number of classes for each prediction.
-    If predictions were generated with predict_proba and binary classification -> n_classes = 2.-
+    If predictions were generated with predict_proba and binary classification -> n_classes = 2.
     """
     def __init__(self, n_models: int, n_classes: int):
         super().__init__()
