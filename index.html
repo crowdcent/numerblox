@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Solid Numerai pipelines">
+
+<title>numerblox - NumerBlox</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="numerblox - NumerBlox">
+<meta property="og:description" content="Solid Numerai pipelines">
+<meta property="og:image" content="https://img.shields.io/pypi/v/numerblox.png">
+<meta property="og:site-name" content="numerblox">
+<meta name="twitter:title" content="numerblox - NumerBlox">
+<meta name="twitter:description" content="Solid Numerai pipelines">
+<meta name="twitter:image" content="https://img.shields.io/pypi/v/numerblox.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">numerblox</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools ms-auto">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">NumerBlox</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">NumerBlox</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./misc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Misc</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./download.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./numerframe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NumerFrame</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preprocessing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./postprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Postprocessing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./modelpipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelPipeline</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./evaluation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Evaluation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./key.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Key</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./submission.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Submission</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#install" id="toc-install" class="nav-link active" data-scroll-target="#install">1. Install</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">1. Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">1.1 Installation</a></li>
+  <li><a href="#running-notebooks" id="toc-running-notebooks" class="nav-link" data-scroll-target="#running-notebooks">1.2 Running Notebooks</a></li>
+  <li><a href="#contents" id="toc-contents" class="nav-link" data-scroll-target="#contents">2.1. Contents</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">2.2. Examples</a></li>
+  </ul></li>
+  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing">3. Contributing</a></li>
+  <li><a href="#branch-structure" id="toc-branch-structure" class="nav-link" data-scroll-target="#branch-structure">4. Branch structure</a></li>
+  <li><a href="#crediting-sources" id="toc-crediting-sources" class="nav-link" data-scroll-target="#crediting-sources">5. Crediting sources</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/crowdcent/numerblox/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">NumerBlox</h1>
+</div>
+
+<div>
+  <div class="description">
+    Solid Numerai pipelines
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p><code>numerblox</code> offers Numerai specific functionality, so you can worry less about software/data engineering and focus more on building great Numerai models!</p>
+<p>Most of the components in this library are designed for solid weekly inference pipelines, but tools like <a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a>, preprocessors and evaluators also greatly simplify the training process.</p>
+<p><strong>Documentation:</strong> <a href="https://crowdcent.github.io/numerblox/">crowdcent.github.io/numerblox</a></p>
+<p><img src="https://img.shields.io/pypi/v/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/pypi/pyversions/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/contributors/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/issues-raw/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/repo-size/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/workflow/status/crowdcent/numerblox/CI.png" class="img-fluid"></p>
+<section id="install" class="level2">
+<h2 class="anchored" data-anchor-id="install">1. Install</h2>
+</section>
+<section id="getting-started" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started">1. Getting Started</h2>
+<p><strong>This document has been generated by <a href="https://github.com/fastai/nbdev">NBDev</a>.</strong> Please edit <code>nbs/index.ipynb</code> instead of this <code>README.md</code>. Read <code>CONTRIBUTING.MD</code> for more information on the contribution process and how to change files. Thank you!</p>
+<section id="installation" class="level3">
+<h3 class="anchored" data-anchor-id="installation">1.1 Installation</h3>
+<p>Install numerblox from PyPi by running:</p>
+<p><code>pip install numerblox</code></p>
+<p>Alternatively you can clone this repository and install it in development mode running the following from the root of the repository:</p>
+<p><code>pip install -e .</code></p>
+</section>
+<section id="running-notebooks" class="level3">
+<h3 class="anchored" data-anchor-id="running-notebooks">1.2 Running Notebooks</h3>
+<p>Start by spinning up your favorite Jupyter Notebook environment. Here we’ll use:</p>
+<p><code>jupyter notebook</code></p>
+<p>Test your installation using one of the education notebooks in <code>nbs/edu_nbs</code>. A good example is <code>numerframe_tutorial</code>. Run it in your Notebook environment to quickly test if your installation has succeeded</p>
+</section>
+<section id="contents" class="level3">
+<h3 class="anchored" data-anchor-id="contents">2.1. Contents</h3>
+<section id="core-functionality" class="level4">
+<h4 class="anchored" data-anchor-id="core-functionality">2.1.1. Core functionality</h4>
+<p><code>numerblox</code> features the following functionality:</p>
+<ol type="1">
+<li>Downloading data</li>
+<li>A custom data structure extending Pandas DataFrame (<a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a>)</li>
+<li>A suite of preprocessors for Numerai Classic and Signals (feature selection, engineering and manipulation)</li>
+<li>Model objects for easy inference.</li>
+<li>A suite of postprocessors for Numerai Classic and Signals (standardization, ensembling, neutralization and penalization)</li>
+<li>Pipelines handling processing and prediction (<a href="https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipeline"><code>ModelPipeline</code></a> and <a href="https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipelinecollection"><code>ModelPipelineCollection</code></a>)</li>
+<li>Evaluation (<a href="https://crowdcent.github.io/numerblox/evaluation.html#numeraiclassicevaluator"><code>NumeraiClassicEvaluator</code></a> and <a href="https://crowdcent.github.io/numerblox/evaluation.html#numeraisignalsevaluator"><code>NumeraiSignalsEvaluator</code></a>)</li>
+<li>Authentication (<a href="https://crowdcent.github.io/numerblox/key.html#key"><code>Key</code></a> and <a href="https://crowdcent.github.io/numerblox/key.html#load_key_from_json"><code>load_key_from_json</code></a>)</li>
+<li>Submitting (<a href="https://crowdcent.github.io/numerblox/submission.html#numeraiclassicsubmitter"><code>NumeraiClassicSubmitter</code></a>, <a href="https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter"><code>NumeraiSignalsSubmitter</code></a> and <a href="https://crowdcent.github.io/numerblox/submission.html#numerbaysubmitter"><code>NumerBaySubmitter</code></a>)</li>
+</ol>
+</section>
+<section id="educational-notebooks" class="level4">
+<h4 class="anchored" data-anchor-id="educational-notebooks">2.1.2. Educational notebooks</h4>
+<p>Example notebooks can be found in the <code>nbs/edu_nbs</code> directory.</p>
+<p><code>nbs/edu_nbs</code> currently contains the following examples: - <code>numerframe_tutorial.ipynb</code>: A deep dive into what <a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a> has to offer. - <code>submitting.ipynb</code>: How to use Submitters for safe and easy Numerai submissions. - <code>google_cloud_storage.ipynb</code>: How to use Downloaders and Submitters to interact with Google Cloud Storage (GCS). - <code>load_model_from_wandb.ipynb</code>: For <a href="https://wandb.ai/">Weights &amp; Biases</a> users. Easily pull a model from W&amp;B for inference. - <code>numerbay_integration.ipynb</code>: How to use <code>NumerBlox</code> to download and upload predictions listed on <a href="https://numerbay.ai">NumerBay</a>. - <code>synthetic_data_generation.ipynb</code>: Tutorial for generating synthetic data for training Numerai models.</p>
+<p>Development notebooks are also in the <code>nbs</code> directory. These notebooks are also used to generate the documentation.</p>
+<p><strong>Full documentation:</strong> <a href="https://crowdcent.github.io/numerblox/">crowdcent.github.io/numerblox</a></p>
+</section>
+</section>
+<section id="examples" class="level3">
+<h3 class="anchored" data-anchor-id="examples">2.2. Examples</h3>
+<p>Below we will illustrate a common use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in <code>nbs/edu_nbs</code>.</p>
+<section id="numerai-classic" class="level4">
+<h4 class="anchored" data-anchor-id="numerai-classic">2.2.1. Numerai Classic</h4>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 0. Numerblox dependencies ---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.download <span class="im">import</span> NumeraiClassicDownloader</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.numerframe <span class="im">import</span> create_numerframe</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.postprocessing <span class="im">import</span> FeatureNeutralizer</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model <span class="im">import</span> SingleModel</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model_pipeline <span class="im">import</span> ModelPipeline</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.key <span class="im">import</span> load_key_from_json</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.submission <span class="im">import</span> NumeraiClassicSubmitter</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1. Download version 4 data ---</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>downloader <span class="op">=</span> NumeraiClassicDownloader(<span class="st">"data"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>downloader.download_inference_data(<span class="st">"current_round"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2. Initialize NumerFrame ---</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> create_numerframe(file_path<span class="op">=</span><span class="st">"data/current_round/live.parquet"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3. Define and run pipeline ---</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [SingleModel(<span class="st">"test_assets/joblib_v2_example_model.joblib"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                      model_name<span class="op">=</span><span class="st">"test"</span>)]</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"># No preprocessing and 0.5 feature neutralization</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>postprocessors <span class="op">=</span> [FeatureNeutralizer(pred_name<span class="op">=</span><span class="ss">f"prediction_test"</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                                     proportion<span class="op">=</span><span class="fl">0.5</span>)]</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>pipeline <span class="op">=</span> ModelPipeline(preprocessors<span class="op">=</span>[],</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                         models<span class="op">=</span>models,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                         postprocessors<span class="op">=</span>postprocessors)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> pipeline(dataf)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4. Submit ---</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Load credentials from .json (random credentials in this example)</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> load_key_from_json(<span class="st">"test_assets/test_credentials.json"</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>submitter <span class="op">=</span> NumeraiClassicSubmitter(directory_path<span class="op">=</span><span class="st">"sub_current_round"</span>, key<span class="op">=</span>key)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co"># full_submission checks contents, saves as csv and submits.</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>submitter.full_submission(dataf<span class="op">=</span>dataf,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                          cols<span class="op">=</span><span class="ss">f"prediction_test_neutralized_0.5"</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>                          model_name<span class="op">=</span><span class="st">"test"</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 5. Clean up environment (optional) ---</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>downloader.remove_base_directory()</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>submitter.remove_base_directory()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets
+<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round
+<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv
+</pre>
+</div>
+</div>
+</section>
+<section id="numerai-signals" class="level4">
+<h4 class="anchored" data-anchor-id="numerai-signals">2.2.2. Numerai Signals</h4>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 0. Numerblox dependencies ---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.download <span class="im">import</span> KaggleDownloader</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.numerframe <span class="im">import</span> create_numerframe</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.preprocessing <span class="im">import</span> KatsuFeatureGenerator</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model <span class="im">import</span> SingleModel</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model_pipeline <span class="im">import</span> ModelPipeline</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.key <span class="im">import</span> load_key_from_json</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.submission <span class="im">import</span> NumeraiSignalsSubmitter</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1. Download Katsu1110 yfinance dataset from Kaggle ---</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>kd <span class="op">=</span> KaggleDownloader(<span class="st">"data"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>kd.download_inference_data(<span class="st">"code1110/yfinance-stock-price-data-for-numerai-signals"</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2. Initialize NumerFrame ---</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> create_numerframe(<span class="st">"data/full_data.parquet"</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3. Define and run pipeline ---</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [SingleModel(<span class="st">"models/signals_model.cbm"</span>, model_name<span class="op">=</span><span class="st">"cb"</span>)]</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple and fast feature generator based on Katsu Signals starter notebook</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.kaggle.com/code1110/numeraisignals-starter-for-beginners</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>pipeline <span class="op">=</span> ModelPipeline(preprocessors<span class="op">=</span>[KatsuFeatureGenerator(windows<span class="op">=</span>[<span class="dv">20</span>, <span class="dv">40</span>, <span class="dv">60</span>])],</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                         models<span class="op">=</span>models,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                         postprocessors<span class="op">=</span>[])</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> pipeline(dataf)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4. Submit ---</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Load credentials from .json (random credentials in this example)</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> load_key_from_json(<span class="st">"test_assets/test_credentials.json"</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>submitter <span class="op">=</span> NumeraiSignalsSubmitter(directory_path<span class="op">=</span><span class="st">"sub_current_round"</span>, key<span class="op">=</span>key)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co"># full_submission checks contents, saves as csv and submits.</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># cols selection must at least contain 1 ticker column and a signal column.</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>dataf[<span class="st">'signal'</span>] <span class="op">=</span> dataf[<span class="st">'prediction_cb'</span>]</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>submitter.full_submission(dataf<span class="op">=</span>dataf,</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>                          cols<span class="op">=</span>[<span class="st">'bloomberg_ticker'</span>, <span class="st">'signal'</span>],</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>                          model_name<span class="op">=</span><span class="st">"test_model1"</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 5. Clean up environment (optional) ---</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>kd.remove_base_directory()</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>submitter.remove_base_directory()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 test_assets
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 test_credentials.json
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 models
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 signals_model.cbm
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
+<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
+<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 full_data.parquet
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 submission.csv
+</pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="contributing" class="level2">
+<h2 class="anchored" data-anchor-id="contributing">3. Contributing</h2>
+<p>Be sure to read <code>CONTRIBUTING.md</code> for detailed instructions on contributing.</p>
+<p>If you have questions or want to discuss new ideas for <code>numerblox</code>, please create a Github issue first.</p>
+</section>
+<section id="branch-structure" class="level2">
+<h2 class="anchored" data-anchor-id="branch-structure">4. Branch structure</h2>
+<p>Every new feature should be implemented in a branch that branches from <code>dev</code> and has the naming convention <code>feature/{FEATURE_DESCRIPTION}</code>. Explicit bugfixes should be named <code>bugfix/{FIX_DESCRIPTION}</code>. An example structure is given below.</p>
+<div class="cell">
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure
+<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)
+<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader
+<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management
+<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix
+</pre>
+</div>
+</div>
+</section>
+<section id="crediting-sources" class="level2">
+<h2 class="anchored" data-anchor-id="crediting-sources">5. Crediting sources</h2>
+<p>Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code.</p>
+<p>If you are contributing to <code>numerblox</code> and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in documentation.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
