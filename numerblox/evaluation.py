@@ -128,6 +128,10 @@ class BaseEvaluator:
         )
         example_mean, _, example_sharpe = self.mean_std_sharpe(era_corrs=val_example_corrs)
         example_smart_sharpe = self.smart_sharpe(era_corrs=val_example_corrs)
+        legacy_epc_mean, legacy_epc_std, legacy_epc_sharpe, legacy_epc_plus_corr_sharpe = self.model_contribution(
+                dataf=dataf, pred_col=pred_col, target_col=target_col,
+                other_col=example_col
+            )
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -145,6 +149,10 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
         col_stats.loc[pred_col, "legacy_std"] = legacy_std
         col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
+        col_stats.loc[pred_col, "legacy_epc_mean"] = legacy_epc_mean
+        col_stats.loc[pred_col, "legacy_epc_std"] = legacy_epc_std
+        col_stats.loc[pred_col, "legacy_epc_sharpe"] = legacy_epc_sharpe
+        col_stats.loc[pred_col, "legacy_epc_plus_corr_sharpe"] = legacy_epc_plus_corr_sharpe
 
         if benchmark_cols is not None:
             for bench_col in benchmark_cols:
@@ -402,7 +410,7 @@ class BaseEvaluator:
         return pd.DataFrame(
             np.array(computed), columns=columns, index=dataf[self.era_col].unique()
         )
-
+    
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame, method: str = "first") -> pd.Series:
         """Normalize predictions uniformly using ranks."""
@@ -493,6 +501,48 @@ class BaseEvaluator:
         :param era_corrs: Correlation scores by era.
         """
         return np.corrcoef(era_corrs[:-1], era_corrs[1:])[0,1]
+    
+    def model_contribution(
+        self, dataf: pd.DataFrame, pred_col: str, 
+        target_col: str, other_col: str
+    ) -> Tuple[np.float64, np.float64, np.float64, np.float64]:
+        """
+        Legacy contibution Mean, standard deviation and Sharpe ratio.
+        More info: https://forum.numer.ai/t/mmc2-announcement/93
+        if other_col == meta_model_col -> MMC (Meta Model Contribution)
+        if other_col == example_col -> EPC (Example Prediction Contribution)
+
+        :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
+        :param pred_col: Prediction column to calculate MMC for.
+        :param target_col: Target column to calculate MMC against.
+        :param other_col: Meta model column containing predictions to neutralize against.
+
+        :return: Tuple of contribution mean, standard deviation, Sharpe ratio 
+        and Sharpe ratio of contribution + (Pearson) correlation.
+        """
+        mmc_scores = []
+        corr_scores = []
+        # Standard deviation of a uniform distribution
+        COVARIANCE_FACTOR = 0.29 ** 2
+        # Calculate MMC for each era
+        for _, x in dataf.groupby(self.era_col):
+            series = self._neutralize_series(
+                self._normalize_uniform(x[pred_col]), (x[other_col])
+            )
+            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / COVARIANCE_FACTOR)
+            corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))
+
+        # Contribution
+        c_mean = np.mean(mmc_scores)
+        c_std = np.std(mmc_scores)
+        c_sharpe = np.nan if c_std == 0 else c_mean / c_std
+
+        # MMC + Pearson correlation
+        corr_plus_cs = [c + m for c, m in zip(corr_scores, mmc_scores)]
+        corr_plus_mean = np.mean(corr_plus_cs)
+        corr_plus_std = np.std(corr_plus_cs)
+        corr_plus_c_sharpe = np.nan if corr_plus_std == 0 else corr_plus_mean / corr_plus_std
+        return c_mean, c_std, c_sharpe, corr_plus_c_sharpe
 
     def plot_correlations(
         self,
@@ -627,12 +677,22 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
             val_stats = pd.concat([val_stats, col_stats], axis=0)
-            # Corrrelation with the meta model
+
+            # Meta model specific metrics
             if meta_model_col is not None:
                 meta_model_corr = self.cross_correlation(
                 dataf=dataf, pred_col=col, other_col=meta_model_col
                 )
+                legacy_mmc_mean, legacy_mmc_std, legacy_mmc_sharpe, legacy_mmc_plus_corr_sharpe = self.model_contribution(
+                    dataf=dataf, pred_col=col, target_col=target_col,
+                    other_col=meta_model_col
+                )
                 col_stats.loc[col, "corr_with_meta_model"] = meta_model_corr
+                col_stats.loc[col, "legacy_mmc_mean"] = legacy_mmc_mean
+                col_stats.loc[col, "legacy_mmc_std"] = legacy_mmc_std
+                col_stats.loc[col, "legacy_mmc_sharpe"] = legacy_mmc_sharpe
+                col_stats.loc[col, "legacy_mmc_plus_corr_sharpe"] = legacy_mmc_plus_corr_sharpe
+
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
