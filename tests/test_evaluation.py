@@ -8,9 +8,11 @@ from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluato
 
 from utils import create_signals_sample_data, classic_test_data
 
-BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "max_drawdown", "apy", "calmar_ratio", "corr_with_example_preds",
-                   "legacy_mean", "legacy_std", "legacy_sharpe", "max_feature_exposure", "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe", "exposure_dissimilarity", "mean_outperformance_vs_example_preds", "std_outperformance_vs_example_preds", "sharpe_outperformance_vs_example_preds"]
-CLASSIC_SPECIFIC_STATS_COLS = ["feature_neutral_mean_v3", "feature_neutral_std_v3", "feature_neutral_sharpe_v3"]
+BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "smart_sharpe", 
+                   "max_drawdown", "apy", "calmar_ratio", "corr_with_example_preds",
+                   "legacy_mean", "legacy_std", "legacy_sharpe", "max_feature_exposure", "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe", "exposure_dissimilarity", "mean_outperformance_vs_example_preds", "sharpe_outperformance_vs_example_preds", "smart_sharpe_outperformance_vs_example_preds"]
+CLASSIC_SPECIFIC_STATS_COLS = ["feature_neutral_mean_v3", "feature_neutral_std_v3", 
+                               "feature_neutral_sharpe_v3", "corr_with_meta_model"]
 
 
 CLASSIC_STATS_COLS = BASE_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS
@@ -28,6 +30,7 @@ def test_numerai_classic_evaluator(classic_test_data):
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
         example_col="prediction_random",
+        meta_model_col="prediction_random",
     )
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
@@ -48,13 +51,14 @@ def test_evaluation_benchmark_cols(classic_test_data):
         pred_cols=["prediction", "prediction_random"],
         example_col="prediction_random",
         benchmark_cols=benchmark_cols,
+        meta_model_col="prediction_random",
     )
     additional_expected_cols = []
     for col in benchmark_cols:
         additional_expected_cols.extend([f"corr_with_{col}", 
                                         f"mean_outperformance_vs_{col}", 
-                                        f"std_outperformance_vs_{col}", 
-                                        f"sharpe_outperformance_vs_{col}"])
+                                        f"sharpe_outperformance_vs_{col}",
+                                        f"smart_sharpe_outperformance_vs_{col}"])
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS + additional_expected_cols:
         assert col in val_stats.columns
 
