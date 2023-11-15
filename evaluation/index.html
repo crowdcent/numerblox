@@ -1,0 +1,990 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../prediction_loaders/">
+      
+      
+        <link rel="next" href="../submission/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+    
+    
+      
+        <title>Evaluation - numerblox</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4b4a2bd9.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Ubuntu";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="005380">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#evaluators" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="numerblox" class="md-header__button md-logo" aria-label="numerblox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 9V1.5h-3V9h-3V1.5h-3V9h-3V1.5H4.65V9H3v1.5h18V9h-1.5m0 4.5h-3V21h-3v-7.5h-3V21h-3v-7.5H4.65V21H3v1.5h18V21h-1.5v-7.5Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            numerblox
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Evaluation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../end_to_end/" class="md-tabs__link">
+        
+  
+    
+  
+  End-To-End Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../download/" class="md-tabs__link">
+        
+  
+    
+  
+  Downloaders
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../numerframe/" class="md-tabs__link">
+        
+  
+    
+  
+  NumerFrame
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../preprocessing/" class="md-tabs__link">
+        
+  
+    
+  
+  Preprocessing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../targets/" class="md-tabs__link">
+        
+  
+    
+  
+  Target Engineering
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../meta/" class="md-tabs__link">
+        
+  
+    
+  
+  Meta Estimators
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../neutralization/" class="md-tabs__link">
+        
+  
+    
+  
+  Feature Neutralization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../penalization/" class="md-tabs__link">
+        
+  
+    
+  
+  Feature Penalization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../prediction_loaders/" class="md-tabs__link">
+        
+  
+    
+  
+  Prediction Loaders
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+    
+  
+  Evaluation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../submission/" class="md-tabs__link">
+        
+  
+    
+  
+  Submitters
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+    
+  
+  How To Contribute
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../crowdcent/" class="md-tabs__link">
+        
+  
+    
+  
+  About CrowdCent
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../disclaimer/" class="md-tabs__link">
+        
+  
+    
+  
+  Disclaimer
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="numerblox" class="md-nav__button md-logo" aria-label="numerblox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 9V1.5h-3V9h-3V1.5h-3V9h-3V1.5H4.65V9H3v1.5h18V9h-1.5m0 4.5h-3V21h-3v-7.5h-3V21h-3v-7.5H4.65V21H3v1.5h18V21h-1.5v-7.5Z"/></svg>
+
+    </a>
+    numerblox
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../end_to_end/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    End-To-End Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../download/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Downloaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numerframe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NumerFrame
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Preprocessing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../targets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Target Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meta/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Meta Estimators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../neutralization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Neutralization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../penalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Penalization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prediction_loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prediction Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Evaluation
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Evaluation
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-metrics" class="md-nav__link">
+    Common Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerai-classic-specific-metrics" class="md-nav__link">
+    Numerai Classic specific metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerai-signals-specific-metrics" class="md-nav__link">
+    Numerai Signals specific metrics
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../submission/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Submitters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How To Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crowdcent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About CrowdCent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../disclaimer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disclaimer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-metrics" class="md-nav__link">
+    Common Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerai-classic-specific-metrics" class="md-nav__link">
+    Numerai Classic specific metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerai-signals-specific-metrics" class="md-nav__link">
+    Numerai Signals specific metrics
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="evaluators">Evaluators</h1>
+<p>NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.</p>
+<h2 id="common-metrics">Common Metrics</h2>
+<p>The following metrics are included for <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code>:</p>
+<ul>
+<li>
+<p>Mean, Standard Deviation and Sharpe for era returns (Numerai Correlation).</p>
+</li>
+<li>
+<p>Max drawdown.</p>
+</li>
+<li>
+<p>Annual Percentage Yield (APY).</p>
+</li>
+<li>
+<p>Correlation with example predictions.</p>
+</li>
+<li>
+<p><a href="https://forum.numer.ai/t/model-diagnostics-feature-exposure/899">Max feature exposure</a>.</p>
+</li>
+<li>
+<p><a href="https://docs.numer.ai/tournament/feature-neutral-correlation">Feature Neutral</a> Mean, Standard deviation and Sharpe.</p>
+</li>
+<li>
+<p><a href="https://forum.numer.ai/t/true-contribution-details/5128/4">Exposure Dissimilarity</a>.</p>
+</li>
+<li>
+<p><a href="https://www.investopedia.com/terms/c/calmarratio.asp">Calmar Ratio</a>.</p>
+</li>
+<li>
+<p>Mean, Standard Deviation and Sharpe for TB200 and TB500 (Buy top 200/500 stocks and sell bottom 200/500 stocks).</p>
+</li>
+</ul>
+<p>For both <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code> you can set <code>fast_mode=True</code> to skip max. feature exposure, <a href="https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website">FNCV3 metrics</a>, TB200, TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.</p>
+<h2 id="numerai-classic-specific-metrics">Numerai Classic specific metrics</h2>
+<p><code>NumeraiClassicEvaluator</code> will also compute <a href="https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website">FNCv3</a>. The FNCV3 mean is a common metric shown on the Numerai leaderboard under <code>FNCV3</code>. <code>NumeraiClassicEvaluator</code> will compute the mean, standard deviation and Sharpe ratio for FNCV3. </p>
+<pre><code class="language-py">from numerblox.evaluation import NumeraiClassicEvaluator
+
+# Validation DataFrame to compute metrics on
+# Should have at least era_col, example_col, pred_cols and target_col columns.
+val_df = ...
+
+evaluator = NumeraiClassicEvaluator(era_col=&quot;era&quot;)
+metrics = evaluator.full_evaluation(val_df, 
+                                    example_col=&quot;example_preds&quot;, 
+                                    pred_cols=[&quot;prediction&quot;], 
+                                    target_col=&quot;target&quot;)
+</code></pre>
+<h2 id="numerai-signals-specific-metrics">Numerai Signals specific metrics</h2>
+<p><code>NumeraiSignalsEvaluator</code> offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in <code>full_evaluation</code>. It can still be beneficial to calculate as this metric is close to the one used for payouts.</p>
+<p>Example of how to get neutralized correlation scores for Numerai Signals:</p>
+<pre><code class="language-py">from numerblox.misc import Key
+from numerblox.evaluation import NumeraiSignalsEvaluator
+
+evaluator = NumeraiSignalsEvaluator()
+
+# A Numerai Signals model name you use.
+model_name = &quot;MY_MODEL&quot;
+# NumerBlox Key for accessing the Numerai API
+key = Key(pub_id=&quot;Hello&quot;, secret_key=&quot;World&quot;)
+# DataFrame with validation data containing prediction, friday_date, ticker and data_type columns
+val_df = pd.DataFrame()
+
+evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
+# Returns a Pandas Series like this.
+# pd.Series([0.01, ..., 0.02])
+</code></pre>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.tabs", "navigation.tracking", "navigation.tabs.sticky", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.81fa17fe.min.js"></script>
+      
+    
+  </body>
+</html>

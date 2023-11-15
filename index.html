@@ -1,702 +1,1206 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
-<meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-
-<meta name="description" content="Solid Numerai pipelines">
-
-<title>numerblox - NumerBlox</title>
-<style>
-code{white-space: pre-wrap;}
-span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
-div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-ul.task-list{list-style: none;}
-ul.task-list li input[type="checkbox"] {
-  width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
-  vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-</style>
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="end_to_end/">
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+    
+    
+      
+        <title>numerblox</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.4b4a2bd9.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.356b1318.min.css">
+      
+      
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 20,
-  "language": {
-    "search-no-results-text": "No results",
-    "search-matching-documents-text": "matching documents",
-    "search-copy-link-title": "Copy link to search",
-    "search-hide-matches-text": "Hide additional matches",
-    "search-more-match-text": "more match in this document",
-    "search-more-matches-text": "more matches in this document",
-    "search-clear-button-title": "Clear",
-    "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit",
-    "search-label": "Search"
-  }
-}</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Ubuntu";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
 
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="005380">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#numerblox" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
 
-<link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="numerblox - NumerBlox">
-<meta property="og:description" content="Solid Numerai pipelines">
-<meta property="og:image" content="https://img.shields.io/pypi/v/numerblox.png">
-<meta property="og:site-name" content="numerblox">
-<meta name="twitter:title" content="numerblox - NumerBlox">
-<meta name="twitter:description" content="Solid Numerai pipelines">
-<meta name="twitter:image" content="https://img.shields.io/pypi/v/numerblox.png">
-<meta name="twitter:card" content="summary_large_image">
-</head>
+  
 
-<body class="nav-sidebar floating nav-fixed">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="numerblox" class="md-header__button md-logo" aria-label="numerblox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 9V1.5h-3V9h-3V1.5h-3V9h-3V1.5H4.65V9H3v1.5h18V9h-1.5m0 4.5h-3V21h-3v-7.5h-3V21h-3v-7.5H4.65V21H3v1.5h18V21h-1.5v-7.5Z"/></svg>
 
-<div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
-    <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">numerblox</span>
     </a>
-  </div>
-        <div class="quarto-navbar-tools ms-auto">
-</div>
-          <div id="quarto-search" class="" title="Search"></div>
-      </div> <!-- /container-fluid -->
-    </nav>
-  <nav class="quarto-secondary-nav">
-    <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-        <i class="bi bi-layout-text-sidebar-reverse"></i>
-      </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">NumerBlox</a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            numerblox
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
     </div>
+    
+      
+    
+    
+    
+    
   </nav>
-</header>
-<!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
-<!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    <div class="sidebar-menu-container"> 
-    <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">NumerBlox</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./misc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Misc</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./numerframe.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">NumerFrame</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./preprocessing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Preprocessing</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Model</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./postprocessing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Postprocessing</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./modelpipeline.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">ModelPipeline</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./evaluation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Evaluation</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./key.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Key</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./submission.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Submission</span></a>
-  </div>
-</li>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="end_to_end/" class="md-tabs__link">
+        
+  
+    
+  
+  End-To-End Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="download/" class="md-tabs__link">
+        
+  
+    
+  
+  Downloaders
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="numerframe/" class="md-tabs__link">
+        
+  
+    
+  
+  NumerFrame
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="preprocessing/" class="md-tabs__link">
+        
+  
+    
+  
+  Preprocessing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="targets/" class="md-tabs__link">
+        
+  
+    
+  
+  Target Engineering
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="meta/" class="md-tabs__link">
+        
+  
+    
+  
+  Meta Estimators
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="neutralization/" class="md-tabs__link">
+        
+  
+    
+  
+  Feature Neutralization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="penalization/" class="md-tabs__link">
+        
+  
+    
+  
+  Feature Penalization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="prediction_loaders/" class="md-tabs__link">
+        
+  
+    
+  
+  Prediction Loaders
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="evaluation/" class="md-tabs__link">
+        
+  
+    
+  
+  Evaluation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="submission/" class="md-tabs__link">
+        
+  
+    
+  
+  Submitters
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="contributing/" class="md-tabs__link">
+        
+  
+    
+  
+  How To Contribute
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="crowdcent/" class="md-tabs__link">
+        
+  
+    
+  
+  About CrowdCent
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="disclaimer/" class="md-tabs__link">
+        
+  
+    
+  
+  Disclaimer
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="api/" class="md-tabs__link">
+        
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
     </ul>
-    </div>
+  </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
-<!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#install" id="toc-install" class="nav-link active" data-scroll-target="#install">1. Install</a></li>
-  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">1. Getting Started</a>
-  <ul class="collapse">
-  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">1.1 Installation</a></li>
-  <li><a href="#running-notebooks" id="toc-running-notebooks" class="nav-link" data-scroll-target="#running-notebooks">1.2 Running Notebooks</a></li>
-  <li><a href="#contents" id="toc-contents" class="nav-link" data-scroll-target="#contents">2.1. Contents</a></li>
-  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">2.2. Examples</a></li>
-  </ul></li>
-  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing">3. Contributing</a></li>
-  <li><a href="#branch-structure" id="toc-branch-structure" class="nav-link" data-scroll-target="#branch-structure">4. Branch structure</a></li>
-  <li><a href="#crediting-sources" id="toc-crediting-sources" class="nav-link" data-scroll-target="#crediting-sources">5. Crediting sources</a></li>
-  </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/crowdcent/numerblox/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
-    </div>
-<!-- main -->
-<main class="content" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">NumerBlox</h1>
-</div>
-
-<div>
-  <div class="description">
-    Solid Numerai pipelines
-  </div>
-</div>
-
-
-<div class="quarto-title-meta">
-
     
   
-    
-  </div>
-  
-
 </header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
 
-<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<p><code>numerblox</code> offers Numerai specific functionality, so you can worry less about software/data engineering and focus more on building great Numerai models!</p>
-<p>Most of the components in this library are designed for solid weekly inference pipelines, but tools like <a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a>, preprocessors and evaluators also greatly simplify the training process.</p>
-<p><strong>Documentation:</strong> <a href="https://crowdcent.github.io/numerblox/">crowdcent.github.io/numerblox</a></p>
-<p><img src="https://img.shields.io/pypi/v/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/pypi/pyversions/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/contributors/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/issues-raw/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/repo-size/crowdcent/numerblox.png" class="img-fluid"> <img src="https://img.shields.io/github/workflow/status/crowdcent/numerblox/CI.png" class="img-fluid"></p>
-<section id="install" class="level2">
-<h2 class="anchored" data-anchor-id="install">1. Install</h2>
-</section>
-<section id="getting-started" class="level2">
-<h2 class="anchored" data-anchor-id="getting-started">1. Getting Started</h2>
-<p><strong>This document has been generated by <a href="https://github.com/fastai/nbdev">NBDev</a>.</strong> Please edit <code>nbs/index.ipynb</code> instead of this <code>README.md</code>. Read <code>CONTRIBUTING.MD</code> for more information on the contribution process and how to change files. Thank you!</p>
-<section id="installation" class="level3">
-<h3 class="anchored" data-anchor-id="installation">1.1 Installation</h3>
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="numerblox" class="md-nav__button md-logo" aria-label="numerblox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 9V1.5h-3V9h-3V1.5h-3V9h-3V1.5H4.65V9H3v1.5h18V9h-1.5m0 4.5h-3V21h-3v-7.5h-3V21h-3v-7.5H4.65V21H3v1.5h18V21h-1.5v-7.5Z"/></svg>
+
+    </a>
+    numerblox
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-installation" class="md-nav__link">
+    1. Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-functionality" class="md-nav__link">
+    2. Core functionality
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-examples" class="md-nav__link">
+    3. Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-downloading-numerai-classic-data" class="md-nav__link">
+    3.1. Downloading Numerai Classic Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-core-numerframe-features" class="md-nav__link">
+    3.2. Core NumerFrame features
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-advanced-numerai-models" class="md-nav__link">
+    3.3. Advanced Numerai models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-evaluation" class="md-nav__link">
+    3.4. Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-submission" class="md-nav__link">
+    3.5. Submission
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-contributing" class="md-nav__link">
+    4. Contributing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-crediting-sources" class="md-nav__link">
+    5. Crediting sources
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="end_to_end/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    End-To-End Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="download/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Downloaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="numerframe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    NumerFrame
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="preprocessing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Preprocessing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="targets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Target Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="meta/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Meta Estimators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="neutralization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Neutralization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="penalization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Penalization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="prediction_loaders/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prediction Loaders
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="submission/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Submitters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How To Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="crowdcent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About CrowdCent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="disclaimer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disclaimer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-installation" class="md-nav__link">
+    1. Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-functionality" class="md-nav__link">
+    2. Core functionality
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-examples" class="md-nav__link">
+    3. Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-downloading-numerai-classic-data" class="md-nav__link">
+    3.1. Downloading Numerai Classic Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-core-numerframe-features" class="md-nav__link">
+    3.2. Core NumerFrame features
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-advanced-numerai-models" class="md-nav__link">
+    3.3. Advanced Numerai models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-evaluation" class="md-nav__link">
+    3.4. Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-submission" class="md-nav__link">
+    3.5. Submission
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-contributing" class="md-nav__link">
+    4. Contributing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-crediting-sources" class="md-nav__link">
+    5. Crediting sources
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<p><img alt="" src="https://img.shields.io/pypi/v/numerblox.png" />
+<img alt="" src="https://img.shields.io/pypi/pyversions/numerblox.png" />
+<img alt="" src="https://img.shields.io/github/contributors/crowdcent/numerblox.png" />
+<img alt="" src="https://img.shields.io/github/issues-raw/crowdcent/numerblox.png" />
+<img alt="" src="https://img.shields.io/codecov/c/github/crowdcent/numerblox.png" /></p>
+<h1 id="numerblox">NumerBlox</h1>
+<p>NumerBlox offers components that help with developing strong Numerai models and inference pipelines. From downloading data to submitting predictions, NumerBlox has you covered.</p>
+<p>All components can be used standalone and all processors are fully compatible to use within <a href="https://scikit-learn.org/">scikit-learn</a> pipelines.  </p>
+<h2 id="1-installation">1. Installation</h2>
 <p>Install numerblox from PyPi by running:</p>
 <p><code>pip install numerblox</code></p>
-<p>Alternatively you can clone this repository and install it in development mode running the following from the root of the repository:</p>
-<p><code>pip install -e .</code></p>
-</section>
-<section id="running-notebooks" class="level3">
-<h3 class="anchored" data-anchor-id="running-notebooks">1.2 Running Notebooks</h3>
-<p>Start by spinning up your favorite Jupyter Notebook environment. Here we’ll use:</p>
-<p><code>jupyter notebook</code></p>
-<p>Test your installation using one of the education notebooks in <code>nbs/edu_nbs</code>. A good example is <code>numerframe_tutorial</code>. Run it in your Notebook environment to quickly test if your installation has succeeded</p>
-</section>
-<section id="contents" class="level3">
-<h3 class="anchored" data-anchor-id="contents">2.1. Contents</h3>
-<section id="core-functionality" class="level4">
-<h4 class="anchored" data-anchor-id="core-functionality">2.1.1. Core functionality</h4>
-<p><code>numerblox</code> features the following functionality:</p>
-<ol type="1">
-<li>Downloading data</li>
-<li>A custom data structure extending Pandas DataFrame (<a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a>)</li>
-<li>A suite of preprocessors for Numerai Classic and Signals (feature selection, engineering and manipulation)</li>
-<li>Model objects for easy inference.</li>
-<li>A suite of postprocessors for Numerai Classic and Signals (standardization, ensembling, neutralization and penalization)</li>
-<li>Pipelines handling processing and prediction (<a href="https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipeline"><code>ModelPipeline</code></a> and <a href="https://crowdcent.github.io/numerblox/modelpipeline.html#modelpipelinecollection"><code>ModelPipelineCollection</code></a>)</li>
-<li>Evaluation (<a href="https://crowdcent.github.io/numerblox/evaluation.html#numeraiclassicevaluator"><code>NumeraiClassicEvaluator</code></a> and <a href="https://crowdcent.github.io/numerblox/evaluation.html#numeraisignalsevaluator"><code>NumeraiSignalsEvaluator</code></a>)</li>
-<li>Authentication (<a href="https://crowdcent.github.io/numerblox/key.html#key"><code>Key</code></a> and <a href="https://crowdcent.github.io/numerblox/key.html#load_key_from_json"><code>load_key_from_json</code></a>)</li>
-<li>Submitting (<a href="https://crowdcent.github.io/numerblox/submission.html#numeraiclassicsubmitter"><code>NumeraiClassicSubmitter</code></a>, <a href="https://crowdcent.github.io/numerblox/submission.html#numeraisignalssubmitter"><code>NumeraiSignalsSubmitter</code></a> and <a href="https://crowdcent.github.io/numerblox/submission.html#numerbaysubmitter"><code>NumerBaySubmitter</code></a>)</li>
-</ol>
-</section>
-<section id="educational-notebooks" class="level4">
-<h4 class="anchored" data-anchor-id="educational-notebooks">2.1.2. Educational notebooks</h4>
-<p>Example notebooks can be found in the <code>nbs/edu_nbs</code> directory.</p>
-<p><code>nbs/edu_nbs</code> currently contains the following examples: - <code>numerframe_tutorial.ipynb</code>: A deep dive into what <a href="https://crowdcent.github.io/numerblox/numerframe.html#numerframe"><code>NumerFrame</code></a> has to offer. - <code>submitting.ipynb</code>: How to use Submitters for safe and easy Numerai submissions. - <code>google_cloud_storage.ipynb</code>: How to use Downloaders and Submitters to interact with Google Cloud Storage (GCS). - <code>load_model_from_wandb.ipynb</code>: For <a href="https://wandb.ai/">Weights &amp; Biases</a> users. Easily pull a model from W&amp;B for inference. - <code>numerbay_integration.ipynb</code>: How to use <code>NumerBlox</code> to download and upload predictions listed on <a href="https://numerbay.ai">NumerBay</a>. - <code>synthetic_data_generation.ipynb</code>: Tutorial for generating synthetic data for training Numerai models.</p>
-<p>Development notebooks are also in the <code>nbs</code> directory. These notebooks are also used to generate the documentation.</p>
-<p><strong>Full documentation:</strong> <a href="https://crowdcent.github.io/numerblox/">crowdcent.github.io/numerblox</a></p>
-</section>
-</section>
-<section id="examples" class="level3">
-<h3 class="anchored" data-anchor-id="examples">2.2. Examples</h3>
-<p>Below we will illustrate a common use case for inference pipelines. To learn more in-depth about the features of this library, check out notebooks in <code>nbs/edu_nbs</code>.</p>
-<section id="numerai-classic" class="level4">
-<h4 class="anchored" data-anchor-id="numerai-classic">2.2.1. Numerai Classic</h4>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 0. Numerblox dependencies ---</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.download <span class="im">import</span> NumeraiClassicDownloader</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.numerframe <span class="im">import</span> create_numerframe</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.postprocessing <span class="im">import</span> FeatureNeutralizer</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model <span class="im">import</span> SingleModel</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model_pipeline <span class="im">import</span> ModelPipeline</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.key <span class="im">import</span> load_key_from_json</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.submission <span class="im">import</span> NumeraiClassicSubmitter</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1. Download version 4 data ---</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>downloader <span class="op">=</span> NumeraiClassicDownloader(<span class="st">"data"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>downloader.download_inference_data(<span class="st">"current_round"</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2. Initialize NumerFrame ---</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> create_numerframe(file_path<span class="op">=</span><span class="st">"data/current_round/live.parquet"</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3. Define and run pipeline ---</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [SingleModel(<span class="st">"test_assets/joblib_v2_example_model.joblib"</span>,</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                      model_name<span class="op">=</span><span class="st">"test"</span>)]</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"># No preprocessing and 0.5 feature neutralization</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>postprocessors <span class="op">=</span> [FeatureNeutralizer(pred_name<span class="op">=</span><span class="ss">f"prediction_test"</span>,</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                                     proportion<span class="op">=</span><span class="fl">0.5</span>)]</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>pipeline <span class="op">=</span> ModelPipeline(preprocessors<span class="op">=</span>[],</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                         models<span class="op">=</span>models,</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                         postprocessors<span class="op">=</span>postprocessors)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> pipeline(dataf)</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4. Submit ---</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Load credentials from .json (random credentials in this example)</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> load_key_from_json(<span class="st">"test_assets/test_credentials.json"</span>)</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>submitter <span class="op">=</span> NumeraiClassicSubmitter(directory_path<span class="op">=</span><span class="st">"sub_current_round"</span>, key<span class="op">=</span>key)</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co"># full_submission checks contents, saves as csv and submits.</span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>submitter.full_submission(dataf<span class="op">=</span>dataf,</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                          cols<span class="op">=</span><span class="ss">f"prediction_test_neutralized_0.5"</span>,</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>                          model_name<span class="op">=</span><span class="st">"test"</span>)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 5. Clean up environment (optional) ---</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>downloader.remove_base_directory()</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>submitter.remove_base_directory()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell">
-<div class="cell-output cell-output-display">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 test_assets
-<span style="color: #808080; text-decoration-color: #808080">    ┣━━ </span>📄 joblib_v2_example_model.joblib
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_credentials.json
-</pre>
-</div>
-<div class="cell-output cell-output-display">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📁 current_round
-<span style="color: #808080; text-decoration-color: #808080">┃       ┗━━ </span>📄 numerai_tournament_data.parquet
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 test_model1.csv
-</pre>
-</div>
-</div>
-</section>
-<section id="numerai-signals" class="level4">
-<h4 class="anchored" data-anchor-id="numerai-signals">2.2.2. Numerai Signals</h4>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 0. Numerblox dependencies ---</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.download <span class="im">import</span> KaggleDownloader</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.numerframe <span class="im">import</span> create_numerframe</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.preprocessing <span class="im">import</span> KatsuFeatureGenerator</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model <span class="im">import</span> SingleModel</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.model_pipeline <span class="im">import</span> ModelPipeline</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.key <span class="im">import</span> load_key_from_json</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numerblox.submission <span class="im">import</span> NumeraiSignalsSubmitter</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1. Download Katsu1110 yfinance dataset from Kaggle ---</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>kd <span class="op">=</span> KaggleDownloader(<span class="st">"data"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>kd.download_inference_data(<span class="st">"code1110/yfinance-stock-price-data-for-numerai-signals"</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2. Initialize NumerFrame ---</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> create_numerframe(<span class="st">"data/full_data.parquet"</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3. Define and run pipeline ---</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [SingleModel(<span class="st">"models/signals_model.cbm"</span>, model_name<span class="op">=</span><span class="st">"cb"</span>)]</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple and fast feature generator based on Katsu Signals starter notebook</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.kaggle.com/code1110/numeraisignals-starter-for-beginners</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>pipeline <span class="op">=</span> ModelPipeline(preprocessors<span class="op">=</span>[KatsuFeatureGenerator(windows<span class="op">=</span>[<span class="dv">20</span>, <span class="dv">40</span>, <span class="dv">60</span>])],</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                         models<span class="op">=</span>models,</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                         postprocessors<span class="op">=</span>[])</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>dataf <span class="op">=</span> pipeline(dataf)</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4. Submit ---</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Load credentials from .json (random credentials in this example)</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> load_key_from_json(<span class="st">"test_assets/test_credentials.json"</span>)</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>submitter <span class="op">=</span> NumeraiSignalsSubmitter(directory_path<span class="op">=</span><span class="st">"sub_current_round"</span>, key<span class="op">=</span>key)</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co"># full_submission checks contents, saves as csv and submits.</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># cols selection must at least contain 1 ticker column and a signal column.</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>dataf[<span class="st">'signal'</span>] <span class="op">=</span> dataf[<span class="st">'prediction_cb'</span>]</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>submitter.full_submission(dataf<span class="op">=</span>dataf,</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>                          cols<span class="op">=</span>[<span class="st">'bloomberg_ticker'</span>, <span class="st">'signal'</span>],</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>                          model_name<span class="op">=</span><span class="st">"test_model1"</span>)</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 5. Clean up environment (optional) ---</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>kd.remove_base_directory()</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>submitter.remove_base_directory()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell">
-<div class="cell-output cell-output-display">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure before starting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 test_assets
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 test_credentials.json
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 models
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 signals_model.cbm
-</pre>
-</div>
-<div class="cell-output cell-output-display">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">💻 Directory structure after submitting
-<span style="color: #808080; text-decoration-color: #808080">┣━━ </span>📁 data
-<span style="color: #808080; text-decoration-color: #808080">┃   ┗━━ </span>📄 full_data.parquet
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📁 sub_current_round
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>📄 submission.csv
-</pre>
-</div>
-</div>
-</section>
-</section>
-</section>
-<section id="contributing" class="level2">
-<h2 class="anchored" data-anchor-id="contributing">3. Contributing</h2>
-<p>Be sure to read <code>CONTRIBUTING.md</code> for detailed instructions on contributing.</p>
-<p>If you have questions or want to discuss new ideas for <code>numerblox</code>, please create a Github issue first.</p>
-</section>
-<section id="branch-structure" class="level2">
-<h2 class="anchored" data-anchor-id="branch-structure">4. Branch structure</h2>
-<p>Every new feature should be implemented in a branch that branches from <code>dev</code> and has the naming convention <code>feature/{FEATURE_DESCRIPTION}</code>. Explicit bugfixes should be named <code>bugfix/{FIX_DESCRIPTION}</code>. An example structure is given below.</p>
-<div class="cell">
-<div class="cell-output cell-output-display">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">Branch structure
-<span style="color: #808080; text-decoration-color: #808080">┗━━ </span>📦 master (release)
-<span style="color: #808080; text-decoration-color: #808080">    ┗━━ </span>👨‍💻 dev
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/ta-signals-features
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/news-api-downloader
-<span style="color: #808080; text-decoration-color: #808080">        ┣━━ </span>✨ feature/staking-portfolio-management
-<span style="color: #808080; text-decoration-color: #808080">        ┗━━ </span>✨ bugfix/evaluator-metrics-fix
-</pre>
-</div>
-</div>
-</section>
-<section id="crediting-sources" class="level2">
-<h2 class="anchored" data-anchor-id="crediting-sources">5. Crediting sources</h2>
-<p>Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in the documentation. If your code is used in this library without credits, please let us know, so we can add a link to your article/code.</p>
-<p>If you are contributing to <code>numerblox</code> and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in documentation.</p>
+<p>Alternatively you can clone this repository and install it in
+development mode by installing using <code>poetry</code>:</p>
+<pre><code class="language-bash">git clone https://github.com/crowdcent/numerblox.git
+pip install poetry
+cd numerblox
+poetry install
+</code></pre>
+<p>Installation without dev dependencies can be done by adding <code>--only main</code> to the <code>poetry install</code> line.</p>
+<p>Test your installation using one of the education notebooks in
+<a href="https://github.com/crowdcent/numerblox/examples">examples</a>. Good places to start are <a href="https://github.com/crowdcent/numerblox/examples/quickstart.ipynb">quickstart.ipynb</a> and <a href="https://github.com/crowdcent/numerblox/examples/numerai_tutorial.ipynb">numerframe_tutorial.ipynb</a>. Run it in your
+Notebook environment to quickly test if your installation has succeeded.
+The documentation contains examples and explanations for each component of NumerBlox.</p>
+<h2 id="2-core-functionality">2. Core functionality</h2>
+<p>NumerBlox has the following features for both Numerai Classic and Signals:</p>
+<p><strong><a href="/download/">Data Download</a>:</strong> Automated retrieval of Numerai datasets.</p>
+<p><strong><a href="/numerframe/">NumerFrame</a>:</strong> A custom Pandas DataFrame for easier Numerai data manipulation.</p>
+<p><strong><a href="/preprocessing/">Preprocessors</a>:</strong> Customizable techniques for data preprocessing.</p>
+<p><strong><a href="/targets/">Target Engineering</a>:</strong> Tools for creating new target variables.</p>
+<p><strong><a href="/neutralization/">Postprocessors</a>:</strong> Ensembling, neutralization, and penalization.</p>
+<p><strong><a href="/meta/">MetaPipeline</a>:</strong> An era-aware pipeline extension of scikit-learn's Pipeline. Specifically designed to integrate with era-specific Postprocessors such as neutralization and ensembling. Can be optionally bypassed for custom implementations.</p>
+<p><strong><a href="/meta/">MetaEstimators</a>:</strong> Era-aware estimators that extend scikit-learn's functionality. Includes features like CrossValEstimator which allow for era-specific, multiple-folds fitting seamlessly integrated into the pipeline.</p>
+<p><strong><a href="/evaluation/">Evaluation</a>:</strong> Comprehensive metrics aligned with Numerai's evaluation criteria.</p>
+<p><strong><a href="/submission/">Submitters</a>:</strong> Facilitates secure and easy submission of predictions.</p>
+<p>Example notebooks for each of these components can be found in the <a href="https://github.com/crowdcent/numerblox/examples">examples</a> directory.</p>
+<h2 id="3-examples">3. Examples</h2>
+<p>Below we will illustrate some common use cases in NumerBlox. To
+learn more in-depth about the features of this library, check out
+notebooks in <a href="https://github.com/crowdcent/numerblox/examples">examples</a>.</p>
+<h3 id="31-downloading-numerai-classic-data">3.1. Downloading Numerai Classic Data</h3>
+<p><a href="/download/#numerai-classic/">NumeraiClassicDownloader</a> allows you to download just the data you need with a few lines of code and handles the directory structure for you. All data from v4+ is supported. For Numerai Signals we provide downloaders from several sources for which you can find more information in the <a href="/download/">Downloaders section</a>.</p>
+<pre><code class="language-py">import pandas as pd
+from numerblox.download import NumeraiClassicDownloader
 
+downloader = NumeraiClassicDownloader(&quot;data&quot;)
+# Training and validation data
+downloader.download_training_data(&quot;train_val&quot;, version=&quot;4.2&quot;, int8=True)
+# Live data
+downloader.download_inference_data(&quot;current_round&quot;, version=&quot;4.2&quot;, int8=True)
+df = pd.read_parquet(file_path=&quot;data/current_round/live.parquet&quot;)
+</code></pre>
+<h3 id="32-core-numerframe-features">3.2. Core NumerFrame features</h3>
+<p>NumerFrame is powerful data structure which simplifies working with Numerai data. Below are a few examples of how you can leverage NumerFrame for your Numerai workflow. Under the hood NumerFrame is a Pandas DataFrame so you still have access to all Pandas functionality when using NumerFrame.</p>
+<p>NumerFrame usage is completely optional. Other NumerBlox components do not depend on it, though they are compatible with it.</p>
+<pre><code class="language-py">from numerblox.numerframe import create_numerframe
 
-</section>
+df = create_numerframe(file_path=&quot;data/current_round/live.parquet&quot;)
+# Get data for features, targets and predictions
+features = df.get_feature_data
+targets = df.get_target_data
+predictions = df.get_prediction_data
 
-</main> <!-- /main -->
-<script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
-      }
-    }
-    return false;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  });
-  function tippyHover(el, contentFn) {
-    const config = {
-      allowHTML: true,
-      content: contentFn,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start'
-    };
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      return note.innerHTML;
-    });
-  }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
-      });
-    }
-  }
-});
-</script>
-</div> <!-- /content -->
+# Get specific data groups
+fncv3_features = df.get_fncv3_features
+group_features = df.get_group_features(group='rain')
+
+# Fetch columns by pattern. For example all 20 day targets.
+pattern_data = df.get_pattern_data(pattern='_20')
+# Or for example Jerome targets.
+jerome_targets = df.get_pattern_data(pattern='_jerome_')
+
+# Split into feature and target pairs. Will get single target by default.
+X, y = df.get_feature_target_pair()
+# Optionally get all targets
+X, y = df.get_feature_target_pair(multi_target=True)
+
+# Fetch data for specified eras
+X, y = df.get_era_batch(eras=['0001', '0002'])
+
+# Since every operation returns a NumerFrame they can be chained.
+# An example chained operation is getting features and targets for the last 2 eras.
+X, y = df.get_last_eras(2).get_feature_target_pair()
+</code></pre>
+<h3 id="33-advanced-numerai-models">3.3. Advanced Numerai models</h3>
+<p>All core processors in <code>numerblox</code> are compatible with <code>scikit-learn</code> and therefore also <code>scikit-learn</code> extension libraries like <a href="https://github.com/koaning/scikit-lego">scikit-lego</a>, <a href="https://github.com/lmcinnes/umap">umap</a> and <a href="https://github.com/iryna-kondr/scikit-llm">scikit-llm</a>. </p>
+<p>The example below illustrates its seamless integration with <code>scikit-learn</code>. Aside from core <code>scikit-learn</code> processors we use <code>ColumnSelector</code> from the <a href="https://github.com/koaning/scikit-lego">scikit-lego</a> extension library.</p>
+<p>For more examples check out the notebooks in the <code>examples</code> directory and the <a href="/end_to_end/">End-To-End Examples section</a>.</p>
+<pre><code class="language-py">import pandas as pd
+from xgboost import XGBRegressor
+from sklearn.pipeline import make_union
+from sklearn.model_selection import TimeSeriesSplit
+from sklego.preprocessing import ColumnSelector
+
+from numerblox.meta import CrossValEstimator
+from numerblox.preprocessing import GroupStatsPreProcessor
+from numerblox.numerframe import create_numerframe
+
+# Easy data parsing with NumerFrame
+df = create_numerframe(file_path=&quot;data/train_val/train_int8.parquet&quot;)
+val_df = create_numerframe(file_path=&quot;data/train_val/validation_int8.parquet&quot;)
+
+X, y = df.get_feature_target_pair()
+eras = df.get_era_data()
+
+val_X, val_y = val_df.get_feature_target_pair()
+val_eras = val_df.get_era_data()
+
+fncv3_cols = nf.get_fncv3_features.columns.tolist()
+
+# Sunshine/Rain group statistics and FNCv3 features as model input
+gpp = GroupStatsPreProcessor(groups=['sunshine', 'rain'])
+fncv3_selector = ColumnSelector(fncv3_cols)
+preproc_pipe = make_union(gpp, fncv3_selector)
+
+# 5 fold cross validation with XGBoost as model
+model = CrossValEstimator(XGBRegressor(), cv=TimeSeriesSplit(n_splits=5))
+# Ensemble 5 folds with weighted average
+ensembler = NumeraiEnsemble(donate_weighted=True)
+
+full_pipe = make_pipeline(preproc_pipe, model, ensembler)
+
+full_pipe.fit(X, y, numeraiensemble__eras=eras)
+
+val_preds = full_pipe.predict(val_X, eras=val_eras)
+</code></pre>
+<h3 id="34-evaluation">3.4. Evaluation</h3>
+<p><code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code> take care of computing all evaluation metrics for you. Below is a quick example of using it for Numerai Classic. 
+For more information on advanced usage and which metrics are computed check the <a href="/evaluation/">Evaluators section</a>.</p>
+<pre><code class="language-py">from numerblox.evaluation import NumeraiClassicEvaluator
+
+# Validation DataFrame to compute metrics on
+val_df = ...
+
+evaluator = NumeraiClassicEvaluator()
+metrics = evaluator.full_evaluation(val_df, 
+                                    example_col=&quot;example_preds&quot;, 
+                                    pred_cols=[&quot;prediction&quot;], 
+                                    target_col=&quot;target&quot;)
+</code></pre>
+<h3 id="35-submission">3.5. Submission</h3>
+<p>Submission for both Numerai Class and Signals can be done with a few lines of code. Here we illustrate an example for Numerai Classic. Check out the <a href="/submission/">Submitters section</a> in the documentation for more information.</p>
+<pre><code class="language-py">from numerblox.misc import Key
+from numerblox.submission import NumeraiClassicSubmitter
+
+NUMERAI_PUBLIC_ID = &quot;YOUR_PUBLIC_ID&quot;
+NUMERAI_SECRET_KEY = &quot;YOUR_SECRET_KEY&quot;
+
+# Your predictions on the live data
+predictions = ...
+
+# Fill in you public and secret key for Numerai
+key = Key(pub_id=NUMERAI_PUBLIC_ID, secret_key=NUMERAI_SECRET_KEY)
+submitter = NumeraiClassicSubmitter(directory_path=&quot;sub_current_round&quot;, key=key)
+# full_submission checks contents, saves as csv and submits.
+submitter.full_submission(dataf=predictions,
+                          cols=&quot;prediction&quot;,
+                          model_name=&quot;YOUR_MODEL_NAME&quot;)
+# (optional) Clean up directory after submission
+submitter.remove_base_directory()
+</code></pre>
+<h2 id="4-contributing">4. Contributing</h2>
+<p>Be sure to read the <a href="/contributing/">How To Contribute section</a> for detailed instructions on
+contributing.</p>
+<p>If you have questions or want to discuss new ideas for NumerBlox,
+please create a Github issue first.</p>
+<h2 id="5-crediting-sources">5. Crediting sources</h2>
+<p>Some of the components in this library may be based on forum posts,
+notebooks or ideas made public by the Numerai community. We have done
+our best to ask all parties who posted a specific piece of code for
+their permission and credit their work in the documentation. If your
+code is used in this library without credits, please let us know, so we
+can add a link to your article/code.</p>
+<p>If you are contributing to NumerBlox and are using ideas posted
+earlier by someone else, make sure to credit them by posting a link to
+their article/code in documentation.</p>
 
 
 
-</body></html>
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.top", "navigation.tabs", "navigation.tracking", "navigation.tabs.sticky", "navigation.expand", "content.code.copy"], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.81fa17fe.min.js"></script>
+      
+    
+  </body>
+</html>
