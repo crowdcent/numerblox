@@ -1,5 +1,6 @@
 import pandas as pd
 from xgboost import XGBRegressor
+from sklearn.utils.validation import check_is_fitted
 
 from .evaluation import NumeraiClassicEvaluator
 
@@ -36,7 +37,8 @@ class EraBoostedXGBRegressor(XGBRegressor):
     def fit(self, X, y, eras: pd.Series, **fit_params):
         super().fit(X, y, **fit_params)
         evaluator = NumeraiClassicEvaluator(era_col="era")
-        iter_df = pd.DataFrame(X, columns=self.get_booster().feature_names)
+        self.feature_names = self.get_booster().feature_names
+        iter_df = pd.DataFrame(X, columns=self.feature_names)
         iter_df["target"] = y
         iter_df["era"] = eras
 
@@ -62,4 +64,9 @@ class EraBoostedXGBRegressor(XGBRegressor):
                         xgb_model=booster,
                         **fit_params)
         return self
+    
+    def get_feature_names_out(self, input_features=None):
+        """ Get output feature names for transformation. """
+        check_is_fitted(self)
+        return self.feature_names if not input_features else input_features
     

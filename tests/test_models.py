@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from sklearn.exceptions import NotFittedError
 
 from numerblox.models import EraBoostedXGBRegressor
 
@@ -45,3 +46,21 @@ def test_predictions(setup_data):
     # Check that it has fitted the data reasonably well.
     correlation = np.corrcoef(predictions, y)[0, 1]
     assert correlation > 0.8
+
+def test_get_feature_names_out(setup_data):
+    model = EraBoostedXGBRegressor(num_iters=5, proportion=0.5, n_estimators=10,
+                                   learning_rate=0.1, max_depth=3)
+    with pytest.raises(NotFittedError):
+        model.get_feature_names_out()
+
+    X, y, eras = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
+    model.fit(X, y, eras=eras)
+
+    # Test after fitting
+    feature_names = model.get_feature_names_out()
+    assert len(feature_names) == X.shape[1]
+    assert all(isinstance(name, str) for name in feature_names)
+    # If the input features are provided, they should be returned instead
+    custom_features = ['custom1', 'custom2']
+    custom_feature_names = model.get_feature_names_out(custom_features)
+    assert custom_feature_names == custom_features
