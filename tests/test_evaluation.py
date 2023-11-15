@@ -9,7 +9,7 @@ from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluato
 from utils import create_signals_sample_data, classic_test_data
 
 BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "smart_sharpe", 
-                   "max_drawdown", "apy", "calmar_ratio", "corr_with_example_preds",
+                   "max_drawdown", "apy", "calmar_ratio", "autocorrelation", "corr_with_example_preds",
                    "legacy_mean", "legacy_std", "legacy_sharpe", "max_feature_exposure", "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe", "exposure_dissimilarity", "mean_outperformance_vs_example_preds", "sharpe_outperformance_vs_example_preds", "smart_sharpe_outperformance_vs_example_preds"]
 CLASSIC_SPECIFIC_STATS_COLS = ["feature_neutral_mean_v3", "feature_neutral_std_v3", 
                                "feature_neutral_sharpe_v3", "corr_with_meta_model"]

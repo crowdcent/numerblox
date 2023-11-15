@@ -120,13 +120,14 @@ class BaseEvaluator:
         legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
         apy = self.apy(era_corrs=val_numerai_corrs)
+        # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
+        calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
+        autocorrelation = self.autocorr1(val_numerai_corrs)
         example_corr = self.cross_correlation(
             dataf=dataf, pred_col=pred_col, other_col=example_col
         )
         example_mean, _, example_sharpe = self.mean_std_sharpe(era_corrs=val_example_corrs)
         example_smart_sharpe = self.smart_sharpe(era_corrs=val_example_corrs)
-        # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
-        calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
 
         col_stats.loc[pred_col, "target"] = target_col
         col_stats.loc[pred_col, "mean"] = mean
@@ -136,6 +137,7 @@ class BaseEvaluator:
         col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
         col_stats.loc[pred_col, "apy"] = apy
         col_stats.loc[pred_col, "calmar_ratio"] = calmar
+        col_stats.loc[pred_col, "autocorrelation"] = autocorrelation
         col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
         col_stats.loc[pred_col, "mean_outperformance_vs_example_preds"] = mean - example_mean
         col_stats.loc[pred_col, "sharpe_outperformance_vs_example_preds"] = sharpe - example_sharpe
@@ -482,8 +484,15 @@ class BaseEvaluator:
         """
         n = len(era_corrs)
         # 1st order autocorrelation
-        p = np.corrcoef(era_corrs[:-1], era_corrs[1:])[0,1]
+        p = self.autocorr1(era_corrs)
         return np.sqrt(1 + 2 * np.sum([((n - i) / n) * p**i for i in range(1, n)]))
+    
+    def autocorr1(self, era_corrs: pd.Series) -> np.float64:
+        """ 
+        1st order autocorrelation.
+        :param era_corrs: Correlation scores by era.
+        """
+        return np.corrcoef(era_corrs[:-1], era_corrs[1:])[0,1]
 
     def plot_correlations(
         self,
