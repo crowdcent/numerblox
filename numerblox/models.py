@@ -49,10 +49,12 @@ class EraBoostedXGBRegressor(XGBRegressor):
             era_scores = evaluator.per_era_numerai_corrs(
                 dataf=iter_df, pred_col="predictions", target_col="target"
                 )
+            # Filter on eras with worst Corrv2.
             era_scores.sort_values(inplace=True)
             worst_eras = era_scores[era_scores <= era_scores.quantile(self.proportion)].index
             worst_df = iter_df[iter_df["era"].isin(worst_eras)]
 
+            # Add estimators and fit on worst eras.
             self.n_estimators += self.trees_per_step
             booster = self.get_booster()
             super().fit(worst_df.drop(columns=["target", "era", "predictions"]), 
