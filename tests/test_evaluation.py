@@ -10,9 +10,13 @@ from utils import create_signals_sample_data, classic_test_data
 
 BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "smart_sharpe", 
                    "max_drawdown", "apy", "calmar_ratio", "autocorrelation", "corr_with_example_preds",
-                   "legacy_mean", "legacy_std", "legacy_sharpe", "max_feature_exposure", "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe", "exposure_dissimilarity", "mean_outperformance_vs_example_preds", "sharpe_outperformance_vs_example_preds", "smart_sharpe_outperformance_vs_example_preds"]
+                   "legacy_mean", "legacy_std", "legacy_sharpe", "max_feature_exposure", "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe", "exposure_dissimilarity", "mean_outperformance_vs_example_preds", "sharpe_outperformance_vs_example_preds", "smart_sharpe_outperformance_vs_example_preds", 
+                   "legacy_epc_mean", "legacy_epc_std", "legacy_epc_sharpe", 
+                   "legacy_epc_plus_corr_sharpe"]
 CLASSIC_SPECIFIC_STATS_COLS = ["feature_neutral_mean_v3", "feature_neutral_std_v3", 
-                               "feature_neutral_sharpe_v3", "corr_with_meta_model"]
+                               "feature_neutral_sharpe_v3", "corr_with_meta_model",
+                               "legacy_mmc_mean", "legacy_mmc_std", "legacy_mmc_sharpe",
+                               "legacy_mmc_plus_corr_sharpe"]
 
 
 CLASSIC_STATS_COLS = BASE_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS
@@ -34,6 +38,7 @@ def test_numerai_classic_evaluator(classic_test_data):
     )
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
+
 
 def test_evaluation_benchmark_cols(classic_test_data):
     df = classic_test_data
@@ -62,6 +67,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS + additional_expected_cols:
         assert col in val_stats.columns
 
+
 def test_numerai_signals_evaluator(create_signals_sample_data):
     df = create_signals_sample_data
     evaluator = NumeraiSignalsEvaluator(era_col="date", fast_mode=False)
@@ -73,6 +79,7 @@ def test_numerai_signals_evaluator(create_signals_sample_data):
     )
     for col in SIGNALS_STATS_COLS:
         assert col in val_stats.columns
+
 
 @pytest.fixture
 def mock_api():
@@ -89,6 +96,7 @@ def mock_api():
         mock_instance.diagnostics.return_value = [{"status": "done", "perEraDiagnostics": [{"era": "2023-09-01", "validationCorr": 0.6}]}]
         yield mock_instance
 
+
 def test_get_neutralized_corr(create_signals_sample_data, mock_api):
     df = create_signals_sample_data
     obj = NumeraiSignalsEvaluator(era_col="date", fast_mode=True)  
@@ -103,6 +111,7 @@ def test_get_neutralized_corr(create_signals_sample_data, mock_api):
     mock_api.upload_diagnostics.assert_called_once_with(df=df, model_id='test_model_id')
     mock_api.diagnostics.assert_called()
 
+
 def test_await_diagnostics_timeout(mock_api):
     obj = NumeraiSignalsEvaluator()
     mock_api.diagnostics.return_value = [{"status": "not_done"}]  # Simulate timeout scenario
@@ -110,7 +119,8 @@ def test_await_diagnostics_timeout(mock_api):
     with pytest.raises(Exception, match=r"Diagnostics couldn't be retrieved within .* minutes after uploading."):
         obj._NumeraiSignalsEvaluator__await_diagnostics(api=mock_api, model_id="test_model_id", diagnostics_id="test_diag_id", timeout_min=0.001, interval_sec=2)
 
-def test_numerai_classic_meta_model_corr(classic_test_data):
+
+def test_numerai_classic_meta_model(classic_test_data):
     df = classic_test_data
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
@@ -128,6 +138,10 @@ def test_numerai_classic_meta_model_corr(classic_test_data):
 
     assert val_stats["corr_with_meta_model"].min() >= -1
     assert val_stats["corr_with_meta_model"].max() <= 1
+    for col in ["corr_with_meta_model", "legacy_mmc_mean", "legacy_mmc_std", 
+                "legacy_mmc_sharpe", "legacy_mmc_plus_corr_sharpe"]:
+        assert col in val_stats.columns
+
 
 def test_get_raw_feature_exposures_pearson(classic_test_data):
     evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
@@ -143,6 +157,7 @@ def test_get_raw_feature_exposures_pearson(classic_test_data):
     assert raw_exposures.max().max() <= 1
     for feature in feature_list:
         assert feature in raw_exposures.columns
+
 
 def test_get_feature_exposures_corrv2(classic_test_data):
     evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
