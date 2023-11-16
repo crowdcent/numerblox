@@ -23,11 +23,15 @@ class BaseEvaluator:
     - Annual Percentage Yield (APY).
     - Correlation with example predictions.
     - Max feature exposure: https://forum.numer.ai/t/model-diagnostics-feature-exposure/899.
-    - Feature Neutral Mean, Standard deviation and Sharpe: https://docs.numer.ai/tournament/feature-neutral-correlation .
+    - Feature Neutral Mean, Standard deviation and Sharpe: https://docs.numer.ai/tournament/feature-neutral-correlation.
+    - Smart Sharpe
     - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
+    - Autocorrelation (1st order).
     - Calmar Ratio.
+    - Outperformance vs. Example predictions.
     - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
     - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
+    - Example Prediction Contribution (EPC)
 
     :param era_col: Column name pointing to eras. \n
     Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
@@ -164,10 +168,18 @@ class BaseEvaluator:
                 bench_corr = self.cross_correlation(
                     dataf=dataf, pred_col=bench_col, other_col=bench_col
                 )
+                legacy_bmc_mean, legacy_bmc_std, legacy_bmc_sharpe, legacy_bmc_plus_corr_sharpe = self.model_contribution(
+                dataf=dataf, pred_col=pred_col, target_col=target_col,
+                other_col=bench_col
+            )
                 col_stats.loc[pred_col, f"corr_with_{bench_col}"] = bench_corr
                 col_stats.loc[pred_col, f"mean_outperformance_vs_{bench_col}"] = mean - bench_mean
                 col_stats.loc[pred_col, f"sharpe_outperformance_vs_{bench_col}"] = sharpe - bench_sharpe
                 col_stats.loc[pred_col, f"smart_sharpe_outperformance_vs_{bench_col}"] = smart_sharpe - bench_smart_sharpe
+                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_mean"] = legacy_bmc_mean
+                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_std"] = legacy_bmc_std
+                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_sharpe"] = legacy_bmc_sharpe
+                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_plus_corr_sharpe"] = legacy_bmc_plus_corr_sharpe
 
         # Compute intensive stats
         if not self.fast_mode:
