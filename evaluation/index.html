@@ -911,7 +911,10 @@
 <p>The following metrics are included for <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code>:</p>
 <ul>
 <li>
-<p>Mean, Standard Deviation and Sharpe for era returns (Numerai Correlation).</p>
+<p>Mean, Standard Deviation and Sharpe for era returns (Corrv2 aka Numerai Correlation).</p>
+</li>
+<li>
+<p>Smart Sharpe.</p>
 </li>
 <li>
 <p>Max drawdown.</p>
@@ -932,15 +935,25 @@
 <p><a href="https://forum.numer.ai/t/true-contribution-details/5128/4">Exposure Dissimilarity</a>.</p>
 </li>
 <li>
+<p>Autocorrelation (1st order).</p>
+</li>
+<li>
 <p><a href="https://www.investopedia.com/terms/c/calmarratio.asp">Calmar Ratio</a>.</p>
 </li>
 <li>
+<p>Outperformance vs. Example predictions and optional benchmark predictions.</p>
+</li>
+<li>
 <p>Mean, Standard Deviation and Sharpe for TB200 and TB500 (Buy top 200/500 stocks and sell bottom 200/500 stocks).</p>
+</li>
+<li>
+<p>Example Prediction Contribution (EPC), benchmark model contribution (BMC) and Meta Model contribution (MMC). BMC and MMC calculations require defining <code>benchmark_cols</code> and <code>meta_model_col</code> respectively.</p>
 </li>
 </ul>
 <p>For both <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code> you can set <code>fast_mode=True</code> to skip max. feature exposure, <a href="https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website">FNCV3 metrics</a>, TB200, TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.</p>
 <h2 id="numerai-classic-specific-metrics">Numerai Classic specific metrics</h2>
 <p><code>NumeraiClassicEvaluator</code> will also compute <a href="https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website">FNCv3</a>. The FNCV3 mean is a common metric shown on the Numerai leaderboard under <code>FNCV3</code>. <code>NumeraiClassicEvaluator</code> will compute the mean, standard deviation and Sharpe ratio for FNCV3. </p>
+<p>Additionally you can provide a <code>meta_model_col</code> which will be used to calculate matrics around MMC (Meta Model Contribution). </p>
 <pre><code class="language-py">from numerblox.evaluation import NumeraiClassicEvaluator
 
 # Validation DataFrame to compute metrics on
@@ -951,7 +964,9 @@ evaluator = NumeraiClassicEvaluator(era_col=&quot;era&quot;)
 metrics = evaluator.full_evaluation(val_df, 
                                     example_col=&quot;example_preds&quot;, 
                                     pred_cols=[&quot;prediction&quot;], 
-                                    target_col=&quot;target&quot;)
+                                    target_col=&quot;target&quot;,
+                                    benchmark_cols=[&quot;benchmark1&quot;, &quot;benchmark2&quot;],
+                                    meta_model_col=&quot;meta_model_preds&quot;)
 </code></pre>
 <h2 id="numerai-signals-specific-metrics">Numerai Signals specific metrics</h2>
 <p><code>NumeraiSignalsEvaluator</code> offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in <code>full_evaluation</code>. It can still be beneficial to calculate as this metric is close to the one used for payouts.</p>
