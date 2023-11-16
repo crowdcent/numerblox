@@ -383,7 +383,7 @@ class BaseEvaluator:
 
         # This line makes series neutral to a constant column so that it's centered and for sure gets corr 0 with exposures
         exposures = np.hstack(
-            (exposures, np.array([np.mean(series)] * len(exposures)).reshape(-1, 1))
+            (exposures, np.array([np.nanmean(series)] * len(exposures)).reshape(-1, 1))
         )
 
         correction = proportion * (
@@ -495,7 +495,7 @@ class BaseEvaluator:
         Sharpe adjusted for autocorrelation.
         :param era_corrs: Correlation scores by era
         """
-        return np.mean(era_corrs) / (np.std(era_corrs, ddof=1) * self.autocorr_penalty(era_corrs))
+        return np.nanmean(era_corrs) / (np.nanstd(era_corrs, ddof=1) * self.autocorr_penalty(era_corrs))
     
     def autocorr_penalty(self, era_corrs: pd.Series) -> np.float64:
         """ 
@@ -545,14 +545,14 @@ class BaseEvaluator:
             corr_scores.append(self._normalize_uniform(x[pred_col]).corr(x[target_col]))
 
         # Contribution
-        c_mean = np.mean(mmc_scores)
-        c_std = np.std(mmc_scores)
+        c_mean = np.nanmean(mmc_scores)
+        c_std = np.nanstd(mmc_scores)
         c_sharpe = np.nan if c_std == 0 else c_mean / c_std
 
         # MMC + Pearson correlation
         corr_plus_cs = [c + m for c, m in zip(corr_scores, mmc_scores)]
-        corr_plus_mean = np.mean(corr_plus_cs)
-        corr_plus_std = np.std(corr_plus_cs)
+        corr_plus_mean = np.nanmean(corr_plus_cs)
+        corr_plus_std = np.nanstd(corr_plus_cs)
         corr_plus_c_sharpe = np.nan if corr_plus_std == 0 else corr_plus_mean / corr_plus_std
         return c_mean, c_std, c_sharpe, corr_plus_c_sharpe
 
