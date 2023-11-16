@@ -1,7 +1,8 @@
-![](https://img.shields.io/pypi/v/numerblox.png) | 
-![](https://img.shields.io/pypi/pyversions/numerblox.png) | 
-![](https://img.shields.io/github/contributors/crowdcent/numerblox.png) | 
-![](https://img.shields.io/codecov/c/gh/carlolepelaars/numerblox/master) | 
+![](https://img.shields.io/pypi/v/numerblox.png)
+![](https://img.shields.io/pypi/pyversions/numerblox.png)
+![](https://img.shields.io/github/contributors/crowdcent/numerblox.png)
+![](https://img.shields.io/codecov/c/gh/carlolepelaars/numerblox/master)
+![](https://img.shields.io/pypi/dm/numerblox)
 
 
 # NumerBlox
