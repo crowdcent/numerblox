@@ -18,7 +18,7 @@
 By using `NumerFrame`, participants can focus more on model development and less on data wrangling, leading to a smoother and more efficient workflow in the Numerai competition.
 
 
-## Initialization:
+## Initialization
 A NumerFrame can be initialized either from an existing `pd.DataFrame` or with `create_numerframe`. The `create_numerframe` function takes a path to a file and returns a `NumerFrame` object. This function automatically parses the file and supports CSV, Parquet, Excel and Pickle formats.
 
 `NumerFrame` automatically parses columns into groups so you can easily retrieve what you need. It automatically is aware of the `era` column for its operations. 
@@ -47,7 +47,7 @@ df = create_numerframe('train.parquet')
 ```
 
 
-## Examples:
+## Examples
 
 Basic functionality: 
 ```py
