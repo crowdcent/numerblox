@@ -2,7 +2,7 @@
 
 ## EraBoostedXGBRegressor
 
-`EraBoostedXGBRegressor`` is a custom regressor extending the functionality of XGBoost, aimed at improving accuracy on specific eras in a dataset. It upweights the eras that are toughest to fit. It is designed to integrate seamlessly with scikit-learn.
+`EraBoostedXGBRegressor` is a custom regressor extending the functionality of XGBoost, aimed at improving accuracy on specific eras in a dataset. It upweights the eras that are toughest to fit. It is designed to integrate seamlessly with scikit-learn.
 
 ### Why?
 - Era-Specific Focus: Targets the worst-performing eras in your data for performance enhancement, ensuring that the model improves where it is most needed.
