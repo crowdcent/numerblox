@@ -1,6 +1,6 @@
 # How To Contribute
 
-First of all I would like to thank you for considering to contribute to `numerblox`! This document provides some general guidelines to streamline the contribution process.
+First, thank you for your consideration to contribute to `numerblox`! This document provides some general guidelines to streamline the contribution process.
 
 ## Installation
 
@@ -18,6 +18,7 @@ poetry install
 ### 1. Building a new component
 
 If you want to build a new component. Please consider the following steps:
+
 1. Place the new component in the appropriate section. Is it a Downloader (`download.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)? Also check the documentation on that section to check for templates, conventions and how these blocks are constructed in general.
 2. Add tests for this new component in the appropriate test file. If you are introducing a new Downloader, add tests in `tests/test_downloader.py`. If you are introducing a new Preprocessor, add tests in `tests/test_preprocessing.py`. etc.
 3. When making a preprocessor or postprocessor, make sure the component follows [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator). The core things to implement are inheriting from `BaseEstimator` and implementing `fit`, `transform` and `get_feature_names_out` methods. 
