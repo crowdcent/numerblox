@@ -21,17 +21,16 @@ class BaseEvaluator:
     - Mean, Standard Deviation and Sharpe for era returns.
     - Max drawdown.
     - Annual Percentage Yield (APY).
-    - Correlation with example predictions.
+    - Correlation with benchmark predictions.
     - Max feature exposure: https://forum.numer.ai/t/model-diagnostics-feature-exposure/899.
     - Feature Neutral Mean, Standard deviation and Sharpe: https://docs.numer.ai/tournament/feature-neutral-correlation.
     - Smart Sharpe
     - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
     - Autocorrelation (1st order).
     - Calmar Ratio.
-    - Outperformance vs. Example predictions.
+    - Performance vs. Benchmark predictions.
     - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
     - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
-    - Example Prediction Contribution (EPC)
 
     :param era_col: Column name pointing to eras. \n
     Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
@@ -51,7 +50,6 @@ class BaseEvaluator:
     def full_evaluation(
         self,
         dataf: pd.DataFrame,
-        example_col: str,
         pred_cols: List[str],
         target_col: str = "target",
         benchmark_cols: list = None,
@@ -59,9 +57,8 @@ class BaseEvaluator:
         """
         Perform evaluation for each prediction column in pred_cols.
         By default only the "prediction" column is evaluated.
-        Evaluation is done against given target and example prediction column.
-        :param dataf: DataFrame containing era_col, example_col, pred_cols, target_col and optional benchmark_cols.
-        :param example_col: Example prediction column to calculate correlation with.
+        Evaluation is done against given target and benchmark prediction column.
+        :param dataf: DataFrame containing era_col, pred_cols, target_col and optional benchmark_cols.
         :param pred_cols: List of prediction columns to calculate evaluation metrics for.
         :param target_col: Target column to evaluate against.
         :param benchmark_cols: Optional list of benchmark columns to calculate evaluation metrics for.
@@ -70,7 +67,6 @@ class BaseEvaluator:
         for pred_col in pred_cols:
             assert pred_col in dataf.columns, f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
         assert target_col in dataf.columns, f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
-        assert example_col in dataf.columns, f"Example column '{example_col}' not found in DataFrame. Make sure to set the correct example_col."
         if benchmark_cols:
             for col in benchmark_cols:
                 assert col in dataf.columns, f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
@@ -88,7 +84,6 @@ class BaseEvaluator:
                 pred_col=col,
                 feature_cols=feature_cols,
                 target_col=target_col,
-                example_col=example_col,
                 benchmark_cols=benchmark_cols,
             )
             val_stats = pd.concat([val_stats, col_stats], axis=0)
@@ -100,15 +95,14 @@ class BaseEvaluator:
         feature_cols: list,
         pred_col: str,
         target_col: str,
-        example_col: str,
         benchmark_cols: list = None,
     ):
         """
         Perform evaluation for one prediction column
-        against given target and example prediction column.
+        against given target and other prediction column(s).
         """
-        col_stats = pd.DataFrame()
-        col_stats["target"] = pd.Series(dtype=str)
+        col_stats = {}
+
         # Compute stats
         val_corrs = self.per_era_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
@@ -116,43 +110,25 @@ class BaseEvaluator:
         val_numerai_corrs = self.per_era_numerai_corrs(
             dataf=dataf, pred_col=pred_col, target_col=target_col
         )
-        val_example_corrs = self.per_era_numerai_corrs(
-            dataf=dataf, pred_col=example_col, target_col=target_col
-        )
         
-        # TODO: Add MMC2 per era
-
         mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
-        smart_sharpe = self.smart_sharpe(era_corrs=val_numerai_corrs)
         legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
         max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
         apy = self.apy(era_corrs=val_numerai_corrs)
-        # Max. drawdown should have an additional minus because we use negative numbers for max. drawdown.
         calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
         autocorrelation = self.autocorr1(val_numerai_corrs)
-        example_corr = self.cross_correlation(
-            dataf=dataf, pred_col=pred_col, other_col=example_col
-        )
-        example_mean, _, example_sharpe = self.mean_std_sharpe(era_corrs=val_example_corrs)
-        example_smart_sharpe = self.smart_sharpe(era_corrs=val_example_corrs)
 
-        col_stats.loc[pred_col, "target"] = target_col
-        col_stats.loc[pred_col, "mean"] = mean
-        col_stats.loc[pred_col, "std"] = std
-        col_stats.loc[pred_col, "sharpe"] = sharpe
-        col_stats.loc[pred_col, "smart_sharpe"] = smart_sharpe
-        col_stats.loc[pred_col, "max_drawdown"] = max_drawdown
-        col_stats.loc[pred_col, "apy"] = apy
-        col_stats.loc[pred_col, "calmar_ratio"] = calmar
-        col_stats.loc[pred_col, "autocorrelation"] = autocorrelation
-        col_stats.loc[pred_col, "corr_with_example_preds"] = example_corr
-        col_stats.loc[pred_col, "mean_vs_example_preds"] = mean - example_mean
-        col_stats.loc[pred_col, "sharpe_vs_example_preds"] = sharpe - example_sharpe
-        col_stats.loc[pred_col, "smart_sharpe_vs_example_preds"] = smart_sharpe - example_smart_sharpe
-        col_stats.loc[pred_col, "legacy_mean"] = legacy_mean
-        col_stats.loc[pred_col, "legacy_std"] = legacy_std
-        col_stats.loc[pred_col, "legacy_sharpe"] = legacy_sharpe
-
+        col_stats["target"] = target_col
+        col_stats["mean"] = mean
+        col_stats["std"] = std
+        col_stats["sharpe"] = sharpe
+        col_stats["max_drawdown"] = max_drawdown
+        col_stats["apy"] = apy
+        col_stats["calmar_ratio"] = calmar
+        col_stats["autocorrelation"] = autocorrelation
+        col_stats["legacy_mean"] = legacy_mean
+        col_stats["legacy_std"] = legacy_std
+        col_stats["legacy_sharpe"] = legacy_sharpe
 
         if benchmark_cols is not None:
             for bench_col in benchmark_cols:
@@ -160,37 +136,50 @@ class BaseEvaluator:
                     dataf=dataf, pred_col=bench_col, target_col=target_col
                 )
                 bench_mean, _, bench_sharpe = self.mean_std_sharpe(era_corrs=val_bench_corrs)
-                bench_smart_sharpe = self.smart_sharpe(era_corrs=val_bench_corrs)
                 bench_corr = self.cross_correlation(
                     dataf=dataf, pred_col=bench_col, other_col=bench_col
                 )
-                legacy_bmc_mean, legacy_bmc_std, legacy_bmc_sharpe = self.model_contribution(
-                dataf=dataf, pred_col=pred_col, target_col=target_col,
-                other_col=bench_col
-            )
-                mmc_mean, mmc_std, mmc_sharpe = self.contributive_correlation(
+                legacy_mc_scores = self.legacy_contribution(
+                    dataf=dataf, pred_col=pred_col, target_col=target_col,
+                    other_col=bench_col
+                )
+                mc_scores = self.contributive_correlation(
                     dataf=dataf, pred_col=pred_col, target_col=target_col, other_col=bench_col
                 )
-                col_stats.loc[pred_col, f"mmc"] = mmc_mean
-                col_stats.loc[pred_col, f"corr_with_{bench_col}"] = bench_corr
-                col_stats.loc[pred_col, f"mean_vs_{bench_col}"] = mean - bench_mean
-                col_stats.loc[pred_col, f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
-                col_stats.loc[pred_col, f"smart_sharpe_vs_{bench_col}"] = smart_sharpe - bench_smart_sharpe
-                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_mean"] = legacy_bmc_mean
-                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_std"] = legacy_bmc_std
-                col_stats.loc[pred_col, f"legacy_bmc_{bench_col}_sharpe"] = legacy_bmc_sharpe
+
+                mc_mean = np.nanmean(mc_scores)
+                mc_std = np.nanstd(mc_scores)
+                mc_sharpe = np.nan if mc_std == 0 else mc_mean / mc_std
+
+                legacy_bmc_mean = np.nanmean(legacy_mc_scores)
+                legacy_bmc_std = np.nanstd(legacy_mc_scores)
+                legacy_bmc_sharpe = np.nan if legacy_bmc_std == 0 else legacy_bmc_mean / legacy_bmc_std
+
+                ex_diss = self.exposure_dissimilarity(
+                    dataf=dataf, pred_col=pred_col, other_col=bench_col
+                )
+                col_stats[f"corr_with_{bench_col}"] = bench_corr
+
+                col_stats[f"mean_vs_{bench_col}"] = mean - bench_mean
+                col_stats[f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
+                
+                col_stats[f"mc_mean_{bench_col}"] = mc_mean
+                col_stats[f"mc_std_{bench_col}"] = mc_std
+                col_stats[f"mc_sharpe_{bench_col}"] = mc_sharpe
+
+                col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
+                col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
+                col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
+                
+                col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
+
 
         # Compute intensive stats
         if not self.fast_mode:
-            legacy_epc_mean, legacy_epc_std, legacy_epc_sharpe = self.model_contribution(
-                dataf=dataf, pred_col=pred_col, target_col=target_col,
-                other_col=example_col
-            )
             max_feature_exposure = self.max_feature_exposure(
                 dataf=dataf, feature_cols=feature_cols,
                 pred_col=pred_col
             )
-            # Using all features for plain FNC
             fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, feature_names=feature_cols
             )
@@ -200,26 +189,24 @@ class BaseEvaluator:
             tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
             )
-            ex_diss = self.exposure_dissimilarity(
-                dataf=dataf, pred_col=pred_col, example_col=example_col
-            )
+            smart_sharpe = self.smart_sharpe(era_corrs=val_numerai_corrs)
 
-            col_stats.loc[pred_col, "legacy_epc_mean"] = legacy_epc_mean
-            col_stats.loc[pred_col, "legacy_epc_std"] = legacy_epc_std
-            col_stats.loc[pred_col, "legacy_epc_sharpe"] = legacy_epc_sharpe
-            col_stats.loc[pred_col, "max_feature_exposure"] = max_feature_exposure
-            col_stats.loc[pred_col, "feature_neutral_mean"] = fn_mean
-            col_stats.loc[pred_col, "feature_neutral_std"] = fn_std
-            col_stats.loc[pred_col, "feature_neutral_sharpe"] = fn_sharpe
-            col_stats.loc[pred_col, "tb200_mean"] = tb200_mean
-            col_stats.loc[pred_col, "tb200_std"] = tb200_std
-            col_stats.loc[pred_col, "tb200_sharpe"] = tb200_sharpe
-            col_stats.loc[pred_col, "tb500_mean"] = tb500_mean
-            col_stats.loc[pred_col, "tb500_std"] = tb500_std
-            col_stats.loc[pred_col, "tb500_sharpe"] = tb500_sharpe
-            col_stats.loc[pred_col, "exposure_dissimilarity"] = ex_diss
-        return col_stats
+            col_stats["max_feature_exposure"] = max_feature_exposure
+            col_stats["feature_neutral_mean"] = fn_mean
+            col_stats["feature_neutral_std"] = fn_std
+            col_stats["feature_neutral_sharpe"] = fn_sharpe
+            col_stats["tb200_mean"] = tb200_mean
+            col_stats["tb200_std"] = tb200_std
+            col_stats["tb200_sharpe"] = tb200_sharpe
+            col_stats["tb500_mean"] = tb500_mean
+            col_stats["tb500_std"] = tb500_std
+            col_stats["tb500_sharpe"] = tb500_sharpe
+            col_stats["smart_sharpe"] = smart_sharpe
 
+        col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
+
+        return col_stats_df
+        
     def per_era_corrs(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str
     ) -> pd.Series:
@@ -366,14 +353,14 @@ class BaseEvaluator:
         )
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
-    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, example_col: str) -> np.float32:
+    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, other_col: str) -> np.float32:
         """
-        Model pattern of feature exposure to the example column.
+        Model pattern of feature exposure to the another column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
         """
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
         U = dataf[feature_cols].corrwith(dataf[pred_col]).values
-        E = dataf[feature_cols].corrwith(dataf[example_col]).values
+        E = dataf[feature_cols].corrwith(dataf[other_col]).values
 
         denominator = np.dot(E, E)
         if denominator == 0:
@@ -545,25 +532,22 @@ class BaseEvaluator:
         """
         return np.corrcoef(era_corrs[:-1], era_corrs[1:])[0,1]
     
-    def model_contribution(
+    def legacy_contribution(
         self, dataf: pd.DataFrame, pred_col: str, 
         target_col: str, other_col: str
-    ) -> Tuple[np.float64, np.float64, np.float64, np.float64]:
+    ):
         """
         Legacy contibution Mean, standard deviation and Sharpe ratio.
         More info: https://forum.numer.ai/t/mmc2-announcement/93
-        if other_col == meta_model_col -> MMC (Meta Model Contribution)
-        if other_col == example_col -> EPC (Example Prediction Contribution)
 
         :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
         :param pred_col: Prediction column to calculate MMC for.
         :param target_col: Target column to calculate MMC against.
         :param other_col: Meta model column containing predictions to neutralize against.
 
-        :return: Tuple of contribution mean, standard deviation, Sharpe ratio 
-        and Sharpe ratio of contribution + (Pearson) correlation.
+        :return: Lis
         """
-        mmc_scores = []
+        legacy_mc_scores = []
         # Standard deviation of a uniform distribution
         COVARIANCE_FACTOR = 0.29 ** 2
         # Calculate MMC for each era
@@ -571,14 +555,9 @@ class BaseEvaluator:
             series = self._neutralize_series(
                 self._normalize_uniform(x[pred_col]), (x[other_col])
             )
-            mmc_scores.append(np.cov(series, x[target_col])[0, 1] / COVARIANCE_FACTOR)
+            legacy_mc_scores.append(np.cov(series, x[target_col])[0, 1] / COVARIANCE_FACTOR)
 
-        # Contribution
-        c_mean = np.nanmean(mmc_scores)
-        c_std = np.nanstd(mmc_scores)
-        c_sharpe = np.nan if c_std == 0 else c_mean / c_std
-
-        return c_mean, c_std, c_sharpe
+        return legacy_mc_scores
 
     def contributive_correlation(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str, other_col: str
@@ -592,7 +571,7 @@ class BaseEvaluator:
         3. orthogonalizing each prediction wrt the meta model
         4. multiplying the orthogonalized predictions and the targets
         """
-        mmc_scores = []
+        mc_scores = []
 
         for _, x in dataf.groupby(self.era_col):
             # 1. tie-kept ranking each prediction and the meta model
@@ -606,14 +585,10 @@ class BaseEvaluator:
             orthogonalized_preds = self._orthogonalize(gauss_ranked_preds, gauss_ranked_meta)
             # 4. multiply target and orthogonalized predictions
             # this is equivalent to covariance b/c mean = 0
-            mmc = (ranked_targets @ orthogonalized_preds) / len(x)
-            mmc_scores.append(mmc)
+            mc = (ranked_targets @ orthogonalized_preds) / len(x)
+            mc_scores.append(mc)
         
-        mmc_mean = np.nanmean(mmc_scores)
-        mmc_std = np.nanstd(mmc_scores)
-        mmc_sharpe = np.nan if mmc_std == 0 else mmc_mean / mmc_std
-
-        return mmc_mean, mmc_std, mmc_sharpe
+        return mc_scores
         
 
     def plot_correlations(
@@ -699,21 +674,16 @@ class BaseEvaluator:
 class NumeraiClassicEvaluator(BaseEvaluator):
     """
     Evaluator for all metrics that are relevant in Numerai Classic.
-    
-    :param meta_model_col: Optional column name pointing to meta model predictions. Will be used to calculate
-    correlation to the metamodel.
     """
     def __init__(self, era_col: str = "era", fast_mode=False):
         super().__init__(era_col=era_col, fast_mode=fast_mode)
         self.fncv3_features = FNCV3_FEATURES
-
+  
     def full_evaluation(
         self,
         dataf: pd.DataFrame,
-        example_col: str,
         pred_cols: List[str],
         target_col: str = "target",
-        meta_model_col: str = None,
         benchmark_cols: list = None,
     ) -> pd.DataFrame:
         val_stats = pd.DataFrame()
@@ -736,7 +706,6 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 feature_cols=feature_cols,
                 pred_col=col,
                 target_col=target_col,
-                example_col=example_col,
                 benchmark_cols=benchmark_cols,
             )
             # Numerai Classic specific metrics
@@ -748,20 +717,6 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
                 col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
                 col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
-
-            # Meta model specific metrics
-            if meta_model_col is not None:
-                meta_model_corr = self.cross_correlation(
-                dataf=dataf, pred_col=col, other_col=meta_model_col
-                )
-                legacy_mmc_mean, legacy_mmc_std, legacy_mmc_sharpe = self.model_contribution(
-                    dataf=dataf, pred_col=col, target_col=target_col,
-                    other_col=meta_model_col
-                )
-                col_stats.loc[col, "corr_with_meta_model"] = meta_model_corr
-                col_stats.loc[col, "legacy_mmc_mean"] = legacy_mmc_mean
-                col_stats.loc[col, "legacy_mmc_std"] = legacy_mmc_std
-                col_stats.loc[col, "legacy_mmc_sharpe"] = legacy_mmc_sharpe
 
             val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats

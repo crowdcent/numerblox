@@ -14,23 +14,21 @@ The following metrics are included for `NumeraiClassicEvaluator` and `NumeraiSig
 
 - Annual Percentage Yield (APY).
 
-- Correlation with example predictions.
-
 - [Max feature exposure](https://forum.numer.ai/t/model-diagnostics-feature-exposure/899).
 
 - [Feature Neutral](https://docs.numer.ai/tournament/feature-neutral-correlation) Mean, Standard deviation and Sharpe.
-
-- [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4).
 
 - Autocorrelation (1st order).
 
 - [Calmar Ratio](https://www.investopedia.com/terms/c/calmarratio.asp).
 
-- Outperformance vs. Example predictions and optional benchmark predictions.
-
 - Mean, Standard Deviation and Sharpe for TB200 and TB500 (Buy top 200/500 stocks and sell bottom 200/500 stocks).
 
-- Example Prediction Contribution (EPC), benchmark model contribution (BMC) and Meta Model contribution (MMC). BMC and MMC calculations require defining `benchmark_cols` and `meta_model_col` respectively.
+- Performance vs. optional benchmark predictions.
+
+- [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions.
+
+- Model contribution (mc) and legacy model contribution (legacy_mc) against benchmark predictions. Model contribution calculations require defining `benchmark_cols` to compare against.
 
 For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fast_mode=True` to skip max. feature exposure, [FNCV3 metrics](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website), TB200, TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.
 
@@ -38,22 +36,18 @@ For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fa
 
 `NumeraiClassicEvaluator` will also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`. `NumeraiClassicEvaluator` will compute the mean, standard deviation and Sharpe ratio for FNCV3. 
 
-Additionally you can provide a `meta_model_col` which will be used to calculate matrics around MMC (Meta Model Contribution). 
-
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator
 
 # Validation DataFrame to compute metrics on
-# Should have at least era_col, example_col, pred_cols and target_col columns.
+# Should have at least era_col, pred_cols and target_col columns.
 val_df = ...
 
 evaluator = NumeraiClassicEvaluator(era_col="era")
 metrics = evaluator.full_evaluation(val_df, 
-                                    example_col="example_preds", 
                                     pred_cols=["prediction"], 
                                     target_col="target",
-                                    benchmark_cols=["benchmark1", "benchmark2"],
-                                    meta_model_col="meta_model_preds")
+                                    benchmark_cols=["benchmark1", "benchmark2"])
 ```
 
 ## Numerai Signals specific metrics
