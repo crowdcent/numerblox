@@ -57,7 +57,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
                                         f"mean_vs_{col}", 
                                         f"sharpe_vs_{col}",
                                         f"mc_mean_{col}",
-                                        f"legacy_mc_mean_{col}")
+                                        f"legacy_mc_mean_{col}"])
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col][0] != np.nan
