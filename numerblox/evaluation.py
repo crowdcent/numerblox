@@ -537,7 +537,7 @@ class BaseEvaluator:
         target_col: str, other_col: str
     ):
         """
-        Legacy contibution Mean, standard deviation and Sharpe ratio.
+        Legacy contibution mean, standard deviation and sharpe ratio.
         More info: https://forum.numer.ai/t/mmc2-announcement/93
 
         :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
@@ -545,7 +545,7 @@ class BaseEvaluator:
         :param target_col: Target column to calculate MMC against.
         :param other_col: Meta model column containing predictions to neutralize against.
 
-        :return: Lis
+        :return: List of legacy contribution scores by era.
         """
         legacy_mc_scores = []
         # Standard deviation of a uniform distribution
@@ -564,12 +564,20 @@ class BaseEvaluator:
     ):
         """Calculate the contributive correlation of the given predictions
         wrt the given meta model.
+        see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc
 
-        Then calculate contributive correlation by:
+        Calculate contributive correlation by:
         1. tie-kept ranking each prediction and the meta model
         2. gaussianizing each prediction and the meta model
         3. orthogonalizing each prediction wrt the meta model
-        4. multiplying the orthogonalized predictions and the targets
+        4. multiplying the orthogonalized predictions and the 
+        
+        :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
+        :param pred_col: Prediction column to calculate MMC for.
+        :param target_col: Target column to calculate MMC against.
+        :param other_col: Meta model column containing predictions to neutralize against.
+
+        :return: List of contributive correlations by era.
         """
         mc_scores = []
 
