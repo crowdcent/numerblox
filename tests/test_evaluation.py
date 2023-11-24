@@ -29,7 +29,6 @@ def test_numerai_classic_evaluator(classic_test_data):
         dataf=df,
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
-        example_col="prediction_random",
     )
     for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
@@ -74,7 +73,6 @@ def test_numerai_signals_evaluator(create_signals_sample_data):
         dataf=df,
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
-        example_col="prediction_random",
     )
     for col in SIGNALS_STATS_COLS:
         assert col in val_stats.columns
