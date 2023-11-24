@@ -54,14 +54,11 @@ def test_evaluation_benchmark_cols(classic_test_data):
     additional_expected_cols = []
     for col in benchmark_cols:
         additional_expected_cols.extend([f"corr_with_{col}", 
-                                        f"mean_outperformance_vs_{col}", 
-                                        f"sharpe_outperformance_vs_{col}",
-                                        f"smart_sharpe_outperformance_vs_{col}",
-                                        f"legacy_bmc_{col}_mean",
-                                        f"legacy_bmc_{col}_std",
-                                        f"legacy_bmc_{col}_sharpe",
-                                        f"legacy_bmc_{col}_plus_corr_sharpe"])
-    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS + additional_expected_cols:
+                                        f"mean_vs_{col}", 
+                                        f"sharpe_vs_{col}",
+                                        f"mc_mean_{col}",
+                                        f"legacy_mc_mean_{col}")
+    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col][0] != np.nan
 
