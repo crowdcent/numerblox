@@ -139,10 +139,6 @@ class BaseEvaluator:
                 bench_corr = self.cross_correlation(
                     dataf=dataf, pred_col=bench_col, other_col=bench_col
                 )
-                legacy_mc_scores = self.legacy_contribution(
-                    dataf=dataf, pred_col=pred_col, target_col=target_col,
-                    other_col=bench_col
-                )
                 mc_scores = self.contributive_correlation(
                     dataf=dataf, pred_col=pred_col, target_col=target_col, other_col=bench_col
                 )
@@ -166,16 +162,17 @@ class BaseEvaluator:
                 col_stats[f"mc_mean_{bench_col}"] = mc_mean
                 col_stats[f"mc_std_{bench_col}"] = mc_std
                 col_stats[f"mc_sharpe_{bench_col}"] = mc_sharpe
-
-                col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
-                col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
-                col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
-                
+               
                 col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
 
 
         # Compute intensive stats
         if not self.fast_mode:
+            legacy_mc_scores = self.legacy_contribution(
+                dataf=dataf, pred_col=pred_col, target_col=target_col,
+                other_col=bench_col
+            )
+
             max_feature_exposure = self.max_feature_exposure(
                 dataf=dataf, feature_cols=feature_cols,
                 pred_col=pred_col
@@ -191,6 +188,9 @@ class BaseEvaluator:
             )
             smart_sharpe = self.smart_sharpe(era_corrs=val_numerai_corrs)
 
+            col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
+            col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
+            col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
             col_stats["max_feature_exposure"] = max_feature_exposure
             col_stats["feature_neutral_mean"] = fn_mean
             col_stats["feature_neutral_std"] = fn_std
