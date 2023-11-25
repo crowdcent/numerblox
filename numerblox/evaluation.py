@@ -147,13 +147,6 @@ class BaseEvaluator:
                 mc_std = np.nanstd(mc_scores)
                 mc_sharpe = np.nan if mc_std == 0 else mc_mean / mc_std
 
-                legacy_bmc_mean = np.nanmean(legacy_mc_scores)
-                legacy_bmc_std = np.nanstd(legacy_mc_scores)
-                legacy_bmc_sharpe = np.nan if legacy_bmc_std == 0 else legacy_bmc_mean / legacy_bmc_std
-
-                ex_diss = self.exposure_dissimilarity(
-                    dataf=dataf, pred_col=pred_col, other_col=bench_col
-                )
                 col_stats[f"corr_with_{bench_col}"] = bench_corr
 
                 col_stats[f"mean_vs_{bench_col}"] = mean - bench_mean
@@ -163,16 +156,26 @@ class BaseEvaluator:
                 col_stats[f"mc_std_{bench_col}"] = mc_std
                 col_stats[f"mc_sharpe_{bench_col}"] = mc_sharpe
                
-                col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
+                if not self.fast_mode:
+                    legacy_mc_scores = self.legacy_contribution(
+                        dataf=dataf, pred_col=pred_col, target_col=target_col, other_col=bench_col
+                    )
+                    legacy_bmc_mean = np.nanmean(legacy_mc_scores)
+                    legacy_bmc_std = np.nanstd(legacy_mc_scores)
+                    legacy_bmc_sharpe = np.nan if legacy_bmc_std == 0 else legacy_bmc_mean / legacy_bmc_std
+
+                    ex_diss = self.exposure_dissimilarity(
+                        dataf=dataf, pred_col=pred_col, other_col=bench_col
+                    )
+                    
+                    col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
+                    col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
+                    col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
+                    col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
 
 
         # Compute intensive stats
         if not self.fast_mode:
-            legacy_mc_scores = self.legacy_contribution(
-                dataf=dataf, pred_col=pred_col, target_col=target_col,
-                other_col=bench_col
-            )
-
             max_feature_exposure = self.max_feature_exposure(
                 dataf=dataf, feature_cols=feature_cols,
                 pred_col=pred_col
@@ -188,9 +191,6 @@ class BaseEvaluator:
             )
             smart_sharpe = self.smart_sharpe(era_corrs=val_numerai_corrs)
 
-            col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
-            col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
-            col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
             col_stats["max_feature_exposure"] = max_feature_exposure
             col_stats["feature_neutral_mean"] = fn_mean
             col_stats["feature_neutral_std"] = fn_std
