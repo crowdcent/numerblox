@@ -14,7 +14,7 @@ from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
 FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
-ALL_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "corr_with", "legacy_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
+ALL_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "corr_with", "mc_mean_std_sharpe", "legacy_mean_std_sharpe", "ex_diss", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
 
 
 class BaseEvaluator:
