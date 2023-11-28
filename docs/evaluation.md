@@ -79,11 +79,10 @@ Evaluators can be augmented with custom metrics that will be executed in additio
 
 Each custom function should:
 - Be a callable (function or class that implements \_\_call\_\_).
-- Have the following input arguments:
+- Have the following function signature:
     - dataf: DataFrame passed into evaluation (pd.DataFrame).
     - pred_col: Column name containing the predictions to evaluate (str).
     - target_col: Column name with main target to evaluate against (str).
-
 
 Example of how to use custom functions in `NumeraiClassicEvaluator`:
 ```py
