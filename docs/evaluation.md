@@ -43,7 +43,7 @@ By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "ca
 
 ## Numerai Classic specific metrics
 
-`NumeraiClassicEvaluator` will also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`. `NumeraiClassicEvaluator` will compute the mean, standard deviation and Sharpe ratio for FNCV3. 
+`NumeraiClassicEvaluator` can also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). If you want to compute this add `fncv3_mean_std_sharpe` to the `metrics_list`.
 
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator, FAST_METRICS
