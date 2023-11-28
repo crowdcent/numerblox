@@ -6,54 +6,57 @@ NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.
 
 The following metrics are included for `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`:
 
-- Mean, Standard Deviation and Sharpe for era returns (Corrv2 aka Numerai Correlation).
+For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set a custom `metrics_list` with all metrics you want to compute.
 
-- Smart Sharpe.
+All valid metrics for `metrics_list` you can use are:
 
-- Max drawdown.
+- "mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on Corrv2 (Numerai Correlation).
 
-- Annual Percentage Yield (APY).
+- "apy" -> Annual Percentage Yield.
 
-- Correlation with example predictions.
+- "max_drawdown" -> Max drawdown.
 
-- [Max feature exposure](https://forum.numer.ai/t/model-diagnostics-feature-exposure/899).
+- "calmar_ratio" -> [Calmar Ratio](https://www.investopedia.com/terms/c/calmarratio.asp).
 
-- [Feature Neutral](https://docs.numer.ai/tournament/feature-neutral-correlation) Mean, Standard deviation and Sharpe.
+- "autocorrelation" -> Autocorrelation (1st order).
 
-- [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4).
+- "max_feature_exposure" -> [Max feature exposure](https://forum.numer.ai/t/model-diagnostics-feature-exposure/899).
 
-- Autocorrelation (1st order).
+- "smart_sharpe" -> Smart Sharpe.
 
-- [Calmar Ratio](https://www.investopedia.com/terms/c/calmarratio.asp).
+- "legacy_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on legacy model contribution.
 
-- Outperformance vs. Example predictions and optional benchmark predictions.
+- "fn_mean_std_sharpe" -> [Feature Neutral](https://docs.numer.ai/tournament/feature-neutral-correlation) mean, standard deviation and Sharpe ratio (can take some time to compute).
 
-- Mean, Standard Deviation and Sharpe for TB200 and TB500 (Buy top 200/500 stocks and sell bottom 200/500 stocks).
+- "tb200_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on TB200.
 
-- Example Prediction Contribution (EPC), benchmark model contribution (BMC) and Meta Model contribution (MMC). BMC and MMC calculations require defining `benchmark_cols` and `meta_model_col` respectively.
+- "tb500_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on TB500.
 
-For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set `fast_mode=True` to skip max. feature exposure, [FNCV3 metrics](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website), TB200, TB500 and exposure dissimilarity. These metrics in particular can take a while to compute.
+The following metrics only work in `benchmark_cols` is defined in `full_evaluation`:
+- "mc_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on model contribution.
+
+- "corr_with" -> Correlation with benchmark predictions.
+
+- "ex_diss" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions.
+
+By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]`
 
 ## Numerai Classic specific metrics
 
 `NumeraiClassicEvaluator` will also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). The FNCV3 mean is a common metric shown on the Numerai leaderboard under `FNCV3`. `NumeraiClassicEvaluator` will compute the mean, standard deviation and Sharpe ratio for FNCV3. 
 
-Additionally you can provide a `meta_model_col` which will be used to calculate matrics around MMC (Meta Model Contribution). 
-
 ```py
-from numerblox.evaluation import NumeraiClassicEvaluator
+from numerblox.evaluation import NumeraiClassicEvaluator, FAST_METRICS
 
 # Validation DataFrame to compute metrics on
-# Should have at least era_col, example_col, pred_cols and target_col columns.
+# Should have at least era_col, pred_cols and target_col columns.
 val_df = ...
 
-evaluator = NumeraiClassicEvaluator(era_col="era")
+evaluator = NumeraiClassicEvaluator(era_col="era", metrics_list=FAST_METRICS)
 metrics = evaluator.full_evaluation(val_df, 
-                                    example_col="example_preds", 
                                     pred_cols=["prediction"], 
                                     target_col="target",
-                                    benchmark_cols=["benchmark1", "benchmark2"],
-                                    meta_model_col="meta_model_preds")
+                                    benchmark_cols=["benchmark1", "benchmark2"])
 ```
 
 ## Numerai Signals specific metrics
@@ -77,4 +80,32 @@ val_df = pd.DataFrame()
 evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 # Returns a Pandas Series like this.
 # pd.Series([0.01, ..., 0.02])
+```
+
+## Custom functions
+
+Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the `custom_functions` argument when initializing the evaluator. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
+
+Each custom function should:
+- Be a callable (function or class that implements \_\_call\_\_).
+- Have the following function signature:
+    - dataf: DataFrame passed into evaluation (pd.DataFrame).
+    - pred_col: Column name containing the predictions to evaluate (str).
+    - target_col: Column name with main target to evaluate against (str).
+
+Example of how to use custom functions in `NumeraiClassicEvaluator`:
+```py
+from numerblox.evaluation import NumeraiClassicEvaluator
+
+def my_custom_function(dataf: pd.DataFrame, pred_col: str, target_col: str) -> float:
+    """ Dummy evaluation function. """
+    return 0.5
+
+evaluator = NumeraiClassicEvaluator(custom_functions=[my_custom_function])
+
+# In evaluator my_custom_function(dataf=val_df, pred_col="prediction", target_col="target") is called.
+metrics = evaluator.full_evaluation(val_df, 
+                                    pred_cols=["prediction"], 
+                                    target_col="target")
+# metrics will contain a "my_custom_function" column with value 0.5.
 ```
