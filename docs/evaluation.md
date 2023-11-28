@@ -72,3 +72,32 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 # Returns a Pandas Series like this.
 # pd.Series([0.01, ..., 0.02])
 ```
+
+## Custom functions
+
+Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the `custom_functions` argument when initializing the evaluator. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
+
+Each custom function should:
+- Be a callable (function or class that implements __call__).
+- Have the following input arguments:
+    - dataf: DataFrame passed into evaluation (pd.DataFrame).
+    - pred_col: Column name containing the predictions to evaluate (str).
+    - target_col: Column name with main target to evaluate against (str).
+
+
+Example of how to use custom functions in `NumeraiClassicEvaluator`:
+```py
+from numerblox.evaluation import NumeraiClassicEvaluator
+
+def my_custom_function(dataf: pd.DataFrame, pred_col: str, target_col: str) -> float:
+    """ Dummy evaluation function. """
+    return 0.5
+
+evaluator = NumeraiClassicEvaluator(custom_functions=[my_custom_function])
+
+# In evaluator my_custom_function(dataf=val_df, pred_col="prediction", target_col="target") is called.
+metrics = evaluator.full_evaluation(val_df, 
+                                    pred_cols=["prediction"], 
+                                    target_col="target")
+# metrics will contain a "my_custom_function" column with value 0.5.
+```

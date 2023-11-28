@@ -1,10 +1,11 @@
 import time
+import inspect
 import numpy as np
 import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
 
@@ -32,10 +33,17 @@ class BaseEvaluator:
     - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
     - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
 
-    :param era_col: Column name pointing to eras. \n
-    Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals. \n
+    :param era_col: Column name pointing to eras.
+    Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
     :param fast_mode: Will skip compute intensive metrics if set to True,
     namely max_exposure, feature neutral mean, TB200 and TB500.
+    :param custom_functions: Additional functions called in evaluation.
+    Each custom function should:
+    - Be a callable (function or class that implements __call__).
+    - Have the following input arguments:
+        - dataf: DataFrame input of evaluation (pd.DataFrame).
+        - pred_col: Column containing the predictions to evaluate (str).
+        - target_col: Column with main target to evaluate against (str).
 
     Note that we calculate the sample standard deviation with ddof=0. 
     It may differ slightly from the standard Pandas calculation, but 
@@ -43,9 +51,12 @@ class BaseEvaluator:
     More info: 
     https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy
     """
-    def __init__(self, era_col: str = "era", fast_mode=False):
+    def __init__(self, era_col: str = "era", fast_mode=False, custom_functions: List[Callable] = None):
         self.era_col = era_col
         self.fast_mode = fast_mode
+        self.custom_functions = custom_functions
+        if self.custom_functions is not None:
+            self.check_custom_functions(self.custom_functions)
 
     def full_evaluation(
         self,
@@ -173,7 +184,6 @@ class BaseEvaluator:
                     col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
                     col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
 
-
         # Compute intensive stats
         if not self.fast_mode:
             max_feature_exposure = self.max_feature_exposure(
@@ -202,6 +212,11 @@ class BaseEvaluator:
             col_stats["tb500_std"] = tb500_std
             col_stats["tb500_sharpe"] = tb500_sharpe
             col_stats["smart_sharpe"] = smart_sharpe
+
+        # Custom functions
+        if self.custom_functions is not None:
+            for func in self.custom_functions:
+                col_stats[func.__name__] = func(dataf=dataf, pred_col=pred_col, target_col=target_col)
 
         col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
 
@@ -595,9 +610,34 @@ class BaseEvaluator:
             # this is equivalent to covariance b/c mean = 0
             mc = (ranked_targets @ orthogonalized_preds) / len(x)
             mc_scores.append(mc)
-        
         return mc_scores
-        
+    
+    def check_custom_functions(self, funcs: List[Callable]):
+        """
+        Check if all custom functions are valid.
+        :param funcs: List of custom functions to check.
+        """
+        required_args = ["dataf", "pred_col", "target_col"]
+        for func in funcs:
+            assert callable(func)
+            assert self._is_valid_custom_function(func, required_args=required_args), f"Custom function '{func.__name__}' is not valid. Make sure to use the correct function signature with arguments: {required_args}."
+        return
+    
+    @staticmethod
+    def _is_valid_custom_function(func: Callable, required_args: List[str]) -> bool:
+        """ 
+        Check if the custom function has all necessary arguments.
+        Each custom function should have at least arguments:
+        - dataf: pd.DataFrame
+        - pred_col: str
+        - target_col: str
+        :param func: Custom function to check.
+        :param required_args: List of required arguments.
+        :return: True if all arguments are present, False otherwise.
+        """
+        sig = inspect.signature(func)
+        params = sig.parameters
+        return all(arg in params for arg in required_args)
 
     def plot_correlations(
         self,
@@ -683,8 +723,8 @@ class NumeraiClassicEvaluator(BaseEvaluator):
     """
     Evaluator for all metrics that are relevant in Numerai Classic.
     """
-    def __init__(self, era_col: str = "era", fast_mode=False):
-        super().__init__(era_col=era_col, fast_mode=fast_mode)
+    def __init__(self, era_col: str = "era", fast_mode=False, custom_functions: List[Callable] = None):
+        super().__init__(era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions)
         self.fncv3_features = FNCV3_FEATURES
   
     def full_evaluation(
@@ -732,8 +772,8 @@ class NumeraiClassicEvaluator(BaseEvaluator):
 
 class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
-    def __init__(self, era_col: str = "friday_date", fast_mode=False):
-        super().__init__(era_col=era_col, fast_mode=fast_mode)
+    def __init__(self, era_col: str = "friday_date", fast_mode=False, custom_functions: List[Callable] = None):
+        super().__init__(era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions)
 
     def get_neutralized_corr(self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2) -> pd.Series:
         """

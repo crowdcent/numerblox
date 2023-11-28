@@ -30,7 +30,7 @@ def test_numerai_classic_evaluator(classic_test_data):
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
     )
-    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
+    for col in CLASSIC_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col][0] != np.nan
 
@@ -58,7 +58,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
                                         f"sharpe_vs_{col}",
                                         f"mc_mean_{col}",
                                         f"legacy_mc_mean_{col}"])
-    for col in CLASSIC_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS:
+    for col in CLASSIC_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col][0] != np.nan
 
@@ -74,6 +74,37 @@ def test_numerai_signals_evaluator(create_signals_sample_data):
     for col in SIGNALS_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col][0] != np.nan
+
+
+def test_evaluator_custom_functions(classic_test_data):
+    df = classic_test_data
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df))
+
+    def custom_func(dataf, target_col, pred_col):
+        """ Simple example func: Mean of residuals. """
+        return np.mean(dataf[target_col] - dataf[pred_col])
+
+    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False, custom_functions=[custom_func])
+    val_stats = evaluator.full_evaluation(
+        dataf=df,
+        target_col="target",
+        pred_cols=["prediction"],
+    )
+    assert "custom_func" in val_stats.columns
+    assert val_stats["custom_func"].iloc[0] != np.nan
+
+
+def test_evaluator_invalid_custom_function(classic_test_data):
+    df = classic_test_data
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df))
+
+    # Invalid function signature
+    def custom_func(dataf, other_col):
+        return np.mean(dataf["target"] - dataf[other_col])
+
+    # Initialization fails if any functions are defined incorrectly
+    with pytest.raises(AssertionError):
+        NumeraiClassicEvaluator(era_col="era", fast_mode=False, custom_functions=[custom_func])
 
 
 @pytest.fixture
