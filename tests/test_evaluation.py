@@ -8,14 +8,10 @@ from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluato
 
 from utils import create_signals_sample_data, classic_test_data
 
-BASE_STATS_COLS = ["target", "mean", "std", "sharpe", 
-                   "max_drawdown", "apy", "calmar_ratio", "autocorrelation",
-                   "legacy_mean", "legacy_std", "legacy_sharpe"]
-CLASSIC_SPECIFIC_STATS_COLS = ["feature_neutral_mean_v3", "feature_neutral_std_v3", 
-                               "feature_neutral_sharpe_v3"]
 
+BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "apy", "max_drawdown", "calmar_ratio"]
 
-CLASSIC_STATS_COLS = BASE_STATS_COLS + CLASSIC_SPECIFIC_STATS_COLS
+CLASSIC_STATS_COLS = BASE_STATS_COLS
 SIGNALS_STATS_COLS = BASE_STATS_COLS
 
 
@@ -24,7 +20,7 @@ def test_numerai_classic_evaluator(classic_test_data):
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
 
-    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
+    evaluator = NumeraiClassicEvaluator(era_col="era")
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -44,7 +40,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
     df.loc[:, "benchmark2"] = np.random.uniform(size=len(df))
     benchmark_cols = ["benchmark1", "benchmark2"]
 
-    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
+    evaluator = NumeraiClassicEvaluator(era_col="era")
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -65,7 +61,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
 
 def test_numerai_signals_evaluator(create_signals_sample_data):
     df = create_signals_sample_data
-    evaluator = NumeraiSignalsEvaluator(era_col="date", fast_mode=False)
+    evaluator = NumeraiSignalsEvaluator(era_col="date")
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -84,7 +80,7 @@ def test_evaluator_custom_functions(classic_test_data):
         """ Simple example func: Mean of residuals. """
         return np.mean(dataf[target_col] - dataf[pred_col])
 
-    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False, custom_functions=[custom_func])
+    evaluator = NumeraiClassicEvaluator(era_col="era", custom_functions=[custom_func])
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -104,7 +100,7 @@ def test_evaluator_invalid_custom_function(classic_test_data):
 
     # Initialization fails if any functions are defined incorrectly
     with pytest.raises(AssertionError):
-        NumeraiClassicEvaluator(era_col="era", fast_mode=False, custom_functions=[custom_func])
+        NumeraiClassicEvaluator(era_col="era", custom_functions=[custom_func])
 
 
 @pytest.fixture
@@ -125,7 +121,7 @@ def mock_api():
 
 def test_get_neutralized_corr(create_signals_sample_data, mock_api):
     df = create_signals_sample_data
-    obj = NumeraiSignalsEvaluator(era_col="date", fast_mode=True)  
+    obj = NumeraiSignalsEvaluator(era_col="date")  
     result = obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"))
     
     # Asserting if the output is correct
@@ -147,7 +143,7 @@ def test_await_diagnostics_timeout(mock_api):
 
 
 def test_get_raw_feature_exposures_pearson(classic_test_data):
-    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
+    evaluator = NumeraiClassicEvaluator(era_col="era")
     np.random.seed(1)
     classic_test_data["prediction"] = np.random.uniform(size=len(classic_test_data))
 
@@ -163,7 +159,7 @@ def test_get_raw_feature_exposures_pearson(classic_test_data):
 
 
 def test_get_feature_exposures_corrv2(classic_test_data):
-    evaluator = NumeraiClassicEvaluator(era_col="era", fast_mode=False)
+    evaluator = NumeraiClassicEvaluator(era_col="era")
     np.random.seed(1)
     classic_test_data["prediction"] = np.random.uniform(size=len(classic_test_data))
 

@@ -14,7 +14,7 @@ from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
 FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
-ALL_METRICS = ["mean_std_sharpe"]
+ALL_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "corr_with", "legacy_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
 
 
 class BaseEvaluator:
@@ -37,10 +37,8 @@ class BaseEvaluator:
     - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
     - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
 
-    :param era_col: Column name pointing to eras.
-    Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
-    :param fast_mode: Will skip compute intensive metrics if set to True,
-    namely max_exposure, feature neutral mean, TB200 and TB500.
+    :param metrics_list: List of metrics to calculate. Default: FAST_METRICS.
+    :param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
     :param custom_functions: Additional functions called in evaluation.
     Each custom function should:
     - Be a callable (function or class that implements __call__).
@@ -58,8 +56,8 @@ class BaseEvaluator:
 
     def __init__(
         self,
+        metrics_list: List[str],
         era_col: str = "era",
-        metrics_list: List[str] = FAST_METRICS,
         custom_functions: List[Callable] = None,
     ):
         self.era_col = era_col
@@ -846,11 +844,11 @@ class NumeraiClassicEvaluator(BaseEvaluator):
     def __init__(
         self,
         era_col: str = "era",
-        fast_mode=False,
+        metrics_list=FAST_METRICS,
         custom_functions: List[Callable] = None,
     ):
         super().__init__(
-            era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions
+            era_col=era_col, metrics_list=metrics_list, custom_functions=custom_functions
         )
         self.fncv3_features = FNCV3_FEATURES
 
@@ -888,7 +886,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 benchmark_cols=benchmark_cols,
             )
             # Numerai Classic specific metrics
-            if not self.fast_mode and valid_features:
+            if valid_features and "fn_mean_std_sharpe" in self.metrics_list:
                 # Using only valid features defined in FNCV3_FEATURES
                 fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
                     dataf=dataf,
@@ -910,11 +908,11 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
     def __init__(
         self,
         era_col: str = "friday_date",
-        fast_mode=False,
+        metrics_list=FAST_METRICS,
         custom_functions: List[Callable] = None,
     ):
         super().__init__(
-            era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions
+            era_col=era_col, metrics_list=metrics_list, custom_functions=custom_functions
         )
 
     def get_neutralized_corr(
