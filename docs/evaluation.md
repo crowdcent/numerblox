@@ -78,7 +78,7 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the `custom_functions` argument when initializing the evaluator. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
 
 Each custom function should:
-- Be a callable (function or class that implements \__call__).
+- Be a callable (function or class that implements \__call\__).
 - Have the following input arguments:
     - dataf: DataFrame passed into evaluation (pd.DataFrame).
     - pred_col: Column name containing the predictions to evaluate (str).
