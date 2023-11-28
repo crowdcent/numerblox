@@ -13,6 +13,10 @@ from .neutralizers import FeatureNeutralizer
 from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
+FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
+ALL_METRICS = ["mean_std_sharpe"]
+
+
 class BaseEvaluator:
     """
     Evaluation functionality that is relevant for both
@@ -45,15 +49,21 @@ class BaseEvaluator:
         - pred_col: Column containing the predictions to evaluate (str).
         - target_col: Column with main target to evaluate against (str).
 
-    Note that we calculate the sample standard deviation with ddof=0. 
-    It may differ slightly from the standard Pandas calculation, but 
-    is consistent with how NumPy computes standard deviation. 
-    More info: 
+    Note that we calculate the sample standard deviation with ddof=0.
+    It may differ slightly from the standard Pandas calculation, but
+    is consistent with how NumPy computes standard deviation.
+    More info:
     https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy
     """
-    def __init__(self, era_col: str = "era", fast_mode=False, custom_functions: List[Callable] = None):
+
+    def __init__(
+        self,
+        era_col: str = "era",
+        metrics_list: List[str] = FAST_METRICS,
+        custom_functions: List[Callable] = None,
+    ):
         self.era_col = era_col
-        self.fast_mode = fast_mode
+        self.metrics_list = metrics_list
         self.custom_functions = custom_functions
         if self.custom_functions is not None:
             self.check_custom_functions(self.custom_functions)
@@ -74,20 +84,34 @@ class BaseEvaluator:
         :param target_col: Target column to evaluate against.
         :param benchmark_cols: Optional list of benchmark columns to calculate evaluation metrics for.
         """
-        assert self.era_col in dataf.columns, f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
+        assert (
+            self.era_col in dataf.columns
+        ), f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
         for pred_col in pred_cols:
-            assert pred_col in dataf.columns, f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
-        assert target_col in dataf.columns, f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
+            assert (
+                pred_col in dataf.columns
+            ), f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
+        assert (
+            target_col in dataf.columns
+        ), f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
         if benchmark_cols:
             for col in benchmark_cols:
-                assert col in dataf.columns, f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
-        
+                assert (
+                    col in dataf.columns
+                ), f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
+
         val_stats = pd.DataFrame()
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
-        cat_cols = dataf[feature_cols].select_dtypes(include=['category']).columns.to_list()
+        cat_cols = (
+            dataf[feature_cols].select_dtypes(include=["category"]).columns.to_list()
+        )
         if cat_cols:
-            print(f"WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation.")
-            dataf.loc[:, feature_cols] = dataf[feature_cols].select_dtypes(exclude=['category'])
+            print(
+                f"WARNING: Categorical features detected that cannot be used for neutralization. Removing columns: '{cat_cols}' for evaluation."
+            )
+            dataf.loc[:, feature_cols] = dataf[feature_cols].select_dtypes(
+                exclude=["category"]
+            )
         dataf = dataf.fillna(0.5)
         for col in tqdm(pred_cols, desc="Evaluation: "):
             col_stats = self.evaluation_one_col(
@@ -113,115 +137,166 @@ class BaseEvaluator:
         against given target and other prediction column(s).
         """
         col_stats = {}
-
-        # Compute stats
-        val_corrs = self.per_era_corrs(
-            dataf=dataf, pred_col=pred_col, target_col=target_col
-        )
-        val_numerai_corrs = self.per_era_numerai_corrs(
-            dataf=dataf, pred_col=pred_col, target_col=target_col
-        )
-        
-        mean, std, sharpe = self.mean_std_sharpe(era_corrs=val_numerai_corrs)
-        legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(era_corrs=val_corrs)
-        max_drawdown = self.max_drawdown(era_corrs=val_numerai_corrs)
-        apy = self.apy(era_corrs=val_numerai_corrs)
-        calmar = np.nan if max_drawdown == 0 else apy / -max_drawdown
-        autocorrelation = self.autocorr1(val_numerai_corrs)
-
         col_stats["target"] = target_col
-        col_stats["mean"] = mean
-        col_stats["std"] = std
-        col_stats["sharpe"] = sharpe
-        col_stats["max_drawdown"] = max_drawdown
-        col_stats["apy"] = apy
-        col_stats["calmar_ratio"] = calmar
-        col_stats["autocorrelation"] = autocorrelation
-        col_stats["legacy_mean"] = legacy_mean
-        col_stats["legacy_std"] = legacy_std
-        col_stats["legacy_sharpe"] = legacy_sharpe
+
+        # Compute stats per era (only if needed)
+        per_era_numerai_corrs = self.per_era_numerai_corrs(
+            dataf=dataf, pred_col=pred_col, target_col=target_col
+        )
+
+        # check if mean, std, or sharpe are in metrics_list
+        if "mean_std_sharpe" in self.metrics_list:
+            mean, std, sharpe = self.mean_std_sharpe(era_corrs=per_era_numerai_corrs)
+            col_stats["mean"] = mean
+            col_stats["std"] = std
+            col_stats["sharpe"] = sharpe
+
+        if "legacy_mean_std_sharpe" in self.metrics_list:
+            per_era_corrs = self.per_era_corrs(
+                dataf=dataf, pred_col=pred_col, target_col=target_col
+            )
+            legacy_mean, legacy_std, legacy_sharpe = self.mean_std_sharpe(
+                era_corrs=per_era_corrs
+            )
+            col_stats["legacy_mean"] = legacy_mean
+            col_stats["legacy_std"] = legacy_std
+            col_stats["legacy_sharpe"] = legacy_sharpe
+
+        if "max_drawdown" in self.metrics_list:
+            col_stats["max_drawdown"] = self.max_drawdown(
+                era_corrs=per_era_numerai_corrs
+            )
+
+        if "apy":
+            col_stats["apy"] = self.apy(era_corrs=per_era_numerai_corrs)
+
+        if "calmar_ratio" in self.metrics_list:
+            if not "max_drawdown" in self.metrics_list:
+                col_stats["max_drawdown"] = self.max_drawdown(
+                    era_corrs=per_era_numerai_corrs
+                )
+            if not "apy" in self.metrics_list:
+                col_stats["apy"] = self.apy(era_corrs=per_era_numerai_corrs)
+            col_stats["calmar_ratio"] = (
+                np.nan
+                if col_stats["max_drawdown"] == 0
+                else col_stats["apy"] / -col_stats["max_drawdown"]
+            )
+
+        if "autocorrelation" in self.metrics_list:
+            col_stats["autocorrelation"] = self.autocorr1(per_era_numerai_corrs)
+
+        if "max_feature_exposure" in self.metrics_list:
+            col_stats["max_feature_exposure"] = self.max_feature_exposure(
+                dataf=dataf, feature_cols=feature_cols, pred_col=pred_col
+            )
+
+        if "smart_sharpe" in self.metrics_list:
+            col_stats["smart_sharpe"] = self.smart_sharpe(
+                era_corrs=per_era_numerai_corrs
+            )
 
         if benchmark_cols is not None:
             for bench_col in benchmark_cols:
-                val_bench_corrs = self.per_era_numerai_corrs(
+                per_era_bench_corrs = self.per_era_numerai_corrs(
                     dataf=dataf, pred_col=bench_col, target_col=target_col
                 )
-                bench_mean, _, bench_sharpe = self.mean_std_sharpe(era_corrs=val_bench_corrs)
-                bench_corr = self.cross_correlation(
-                    dataf=dataf, pred_col=bench_col, other_col=bench_col
-                )
-                mc_scores = self.contributive_correlation(
-                    dataf=dataf, pred_col=pred_col, target_col=target_col, other_col=bench_col
-                )
 
-                mc_mean = np.nanmean(mc_scores)
-                mc_std = np.nanstd(mc_scores)
-                mc_sharpe = np.nan if mc_std == 0 else mc_mean / mc_std
-
-                col_stats[f"corr_with_{bench_col}"] = bench_corr
-
-                col_stats[f"mean_vs_{bench_col}"] = mean - bench_mean
-                col_stats[f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
-                
-                col_stats[f"mc_mean_{bench_col}"] = mc_mean
-                col_stats[f"mc_std_{bench_col}"] = mc_std
-                col_stats[f"mc_sharpe_{bench_col}"] = mc_sharpe
-               
-                if not self.fast_mode:
-                    legacy_mc_scores = self.legacy_contribution(
-                        dataf=dataf, pred_col=pred_col, target_col=target_col, other_col=bench_col
+                if "mean_std_sharpe" in self.metrics_list:
+                    bench_mean, bench_std, bench_sharpe = self.mean_std_sharpe(
+                        era_corrs=per_era_bench_corrs
                     )
-                    legacy_bmc_mean = np.nanmean(legacy_mc_scores)
-                    legacy_bmc_std = np.nanstd(legacy_mc_scores)
-                    legacy_bmc_sharpe = np.nan if legacy_bmc_std == 0 else legacy_bmc_mean / legacy_bmc_std
+                    col_stats[f"mean_vs_{bench_col}"] = mean - bench_mean
+                    col_stats[f"std_vs_{bench_col}"] = std - bench_std
+                    col_stats[f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
 
-                    ex_diss = self.exposure_dissimilarity(
+                if "mc_mean_std_sharpe" in self.metrics_list:
+                    mc_scores = self.contributive_correlation(
+                        dataf=dataf,
+                        pred_col=pred_col,
+                        target_col=target_col,
+                        other_col=bench_col,
+                    )
+                    col_stats[f"mc_mean_{bench_col}"] = np.nanmean(mc_scores)
+                    col_stats[f"mc_std_{bench_col}"] = np.nanstd(mc_scores)
+                    col_stats[f"mc_sharpe_{bench_col}"] = (
+                        np.nan
+                        if col_stats[f"mc_std_{bench_col}"] == 0
+                        else col_stats[f"mc_mean_{bench_col}"]
+                        / col_stats[f"mc_std_{bench_col}"]
+                    )
+
+                if "corr_with" in self.metrics_list:
+                    col_stats[f"corr_with_{bench_col}"] = self.cross_correlation(
+                        dataf=dataf, pred_col=bench_col, other_col=bench_col
+                    )
+
+                if "legacy_mc_mean_std_sharpe" in self.metrics_list:
+                    legacy_mc_scores = self.legacy_contribution(
+                        dataf=dataf,
+                        pred_col=pred_col,
+                        target_col=target_col,
+                        other_col=bench_col,
+                    )
+                    col_stats[f"legacy_mc_mean_{bench_col}"] = np.nanmean(
+                        legacy_mc_scores
+                    )
+                    col_stats[f"legacy_mc_std_{bench_col}"] = np.nanstd(
+                        legacy_mc_scores
+                    )
+                    col_stats[f"legacy_mc_sharpe_{bench_col}"] = (
+                        np.nan
+                        if col_stats[f"legacy_mc_std_{bench_col}"] == 0
+                        else col_stats[f"legacy_mc_mean_{bench_col}"]
+                        / col_stats[f"legacy_mc_std_{bench_col}"]
+                    )
+
+                if "ex_diss" in self.metrics_list:
+                    col_stats[
+                        f"exposure_dissimilarity_{bench_col}"
+                    ] = self.exposure_dissimilarity(
                         dataf=dataf, pred_col=pred_col, other_col=bench_col
                     )
-                    
-                    col_stats[f"legacy_mc_mean_{bench_col}"] = legacy_bmc_mean
-                    col_stats[f"legacy_mc_std_{bench_col}"] = legacy_bmc_std
-                    col_stats[f"legacy_mc_sharpe_{bench_col}"] = legacy_bmc_sharpe
-                    col_stats[f"exposure_dissimilarity_{bench_col}"] = ex_diss
 
         # Compute intensive stats
-        if not self.fast_mode:
-            max_feature_exposure = self.max_feature_exposure(
-                dataf=dataf, feature_cols=feature_cols,
-                pred_col=pred_col
-            )
+        if "fn_mean_std_sharpe" in self.metrics_list:
             fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(
-                dataf=dataf, pred_col=pred_col, target_col=target_col, feature_names=feature_cols
+                dataf=dataf,
+                pred_col=pred_col,
+                target_col=target_col,
+                feature_names=feature_cols,
             )
-            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(
-                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
-            )
-            tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
-                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
-            )
-            smart_sharpe = self.smart_sharpe(era_corrs=val_numerai_corrs)
-
-            col_stats["max_feature_exposure"] = max_feature_exposure
             col_stats["feature_neutral_mean"] = fn_mean
             col_stats["feature_neutral_std"] = fn_std
             col_stats["feature_neutral_sharpe"] = fn_sharpe
+
+        if "tb200_mean_std_sharpe" in self.metrics_list:
+            tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(
+                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
+            )
             col_stats["tb200_mean"] = tb200_mean
             col_stats["tb200_std"] = tb200_std
             col_stats["tb200_sharpe"] = tb200_sharpe
+
+        if "tb500_mean_std_sharpe" in self.metrics_list:
+            tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
+                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
+            )
             col_stats["tb500_mean"] = tb500_mean
             col_stats["tb500_std"] = tb500_std
             col_stats["tb500_sharpe"] = tb500_sharpe
-            col_stats["smart_sharpe"] = smart_sharpe
 
         # Custom functions
         if self.custom_functions is not None:
             for func in self.custom_functions:
-                col_stats[func.__name__] = func(dataf=dataf, pred_col=pred_col, target_col=target_col)
+                col_stats[func.__name__] = func(
+                    dataf=dataf, pred_col=pred_col, target_col=target_col
+                )
 
         col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
 
         return col_stats_df
-        
+
     def per_era_corrs(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str
     ) -> pd.Series:
@@ -231,14 +306,14 @@ class BaseEvaluator:
                 d[target_col]
             )
         )
-    
+
     def per_era_numerai_corrs(
-            self, dataf: pd.DataFrame, pred_col: str, target_col: str
-        ) -> pd.Series:
+        self, dataf: pd.DataFrame, pred_col: str, target_col: str
+    ) -> pd.Series:
         """Numerai Corr between prediction and target for each era."""
         return dataf.groupby(self.era_col).apply(
             lambda d: self.numerai_corr(d.fillna(0.5), pred_col, target_col)
-            )
+        )
 
     def mean_std_sharpe(
         self, era_corrs: pd.Series
@@ -262,8 +337,9 @@ class BaseEvaluator:
         Assumes original target col as input (i.e. in [0, 1] range).
         """
         # Rank and gaussianize predictions
-        ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), 
-                                               method="average")
+        ranked_preds = self._normalize_uniform(
+            dataf[pred_col].fillna(0.5), method="average"
+        )
         gauss_ranked_preds = stats.norm.ppf(ranked_preds)
         # Center target from [0...1] to [-0.5...0.5] range
         targets = dataf[target_col]
@@ -296,15 +372,16 @@ class BaseEvaluator:
         payout_scores = era_corrs.clip(-0.25, 0.25)
         payout_product = (payout_scores + 1).prod()
         return (
-            payout_product ** (
+            payout_product
+            ** (
                 # 52 weeks of compounding minus n for stake compounding lag
-                (52 - stake_compounding_lag) / len(payout_scores))
+                (52 - stake_compounding_lag)
+                / len(payout_scores)
+            )
             - 1
         ) * 100
 
-    def cross_correlation(
-        self, dataf: pd.DataFrame, pred_col: str, other_col: str
-    ):
+    def cross_correlation(self, dataf: pd.DataFrame, pred_col: str, other_col: str):
         """
         Corrv2 correlation with other predictions (like another model, example predictions or meta model prediction).
         :param dataf: DataFrame containing both pred_col and other_col.
@@ -320,8 +397,7 @@ class BaseEvaluator:
         ).mean()
 
     def max_feature_exposure(
-        self, dataf: pd.DataFrame, 
-        feature_cols: List[str], pred_col: str
+        self, dataf: pd.DataFrame, feature_cols: List[str], pred_col: str
     ) -> np.float64:
         """Maximum exposure over all features."""
         max_per_era = dataf.groupby(self.era_col).apply(
@@ -338,8 +414,9 @@ class BaseEvaluator:
         More info: https://docs.numer.ai/tournament/feature-neutral-correlation
         """
         fn = FeatureNeutralizer(pred_name=pred_col, proportion=1.0)
-        neutralized_preds = fn.predict(dataf[pred_col], features=dataf[feature_names],
-                               eras=dataf[self.era_col])
+        neutralized_preds = fn.predict(
+            dataf[pred_col], features=dataf[feature_names], eras=dataf[self.era_col]
+        )
         # Construct new DataFrame with era col, target col and preds
         neutralized_dataf = pd.DataFrame(columns=[self.era_col, target_col, pred_col])
         neutralized_dataf[self.era_col] = dataf[self.era_col]
@@ -368,7 +445,9 @@ class BaseEvaluator:
         )
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
-    def exposure_dissimilarity(self, dataf: pd.DataFrame, pred_col: str, other_col: str) -> np.float32:
+    def exposure_dissimilarity(
+        self, dataf: pd.DataFrame, pred_col: str, other_col: str
+    ) -> np.float32:
         """
         Model pattern of feature exposure to the another column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
@@ -385,7 +464,9 @@ class BaseEvaluator:
         return exp_dis
 
     @staticmethod
-    def _neutralize_series(series: pd.Series, by: pd.Series, proportion=1.0) -> pd.Series:
+    def _neutralize_series(
+        series: pd.Series, by: pd.Series, proportion=1.0
+    ) -> pd.Series:
         scores = series.values.reshape(-1, 1)
         exposures = by.values.reshape(-1, 1)
 
@@ -425,7 +506,6 @@ class BaseEvaluator:
         # Subtract the projection from v
         return v - projection
 
-
     def _score_by_date(
         self, dataf: pd.DataFrame, columns: list, target: str, tb: int = None
     ):
@@ -455,14 +535,22 @@ class BaseEvaluator:
         return pd.DataFrame(
             np.array(computed), columns=columns, index=dataf[self.era_col].unique()
         )
-    
+
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame, method: str = "first") -> pd.Series:
         """Normalize predictions uniformly using ranks."""
-        x = (df.rank(method=method) - 0.5) / len(df) # TODO: Evaluate if subtracting df.mean() is better
+        x = (df.rank(method=method) - 0.5) / len(
+            df
+        )  # TODO: Evaluate if subtracting df.mean() is better
         return pd.Series(x, index=df.index)
-    
-    def get_feature_exposures_pearson(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str], cpu_cores: int = -1) -> pd.DataFrame:
+
+    def get_feature_exposures_pearson(
+        self,
+        dataf: pd.DataFrame,
+        pred_col: str,
+        feature_list: List[str],
+        cpu_cores: int = -1,
+    ) -> pd.DataFrame:
         """
         Calculate feature exposures for each era using Pearson correlation.
 
@@ -472,27 +560,43 @@ class BaseEvaluator:
         :param cpu_cores: Number of CPU cores to use for parallelization.
         :return: DataFrame with Pearson feature exposures by era for each feature.
         """
-        def calculate_era_pearson_exposure(era, group, feature_list, pred_col_normalized):
+
+        def calculate_era_pearson_exposure(
+            era, group, feature_list, pred_col_normalized
+        ):
             data_matrix = group[feature_list + [pred_col_normalized]].values
             correlations = np.corrcoef(data_matrix, rowvar=False)
-            
+
             # Get the correlations of all features with the predictions (which is the last column)
             feature_correlations = correlations[:-1, -1]
             return era, feature_correlations
 
         normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
         dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+        feature_exposure_data = pd.DataFrame(
+            index=dataf["era"].unique(), columns=feature_list
+        )
 
         grouped_data = list(dataf.groupby("era"))
 
-        results = Parallel(n_jobs=cpu_cores)(delayed(calculate_era_pearson_exposure)(era, group, feature_list, f"{pred_col}_normalized") for era, group in grouped_data)
+        results = Parallel(n_jobs=cpu_cores)(
+            delayed(calculate_era_pearson_exposure)(
+                era, group, feature_list, f"{pred_col}_normalized"
+            )
+            for era, group in grouped_data
+        )
 
         for era, feature_correlations in results:
             feature_exposure_data.loc[era, :] = feature_correlations
         return feature_exposure_data
-    
-    def get_feature_exposures_corrv2(self, dataf: pd.DataFrame, pred_col: str, feature_list: List[str], cpu_cores: int = -1) -> pd.DataFrame:
+
+    def get_feature_exposures_corrv2(
+        self,
+        dataf: pd.DataFrame,
+        pred_col: str,
+        feature_list: List[str],
+        cpu_cores: int = -1,
+    ) -> pd.DataFrame:
         """
         Calculate feature exposures for each era using 'Numerai Corr'.
         Results will be similar to get_feature_exposures() but more accurate.
@@ -505,33 +609,43 @@ class BaseEvaluator:
         Default: -1 (all cores).
         :return: DataFrame with Corrv2 feature exposures by era for each feature.
         """
+
         def calculate_era_feature_exposure(era, group, pred_col, feature_list):
             exposures = {}
             for feature in feature_list:
-                corr = self.numerai_corr(group, pred_col=f"{pred_col}_normalized", target_col=feature)
+                corr = self.numerai_corr(
+                    group, pred_col=f"{pred_col}_normalized", target_col=feature
+                )
                 exposures[feature] = corr
             return era, exposures
 
         normalized_ranks = (dataf[[pred_col]].rank(method="first") - 0.5) / len(dataf)
         dataf[f"{pred_col}_normalized"] = stats.norm.ppf(normalized_ranks)
-        feature_exposure_data = pd.DataFrame(index=dataf["era"].unique(), columns=feature_list)
+        feature_exposure_data = pd.DataFrame(
+            index=dataf["era"].unique(), columns=feature_list
+        )
 
         grouped_data = list(dataf.groupby("era"))
 
-        results = Parallel(n_jobs=cpu_cores)(delayed(calculate_era_feature_exposure)(era, group, pred_col, feature_list) for era, group in grouped_data)
+        results = Parallel(n_jobs=cpu_cores)(
+            delayed(calculate_era_feature_exposure)(era, group, pred_col, feature_list)
+            for era, group in grouped_data
+        )
         for era, exposures in results:
             feature_exposure_data.loc[era, :] = exposures
         return feature_exposure_data
-    
+
     def smart_sharpe(self, era_corrs: pd.Series) -> np.float64:
-        """ 
+        """
         Sharpe adjusted for autocorrelation.
         :param era_corrs: Correlation scores by era
         """
-        return np.nanmean(era_corrs) / (np.nanstd(era_corrs, ddof=1) * self.autocorr_penalty(era_corrs))
-    
+        return np.nanmean(era_corrs) / (
+            np.nanstd(era_corrs, ddof=1) * self.autocorr_penalty(era_corrs)
+        )
+
     def autocorr_penalty(self, era_corrs: pd.Series) -> np.float64:
-        """ 
+        """
         Adjusting factor for autocorrelation. Used in Smart Sharpe.
         :param era_corrs: Correlation scores by era.
         """
@@ -539,17 +653,16 @@ class BaseEvaluator:
         # 1st order autocorrelation
         p = self.autocorr1(era_corrs)
         return np.sqrt(1 + 2 * np.sum([((n - i) / n) * p**i for i in range(1, n)]))
-    
+
     def autocorr1(self, era_corrs: pd.Series) -> np.float64:
-        """ 
+        """
         1st order autocorrelation.
         :param era_corrs: Correlation scores by era.
         """
-        return np.corrcoef(era_corrs[:-1], era_corrs[1:])[0,1]
-    
+        return np.corrcoef(era_corrs[:-1], era_corrs[1:])[0, 1]
+
     def legacy_contribution(
-        self, dataf: pd.DataFrame, pred_col: str, 
-        target_col: str, other_col: str
+        self, dataf: pd.DataFrame, pred_col: str, target_col: str, other_col: str
     ):
         """
         Legacy contibution mean, standard deviation and sharpe ratio.
@@ -564,13 +677,15 @@ class BaseEvaluator:
         """
         legacy_mc_scores = []
         # Standard deviation of a uniform distribution
-        COVARIANCE_FACTOR = 0.29 ** 2
+        COVARIANCE_FACTOR = 0.29**2
         # Calculate MMC for each era
         for _, x in dataf.groupby(self.era_col):
             series = self._neutralize_series(
                 self._normalize_uniform(x[pred_col]), (x[other_col])
             )
-            legacy_mc_scores.append(np.cov(series, x[target_col])[0, 1] / COVARIANCE_FACTOR)
+            legacy_mc_scores.append(
+                np.cov(series, x[target_col])[0, 1] / COVARIANCE_FACTOR
+            )
 
         return legacy_mc_scores
 
@@ -585,8 +700,8 @@ class BaseEvaluator:
         1. tie-kept ranking each prediction and the meta model
         2. gaussianizing each prediction and the meta model
         3. orthogonalizing each prediction wrt the meta model
-        4. multiplying the orthogonalized predictions and the 
-        
+        4. multiplying the orthogonalized predictions and the
+
         :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
         :param pred_col: Prediction column to calculate MMC for.
         :param target_col: Target column to calculate MMC against.
@@ -605,13 +720,15 @@ class BaseEvaluator:
             gauss_ranked_preds = stats.norm.ppf(ranked_preds)
             gauss_ranked_meta = stats.norm.ppf(ranked_meta)
             # 3. orthogonalizing predictions wrt the meta model
-            orthogonalized_preds = self._orthogonalize(gauss_ranked_preds, gauss_ranked_meta)
+            orthogonalized_preds = self._orthogonalize(
+                gauss_ranked_preds, gauss_ranked_meta
+            )
             # 4. multiply target and orthogonalized predictions
             # this is equivalent to covariance b/c mean = 0
             mc = (ranked_targets @ orthogonalized_preds) / len(x)
             mc_scores.append(mc)
         return mc_scores
-    
+
     def check_custom_functions(self, funcs: List[Callable]):
         """
         Check if all custom functions are valid.
@@ -620,12 +737,14 @@ class BaseEvaluator:
         required_args = ["dataf", "pred_col", "target_col"]
         for func in funcs:
             assert callable(func)
-            assert self._is_valid_custom_function(func, required_args=required_args), f"Custom function '{func.__name__}' is not valid. Make sure to use the correct function signature with arguments: {required_args}."
+            assert self._is_valid_custom_function(
+                func, required_args=required_args
+            ), f"Custom function '{func.__name__}' is not valid. Make sure to use the correct function signature with arguments: {required_args}."
         return
-    
+
     @staticmethod
     def _is_valid_custom_function(func: Callable, required_args: List[str]) -> bool:
-        """ 
+        """
         Check if the custom function has all necessary arguments.
         Each custom function should have at least arguments:
         - dataf: pd.DataFrame
@@ -699,7 +818,7 @@ class BaseEvaluator:
         plt.axhline(y=0.0, color="r", linestyle="--")
         plt.show()
         return
-    
+
     @staticmethod
     def plot_correlation_heatmap(dataf: pd.DataFrame, pred_cols: List[str]):
         corr_matrix = dataf[pred_cols].corr().to_numpy()
@@ -723,10 +842,18 @@ class NumeraiClassicEvaluator(BaseEvaluator):
     """
     Evaluator for all metrics that are relevant in Numerai Classic.
     """
-    def __init__(self, era_col: str = "era", fast_mode=False, custom_functions: List[Callable] = None):
-        super().__init__(era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions)
+
+    def __init__(
+        self,
+        era_col: str = "era",
+        fast_mode=False,
+        custom_functions: List[Callable] = None,
+    ):
+        super().__init__(
+            era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions
+        )
         self.fncv3_features = FNCV3_FEATURES
-  
+
     def full_evaluation(
         self,
         dataf: pd.DataFrame,
@@ -741,10 +868,14 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         # Check if sufficient columns are present in dataf to compute FNC
         feature_set = set(dataf.columns)
         if set(self.fncv3_features).issubset(feature_set):
-            print("Using 'v4.2/features.json/fncv3_features' feature set to calculate FNC metrics.")
+            print(
+                "Using 'v4.2/features.json/fncv3_features' feature set to calculate FNC metrics."
+            )
             valid_features = self.fncv3_features
         else:
-            print("WARNING: No suitable feature set defined for FNC. Skipping calculation of FNC.")
+            print(
+                "WARNING: No suitable feature set defined for FNC. Skipping calculation of FNC."
+            )
             valid_features = []
 
         for col in tqdm(pred_cols, desc="Evaluation: "):
@@ -760,7 +891,10 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             if not self.fast_mode and valid_features:
                 # Using only valid features defined in FNCV3_FEATURES
                 fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
-                    dataf=dataf, pred_col=col, target_col=target_col, feature_names=valid_features
+                    dataf=dataf,
+                    pred_col=col,
+                    target_col=target_col,
+                    feature_names=valid_features,
                 )
                 col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
                 col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
@@ -772,10 +906,20 @@ class NumeraiClassicEvaluator(BaseEvaluator):
 
 class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
-    def __init__(self, era_col: str = "friday_date", fast_mode=False, custom_functions: List[Callable] = None):
-        super().__init__(era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions)
 
-    def get_neutralized_corr(self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2) -> pd.Series:
+    def __init__(
+        self,
+        era_col: str = "friday_date",
+        fast_mode=False,
+        custom_functions: List[Callable] = None,
+    ):
+        super().__init__(
+            era_col=era_col, fast_mode=fast_mode, custom_functions=custom_functions
+        )
+
+    def get_neutralized_corr(
+        self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2
+    ) -> pd.Series:
         """
         Retrieved neutralized validation correlation by era. \n
         Calculated on Numerai servers. \n
@@ -790,13 +934,26 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
         diagnostics_id = api.upload_diagnostics(df=val_dataf, model_id=model_id)
-        data = self.__await_diagnostics(api=api, model_id=model_id, diagnostics_id=diagnostics_id, timeout_min=timeout_min)
-        dataf = pd.DataFrame(data['perEraDiagnostics']).set_index("era")['validationCorr']
+        data = self.__await_diagnostics(
+            api=api,
+            model_id=model_id,
+            diagnostics_id=diagnostics_id,
+            timeout_min=timeout_min,
+        )
+        dataf = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")[
+            "validationCorr"
+        ]
         dataf.index = pd.to_datetime(dataf.index)
         return dataf
 
     @staticmethod
-    def __await_diagnostics(api: SignalsAPI, model_id: str, diagnostics_id: str, timeout_min: int, interval_sec: int = 15):
+    def __await_diagnostics(
+        api: SignalsAPI,
+        model_id: str,
+        diagnostics_id: str,
+        timeout_min: int,
+        interval_sec: int = 15,
+    ):
         """
         Wait for diagnostics to be uploaded.
         Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.
@@ -805,11 +962,15 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         data = {"status": "not_done"}
         while time.time() < timeout:
             data = api.diagnostics(model_id=model_id, diagnostics_id=diagnostics_id)[0]
-            if not data['status'] == 'done':
-                print(f"Diagnostics not processed yet. Sleeping for another {interval_sec} seconds.")
+            if not data["status"] == "done":
+                print(
+                    f"Diagnostics not processed yet. Sleeping for another {interval_sec} seconds."
+                )
                 time.sleep(interval_sec)
             else:
                 break
-        if not data['status'] == 'done':
-            raise Exception(f"Diagnostics couldn't be retrieved within {timeout_min} minutes after uploading. Check if Numerai API is offline.")
+        if not data["status"] == "done":
+            raise Exception(
+                f"Diagnostics couldn't be retrieved within {timeout_min} minutes after uploading. Check if Numerai API is offline."
+            )
         return data
