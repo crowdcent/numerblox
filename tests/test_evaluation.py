@@ -4,18 +4,18 @@ import pandas as pd
 from unittest.mock import patch
 
 from numerblox.misc import Key
-from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluator
+from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluator, ALL_CLASSIC_METRICS, ALL_SIGNALS_METRICS, FAST_METRICS
 
 from utils import create_signals_sample_data, classic_test_data
 
 
 BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "apy", "max_drawdown", "calmar_ratio"]
+MAIN_CLASSIC_STATS_COLS = BASE_STATS_COLS + ["autocorrelation", "max_feature_exposure",
+                                    "smart_sharpe", "legacy_mean", "legacy_std", "legacy_sharpe", "feature_neutral_mean_v3", "feature_neutral_std_v3", "feature_neutral_sharpe_v3","feature_neutral_mean", "feature_neutral_std",
+                                    "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe"]
 
-CLASSIC_STATS_COLS = BASE_STATS_COLS
-SIGNALS_STATS_COLS = BASE_STATS_COLS
 
-
-def test_numerai_classic_evaluator(classic_test_data):
+def test_numerai_classic_evaluator_fast_metrics(classic_test_data):
     df = classic_test_data
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
@@ -26,50 +26,62 @@ def test_numerai_classic_evaluator(classic_test_data):
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
     )
-    for col in CLASSIC_STATS_COLS:
+    for col in BASE_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col].iloc[0] != np.nan
 
 
-def test_evaluation_benchmark_cols(classic_test_data):
+def test_numerai_classic_evaluator_all_metrics(classic_test_data):
     df = classic_test_data
-    np.random.seed(1)
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
-    df.loc[:, "benchmark1"] = np.random.uniform(size=len(df))
-    df.loc[:, "benchmark2"] = np.random.uniform(size=len(df))
-    benchmark_cols = ["benchmark1", "benchmark2"]
-
-    evaluator = NumeraiClassicEvaluator(era_col="era")
+    df.loc[:, "prediction_random2"] = np.random.uniform(size=len(df))
+    benchmark_cols = ["prediction_random", "prediction_random2"]
+    evaluator = NumeraiClassicEvaluator(era_col="era", 
+                                        metrics_list=ALL_CLASSIC_METRICS)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
-        pred_cols=["prediction", "prediction_random"],
+        pred_cols=["prediction"],
         benchmark_cols=benchmark_cols,
     )
-    additional_expected_cols = []
+    # Add Benchmark specific stats
+    BENCHMARK_STATS = []
     for col in benchmark_cols:
-        additional_expected_cols.extend([f"corr_with_{col}", 
-                                        f"mean_vs_{col}", 
-                                        f"sharpe_vs_{col}",
-                                        f"mc_mean_{col}",
-                                        f"legacy_mc_mean_{col}"])
-    for col in CLASSIC_STATS_COLS:
+        BENCHMARK_STATS.extend([f"mean_vs_{col}", f"std_vs_{col}",
+                                f"sharpe_vs_{col}",
+                                f"mc_mean_{col}", f"mc_std_{col}", f"mc_sharpe_{col}",
+                                f"corr_with_{col}", 
+                                f"legacy_mc_mean_{col}", f"legacy_mc_std_{col}", f"legacy_mc_sharpe_{col}",
+                                f"exposure_dissimilarity_{col}"
+                                ])
+    for col in MAIN_CLASSIC_STATS_COLS + BENCHMARK_STATS:
         assert col in val_stats.columns
         assert val_stats[col].iloc[0] != np.nan
 
 
 def test_numerai_signals_evaluator(create_signals_sample_data):
     df = create_signals_sample_data
-    evaluator = NumeraiSignalsEvaluator(era_col="date")
+    evaluator = NumeraiSignalsEvaluator(era_col="date",
+                                        metrics_list=FAST_METRICS)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
         pred_cols=["prediction", "prediction_random"],
     )
-    for col in SIGNALS_STATS_COLS:
+    for col in BASE_STATS_COLS:
         assert col in val_stats.columns
         assert val_stats[col].iloc[0] != np.nan
+
+def test_classic_evaluator_wrong_metrics_list():
+    with pytest.raises(AssertionError):
+        evaluator = NumeraiClassicEvaluator(era_col="era",
+                                            metrics_list=["mean_std_sharpe", "invalid_metric"])
+        
+def test_signals_evaluator_wrong_metrics_list():
+    with pytest.raises(AssertionError):
+        evaluator = NumeraiSignalsEvaluator(era_col="era", 
+                                            metrics_list=["mean_std_sharpe", "invalid_metric"])
 
 
 def test_evaluator_custom_functions(classic_test_data):
@@ -101,7 +113,6 @@ def test_evaluator_invalid_custom_function(classic_test_data):
     # Initialization fails if any functions are defined incorrectly
     with pytest.raises(AssertionError):
         NumeraiClassicEvaluator(era_col="era", custom_functions=[custom_func])
-
 
 @pytest.fixture
 def mock_api():

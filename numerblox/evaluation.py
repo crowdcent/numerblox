@@ -14,7 +14,16 @@ from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
 FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
-ALL_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "corr_with", "mc_mean_std_sharpe", "legacy_mean_std_sharpe", "ex_diss", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
+ALL_NO_BENCH_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "legacy_mean_std_sharpe", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
+BENCH_METRICS = ["corr_with", "mc_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss"]
+CLASSIC_SPECIFIC_METRICS = ["fncv3_mean_std_sharpe"]
+ALL_COMMON_METRICS = FAST_METRICS + ALL_NO_BENCH_METRICS + BENCH_METRICS
+
+
+MINI_METRICS = ["mean_std_sharpe"]
+CORE_METRICS = FAST_METRICS + ["max_feature_exposure", "smart_sharpe", "legacy_mean_std_sharpe"] + BENCH_METRICS
+ALL_CLASSIC_METRICS = ALL_COMMON_METRICS + CLASSIC_SPECIFIC_METRICS
+ALL_SIGNALS_METRICS = ALL_COMMON_METRICS
 
 
 class BaseEvaluator:
@@ -847,6 +856,10 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         metrics_list=FAST_METRICS,
         custom_functions: List[Callable] = None,
     ):
+        for metric in metrics_list:
+            assert (
+                metric in ALL_CLASSIC_METRICS
+            ), f"Metric '{metric}' not found. Valid metrics: {ALL_CLASSIC_METRICS}."
         super().__init__(
             era_col=era_col, metrics_list=metrics_list, custom_functions=custom_functions
         )
@@ -886,7 +899,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
                 benchmark_cols=benchmark_cols,
             )
             # Numerai Classic specific metrics
-            if valid_features and "fn_mean_std_sharpe" in self.metrics_list:
+            if valid_features and "fncv3_mean_std_sharpe" in self.metrics_list:
                 # Using only valid features defined in FNCV3_FEATURES
                 fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
                     dataf=dataf,
@@ -911,6 +924,10 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         metrics_list=FAST_METRICS,
         custom_functions: List[Callable] = None,
     ):
+        for metric in metrics_list:
+            assert (
+                metric in ALL_SIGNALS_METRICS
+            ), f"Metric '{metric}' not found. Valid metrics: {ALL_SIGNALS_METRICS}."
         super().__init__(
             era_col=era_col, metrics_list=metrics_list, custom_functions=custom_functions
         )
