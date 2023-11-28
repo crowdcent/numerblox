@@ -73,14 +73,16 @@ def test_numerai_signals_evaluator(create_signals_sample_data):
         assert col in val_stats.columns
         assert val_stats[col].iloc[0] != np.nan
 
+
 def test_classic_evaluator_wrong_metrics_list():
     with pytest.raises(AssertionError):
-        evaluator = NumeraiClassicEvaluator(era_col="era",
+        _ = NumeraiClassicEvaluator(era_col="era",
                                             metrics_list=["mean_std_sharpe", "invalid_metric"])
         
+
 def test_signals_evaluator_wrong_metrics_list():
     with pytest.raises(AssertionError):
-        evaluator = NumeraiSignalsEvaluator(era_col="era", 
+        _ = NumeraiSignalsEvaluator(era_col="era", 
                                             metrics_list=["mean_std_sharpe", "invalid_metric"])
 
 
