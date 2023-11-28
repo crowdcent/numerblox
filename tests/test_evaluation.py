@@ -32,7 +32,7 @@ def test_numerai_classic_evaluator(classic_test_data):
     )
     for col in CLASSIC_STATS_COLS:
         assert col in val_stats.columns
-        assert val_stats[col][0] != np.nan
+        assert val_stats[col].iloc[0] != np.nan
 
 
 def test_evaluation_benchmark_cols(classic_test_data):
@@ -60,7 +60,7 @@ def test_evaluation_benchmark_cols(classic_test_data):
                                         f"legacy_mc_mean_{col}"])
     for col in CLASSIC_STATS_COLS:
         assert col in val_stats.columns
-        assert val_stats[col][0] != np.nan
+        assert val_stats[col].iloc[0] != np.nan
 
 
 def test_numerai_signals_evaluator(create_signals_sample_data):
@@ -73,7 +73,7 @@ def test_numerai_signals_evaluator(create_signals_sample_data):
     )
     for col in SIGNALS_STATS_COLS:
         assert col in val_stats.columns
-        assert val_stats[col][0] != np.nan
+        assert val_stats[col].iloc[0] != np.nan
 
 
 def test_evaluator_custom_functions(classic_test_data):
