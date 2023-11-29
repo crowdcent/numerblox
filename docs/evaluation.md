@@ -4,8 +4,6 @@ NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.
 
 ## Common Metrics
 
-The following metrics are included for `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`:
-
 For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set a custom `metrics_list` with all metrics you want to compute.
 
 All valid metrics for `metrics_list` you can use are:
@@ -84,12 +82,12 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 
 ## Custom functions
 
-Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by defining a dictionary of functions and arguments. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
+In addition to the default metrics, evaluators can be augmented with custom metrics. This can be done by defining a dictionary of functions and arguments.
 
 The custom function dictionary should have the following structure:
 ```py
 {
-    "custom_function_name": # Metric name
+    "func1": # Metric name
     {
         "func": custom_function,  # Function to call
         "args": { # General arguments (can be any type)
@@ -98,7 +96,7 @@ The custom function dictionary should have the following structure:
         },
         "local_args": ["dataf"]  # List of local variables to use/resolve
     },
-    "custom_function_name2": # Metric name
+    "func2": # Metric name
     {
         "func": custom_function2,
         "args": { 
@@ -111,13 +109,13 @@ The custom function dictionary should have the following structure:
 }
 ```
 
-- The main keys will be the metric key names for the output evaluation DataFrame.
+- The main keys (`func1` and `func2` in the example) will be the metric key names for the output evaluation DataFrame.
 
-- The `func` key should be a function that takes in the arguments defined in `args` as keyword arguments. `func` should always be a callable function or class (i.e. class that implements `__call__`).
+- The `func` key should be a function that takes in the arguments defined in `args` as keyword arguments. `func` should be a callable function or class (i.e. class that implements `__call__`).
 
-- The `args` key should be a dictionary with arguments to pass to `func`. The values of the dictionary can be any type. Argument that you want resolved as local variables should be defined as string (see `local_args` explanation).
+- The `args` key should be a dictionary with arguments to pass to `func`. The values of the dictionary can be any type. Arguments that you want resolved as local variables should be defined as strings (see `local_args` explanation).
 
-- The `local_args` key should be a list of strings that refer to local variables in the `full_evaluation` function. These local variables will be resolved to local variables for `func`. This allows you to use `full_evaluation` variables like `dataf`, `pred_col`, `target_col`, `col_stats`, `mean`, `per_era_numerai_corrs`, etc.
+- The `local_args` key should be a list of strings that refer to variables that exist locally in the [evaluation_one_col](https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col) function. These local variables will be resolved to local variables for `func`. This allows you to use [evaluation_one_col](https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col) variables like `dataf`, `pred_col`, `target_col`, `col_stats`, `mean`, `per_era_numerai_corrs`, etc.
 
 
 Example of how to use custom functions in `NumeraiClassicEvaluator`:
@@ -130,11 +128,14 @@ def residuals(dataf, target_col, pred_col, val: int):
 
 custom_functions = {
         "residuals": {
+            # Callable function
             "func": residuals,
             "args": {
-                "dataf": "dataf",  # String referring to a local variable
+                # String referring to local variables
+                "dataf": "dataf", 
                 "pred_col": "pred_col",
                 "target_col": "target_col",
+                # Static argument
                 "val": 0.0001,
             },
              # List of local variables to use/resolve
