@@ -6,7 +6,9 @@ NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.
 
 For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set a custom `metrics_list` with all metrics you want to compute.
 
-All valid metrics for `metrics_list` you can use are:
+By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]`
+
+All valid metrics for `metrics_list` are:
 
 - "mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on Corrv2 (Numerai Correlation).
 
@@ -30,14 +32,13 @@ All valid metrics for `metrics_list` you can use are:
 
 - "tb500_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on TB500.
 
-The following metrics only work in `benchmark_cols` is defined in `full_evaluation`:
-- "mc_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on model contribution.
+The following metrics only work if `benchmark_cols` are defined in `full_evaluation`:
+
+- "mc_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on [model contribution](https://forum.numer.ai/t/mmc-staking-starts-jan-2-2024/6827).
 
 - "corr_with" -> Correlation with benchmark predictions.
 
 - "ex_diss" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions.
-
-By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]`
 
 ## Numerai Classic specific metrics
 
@@ -59,7 +60,7 @@ metrics = evaluator.full_evaluation(val_df,
 
 ## Numerai Signals specific metrics
 
-`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
+`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai servers and needs additional authentication, so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
 
 Example of how to get neutralized correlation scores for Numerai Signals:
 ```py
