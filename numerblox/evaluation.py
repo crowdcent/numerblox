@@ -304,7 +304,10 @@ class BaseEvaluator:
                 for k, v in args.items():
                     # Resolve variables defined as local args
                     if isinstance(v, str) and v in local_args:
-                        resolved_args[k] = local_vars[v]
+                        if v not in local_vars:
+                            raise ValueError(f"Variable '{v}' was defined in 'local_args', but was not found in local variables. Make sure to set the correct local_args.")
+                        else:
+                            resolved_args[k] = local_vars[v]
                     else:
                         resolved_args[k] = v
                 col_stats[func_name] = func(**resolved_args)
