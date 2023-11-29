@@ -96,14 +96,14 @@ The custom function dictionary should have the following structure:
         },
         "local_args": ["dataf"]  # List of local variables to use/resolve
     },
-    "func2": # Metric name
+    "func2":
     {
         "func": custom_function2,
         "args": { 
             "dataf": "dataf",
             "some_arg": "some_arg",
         },
-        "local_args": ["dataf"]  # List of local variables to use/resolve
+        "local_args": ["dataf"]
     },
     (...)
 }

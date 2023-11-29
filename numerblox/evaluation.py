@@ -461,21 +461,27 @@ class BaseEvaluator:
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
     def exposure_dissimilarity(
-        self, dataf: pd.DataFrame, pred_col: str, other_col: str
+        self, dataf: pd.DataFrame, pred_col: str, other_col: str, corr_method: str = "spearman"
     ) -> np.float32:
         """
         Model pattern of feature exposure to the another column.
         See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
+        :param dataf: DataFrame containing both pred_col and other_col.
+        :param pred_col: Main Prediction.
+        :param other_col: Other prediction column to calculate exposure dissimilarity against.
+        :param corr_method: Correlation method to use for calculating feature exposures.
+        corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'spearman'.
         """
+        assert corr_method in ["pearson", "kendall", "spearman"], f"corr_method should be one of ['pearson', 'kendall', 'spearman']. Got: '{corr_method}'"
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
-        U = dataf[feature_cols].corrwith(dataf[pred_col]).values
-        E = dataf[feature_cols].corrwith(dataf[other_col]).values
+        U = dataf[feature_cols].corrwith(dataf[pred_col], method=corr_method).values
+        E = dataf[feature_cols].corrwith(dataf[other_col], method=corr_method).values
 
         denominator = np.dot(E, E)
         if denominator == 0:
             exp_dis = 0
         else:
-            exp_dis = 1 - np.dot(U, E) / np.dot(E, E)
+            exp_dis = 1 - np.dot(U, E) / denominator
         return exp_dis
 
     @staticmethod
