@@ -84,28 +84,69 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 
 ## Custom functions
 
-Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the `custom_functions` argument when initializing the evaluator. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
+Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by defining a dictionary of functions and arguments. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
 
-Each custom function should:
-- Be a callable (function or class that implements \_\_call\_\_).
-- Have the following function signature:
-    - dataf: DataFrame passed into evaluation (pd.DataFrame).
-    - pred_col: Column name containing the predictions to evaluate (str).
-    - target_col: Column name with main target to evaluate against (str).
+The custom function dictionary should have the following structure:
+```py
+{
+    "custom_function_name": # Metric name
+    {
+        "func": custom_function,  # Function to call
+        "args": { # General arguments (can be any type)
+            "dataf": "dataf",
+            "some_arg": "some_arg",
+        },
+        "local_args": ["dataf"]  # List of local variables to use/resolve
+    },
+    "custom_function_name2": # Metric name
+    {
+        "func": custom_function2,
+        "args": { 
+            "dataf": "dataf",
+            "some_arg": "some_arg",
+        },
+        "local_args": ["dataf"]  # List of local variables to use/resolve
+    },
+    (...)
+}
+```
+
+- The main keys will be the metric key names for the output evaluation DataFrame.
+
+- The `func` key should be a function that takes in the arguments defined in `args` as keyword arguments. `func` should always be a callable function or class (i.e. class that implements `__call__`).
+
+- The `args` key should be a dictionary with arguments to pass to `func`. The values of the dictionary can be any type. Argument that you want resolved as local variables should be defined as string (see `local_args` explanation).
+
+- The `local_args` key should be a list of strings that refer to local variables in the `full_evaluation` function. These local variables will be resolved to local variables for `func`. This allows you to use `full_evaluation` variables like `dataf`, `pred_col`, `target_col`, `col_stats`, `mean`, `per_era_numerai_corrs`, etc.
+
 
 Example of how to use custom functions in `NumeraiClassicEvaluator`:
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator
 
-def my_custom_function(dataf: pd.DataFrame, pred_col: str, target_col: str) -> float:
-    """ Dummy evaluation function. """
-    return 0.5
+def residuals(dataf, target_col, pred_col, val: int):
+    """ Simple dummy func: mean of residuals. """
+    return np.mean(dataf[target_col] - dataf[pred_col] + val)
 
-evaluator = NumeraiClassicEvaluator(custom_functions=[my_custom_function])
+custom_functions = {
+        "residuals": {
+            "func": residuals,
+            "args": {
+                "dataf": "dataf",  # String referring to a local variable
+                "pred_col": "pred_col",
+                "target_col": "target_col",
+                "val": 0.0001,
+            },
+             # List of local variables to use/resolve
+            "local_args": ["dataf", "pred_col", "target_col"] 
+        },
+}
 
-# In evaluator my_custom_function(dataf=val_df, pred_col="prediction", target_col="target") is called.
+evaluator = NumeraiClassicEvaluator(custom_functions=custom_functions)
+
+# In evaluator residuals(dataf=dataf, pred_col="prediction", target_col="target", val="0.0001) is called.
 metrics = evaluator.full_evaluation(val_df, 
                                     pred_cols=["prediction"], 
                                     target_col="target")
-# metrics will contain a "my_custom_function" column with value 0.5.
+# metrics will contain a "residuals" column.
 ```

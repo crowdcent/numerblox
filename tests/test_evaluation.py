@@ -95,10 +95,11 @@ def test_evaluator_custom_functions(classic_test_data):
         return np.mean(dataf[target_col] - dataf[pred_col])
     
     def average_col_stats_func(**kwargs):
-        """ Averaging stats """
+        """ Averaging stats. """
         return sum(kwargs.values()) / len(kwargs)
     
     def mean_mean(col_stats):
+        """ Average means. """
         return (col_stats["mean"] + col_stats["tb200_mean"] + col_stats["tb500_mean"]) / 3
     
     custom_functions = {

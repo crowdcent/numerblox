@@ -302,7 +302,7 @@ class BaseEvaluator:
                 local_args = func_info['local_args']
                 resolved_args = {}
                 for k, v in args.items():
-                    # Resolve variables defined as local args (e.g. dataf, pred_col, target_col, col_stats, etc.)
+                    # Resolve variables defined as local args
                     if isinstance(v, str) and v in local_args:
                         resolved_args[k] = local_vars[v]
                     else:
