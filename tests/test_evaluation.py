@@ -90,31 +90,81 @@ def test_evaluator_custom_functions(classic_test_data):
     df = classic_test_data
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
 
-    def custom_func(dataf, target_col, pred_col):
+    def custom_func(dataf, target_col, pred_col, custom_arg: int):
         """ Simple example func: Mean of residuals. """
         return np.mean(dataf[target_col] - dataf[pred_col])
-
-    evaluator = NumeraiClassicEvaluator(era_col="era", custom_functions=[custom_func])
+    
+    def average_col_stats_func(**kwargs):
+        """ Averaging stats. """
+        return sum(kwargs.values()) / len(kwargs)
+    
+    def mean_mean(col_stats):
+        """ Average means. """
+        return (col_stats["mean"] + col_stats["tb200_mean"] + col_stats["tb500_mean"]) / 3
+    
+    custom_functions = {
+        "residuals": {
+            "func": custom_func,
+            "args": {
+                "dataf": "dataf",  # String referring to a local variable
+                "pred_col": "pred_col",
+                "target_col": "target_col",
+                "custom_arg": 15 # Literal arg
+            },
+             # List of local variables to use/resolve
+            "local_args": ["dataf", "pred_col", "target_col"] 
+        },
+        "tb500_sharpe": {
+            "func": average_col_stats_func,
+            "args": {
+                "tb500_sharpe": "tb500_sharpe",
+                "tb200_sharpe": "tb200_sharpe"
+            },
+            "local_args": ["tb500_sharpe", "tb200_sharpe"]
+        },
+        "tb500_mean": {
+            "func": average_col_stats_func,
+            "args": {
+                "tb500_mean": "tb500_mean",
+                "tb200_mean": "tb200_mean"
+            },
+            "local_args": ["tb500_mean", "tb200_mean"]
+        },
+        "mean_of_means": {
+            "func": mean_mean,
+            "args": {
+                "col_stats": "col_stats",
+            },
+            "local_args": ["col_stats"]
+        }
+    }
+    evaluator = NumeraiClassicEvaluator(era_col="era", 
+                                        metrics_list=["mean_std_sharpe", "tb500_mean_std_sharpe", "tb200_mean_std_sharpe"],
+                                        custom_functions=custom_functions)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
         pred_cols=["prediction"],
     )
-    assert "custom_func" in val_stats.columns
-    assert val_stats["custom_func"].iloc[0] != np.nan
+    for custom_cols in custom_functions.keys():
+        assert custom_cols in val_stats.columns
+        assert val_stats[custom_cols].iloc[0] != np.nan
 
 
 def test_evaluator_invalid_custom_function(classic_test_data):
     df = classic_test_data
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
 
-    # Invalid function signature
-    def custom_func(dataf, other_col):
-        return np.mean(dataf["target"] - dataf[other_col])
+    # Invalid function dict (args missing)
+    custom_functions = {
+        "custom_func": {
+            "func": "",
+        }
+    }
 
-    # Initialization fails if any functions are defined incorrectly
-    with pytest.raises(AssertionError):
-        NumeraiClassicEvaluator(era_col="era", custom_functions=[custom_func])
+    # Initialization fails if input is invalid (For example missing args)
+    with pytest.raises(ValueError):
+        NumeraiClassicEvaluator(era_col="era", custom_functions=custom_functions)
 
 @pytest.fixture
 def mock_api():

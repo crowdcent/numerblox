@@ -4,11 +4,11 @@ NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.
 
 ## Common Metrics
 
-The following metrics are included for `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`:
-
 For both `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` you can set a custom `metrics_list` with all metrics you want to compute.
 
-All valid metrics for `metrics_list` you can use are:
+By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]`
+
+All valid metrics for `metrics_list` are:
 
 - "mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on Corrv2 (Numerai Correlation).
 
@@ -32,14 +32,13 @@ All valid metrics for `metrics_list` you can use are:
 
 - "tb500_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on TB500.
 
-The following metrics only work in `benchmark_cols` is defined in `full_evaluation`:
-- "mc_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on model contribution.
+The following metrics only work if `benchmark_cols` are defined in `full_evaluation`:
+
+- "mc_mean_std_sharpe" -> Mean, standard deviation and Sharpe ratio based on [model contribution](https://forum.numer.ai/t/mmc-staking-starts-jan-2-2024/6827).
 
 - "corr_with" -> Correlation with benchmark predictions.
 
 - "ex_diss" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions.
-
-By default, metrics will include `["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]`
 
 ## Numerai Classic specific metrics
 
@@ -61,7 +60,7 @@ metrics = evaluator.full_evaluation(val_df,
 
 ## Numerai Signals specific metrics
 
-`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
+`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai servers and needs additional authentication, so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
 
 Example of how to get neutralized correlation scores for Numerai Signals:
 ```py
@@ -84,28 +83,72 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 
 ## Custom functions
 
-Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the `custom_functions` argument when initializing the evaluator. Custom functions work both in `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator`.
+In addition to the default metrics, evaluators can be augmented with custom metrics. This can be done by defining a dictionary of functions and arguments.
 
-Each custom function should:
-- Be a callable (function or class that implements \_\_call\_\_).
-- Have the following function signature:
-    - dataf: DataFrame passed into evaluation (pd.DataFrame).
-    - pred_col: Column name containing the predictions to evaluate (str).
-    - target_col: Column name with main target to evaluate against (str).
+The custom function dictionary should have the following structure:
+```py
+{
+    "func1": # Metric name
+    {
+        "func": custom_function,  # Function to call
+        "args": { # General arguments (can be any type)
+            "dataf": "dataf",
+            "some_arg": "some_arg",
+        },
+        "local_args": ["dataf"]  # List of local variables to use/resolve
+    },
+    "func2":
+    {
+        "func": custom_function2,
+        "args": { 
+            "dataf": "dataf",
+            "some_arg": "some_arg",
+        },
+        "local_args": ["dataf"]
+    },
+    (...)
+}
+```
+
+- The main keys (`func1` and `func2` in the example) will be the metric key names for the output evaluation DataFrame.
+
+- The `func` key should be a function that takes in the arguments defined in `args` as keyword arguments. `func` should be a callable function or class (i.e. class that implements `__call__`).
+
+- The `args` key should be a dictionary with arguments to pass to `func`. The values of the dictionary can be any type. Arguments that you want resolved as local variables should be defined as strings (see `local_args` explanation).
+
+- The `local_args` key should be a list of strings that refer to variables that exist locally in the [evaluation_one_col](https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col) function. These local variables will be resolved to local variables for `func`. This allows you to use [evaluation_one_col](https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col) variables like `dataf`, `pred_col`, `target_col`, `col_stats`, `mean`, `per_era_numerai_corrs`, etc.
+
 
 Example of how to use custom functions in `NumeraiClassicEvaluator`:
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator
 
-def my_custom_function(dataf: pd.DataFrame, pred_col: str, target_col: str) -> float:
-    """ Dummy evaluation function. """
-    return 0.5
+def residuals(dataf, target_col, pred_col, val: int):
+    """ Simple dummy func: mean of residuals. """
+    return np.mean(dataf[target_col] - dataf[pred_col] + val)
 
-evaluator = NumeraiClassicEvaluator(custom_functions=[my_custom_function])
+custom_functions = {
+        "residuals": {
+            # Callable function
+            "func": residuals,
+            "args": {
+                # String referring to local variables
+                "dataf": "dataf", 
+                "pred_col": "pred_col",
+                "target_col": "target_col",
+                # Static argument
+                "val": 0.0001,
+            },
+             # List of local variables to use/resolve
+            "local_args": ["dataf", "pred_col", "target_col"] 
+        },
+}
 
-# In evaluator my_custom_function(dataf=val_df, pred_col="prediction", target_col="target") is called.
+evaluator = NumeraiClassicEvaluator(custom_functions=custom_functions)
+
+# In evaluator residuals(dataf=dataf, pred_col="prediction", target_col="target", val="0.0001) is called.
 metrics = evaluator.full_evaluation(val_df, 
                                     pred_cols=["prediction"], 
                                     target_col="target")
-# metrics will contain a "my_custom_function" column with value 0.5.
+# metrics will contain a "residuals" column.
 ```
