@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Dict, Any
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
 
@@ -67,13 +67,13 @@ class BaseEvaluator:
         self,
         metrics_list: List[str],
         era_col: str = "era",
-        custom_functions: List[Callable] = None,
+        custom_functions: Dict[str, Dict[str, Any]] = None,
     ):
         self.era_col = era_col
         self.metrics_list = metrics_list
         self.custom_functions = custom_functions
         if self.custom_functions is not None:
-            self.check_custom_functions(self.custom_functions)
+            self.check_custom_functions()
 
     def full_evaluation(
         self,
@@ -295,13 +295,21 @@ class BaseEvaluator:
 
         # Custom functions
         if self.custom_functions is not None:
-            for func in self.custom_functions:
-                col_stats[func.__name__] = func(
-                    dataf=dataf, pred_col=pred_col, target_col=target_col
-                )
+            local_vars = locals()
+            for func_name, func_info in self.custom_functions.items():
+                func = func_info['func']
+                args = func_info['args']
+                local_args = func_info['local_args']
+                resolved_args = {}
+                for k, v in args.items():
+                    # Resolve variables defined as local args (e.g. dataf, pred_col, target_col, col_stats, etc.)
+                    if isinstance(v, str) and v in local_args:
+                        resolved_args[k] = local_vars[v]
+                    else:
+                        resolved_args[k] = v
+                col_stats[func_name] = func(**resolved_args)
 
         col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
-
         return col_stats_df
 
     def per_era_corrs(
@@ -736,34 +744,28 @@ class BaseEvaluator:
             mc_scores.append(mc)
         return mc_scores
 
-    def check_custom_functions(self, funcs: List[Callable]):
-        """
-        Check if all custom functions are valid.
-        :param funcs: List of custom functions to check.
-        """
-        required_args = ["dataf", "pred_col", "target_col"]
-        for func in funcs:
-            assert callable(func)
-            assert self._is_valid_custom_function(
-                func, required_args=required_args
-            ), f"Custom function '{func.__name__}' is not valid. Make sure to use the correct function signature with arguments: {required_args}."
-        return
+    def check_custom_functions(self):
+        if not isinstance(self.custom_functions, dict):
+            raise ValueError("custom_functions must be a dictionary")
 
-    @staticmethod
-    def _is_valid_custom_function(func: Callable, required_args: List[str]) -> bool:
-        """
-        Check if the custom function has all necessary arguments.
-        Each custom function should have at least arguments:
-        - dataf: pd.DataFrame
-        - pred_col: str
-        - target_col: str
-        :param func: Custom function to check.
-        :param required_args: List of required arguments.
-        :return: True if all arguments are present, False otherwise.
-        """
-        sig = inspect.signature(func)
-        params = sig.parameters
-        return all(arg in params for arg in required_args)
+        for func_name, func_info in self.custom_functions.items():
+            if not isinstance(func_info, dict) or 'func' not in func_info or 'args' not in func_info:
+                raise ValueError(f"Function {func_name} must have a 'func' and 'args' key")
+
+            if not callable(func_info['func']):
+                raise ValueError(f"The 'func' value for '{func_name}' in custom_functions must be a callable function.")
+
+            if not isinstance(func_info['args'], dict):
+                raise ValueError(f"'args' for '{func_name}' in custom_functions must be a dictionary")
+            
+            if "local_args" in func_info:
+                if not isinstance(func_info['local_args'], list):
+                    raise ValueError(f"The 'local_args' key for {func_name} in custom_functionsmust be a list")
+                for local_arg in func_info['local_args']:
+                    if not isinstance(local_arg, str):
+                        raise ValueError(f"Local arg '{local_arg}' for '{func_name}' in custom_functions must be string.")
+                    if local_arg not in list(func_info['args'].keys()):
+                        raise ValueError(f"Local arg '{local_arg}' for '{func_name}' in custom_functions was not found in 'args'")
 
     def plot_correlations(
         self,
