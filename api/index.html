@@ -1967,15 +1967,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#numerblox.evaluation.BaseEvaluator.check_custom_functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      check_custom_functions()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#numerblox.evaluation.BaseEvaluator.contributive_correlation" class="md-nav__link">
     <span class="md-ellipsis">
       contributive_correlation()
@@ -3828,15 +3819,6 @@
   <a href="#numerblox.evaluation.BaseEvaluator.autocorr_penalty" class="md-nav__link">
     <span class="md-ellipsis">
       autocorr_penalty()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#numerblox.evaluation.BaseEvaluator.check_custom_functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      check_custom_functions()
     </span>
   </a>
   
@@ -14842,7 +14824,18 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="normal">842</span>
 <span class="normal">843</span>
 <span class="normal">844</span>
-<span class="normal">845</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluation functionality that is relevant for both</span>
 <span class="sd">    Numerai Classic and Numerai Signals.</span>
@@ -14883,13 +14876,13 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">metrics_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span><span class="p">,</span>
-        <span class="n">custom_functions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">custom_functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="n">era_col</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span> <span class="o">=</span> <span class="n">metrics_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="o">=</span> <span class="n">custom_functions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_custom_functions</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -15111,13 +15104,24 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
         <span class="c1"># Custom functions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">:</span>
-                <span class="n">col_stats</span><span class="p">[</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
-                    <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
-                <span class="p">)</span>
+            <span class="n">local_vars</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
+                <span class="n">local_args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">]</span>
+                <span class="n">resolved_args</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="c1"># Resolve variables defined as local args</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">local_args</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">local_vars</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39; was defined in &#39;local_args&#39;, but was not found in local variables. Make sure to set the correct local_args.&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">resolved_args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_vars</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">resolved_args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="n">col_stats</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">resolved_args</span><span class="p">)</span>
 
         <span class="n">col_stats_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">col_stats</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
-
         <span class="k">return</span> <span class="n">col_stats_df</span>
 
     <span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
@@ -15269,21 +15273,27 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">tb_val_corrs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">exposure_dissimilarity</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corr_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spearman&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Model pattern of feature exposure to the another column.</span>
 <span class="sd">        See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4</span>
+<span class="sd">        :param dataf: DataFrame containing both pred_col and other_col.</span>
+<span class="sd">        :param pred_col: Main Prediction.</span>
+<span class="sd">        :param other_col: Other prediction column to calculate exposure dissimilarity against.</span>
+<span class="sd">        :param corr_method: Correlation method to use for calculating feature exposures.</span>
+<span class="sd">        corr_method should be one of [&#39;pearson&#39;, &#39;kendall&#39;, &#39;spearman&#39;]. Default: &#39;spearman&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">corr_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="s2">&quot;kendall&quot;</span><span class="p">,</span> <span class="s2">&quot;spearman&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;corr_method should be one of [&#39;pearson&#39;, &#39;kendall&#39;, &#39;spearman&#39;]. Got: &#39;</span><span class="si">{</span><span class="n">corr_method</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="n">feature_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">)]</span>
-        <span class="n">U</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">E</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">other_col</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">U</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">corr_method</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">corr_method</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">denominator</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+            <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
         <span class="k">return</span> <span class="n">exp_dis</span>
 
     <span class="nd">@staticmethod</span>
@@ -15552,34 +15562,28 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="n">mc_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mc_scores</span>
 
-    <span class="k">def</span> <span class="nf">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if all custom functions are valid.</span>
-<span class="sd">        :param funcs: List of custom functions to check.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">required_args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dataf&quot;</span><span class="p">,</span> <span class="s2">&quot;pred_col&quot;</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_custom_function</span><span class="p">(</span>
-                <span class="n">func</span><span class="p">,</span> <span class="n">required_args</span><span class="o">=</span><span class="n">required_args</span>
-            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Custom function &#39;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; is not valid. Make sure to use the correct function signature with arguments: </span><span class="si">{</span><span class="n">required_args</span><span class="si">}</span><span class="s2">.&quot;</span>
-        <span class="k">return</span>
+    <span class="k">def</span> <span class="nf">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;custom_functions must be a dictionary&quot;</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_is_valid_custom_function</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">required_args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if the custom function has all necessary arguments.</span>
-<span class="sd">        Each custom function should have at least arguments:</span>
-<span class="sd">        - dataf: pd.DataFrame</span>
-<span class="sd">        - pred_col: str</span>
-<span class="sd">        - target_col: str</span>
-<span class="sd">        :param func: Custom function to check.</span>
-<span class="sd">        :param required_args: List of required arguments.</span>
-<span class="sd">        :return: True if all arguments are present, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span>
-        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">arg</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">required_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;func&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_info</span> <span class="ow">or</span> <span class="s1">&#39;args&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_info</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Function </span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2"> must have a &#39;func&#39; and &#39;args&#39; key&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The &#39;func&#39; value for &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; in custom_functions must be a callable function.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;args&#39; for &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; in custom_functions must be a dictionary&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;local_args&quot;</span> <span class="ow">in</span> <span class="n">func_info</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The &#39;local_args&#39; key for </span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2"> in custom_functionsmust be a list&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">local_arg</span> <span class="ow">in</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">local_arg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Local arg &#39;</span><span class="si">{</span><span class="n">local_arg</span><span class="si">}</span><span class="s2">&#39; for &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; in custom_functions must be string.&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">local_arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Local arg &#39;</span><span class="si">{</span><span class="n">local_arg</span><span class="si">}</span><span class="s2">&#39; for &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; in custom_functions was not found in &#39;args&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -15698,24 +15702,24 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">apy</span><span class="p">(</span><span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">stake_compounding_lag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Annual percentage yield.</span>
@@ -15758,12 +15762,12 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    1st order autocorrelation.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era.</span>
@@ -15794,15 +15798,15 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adjusting factor for autocorrelation. Used in Smart Sharpe.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era.</span>
@@ -15811,54 +15815,6 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
     <span class="c1"># 1st order autocorrelation</span>
     <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocorr1</span><span class="p">(</span><span class="n">era_corrs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([((</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)]))</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-
-<h3 id="numerblox.evaluation.BaseEvaluator.check_custom_functions" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">check_custom_functions</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span></code>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Check if all custom functions are valid.
-:param funcs: List of custom functions to check.</p>
-
-          <details class="quote">
-            <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Check if all custom functions are valid.</span>
-<span class="sd">    :param funcs: List of custom functions to check.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">required_args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dataf&quot;</span><span class="p">,</span> <span class="s2">&quot;pred_col&quot;</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_custom_function</span><span class="p">(</span>
-            <span class="n">func</span><span class="p">,</span> <span class="n">required_args</span><span class="o">=</span><span class="n">required_args</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Custom function &#39;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; is not valid. Make sure to use the correct function signature with arguments: </span><span class="si">{</span><span class="n">required_args</span><span class="si">}</span><span class="s2">.&quot;</span>
-    <span class="k">return</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -15895,24 +15851,7 @@ see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mm
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">716</span>
 <span class="normal">717</span>
 <span class="normal">718</span>
 <span class="normal">719</span>
@@ -15933,7 +15872,24 @@ see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mm
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span>
-<span class="normal">737</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
@@ -16000,20 +15956,20 @@ see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mm
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
-<span class="normal">404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cross_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cross_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Corrv2 correlation with other predictions (like another model, example predictions or meta model prediction).</span>
 <span class="sd">    :param dataf: DataFrame containing both pred_col and other_col.</span>
@@ -16223,7 +16179,18 @@ against given target and other prediction column(s).</p>
 <span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
-<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">feature_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -16387,13 +16354,24 @@ against given target and other prediction column(s).</p>
 
     <span class="c1"># Custom functions</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">:</span>
-            <span class="n">col_stats</span><span class="p">[</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
-                <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
-            <span class="p">)</span>
+        <span class="n">local_vars</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
+            <span class="n">local_args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">]</span>
+            <span class="n">resolved_args</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Resolve variables defined as local args</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">local_args</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">local_vars</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39; was defined in &#39;local_args&#39;, but was not found in local variables. Make sure to set the correct local_args.&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">resolved_args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_vars</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">resolved_args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">col_stats</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">resolved_args</span><span class="p">)</span>
 
     <span class="n">col_stats_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">col_stats</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
-
     <span class="k">return</span> <span class="n">col_stats_df</span>
 </code></pre></div></td></tr></table></div>
           </details>
@@ -16408,7 +16386,7 @@ against given target and other prediction column(s).</p>
 
 
 <h3 id="numerblox.evaluation.BaseEvaluator.exposure_dissimilarity" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">exposure_dissimilarity</span><span class="p">(</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">,</span> <span class="n">other_col</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="n">exposure_dissimilarity</span><span class="p">(</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">,</span> <span class="n">other_col</span><span class="p">,</span> <span class="n">corr_method</span><span class="o">=</span><span class="s1">&#39;spearman&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -16416,42 +16394,59 @@ against given target and other prediction column(s).</p>
   <div class="doc doc-contents ">
   
       <p>Model pattern of feature exposure to the another column.
-See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4</p>
+See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4
+:param dataf: DataFrame containing both pred_col and other_col.
+:param pred_col: Main Prediction.
+:param other_col: Other prediction column to calculate exposure dissimilarity against.
+:param corr_method: Correlation method to use for calculating feature exposures.
+corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'spearman'.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">466</span>
 <span class="normal">467</span>
 <span class="normal">468</span>
 <span class="normal">469</span>
 <span class="normal">470</span>
-<span class="normal">471</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">exposure_dissimilarity</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">exposure_dissimilarity</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corr_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spearman&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Model pattern of feature exposure to the another column.</span>
 <span class="sd">    See TC details forum post: https://forum.numer.ai/t/true-contribution-details/5128/4</span>
+<span class="sd">    :param dataf: DataFrame containing both pred_col and other_col.</span>
+<span class="sd">    :param pred_col: Main Prediction.</span>
+<span class="sd">    :param other_col: Other prediction column to calculate exposure dissimilarity against.</span>
+<span class="sd">    :param corr_method: Correlation method to use for calculating feature exposures.</span>
+<span class="sd">    corr_method should be one of [&#39;pearson&#39;, &#39;kendall&#39;, &#39;spearman&#39;]. Default: &#39;spearman&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">corr_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="s2">&quot;kendall&quot;</span><span class="p">,</span> <span class="s2">&quot;spearman&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;corr_method should be one of [&#39;pearson&#39;, &#39;kendall&#39;, &#39;spearman&#39;]. Got: &#39;</span><span class="si">{</span><span class="n">corr_method</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="n">feature_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">)]</span>
-    <span class="n">U</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">E</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">other_col</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">corr_method</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">dataf</span><span class="p">[</span><span class="n">feature_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">dataf</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">corr_method</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 
     <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">denominator</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+        <span class="n">exp_dis</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
     <span class="k">return</span> <span class="n">exp_dis</span>
 </code></pre></div></td></tr></table></div>
           </details>
@@ -16478,18 +16473,7 @@ More info: https://docs.numer.ai/tournament/feature-neutral-correlation</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">427</span>
 <span class="normal">428</span>
 <span class="normal">429</span>
 <span class="normal">430</span>
@@ -16501,7 +16485,18 @@ More info: https://docs.numer.ai/tournament/feature-neutral-correlation</p>
 <span class="normal">436</span>
 <span class="normal">437</span>
 <span class="normal">438</span>
-<span class="normal">439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -16696,24 +16691,7 @@ Default: -1 (all cores).
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
 <span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
@@ -16739,7 +16717,24 @@ Default: -1 (all cores).
 <span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
-<span class="normal">643</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_corrv2</span><span class="p">(</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_corrv2</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -16812,24 +16807,7 @@ Default: -1 (all cores).
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">571</span>
 <span class="normal">572</span>
 <span class="normal">573</span>
 <span class="normal">574</span>
@@ -16856,7 +16834,24 @@ Default: -1 (all cores).
 <span class="normal">595</span>
 <span class="normal">596</span>
 <span class="normal">597</span>
-<span class="normal">598</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_pearson</span><span class="p">(</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_pearson</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -16931,24 +16926,7 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">688</span>
 <span class="normal">689</span>
 <span class="normal">690</span>
 <span class="normal">691</span>
@@ -16957,7 +16935,24 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 <span class="normal">694</span>
 <span class="normal">695</span>
 <span class="normal">696</span>
-<span class="normal">697</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">legacy_contribution</span><span class="p">(</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">legacy_contribution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17012,16 +17007,16 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">max_drawdown</span><span class="p">(</span><span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum drawdown per era.&quot;&quot;&quot;</span>
     <span class="c1"># Arbitrarily large window</span>
@@ -17055,15 +17050,15 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">max_feature_exposure</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">max_feature_exposure</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum exposure over all features.&quot;&quot;&quot;</span>
@@ -17097,17 +17092,17 @@ correlations per era.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17144,18 +17139,7 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
@@ -17166,7 +17150,18 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 <span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span>
-<span class="normal">359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numerai_corr</span><span class="p">(</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numerai_corr</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17213,15 +17208,15 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Correlation between prediction and target for each era.&quot;&quot;&quot;</span>
@@ -17254,13 +17249,13 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_numerai_corrs</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_numerai_corrs</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Numerai Corr between prediction and target for each era.&quot;&quot;&quot;</span>
@@ -17297,18 +17292,7 @@ This is optional for if you already have per era correlations prepared in your i
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">779</span>
 <span class="normal">780</span>
 <span class="normal">781</span>
 <span class="normal">782</span>
@@ -17356,7 +17340,18 @@ This is optional for if you already have per era correlations prepared in your i
 <span class="normal">824</span>
 <span class="normal">825</span>
 <span class="normal">826</span>
-<span class="normal">827</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -17441,14 +17436,14 @@ This is optional for if you already have per era correlations prepared in your i
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">smart_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">smart_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sharpe adjusted for autocorrelation.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era</span>
@@ -17483,19 +17478,19 @@ TB200 and TB500 are the most common situations.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tbx_mean_std_sharpe</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tbx_mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17543,18 +17538,7 @@ TB200 and TB500 are the most common situations.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span>
-<span class="normal">852</span>
-<span class="normal">853</span>
-<span class="normal">854</span>
-<span class="normal">855</span>
-<span class="normal">856</span>
-<span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">859</span>
 <span class="normal">860</span>
 <span class="normal">861</span>
 <span class="normal">862</span>
@@ -17610,7 +17594,18 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">912</span>
 <span class="normal">913</span>
 <span class="normal">914</span>
-<span class="normal">915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluator for all metrics that are relevant in Numerai Classic.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -17722,80 +17717,80 @@ TB200 and TB500 are the most common situations.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">918</span>
-<span class="normal">919</span>
-<span class="normal">920</span>
-<span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span>
-<span class="normal">924</span>
-<span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span>
-<span class="normal">928</span>
-<span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
-<span class="normal">939</span>
-<span class="normal">940</span>
-<span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
-<span class="normal">945</span>
-<span class="normal">946</span>
-<span class="normal">947</span>
-<span class="normal">948</span>
-<span class="normal">949</span>
-<span class="normal">950</span>
-<span class="normal">951</span>
-<span class="normal">952</span>
-<span class="normal">953</span>
-<span class="normal">954</span>
-<span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
-<span class="normal">958</span>
-<span class="normal">959</span>
-<span class="normal">960</span>
-<span class="normal">961</span>
-<span class="normal">962</span>
-<span class="normal">963</span>
-<span class="normal">964</span>
-<span class="normal">965</span>
-<span class="normal">966</span>
-<span class="normal">967</span>
-<span class="normal">968</span>
-<span class="normal">969</span>
-<span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span>
-<span class="normal">974</span>
-<span class="normal">975</span>
-<span class="normal">976</span>
-<span class="normal">977</span>
-<span class="normal">978</span>
-<span class="normal">979</span>
-<span class="normal">980</span>
-<span class="normal">981</span>
-<span class="normal">982</span>
-<span class="normal">983</span>
-<span class="normal">984</span>
-<span class="normal">985</span>
-<span class="normal">986</span>
-<span class="normal">987</span>
-<span class="normal">988</span>
-<span class="normal">989</span>
-<span class="normal">990</span>
-<span class="normal">991</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 929</span>
+<span class="normal"> 930</span>
+<span class="normal"> 931</span>
+<span class="normal"> 932</span>
+<span class="normal"> 933</span>
+<span class="normal"> 934</span>
+<span class="normal"> 935</span>
+<span class="normal"> 936</span>
+<span class="normal"> 937</span>
+<span class="normal"> 938</span>
+<span class="normal"> 939</span>
+<span class="normal"> 940</span>
+<span class="normal"> 941</span>
+<span class="normal"> 942</span>
+<span class="normal"> 943</span>
+<span class="normal"> 944</span>
+<span class="normal"> 945</span>
+<span class="normal"> 946</span>
+<span class="normal"> 947</span>
+<span class="normal"> 948</span>
+<span class="normal"> 949</span>
+<span class="normal"> 950</span>
+<span class="normal"> 951</span>
+<span class="normal"> 952</span>
+<span class="normal"> 953</span>
+<span class="normal"> 954</span>
+<span class="normal"> 955</span>
+<span class="normal"> 956</span>
+<span class="normal"> 957</span>
+<span class="normal"> 958</span>
+<span class="normal"> 959</span>
+<span class="normal"> 960</span>
+<span class="normal"> 961</span>
+<span class="normal"> 962</span>
+<span class="normal"> 963</span>
+<span class="normal"> 964</span>
+<span class="normal"> 965</span>
+<span class="normal"> 966</span>
+<span class="normal"> 967</span>
+<span class="normal"> 968</span>
+<span class="normal"> 969</span>
+<span class="normal"> 970</span>
+<span class="normal"> 971</span>
+<span class="normal"> 972</span>
+<span class="normal"> 973</span>
+<span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
+<span class="normal"> 979</span>
+<span class="normal"> 980</span>
+<span class="normal"> 981</span>
+<span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
+<span class="normal"> 988</span>
+<span class="normal"> 989</span>
+<span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
+<span class="normal"> 995</span>
+<span class="normal"> 996</span>
+<span class="normal"> 997</span>
+<span class="normal"> 998</span>
+<span class="normal"> 999</span>
+<span class="normal">1000</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluator for all metrics that are relevant in Numerai Signals.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -17907,34 +17902,34 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">964</span>
-<span class="normal">965</span>
-<span class="normal">966</span>
-<span class="normal">967</span>
-<span class="normal">968</span>
-<span class="normal">969</span>
-<span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span>
-<span class="normal">974</span>
-<span class="normal">975</span>
-<span class="normal">976</span>
-<span class="normal">977</span>
-<span class="normal">978</span>
-<span class="normal">979</span>
-<span class="normal">980</span>
-<span class="normal">981</span>
-<span class="normal">982</span>
-<span class="normal">983</span>
-<span class="normal">984</span>
-<span class="normal">985</span>
-<span class="normal">986</span>
-<span class="normal">987</span>
-<span class="normal">988</span>
-<span class="normal">989</span>
-<span class="normal">990</span>
-<span class="normal">991</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
+<span class="normal"> 979</span>
+<span class="normal"> 980</span>
+<span class="normal"> 981</span>
+<span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
+<span class="normal"> 988</span>
+<span class="normal"> 989</span>
+<span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
+<span class="normal"> 995</span>
+<span class="normal"> 996</span>
+<span class="normal"> 997</span>
+<span class="normal"> 998</span>
+<span class="normal"> 999</span>
+<span class="normal">1000</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">__await_diagnostics</span><span class="p">(</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">SignalsAPI</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -17994,18 +17989,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
-<span class="normal">939</span>
-<span class="normal">940</span>
-<span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
-<span class="normal">945</span>
-<span class="normal">946</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">946</span>
 <span class="normal">947</span>
 <span class="normal">948</span>
 <span class="normal">949</span>
@@ -18021,7 +18005,18 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">959</span>
 <span class="normal">960</span>
 <span class="normal">961</span>
-<span class="normal">962</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span>
+<span class="normal">972</span>
+<span class="normal">973</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">val_dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>

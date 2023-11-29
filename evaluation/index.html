@@ -886,9 +886,9 @@
 <h1 id="evaluators">Evaluators</h1>
 <p>NumerBlox offers evaluators for both Numerai Classic and Numerai Signals.</p>
 <h2 id="common-metrics">Common Metrics</h2>
-<p>The following metrics are included for <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code>:</p>
 <p>For both <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code> you can set a custom <code>metrics_list</code> with all metrics you want to compute.</p>
-<p>All valid metrics for <code>metrics_list</code> you can use are:</p>
+<p>By default, metrics will include <code>["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]</code></p>
+<p>All valid metrics for <code>metrics_list</code> are:</p>
 <ul>
 <li>
 <p>"mean_std_sharpe" -&gt; Mean, standard deviation and Sharpe ratio based on Corrv2 (Numerai Correlation).</p>
@@ -924,9 +924,11 @@
 <p>"tb500_mean_std_sharpe" -&gt; Mean, standard deviation and Sharpe ratio based on TB500.</p>
 </li>
 </ul>
-<p>The following metrics only work in <code>benchmark_cols</code> is defined in <code>full_evaluation</code>:
-- "mc_mean_std_sharpe" -&gt; Mean, standard deviation and Sharpe ratio based on model contribution.</p>
+<p>The following metrics only work if <code>benchmark_cols</code> are defined in <code>full_evaluation</code>:</p>
 <ul>
+<li>
+<p>"mc_mean_std_sharpe" -&gt; Mean, standard deviation and Sharpe ratio based on <a href="https://forum.numer.ai/t/mmc-staking-starts-jan-2-2024/6827">model contribution</a>.</p>
+</li>
 <li>
 <p>"corr_with" -&gt; Correlation with benchmark predictions.</p>
 </li>
@@ -934,7 +936,6 @@
 <p>"ex_diss" -&gt; <a href="https://forum.numer.ai/t/true-contribution-details/5128/4">Exposure Dissimilarity</a> to benchmark predictions.</p>
 </li>
 </ul>
-<p>By default, metrics will include <code>["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]</code></p>
 <h2 id="numerai-classic-specific-metrics">Numerai Classic specific metrics</h2>
 <p><code>NumeraiClassicEvaluator</code> can also compute <a href="https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website">FNCv3</a>. If you want to compute this add <code>fncv3_mean_std_sharpe</code> to the <code>metrics_list</code>.</p>
 <pre><code class="language-py">from numerblox.evaluation import NumeraiClassicEvaluator, FAST_METRICS
@@ -950,7 +951,7 @@ metrics = evaluator.full_evaluation(val_df,
                                     benchmark_cols=[&quot;benchmark1&quot;, &quot;benchmark2&quot;])
 </code></pre>
 <h2 id="numerai-signals-specific-metrics">Numerai Signals specific metrics</h2>
-<p><code>NumeraiSignalsEvaluator</code> offers neutralized correlation scores. This is a special operation as it calls on Numerai's servers and needs additional authentication so it is not included in <code>full_evaluation</code>. It can still be beneficial to calculate as this metric is close to the one used for payouts.</p>
+<p><code>NumeraiSignalsEvaluator</code> offers neutralized correlation scores. This is a special operation as it calls on Numerai servers and needs additional authentication, so it is not included in <code>full_evaluation</code>. It can still be beneficial to calculate as this metric is close to the one used for payouts.</p>
 <p>Example of how to get neutralized correlation scores for Numerai Signals:</p>
 <pre><code class="language-py">from numerblox.misc import Key
 from numerblox.evaluation import NumeraiSignalsEvaluator
@@ -969,27 +970,75 @@ evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
 # pd.Series([0.01, ..., 0.02])
 </code></pre>
 <h2 id="custom-functions">Custom functions</h2>
-<p>Evaluators can be augmented with custom metrics that will be executed in addition to the default metrics. This can be done by passing a list of functions to the <code>custom_functions</code> argument when initializing the evaluator. Custom functions work both in <code>NumeraiClassicEvaluator</code> and <code>NumeraiSignalsEvaluator</code>.</p>
-<p>Each custom function should:
-- Be a callable (function or class that implements __call__).
-- Have the following function signature:
-    - dataf: DataFrame passed into evaluation (pd.DataFrame).
-    - pred_col: Column name containing the predictions to evaluate (str).
-    - target_col: Column name with main target to evaluate against (str).</p>
+<p>In addition to the default metrics, evaluators can be augmented with custom metrics. This can be done by defining a dictionary of functions and arguments.</p>
+<p>The custom function dictionary should have the following structure:</p>
+<pre><code class="language-py">{
+    &quot;func1&quot;: # Metric name
+    {
+        &quot;func&quot;: custom_function,  # Function to call
+        &quot;args&quot;: { # General arguments (can be any type)
+            &quot;dataf&quot;: &quot;dataf&quot;,
+            &quot;some_arg&quot;: &quot;some_arg&quot;,
+        },
+        &quot;local_args&quot;: [&quot;dataf&quot;]  # List of local variables to use/resolve
+    },
+    &quot;func2&quot;:
+    {
+        &quot;func&quot;: custom_function2,
+        &quot;args&quot;: { 
+            &quot;dataf&quot;: &quot;dataf&quot;,
+            &quot;some_arg&quot;: &quot;some_arg&quot;,
+        },
+        &quot;local_args&quot;: [&quot;dataf&quot;]
+    },
+    (...)
+}
+</code></pre>
+<ul>
+<li>
+<p>The main keys (<code>func1</code> and <code>func2</code> in the example) will be the metric key names for the output evaluation DataFrame.</p>
+</li>
+<li>
+<p>The <code>func</code> key should be a function that takes in the arguments defined in <code>args</code> as keyword arguments. <code>func</code> should be a callable function or class (i.e. class that implements <code>__call__</code>).</p>
+</li>
+<li>
+<p>The <code>args</code> key should be a dictionary with arguments to pass to <code>func</code>. The values of the dictionary can be any type. Arguments that you want resolved as local variables should be defined as strings (see <code>local_args</code> explanation).</p>
+</li>
+<li>
+<p>The <code>local_args</code> key should be a list of strings that refer to variables that exist locally in the <a href="https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col">evaluation_one_col</a> function. These local variables will be resolved to local variables for <code>func</code>. This allows you to use <a href="https://crowdcent.github.io/numerblox/api/#numerblox.evaluation.BaseEvaluator.evaluation_one_col">evaluation_one_col</a> variables like <code>dataf</code>, <code>pred_col</code>, <code>target_col</code>, <code>col_stats</code>, <code>mean</code>, <code>per_era_numerai_corrs</code>, etc.</p>
+</li>
+</ul>
 <p>Example of how to use custom functions in <code>NumeraiClassicEvaluator</code>:</p>
 <pre><code class="language-py">from numerblox.evaluation import NumeraiClassicEvaluator
 
-def my_custom_function(dataf: pd.DataFrame, pred_col: str, target_col: str) -&gt; float:
-    &quot;&quot;&quot; Dummy evaluation function. &quot;&quot;&quot;
-    return 0.5
+def residuals(dataf, target_col, pred_col, val: int):
+    &quot;&quot;&quot; Simple dummy func: mean of residuals. &quot;&quot;&quot;
+    return np.mean(dataf[target_col] - dataf[pred_col] + val)
 
-evaluator = NumeraiClassicEvaluator(custom_functions=[my_custom_function])
+custom_functions = {
+        &quot;residuals&quot;: {
+            # Callable function
+            &quot;func&quot;: residuals,
+            &quot;args&quot;: {
+                # String referring to local variables
+                &quot;dataf&quot;: &quot;dataf&quot;, 
+                &quot;pred_col&quot;: &quot;pred_col&quot;,
+                &quot;target_col&quot;: &quot;target_col&quot;,
+                # Static argument
+                &quot;val&quot;: 0.0001,
+            },
+             # List of local variables to use/resolve
+            &quot;local_args&quot;: [&quot;dataf&quot;, &quot;pred_col&quot;, &quot;target_col&quot;] 
+        },
+}
 
-# In evaluator my_custom_function(dataf=val_df, pred_col=&quot;prediction&quot;, target_col=&quot;target&quot;) is called.
+evaluator = NumeraiClassicEvaluator(custom_functions=custom_functions)
+
+# In evaluator residuals(dataf=dataf, pred_col=&quot;prediction&quot;, target_col=&quot;target&quot;, val=&quot;0.0001) is called.
 metrics = evaluator.full_evaluation(val_df, 
                                     pred_cols=[&quot;prediction&quot;], 
                                     target_col=&quot;target&quot;)
-# metrics will contain a &quot;my_custom_function&quot; column with value 0.5.
+# metrics will contain a &quot;residuals&quot; column.
 </code></pre>
 
 
