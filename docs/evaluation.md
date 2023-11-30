@@ -38,7 +38,9 @@ The following metrics only work if `benchmark_cols` are defined in `full_evaluat
 
 - "corr_with" -> Correlation with benchmark predictions.
 
-- "ex_diss" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions.
+- "ex_diss_pearson" (alias "ex_diss") -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions using Pearson correlation.
+
+- "ex_diss_spearman" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions using Spearman correlation. Will be slower compared to "ex_diss_pearson".
 
 ## Numerai Classic specific metrics
 

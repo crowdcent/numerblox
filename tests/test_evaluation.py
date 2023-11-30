@@ -53,7 +53,8 @@ def test_numerai_classic_evaluator_all_metrics(classic_test_data):
                                 f"mc_mean_{col}", f"mc_std_{col}", f"mc_sharpe_{col}",
                                 f"corr_with_{col}", 
                                 f"legacy_mc_mean_{col}", f"legacy_mc_std_{col}", f"legacy_mc_sharpe_{col}",
-                                f"exposure_dissimilarity_{col}"
+                                f"exposure_dissimilarity_pearson_{col}",
+                                f"exposure_dissimilarity_spearman_{col}",
                                 ])
     for col in MAIN_CLASSIC_STATS_COLS + BENCHMARK_STATS:
         assert col in val_stats.columns

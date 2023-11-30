@@ -15,7 +15,8 @@ from .feature_groups import FNCV3_FEATURES
 
 FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
 ALL_NO_BENCH_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "legacy_mean_std_sharpe", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
-BENCH_METRICS = ["corr_with", "mc_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss"]
+BENCH_METRICS = ["corr_with", "mc_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss",
+                 "ex_diss_pearson", "ex_diss_spearman"]
 CLASSIC_SPECIFIC_METRICS = ["fncv3_mean_std_sharpe"]
 ALL_COMMON_METRICS = FAST_METRICS + ALL_NO_BENCH_METRICS + BENCH_METRICS
 
@@ -258,11 +259,19 @@ class BaseEvaluator:
                         / col_stats[f"legacy_mc_std_{bench_col}"]
                     )
 
-                if "ex_diss" in self.metrics_list:
+                if "ex_diss" or "ex_diss_pearson" in self.metrics_list:
                     col_stats[
-                        f"exposure_dissimilarity_{bench_col}"
+                        f"exposure_dissimilarity_pearson_{bench_col}"
                     ] = self.exposure_dissimilarity(
-                        dataf=dataf, pred_col=pred_col, other_col=bench_col
+                        dataf=dataf, pred_col=pred_col, other_col=bench_col,
+                        corr_method="pearson"
+                    )
+                if "ex_diss_spearman" in self.metrics_list:
+                    col_stats[
+                        f"exposure_dissimilarity_spearman_{bench_col}"
+                    ] = self.exposure_dissimilarity(
+                        dataf=dataf, pred_col=pred_col, other_col=bench_col,
+                        corr_method="spearman"
                     )
 
         # Compute intensive stats
@@ -464,7 +473,7 @@ class BaseEvaluator:
         return self.mean_std_sharpe(era_corrs=tb_val_corrs)
 
     def exposure_dissimilarity(
-        self, dataf: pd.DataFrame, pred_col: str, other_col: str, corr_method: str = "spearman"
+        self, dataf: pd.DataFrame, pred_col: str, other_col: str, corr_method: str = "pearson"
     ) -> np.float32:
         """
         Model pattern of feature exposure to the another column.
@@ -473,7 +482,7 @@ class BaseEvaluator:
         :param pred_col: Main Prediction.
         :param other_col: Other prediction column to calculate exposure dissimilarity against.
         :param corr_method: Correlation method to use for calculating feature exposures.
-        corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'spearman'.
+        corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'pearson'.
         """
         assert corr_method in ["pearson", "kendall", "spearman"], f"corr_method should be one of ['pearson', 'kendall', 'spearman']. Got: '{corr_method}'"
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
