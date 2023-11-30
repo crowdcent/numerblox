@@ -964,32 +964,31 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             )
             valid_features = []
 
-        pbar = tqdm(pred_cols, desc="Evaluation ")
-        for col in pbar:
-            # Metrics that can be calculated for both Numerai Classic and Signals
-            col_stats = self.evaluation_one_col(
-                dataf=dataf,
-                feature_cols=feature_cols,
-                pred_col=col,
-                target_col=target_col,
-                benchmark_cols=benchmark_cols,
-            )
-            # Numerai Classic specific metrics
-            if valid_features and "fncv3_mean_std_sharpe" in self.metrics_list:
-                pbar.set_description_str(f"fncv3_mean_std_sharpe for evaluation")
-                # Using only valid features defined in FNCV3_FEATURES
-                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
+        with tqdm(pred_cols, desc="Evaluation") as pbar:
+            for col in pbar:
+                # Metrics that can be calculated for both Numerai Classic and Signals
+                col_stats = self.evaluation_one_col(
                     dataf=dataf,
+                    feature_cols=feature_cols,
                     pred_col=col,
                     target_col=target_col,
-                    feature_names=valid_features,
+                    benchmark_cols=benchmark_cols,
                 )
-                col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
-                col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
-                col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
+                # Numerai Classic specific metrics
+                if valid_features and "fncv3_mean_std_sharpe" in self.metrics_list:
+                    pbar.set_description_str(f"fncv3_mean_std_sharpe for evaluation of '{col}'")
+                    # Using only valid features defined in FNCV3_FEATURES
+                    fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
+                        dataf=dataf,
+                        pred_col=col,
+                        target_col=target_col,
+                        feature_names=valid_features,
+                    )
+                    col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
+                    col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
+                    col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
 
-            val_stats = pd.concat([val_stats, col_stats], axis=0)
-            pbar.close()
+                val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
 
