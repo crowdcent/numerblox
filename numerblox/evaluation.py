@@ -296,7 +296,7 @@ class BaseEvaluator:
                         / col_stats[f"legacy_mc_std_{bench_col}"]
                     )
 
-                if "ex_diss" or "ex_diss_pearson" in self.metrics_list:
+                if "ex_diss" in self.metrics_list or "ex_diss_pearson" in self.metrics_list:
                     pbar.set_description_str(f"ex_diss_pearson for benchmark column: '{bench_col}'")
                     col_stats[
                         f"exposure_dissimilarity_pearson_{bench_col}"
