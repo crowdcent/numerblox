@@ -20,7 +20,7 @@ def test_numerai_classic_evaluator_fast_metrics(classic_test_data):
     df.loc[:, "prediction"] = np.random.uniform(size=len(df))
     df.loc[:, "prediction_random"] = np.random.uniform(size=len(df))
 
-    evaluator = NumeraiClassicEvaluator(era_col="era")
+    evaluator = NumeraiClassicEvaluator(era_col="era", show_detailed_progress_bar=False)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
