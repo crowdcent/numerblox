@@ -244,7 +244,8 @@ class BaseEvaluator:
                 )
 
                 if "mean_std_sharpe" in self.metrics_list:
-                    pbar.set_description_str(f"mean_std_sharpe for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"mean_std_sharpe for benchmark column: '{bench_col}'")
                     bench_mean, bench_std, bench_sharpe = self.mean_std_sharpe(
                         era_corrs=per_era_bench_corrs
                     )
@@ -253,7 +254,8 @@ class BaseEvaluator:
                     col_stats[f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
 
                 if "mc_mean_std_sharpe" in self.metrics_list:
-                    pbar.set_description_str(f"mc_mean_std_sharpe for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"mc_mean_std_sharpe for benchmark column: '{bench_col}'")
                     mc_scores = self.contributive_correlation(
                         dataf=dataf,
                         pred_col=pred_col,
@@ -270,13 +272,15 @@ class BaseEvaluator:
                     )
 
                 if "corr_with" in self.metrics_list:
-                    pbar.set_description_str(f"corr_with for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"corr_with for benchmark column: '{bench_col}'")
                     col_stats[f"corr_with_{bench_col}"] = self.cross_correlation(
                         dataf=dataf, pred_col=bench_col, other_col=bench_col
                     )
 
                 if "legacy_mc_mean_std_sharpe" in self.metrics_list:
-                    pbar.set_description_str(f"legacy_mc_mean_std_sharpe for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"legacy_mc_mean_std_sharpe for benchmark column: '{bench_col}'")
                     legacy_mc_scores = self.legacy_contribution(
                         dataf=dataf,
                         pred_col=pred_col,
@@ -297,7 +301,8 @@ class BaseEvaluator:
                     )
 
                 if "ex_diss" in self.metrics_list or "ex_diss_pearson" in self.metrics_list:
-                    pbar.set_description_str(f"ex_diss_pearson for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"ex_diss_pearson for benchmark column: '{bench_col}'")
                     col_stats[
                         f"exposure_dissimilarity_pearson_{bench_col}"
                     ] = self.exposure_dissimilarity(
@@ -305,7 +310,8 @@ class BaseEvaluator:
                         corr_method="pearson"
                     )
                 if "ex_diss_spearman" in self.metrics_list:
-                    pbar.set_description_str(f"ex_diss_spearman for benchmark column: '{bench_col}'")
+                    if self.show_detailed_progress_bar:
+                        pbar.set_description_str(f"ex_diss_spearman for benchmark column: '{bench_col}'")
                     col_stats[
                         f"exposure_dissimilarity_spearman_{bench_col}"
                     ] = self.exposure_dissimilarity(
@@ -374,6 +380,7 @@ class BaseEvaluator:
 
         col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
         if self.show_detailed_progress_bar:
+            pbar.update(1)
             pbar.close()
         return col_stats_df
 
