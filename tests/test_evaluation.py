@@ -38,7 +38,8 @@ def test_numerai_classic_evaluator_all_metrics(classic_test_data):
     df.loc[:, "prediction_random2"] = np.random.uniform(size=len(df))
     benchmark_cols = ["prediction_random", "prediction_random2"]
     evaluator = NumeraiClassicEvaluator(era_col="era", 
-                                        metrics_list=ALL_CLASSIC_METRICS)
+                                        metrics_list=ALL_CLASSIC_METRICS,
+                                        show_detailed_progress_bar=True)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -64,7 +65,8 @@ def test_numerai_classic_evaluator_all_metrics(classic_test_data):
 def test_numerai_signals_evaluator(create_signals_sample_data):
     df = create_signals_sample_data
     evaluator = NumeraiSignalsEvaluator(era_col="date",
-                                        metrics_list=FAST_METRICS)
+                                        metrics_list=FAST_METRICS, 
+                                        show_detailed_progress_bar=False)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
@@ -141,7 +143,8 @@ def test_evaluator_custom_functions(classic_test_data):
     }
     evaluator = NumeraiClassicEvaluator(era_col="era", 
                                         metrics_list=["mean_std_sharpe", "tb500_mean_std_sharpe", "tb200_mean_std_sharpe"],
-                                        custom_functions=custom_functions)
+                                        custom_functions=custom_functions,
+                                        show_detailed_progress_bar=True)
     val_stats = evaluator.full_evaluation(
         dataf=df,
         target_col="target",
