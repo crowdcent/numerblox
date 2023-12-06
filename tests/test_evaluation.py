@@ -62,6 +62,81 @@ def test_numerai_classic_evaluator_all_metrics(classic_test_data):
         assert val_stats[col].iloc[0] != np.nan
 
 
+def test_full_evaluation_out_of_bounds_pred(classic_test_data):
+    df = classic_test_data
+    # Invalid pred range
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df)) + 10
+    evaluator = NumeraiClassicEvaluator(era_col="era", 
+                                        metrics_list=ALL_CLASSIC_METRICS,
+                                        show_detailed_progress_bar=True)
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+        dataf=df,
+        target_col="target",
+        pred_cols=["prediction"],
+    )
+    # Invalid pred range
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df)) - 50
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+        dataf=df,
+        target_col="target",
+        pred_cols=["prediction"],
+    )
+
+
+def test_full_evaluation_out_of_bounds_target(classic_test_data):
+    df = classic_test_data
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df))
+    # Invalid target range
+    df['target'] = df['target'] + 10
+
+    evaluator = NumeraiClassicEvaluator(era_col="era", 
+                                        metrics_list=ALL_CLASSIC_METRICS,
+                                        show_detailed_progress_bar=True)
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+            dataf=df,
+            target_col="target",
+            pred_cols=["prediction"],
+        )
+    # Invalid target range
+    df['target'] = df['target'] - 50
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+            dataf=df,
+            target_col="target",
+            pred_cols=["prediction"],
+        )
+
+
+def test_full_evaluation_out_of_bounds_benchmark(classic_test_data):
+    df = classic_test_data
+    df.loc[:, "prediction"] = np.random.uniform(size=len(df))
+    # Invalid benchmark range
+    df.loc[:, "prediction_random2"] = np.random.uniform(size=len(df)) + 10
+
+    evaluator = NumeraiClassicEvaluator(era_col="era", 
+                                        metrics_list=ALL_CLASSIC_METRICS,
+                                        show_detailed_progress_bar=True)
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+            dataf=df,
+            target_col="target",
+            pred_cols=["prediction"],
+            benchmark_cols=["prediction_random2"],
+        )
+    # Invalid benchmark range
+    df.loc[:, "prediction_random2"] = np.random.uniform(size=len(df)) - 50
+    with pytest.raises(AssertionError):
+        evaluator.full_evaluation(
+            dataf=df,
+            target_col="target",
+            pred_cols=["prediction"],
+            benchmark_cols=["prediction_random2"],
+        )
+
+
 def test_numerai_signals_evaluator(create_signals_sample_data):
     df = create_signals_sample_data
     evaluator = NumeraiSignalsEvaluator(era_col="date",

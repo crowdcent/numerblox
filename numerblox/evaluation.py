@@ -90,22 +90,6 @@ class BaseEvaluator:
         :param target_col: Target column to evaluate against.
         :param benchmark_cols: Optional list of benchmark columns to calculate evaluation metrics for.
         """
-        assert (
-            self.era_col in dataf.columns
-        ), f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
-        for pred_col in pred_cols:
-            assert (
-                pred_col in dataf.columns
-            ), f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_cols."
-        assert (
-            target_col in dataf.columns
-        ), f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
-        if benchmark_cols:
-            for col in benchmark_cols:
-                assert (
-                    col in dataf.columns
-                ), f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
-
         val_stats = pd.DataFrame()
         feature_cols = [col for col in dataf.columns if col.startswith("feature")]
         cat_cols = (
@@ -140,8 +124,36 @@ class BaseEvaluator:
     ):
         """
         Perform evaluation for one prediction column
-        against given target and other prediction column(s).
+        against given target and benchmark column(s).
         """
+        assert (
+            self.era_col in dataf.columns
+        ), f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
+        assert (
+                pred_col in dataf.columns
+            ), f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_col."
+        assert (
+            target_col in dataf.columns
+        ), f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
+        if benchmark_cols:
+            for col in benchmark_cols:
+                assert (
+                    col in dataf.columns
+                ), f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
+
+        # Check that all values are between 0 and 1
+        assert (
+            dataf[pred_col].min().min() >= 0 and dataf[pred_col].max().max() <= 1
+        ), "All predictions should be between 0 and 1 (inclusive)."
+        assert (
+            dataf[target_col].min() >= 0 and dataf[target_col].max() <= 1
+        ), "All targets should be between 0 and 1 (inclusive)."
+        if benchmark_cols is not None:
+            for col in benchmark_cols:
+                assert (
+                    dataf[col].min() >= 0 and dataf[col].max() <= 1
+                ), f"All predictions for '{col}' should be between 0 and 1 (inclusive)."
+
         if self.show_detailed_progress_bar:
             len_metrics_list = len(self.metrics_list)
             len_benchmark_cols = 0 if benchmark_cols is None else len(benchmark_cols)
@@ -631,7 +643,10 @@ class BaseEvaluator:
 
     @staticmethod
     def _normalize_uniform(df: pd.DataFrame, method: str = "first") -> pd.Series:
-        """Normalize predictions uniformly using ranks."""
+        """
+        Normalize predictions uniformly using ranks.
+        NOTE: Make sure the range of predictions is [0, 1] (inclusive).
+        """
         x = (df.rank(method=method) - 0.5) / len(
             df
         )  # TODO: Evaluate if subtracting df.mean() is better
@@ -793,11 +808,15 @@ class BaseEvaluator:
         1. tie-kept ranking each prediction and the meta model
         2. gaussianizing each prediction and the meta model
         3. orthogonalizing each prediction wrt the meta model
+        3.5. scaling the targets to [-2...2]
         4. multiplying the orthogonalized predictions and the
 
         :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
         :param pred_col: Prediction column to calculate MMC for.
         :param target_col: Target column to calculate MMC against.
+        Make sure the range of targets is [0, 1] (inclusive). 
+        If the function is called from full_evalation, this is guaranteed because of the checks.
+
         :param other_col: Meta model column containing predictions to neutralize against.
 
         :return: List of contributive correlations by era.
@@ -816,9 +835,12 @@ class BaseEvaluator:
             orthogonalized_preds = self._orthogonalize(
                 gauss_ranked_preds, gauss_ranked_meta
             )
+            # 3.5 Scale ranked targets from [0...1] to [-2...2]
+            scaled_targets = (ranked_targets * 4) - 2
+            
             # 4. multiply target and orthogonalized predictions
             # this is equivalent to covariance b/c mean = 0
-            mc = (ranked_targets @ orthogonalized_preds) / len(x)
+            mc = (scaled_targets @ orthogonalized_preds) / len(x)
             mc_scores.append(mc)
         return mc_scores
 
