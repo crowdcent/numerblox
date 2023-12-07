@@ -827,7 +827,7 @@ class BaseEvaluator:
             # 1. tie-kept ranking each prediction and the meta model
             ranked_preds = self._normalize_uniform(x[pred_col], method="average")
             ranked_meta = self._normalize_uniform(x[other_col], method="average")
-            ranked_targets = self._normalize_uniform(x[target_col], method="average")
+            targets = x[target_col]
             # 2. gaussianizing predictions and the meta model
             gauss_ranked_preds = stats.norm.ppf(ranked_preds)
             gauss_ranked_meta = stats.norm.ppf(ranked_meta)
@@ -836,7 +836,8 @@ class BaseEvaluator:
                 gauss_ranked_preds, gauss_ranked_meta
             )
             # 3.5 Scale ranked targets from [0...1] to [-2...2]
-            scaled_targets = (ranked_targets * 4) - 2
+            scaled_targets = (targets * 4) - 2
+            scaled_targets -= targets.mean()
             
             # 4. multiply target and orthogonalized predictions
             # this is equivalent to covariance b/c mean = 0
