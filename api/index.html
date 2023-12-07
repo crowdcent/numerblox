@@ -14921,7 +14921,8 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="normal">944</span>
 <span class="normal">945</span>
 <span class="normal">946</span>
-<span class="normal">947</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
+<span class="normal">947</span>
+<span class="normal">948</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluation functionality that is relevant for both</span>
 <span class="sd">    Numerai Classic and Numerai Signals.</span>
@@ -15721,7 +15722,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="c1"># 1. tie-kept ranking each prediction and the meta model</span>
             <span class="n">ranked_preds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
             <span class="n">ranked_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
-            <span class="n">ranked_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span>
             <span class="c1"># 2. gaussianizing predictions and the meta model</span>
             <span class="n">gauss_ranked_preds</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">ranked_preds</span><span class="p">)</span>
             <span class="n">gauss_ranked_meta</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">ranked_meta</span><span class="p">)</span>
@@ -15730,7 +15731,8 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                 <span class="n">gauss_ranked_preds</span><span class="p">,</span> <span class="n">gauss_ranked_meta</span>
             <span class="p">)</span>
             <span class="c1"># 3.5 Scale ranked targets from [0...1] to [-2...2]</span>
-            <span class="n">scaled_targets</span> <span class="o">=</span> <span class="p">(</span><span class="n">ranked_targets</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">scaled_targets</span> <span class="o">=</span> <span class="p">(</span><span class="n">targets</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">scaled_targets</span> <span class="o">-=</span> <span class="n">targets</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
             <span class="c1"># 4. multiply target and orthogonalized predictions</span>
             <span class="c1"># this is equivalent to covariance b/c mean = 0</span>
@@ -16075,7 +16077,8 @@ If the function is called from full_evalation, this is guaranteed because of the
 <span class="normal">842</span>
 <span class="normal">843</span>
 <span class="normal">844</span>
-<span class="normal">845</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
+<span class="normal">845</span>
+<span class="normal">846</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
@@ -16105,7 +16108,7 @@ If the function is called from full_evalation, this is guaranteed because of the
         <span class="c1"># 1. tie-kept ranking each prediction and the meta model</span>
         <span class="n">ranked_preds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
         <span class="n">ranked_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
-        <span class="n">ranked_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_uniform</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span>
         <span class="c1"># 2. gaussianizing predictions and the meta model</span>
         <span class="n">gauss_ranked_preds</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">ranked_preds</span><span class="p">)</span>
         <span class="n">gauss_ranked_meta</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">ranked_meta</span><span class="p">)</span>
@@ -16114,7 +16117,8 @@ If the function is called from full_evalation, this is guaranteed because of the
             <span class="n">gauss_ranked_preds</span><span class="p">,</span> <span class="n">gauss_ranked_meta</span>
         <span class="p">)</span>
         <span class="c1"># 3.5 Scale ranked targets from [0...1] to [-2...2]</span>
-        <span class="n">scaled_targets</span> <span class="o">=</span> <span class="p">(</span><span class="n">ranked_targets</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">scaled_targets</span> <span class="o">=</span> <span class="p">(</span><span class="n">targets</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">scaled_targets</span> <span class="o">-=</span> <span class="n">targets</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
         <span class="c1"># 4. multiply target and orthogonalized predictions</span>
         <span class="c1"># this is equivalent to covariance b/c mean = 0</span>
@@ -17649,8 +17653,7 @@ This is optional for if you already have per era correlations prepared in your i
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">870</span>
-<span class="normal">871</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">871</span>
 <span class="normal">872</span>
 <span class="normal">873</span>
 <span class="normal">874</span>
@@ -17708,7 +17711,8 @@ This is optional for if you already have per era correlations prepared in your i
 <span class="normal">926</span>
 <span class="normal">927</span>
 <span class="normal">928</span>
-<span class="normal">929</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
+<span class="normal">929</span>
+<span class="normal">930</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -17895,8 +17899,7 @@ TB200 and TB500 are the most common situations.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 950</span>
-<span class="normal"> 951</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 951</span>
 <span class="normal"> 952</span>
 <span class="normal"> 953</span>
 <span class="normal"> 954</span>
@@ -17966,7 +17969,8 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">1018</span>
 <span class="normal">1019</span>
 <span class="normal">1020</span>
-<span class="normal">1021</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluator for all metrics that are relevant in Numerai Classic.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -18082,8 +18086,7 @@ TB200 and TB500 are the most common situations.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1024</span>
-<span class="normal">1025</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1025</span>
 <span class="normal">1026</span>
 <span class="normal">1027</span>
 <span class="normal">1028</span>
@@ -18157,7 +18160,8 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">1096</span>
 <span class="normal">1097</span>
 <span class="normal">1098</span>
-<span class="normal">1099</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluator for all metrics that are relevant in Numerai Signals.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -18271,8 +18275,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1072</span>
-<span class="normal">1073</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1073</span>
 <span class="normal">1074</span>
 <span class="normal">1075</span>
 <span class="normal">1076</span>
@@ -18298,7 +18301,8 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1096</span>
 <span class="normal">1097</span>
 <span class="normal">1098</span>
-<span class="normal">1099</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">__await_diagnostics</span><span class="p">(</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">SignalsAPI</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -18358,8 +18362,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1043</span>
-<span class="normal">1044</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1044</span>
 <span class="normal">1045</span>
 <span class="normal">1046</span>
 <span class="normal">1047</span>
@@ -18385,7 +18388,8 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1067</span>
 <span class="normal">1068</span>
 <span class="normal">1069</span>
-<span class="normal">1070</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">val_dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
