@@ -443,7 +443,7 @@ class KaggleDownloader(BaseDownloader):
         Download arbitrary Kaggle dataset.
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
         """
-        self.__check_kaggle_import()
+        import kaggle
         kaggle.api.dataset_download_files(kaggle_dataset_path,
                                           path=self.dir, unzip=True)
 
