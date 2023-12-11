@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+from numerai_era_data.date_utils import ERA_ONE_START
 
 from numerblox.numerframe import NumerFrame, create_numerframe
 from numerblox.feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
@@ -146,6 +147,26 @@ def test_get_era_batch():
     assert isinstance(X, np.ndarray)
     assert X.shape == (4805, 2132)
     assert y.shape == (4805, 49)
+
+def test_get_era_from_date():
+    nf = NumerFrame(dataset)
+    era = nf.get_era_from_date(pd.Timestamp('2016-01-01'))
+    assert isinstance(era, int)
+    assert era == 677
+
+    era1 = nf.get_era_from_date(pd.Timestamp(ERA_ONE_START))
+    assert isinstance(era1, int)
+    assert era1 == 1
+
+def test_get_date_from_era():
+    nf = NumerFrame(dataset)
+    date = nf.get_date_from_era(era=4)
+    assert isinstance(date, pd.Timestamp)
+    assert date == pd.Timestamp('2003-02-01')
+
+    date1 = nf.get_date_from_era(era=1)
+    assert isinstance(date1, pd.Timestamp)
+    assert date1 == pd.Timestamp(ERA_ONE_START)
 
 def test_create_numerframe():
     file_path = "tests/test_assets/train_int8_5_eras.parquet"
