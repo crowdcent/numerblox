@@ -200,7 +200,6 @@ def test_get_era_range():
     with pytest.raises(AssertionError):
         nf.get_era_range(1, "0002")
 
-
 def test_get_date_range():
     date_col_dataset = dataset.drop("era", axis="columns")
     date_col_dataset["date"] = [pd.Timestamp('2016-01-01') + pd.Timedelta(days=i) for i in range(0, len(date_col_dataset))]
