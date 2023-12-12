@@ -129,6 +129,19 @@ ta_gen = PandasTaFeatureGenerator()
 ta_features = ta_gen.transform(dataf)
 ```
 
+### MinimumDataFilter
+
+`MinimumDataFilter` filters out dates and tickers that don't have enough data. For example, it makes sense to filter out dates for which you have less than 100 days of data. Also, dates that have less than 100 unique tickers can be filtered out.
+
+NOTE: This step only works with DataFrame input.
+
+```py
+from numerblox.preprocessing import MinimumDataFilter
+
+min_data_filter = MinimumDataFilter(min_days=100, min_tickers=100)
+filtered_data = min_data_filter.fit_transform(dataf)
+```
+
 ## Rolling your own preprocessor
 
 We invite the community to contribute their own preprocessors to NumerBlox. If you have a preprocessor that you think would be useful to others, please open a PR with your code and tests.

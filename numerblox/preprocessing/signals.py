@@ -6,6 +6,7 @@ import pandas_ta as ta
 from tqdm.auto import tqdm
 from typing import Union, Tuple, List
 from multiprocessing.pool import Pool
+from sklearn.utils.validation import check_is_fitted
 from sklearn.preprocessing import QuantileTransformer
 
 from numerblox.preprocessing.base import BasePreProcessor
@@ -544,3 +545,54 @@ class HLOCVAdjuster(BasePreProcessor):
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         return self.adjusted_col_names
+
+
+class MinimumDataFilter(BasePreProcessor):
+    """ 
+    Filter dates and tickers based on minimum data requirements. 
+    NOTE: This step only works with DataFrame input.
+
+    :param min_samples_date: Minimum number of samples per date. Defaults to 200.
+    :param min_samples_ticker: Minimum number of samples per ticker. Defaults to 1200.
+    :param blacklist_tickers: List of tickers to exclude from the dataset. Defaults to None.
+    :param date_col: Column name for date. Defaults to "date".
+    :param ticker_col: Column name for ticker. Defaults to "bloomberg_ticker".
+    """
+    def __init__(self, min_samples_date: int = 200, min_samples_ticker: int = 1200, blacklist_tickers: list = None, date_col="date", ticker_col="bloomberg_ticker"):
+        super().__init__()
+        self.min_samples_date = min_samples_date
+        self.min_samples_ticker = min_samples_ticker
+        self.blacklist_tickers = blacklist_tickers
+        self.date_col = date_col
+        self.ticker_col = ticker_col
+
+    def fit(self, X: pd.DataFrame, y=None):
+        self.feature_names_out_ = X.columns.tolist()
+        return self
+
+    def transform(self, X: pd.DataFrame) -> np.array:
+        """
+        Filter dates and tickers based on minimum data requirements.
+        :param X: DataFrame with columns: [ticker_col, date_col, open, high, low, close, volume] (HLOCV)
+        :return: Array with filtered DataFrame
+        """
+        filtered_data = X.groupby(self.date_col).filter(lambda x: len(x) >= self.min_samples_date)
+        records_per_ticker = (
+            filtered_data.reset_index(drop=False)
+            .groupby(self.ticker_col)[self.date_col]
+            .nunique()
+            .reset_index()
+            .sort_values(by=self.date_col)
+        )
+        tickers_with_records = records_per_ticker.query(f"{self.date_col} >= {self.min_samples_ticker}")[self.ticker_col].values
+        filtered_data = filtered_data.loc[filtered_data[self.ticker_col].isin(tickers_with_records)].reset_index(drop=True)
+
+        if self.blacklist_tickers:
+            filtered_data = filtered_data.loc[~filtered_data[self.ticker_col].isin(self.blacklist_tickers)]
+
+        return filtered_data.to_numpy()
+    
+    def get_feature_names_out(self, input_features=None) -> List[str]:
+        check_is_fitted(self)
+        return self.feature_names_out_ if not input_features else input_features
+    
