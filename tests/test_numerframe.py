@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+from numerai_era_data.date_utils import ERA_ONE_START
 
 from numerblox.numerframe import NumerFrame, create_numerframe
 from numerblox.feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
@@ -146,6 +147,81 @@ def test_get_era_batch():
     assert isinstance(X, np.ndarray)
     assert X.shape == (4805, 2132)
     assert y.shape == (4805, 49)
+
+def test_get_era_from_date():
+    nf = NumerFrame(dataset)
+    era = nf.get_era_from_date(pd.Timestamp('2016-01-01'))
+    assert isinstance(era, int)
+    assert era == 677
+
+    era1 = nf.get_era_from_date(pd.Timestamp(ERA_ONE_START))
+    assert isinstance(era1, int)
+    assert era1 == 1
+
+def test_get_date_from_era():
+    nf = NumerFrame(dataset)
+    date = nf.get_date_from_era(era=4)
+    assert isinstance(date, pd.Timestamp)
+    assert date == pd.Timestamp('2003-02-01')
+
+    date1 = nf.get_date_from_era(era=1)
+    assert isinstance(date1, pd.Timestamp)
+    assert date1 == pd.Timestamp(ERA_ONE_START)
+
+def test_get_dates_from_era_col():
+    nf = NumerFrame(dataset).iloc[:5]
+    result = nf.get_dates_from_era_col
+    assert isinstance(result, pd.Series)
+    assert all(result.index == nf.index[:5])
+    assert result.tolist() == [pd.Timestamp(ERA_ONE_START)] * len(result)
+
+def test_get_era_range():
+    nf = NumerFrame(dataset)
+    result = nf.get_era_range(start_era=1, end_era=3)
+    assert isinstance(result, NumerFrame)
+    assert result[nf.meta.era_col].unique().tolist() == ['0001', '0002', '0003']
+    assert result.shape == (6666, 2183)
+
+    with pytest.raises(AssertionError):
+        no_era_dataset = dataset.drop("era", axis="columns")
+        no_era_dataset["date"] = pd.Timestamp('2016-01-01')
+        nf = NumerFrame(no_era_dataset)
+        nf.get_era_range(start_era=1, end_era=3)
+    # Negative era
+    with pytest.raises(AssertionError):
+        nf.get_era_range(-1, 5)
+    # End era before start era
+    with pytest.raises(AssertionError):
+        nf.get_era_range(20, 3)
+    # Start era not int
+    with pytest.raises(AssertionError):
+        nf.get_era_range("0001", 2)
+    # End era not int
+    with pytest.raises(AssertionError):
+        nf.get_era_range(1, "0002")
+
+def test_get_date_range():
+    date_col_dataset = dataset.drop("era", axis="columns")
+    date_col_dataset["date"] = [pd.Timestamp('2016-01-01') + pd.Timedelta(days=i) for i in range(0, len(date_col_dataset))]
+    nf = NumerFrame(date_col_dataset)
+    result = nf.get_date_range(start_date=pd.Timestamp('2016-01-01'), end_date=pd.Timestamp('2016-01-03'))
+    assert isinstance(result, NumerFrame)
+    assert result[nf.meta.era_col].unique().tolist() == [pd.Timestamp('2016-01-01'), pd.Timestamp('2016-01-02'), 
+                                                         pd.Timestamp('2016-01-03')]
+    assert result.shape == (3, 2183)
+
+    # End date before start date
+    with pytest.raises(AssertionError):
+        nf.get_date_range(pd.Timestamp('2022-01-05'), pd.Timestamp('2022-01-01'))
+    # Date before era 1
+    with pytest.raises(AssertionError):
+        nf.get_date_range(pd.Timestamp('1970-01-05'), pd.Timestamp('1971-01-10'))
+    # Start date not pd.Timestamp
+    with pytest.raises(AssertionError):
+        nf.get_date_range("2016-01-01", pd.Timestamp('2016-01-10'))
+    # End date not pd.Timestamp
+    with pytest.raises(AssertionError):
+        nf.get_date_range(pd.Timestamp('2016-01-01'), "2016-01-10")
 
 def test_create_numerframe():
     file_path = "tests/test_assets/train_int8_5_eras.parquet"

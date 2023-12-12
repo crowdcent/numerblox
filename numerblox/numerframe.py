@@ -1,12 +1,18 @@
 import pandas as pd
 from pathlib import Path
+from datetime import date, timedelta
 from typing import Union, Tuple, Any, List
+from numerai_era_data.date_utils import (ERA_ONE_START, get_current_era, 
+                                         get_current_date, get_era_for_date,
+                                         get_date_for_era)
 
 from .misc import AttrDict
 from .feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
                              SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
                              V3_EQUIVALENT_FEATURES)
 
+
+ERA1_TIMESTAMP = pd.Timestamp(ERA_ONE_START)
 
 class NumerFrame(pd.DataFrame):
     """
@@ -189,6 +195,82 @@ class NumerFrame(pd.DataFrame):
             else:
                 y = tf.convert_to_tensor(y, *args, **kwargs)
         return X, y
+    
+    @property
+    def get_dates_from_era_col(self) -> pd.Series:
+        """ Column of all dates from era column. """
+        assert self.meta.era_col == "era", \
+            "Era col is not 'era'. Please make sure to have a valid 'era' column to use for converting to dates."
+        return self[self.meta.era_col].astype(int).apply(self.get_date_from_era)
+    
+    def get_era_range(self, start_era: int, end_era: int) -> "NumerFrame":
+        """ 
+        Get all eras between two era numbers. 
+        :param start_era: Era number to start from (inclusive).
+        :param end_era: Era number to end with (inclusive).
+        :return: NumerFrame with all eras between start_era and end_era.
+        """
+        assert "era" in self.columns, "Era column not found. Please make sure to have an 'era' column in your data."
+        assert isinstance(start_era, int), f"start_era should be of type 'int' but is '{type(start_era)}'"
+        assert isinstance(end_era, int), f"end_era should be of type 'int' but is '{type(end_era)}'"
+        assert 1 <= start_era <= end_era <= get_current_era(), \
+            f"start_era should be between 1 and {get_current_era()}. Got '{start_era}'."
+        assert 1 <= start_era <= end_era <= get_current_era(), \
+            f"end_era should be between 1 and {get_current_era()}. Got '{end_era}'."
+        assert start_era <= end_era, f"start_era should be before end_era. Got '{start_era}' and '{end_era}'"
+
+        temp_df = self.copy()
+        temp_df['era_int'] = temp_df['era'].astype(int)
+        result_df = temp_df[(temp_df['era_int'] >= start_era) & (temp_df['era_int'] <= end_era)]
+        return result_df.drop(columns=['era_int'])
+        
+    def get_date_range(self, start_date: pd.Timestamp, end_date: pd.Timestamp) -> "NumerFrame":
+        """
+        Get all eras between two dates.
+        :param start_date: Starting date (inclusive).
+        :param end_date: Ending date (inclusive).
+        :return: NumerFrame with all eras between start_date and end_date.
+        """
+        assert self.meta.era_col == "date" or self.meta.era_col == "friday_date", \
+            "Era col is not 'date' or 'friday_date'. Please make sure to have a valid 'era' column."
+        assert isinstance(start_date, pd.Timestamp), f"start_date should be of type 'pd.Timestamp' but is '{type(start_date)}'"
+        assert isinstance(end_date, pd.Timestamp), f"end_date should be of type 'pd.Timestamp' but is '{type(end_date)}'"
+        assert ERA1_TIMESTAMP <= start_date <= pd.Timestamp(get_current_date()), \
+            f"start_date should be between {ERA_ONE_START} and {pd.Timestamp(get_current_date())}"
+        assert ERA1_TIMESTAMP <= end_date <= pd.Timestamp(get_current_date()), \
+            f"end_date should be between {ERA_ONE_START} and {pd.Timestamp(get_current_date())}"
+        assert start_date <= end_date, f"start_date should be before end_date. Got '{start_date}' and '{end_date}'"
+
+        temp_df = self.copy()
+        result_df = temp_df[(temp_df[self.meta.era_col] >= start_date) & (temp_df[self.meta.era_col] <= end_date)]
+        return result_df
+    
+    @staticmethod
+    def get_era_from_date(date_object: pd.Timestamp) -> int:
+        """ 
+        Get the era number from a specific date. 
+        :param date_object: Pandas Timestamp object for which to get era.
+        :return: Era number.
+        """
+        assert isinstance(date_object, pd.Timestamp), f"date_object should be of type 'date' but is '{type(date_object)}'"
+        current_date = pd.Timestamp(get_current_date())
+        assert ERA1_TIMESTAMP <= date_object <= current_date, \
+            f"date_object should be between {ERA_ONE_START} and {current_date}"
+        return get_era_for_date(date_object.date())
+    
+    @staticmethod
+    def get_date_from_era(era: int) -> pd.Timestamp:
+        """ 
+        Get the date from a specific era. 
+        :param era: Era number for which to get date.
+        Should be an integer which is at least 1.
+        :return: Datetime object representing the date of the given era.
+        """
+        assert isinstance(era, int), f"era should be of type 'int' but is '{type(era)}'"
+        assert 1 <= era <= get_current_era(), \
+            f"era should be between 1 and {get_current_era()}. Got '{era}'."
+        return pd.Timestamp(get_date_for_era(era))
+
 
 
 def create_numerframe(file_path: str, columns: list = None, *args, **kwargs) -> NumerFrame:
