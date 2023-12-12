@@ -296,10 +296,19 @@ def test_hlocv_adjuster_basic(dummy_signals_data):
     assert np.isclose(original_row["volume"] * ratio, adjusted_row["adjusted_volume"])
 
 def test_minimum_data_filter(dummy_signals_data):
+    before_tickers = dummy_signals_data["ticker"].unique().tolist()
+    for tick in ["XYZ.US", "RST.US", "UVW.US"]:
+        assert tick in before_tickers
     filter = MinimumDataFilter(ticker_col="ticker", date_col="date", min_samples_date=2, min_samples_ticker=50)
     filter.fit(dummy_signals_data)
-    filtered_data = filter.transform(dummy_signals_data)
-    assert filtered_data.shape[0] == dummy_signals_data.shape[0]
+    filtered_data = pd.DataFrame(filter.transform(dummy_signals_data), columns=filter.get_feature_names_out())
+    # Some tickers should have been filtered (XYZ.US, RST.US, UVW.US)
+    assert not filtered_data.empty
+    assert filtered_data.shape[0] < dummy_signals_data.shape[0]
+    assert len(filtered_data["ticker"].unique()) < len(dummy_signals_data["ticker"].unique())
+    after_tickers = filtered_data["ticker"].unique().tolist()
+    for tick in ["XYZ.US", "RST.US", "UVW.US"]:
+        assert tick not in after_tickers
     assert filtered_data.shape[1] == dummy_signals_data.shape[1]
     assert filter.get_feature_names_out() == dummy_signals_data.columns.tolist()
 

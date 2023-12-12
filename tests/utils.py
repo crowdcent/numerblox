@@ -38,6 +38,28 @@ def create_signals_sample_data():
                     "prediction_random": np.random.uniform(),
                 }
             )
+    # Add instances with only 10 days of data
+    unwanted_tickers = ["XYZ.US", "RST.US", "UVW.US"]
+    price = np.random.randint(10, 100)
+    for ticker in unwanted_tickers:
+        for i in range(10):
+            price += np.random.uniform(-1, 1)
+            instances.append(
+                    {
+                        "ticker": ticker,
+                        "date": pd.Timestamp("2020-01-01") + pd.Timedelta(days=i),
+                        "open": price - 0.05,
+                        "high": price + 0.02,
+                        "low": price - 0.01,
+                        "close": price,
+                        "adjusted_close": price * np.random.uniform(0.5, 1.5),
+                        "volume": np.random.randint(1000, 10000),
+                        "target": np.random.uniform(),
+                        "target_2": np.random.uniform(),
+                        "prediction": np.random.uniform(),
+                        "prediction_random": np.random.uniform(),
+                    }
+                )
     return pd.DataFrame(instances)
 
 @pytest.fixture()
