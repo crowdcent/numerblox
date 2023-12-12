@@ -11,14 +11,16 @@ from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcess
                                      KatsuFeatureGenerator,
                                      EraQuantileProcessor, TickerMapper,
                                      LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster)
+                                     DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster,
+                                     MinimumDataFilter)
 from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
 
 from utils import create_signals_sample_data
 
 CLASSIC_PREPROCESSORS = [ReduceMemoryProcessor, GroupStatsPreProcessor]
 SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper,
-                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster]
+                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster,
+                         MinimumDataFilter]
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
 WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, 
                          DifferencePreProcessor]
