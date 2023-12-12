@@ -566,30 +566,31 @@ class MinimumDataFilter(BasePreProcessor):
         self.date_col = date_col
         self.ticker_col = ticker_col
 
+    def fit(self, X: pd.DataFrame, y=None):
+        self.feature_names_out_ = X.columns.tolist()
+        return self
+
     def transform(self, X: pd.DataFrame) -> np.array:
         """
         Filter dates and tickers based on minimum data requirements.
         :param X: DataFrame with columns: [ticker_col, date_col, open, high, low, close, volume] (HLOCV)
         :return: Array with filtered DataFrame
         """
-        X_copy = X.copy()
-        X_copy = X_copy.groupby(self.date_col).filter(lambda x: len(x) > self.min_samples_date)
+        filtered_data = X.groupby(self.date_col).filter(lambda x: len(x) >= self.min_samples_date)
         records_per_ticker = (
-            X_copy.reset_index(drop=False)
+            filtered_data.reset_index(drop=False)
             .groupby(self.ticker_col)[self.date_col]
             .nunique()
             .reset_index()
             .sort_values(by=self.date_col)
         )
         tickers_with_records = records_per_ticker.query(f"{self.date_col} >= {self.min_samples_ticker}")[self.ticker_col].values
-        X_copy = X_copy.loc[X_copy[self.ticker_col].isin(tickers_with_records)].reset_index(drop=True)
+        filtered_data = filtered_data.loc[filtered_data[self.ticker_col].isin(tickers_with_records)].reset_index(drop=True)
 
         if self.blacklist_tickers:
-            X_copy = X_copy.loc[~X_copy[self.ticker_col].isin(self.blacklist_tickers)]
+            filtered_data = filtered_data.loc[~filtered_data[self.ticker_col].isin(self.blacklist_tickers)]
 
-        self.feature_names_out_ = X_copy.columns.tolist()
-
-        return X_copy.to_numpy()
+        return filtered_data.to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         check_is_fitted(self)

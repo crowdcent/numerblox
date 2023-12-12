@@ -295,3 +295,16 @@ def test_hlocv_adjuster_basic(dummy_signals_data):
     assert np.isclose(original_row["open"] / ratio, adjusted_row["adjusted_open"])
     assert np.isclose(original_row["volume"] * ratio, adjusted_row["adjusted_volume"])
 
+def test_minimum_data_filter(dummy_signals_data):
+    filter = MinimumDataFilter(ticker_col="ticker", date_col="date", min_samples_date=2, min_samples_ticker=50)
+    filter.fit(dummy_signals_data)
+    filtered_data = filter.transform(dummy_signals_data)
+    assert filtered_data.shape[0] == dummy_signals_data.shape[0]
+    assert filtered_data.shape[1] == dummy_signals_data.shape[1]
+    assert filter.get_feature_names_out() == dummy_signals_data.columns.tolist()
+
+    # Test set_output API
+    filter.set_output(transform="default")
+    result = filter.transform(dummy_signals_data)
+    assert isinstance(result, np.ndarray)
+

@@ -17,7 +17,7 @@ def create_classic_sample_data():
 @pytest.fixture
 def create_signals_sample_data():
     instances = []
-    tickers = ["ABC.US", "DEF.US", "GHI.US"]
+    tickers = ["ABC.US", "DEF.US", "GHI.US", "JKL.US", "MNO.US"]
     for ticker in tickers:
         price = np.random.randint(10, 100)
         for i in range(100):
