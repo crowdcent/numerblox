@@ -133,12 +133,14 @@ ta_features = ta_gen.transform(dataf)
 
 `MinimumDataFilter` filters out dates and tickers that don't have enough data. For example, it makes sense to filter out dates for which you have less than 100 days of data. Also, dates that have less than 100 unique tickers can be filtered out.
 
+Additionally, you can specify a list of tickers to blacklist and exclude from your data.
+
 NOTE: This step only works with DataFrame input.
 
 ```py
 from numerblox.preprocessing import MinimumDataFilter
 
-min_data_filter = MinimumDataFilter(min_days=100, min_tickers=100)
+min_data_filter = MinimumDataFilter(min_samples_date=200, min_samples_ticker=1200, blacklist_tickers=["SOMETICKER.BLA"])
 filtered_data = min_data_filter.fit_transform(dataf)
 ```
 
