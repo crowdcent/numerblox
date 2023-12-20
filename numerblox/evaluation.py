@@ -1,4 +1,3 @@
-import sys 
 import time
 import numpy as np
 import pandas as pd
@@ -8,6 +7,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple, List, Callable, Dict, Any
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
+from numerai_tools.scoring import correlation_contribution
 
 from .neutralizers import FeatureNeutralizer
 from .misc import Key
@@ -799,49 +799,36 @@ class BaseEvaluator:
 
     def contributive_correlation(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str, other_col: str
-    ):
+    ) -> List[np.float64]:
         """Calculate the contributive correlation of the given predictions
         wrt the given meta model.
         see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc
 
+        Uses Numerai's official scoring function for contribution under the hood.
+        See: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py
+        
         Calculate contributive correlation by:
         1. tie-kept ranking each prediction and the meta model
         2. gaussianizing each prediction and the meta model
         3. orthogonalizing each prediction wrt the meta model
-        3.5. scaling the targets to [-2...2]
-        4. multiplying the orthogonalized predictions and the
+        3.5. scaling the targets to buckets [-2, -1, 0, 1, 2]
+        4. dot product the orthogonalized predictions and the targets
+       then normalize by the length of the target (equivalent to covariance)
 
         :param dataf: DataFrame containing era_col, pred_col, target_col and other_col.
         :param pred_col: Prediction column to calculate MMC for.
         :param target_col: Target column to calculate MMC against.
         Make sure the range of targets is [0, 1] (inclusive). 
         If the function is called from full_evalation, this is guaranteed because of the checks.
-
         :param other_col: Meta model column containing predictions to neutralize against.
 
         :return: List of contributive correlations by era.
         """
         mc_scores = []
-
         for _, x in dataf.groupby(self.era_col):
-            # 1. tie-kept ranking each prediction and the meta model
-            ranked_preds = self._normalize_uniform(x[pred_col], method="average")
-            ranked_meta = self._normalize_uniform(x[other_col], method="average")
-            targets = x[target_col]
-            # 2. gaussianizing predictions and the meta model
-            gauss_ranked_preds = stats.norm.ppf(ranked_preds)
-            gauss_ranked_meta = stats.norm.ppf(ranked_meta)
-            # 3. orthogonalizing predictions wrt the meta model
-            orthogonalized_preds = self._orthogonalize(
-                gauss_ranked_preds, gauss_ranked_meta
-            )
-            # 3.5 Scale ranked targets from [0...1] to [-2...2]
-            scaled_targets = (targets * 4) - 2
-            scaled_targets -= targets.mean()
-            
-            # 4. multiply target and orthogonalized predictions
-            # this is equivalent to covariance b/c mean = 0
-            mc = (scaled_targets @ orthogonalized_preds) / len(x)
+            mc = correlation_contribution(x[[pred_col]], 
+                                          x[other_col], 
+                                          x[target_col])
             mc_scores.append(mc)
         return mc_scores
 
