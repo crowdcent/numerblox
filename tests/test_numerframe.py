@@ -175,6 +175,16 @@ def test_get_dates_from_era_col():
     assert all(result.index == nf.index[:5])
     assert result.tolist() == [pd.Timestamp(ERA_ONE_START)] * len(result)
 
+def test_get_eras_from_date_col():
+    dataset_copy = dataset.copy()
+    dataset_copy['date'] = [pd.Timestamp(ERA_ONE_START) + pd.Timedelta(days=i*7) for i in range(0, len(dataset_copy))]
+    dataset_copy = dataset_copy.drop(columns="era")
+    nf = NumerFrame(dataset_copy.iloc[:5])
+    result = nf.get_eras_from_date_col
+    assert isinstance(result, pd.Series)
+    assert all(result.index == nf.index[:5])
+    assert result.tolist() == [i+1 for i in range(0, len(result))]
+
 def test_get_era_range():
     nf = NumerFrame(dataset)
     result = nf.get_era_range(start_era=1, end_era=3)

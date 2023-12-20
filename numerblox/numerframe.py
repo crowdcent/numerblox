@@ -203,6 +203,13 @@ class NumerFrame(pd.DataFrame):
             "Era col is not 'era'. Please make sure to have a valid 'era' column to use for converting to dates."
         return self[self.meta.era_col].astype(int).apply(self.get_date_from_era)
     
+    @property
+    def get_eras_from_date_col(self) -> pd.Series:
+        """ Column of all eras from date column. """
+        assert self.meta.era_col == "date" or self.meta.era_col == "friday_date", \
+            "Era col is not 'date' or 'friday_date'. Please make sure to have a valid 'date' or 'friday_date column to use for converting to eras."
+        return self[self.meta.era_col].apply(self.get_era_from_date)
+    
     def get_era_range(self, start_era: int, end_era: int) -> "NumerFrame":
         """ 
         Get all eras between two era numbers. 
