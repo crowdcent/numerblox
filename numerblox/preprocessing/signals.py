@@ -288,6 +288,10 @@ class EraQuantileProcessor(BasePreProcessor):
             output_df[f"{feature}_quantile{self.num_quantiles}"] = group_data
         return output_df.to_numpy()
     
+    def fit_transform(self, X: Union[np.array, pd.DataFrame], eras: pd.Series):
+        self.fit(X=X, eras=eras)
+        return self.transform(X=X, eras=eras)
+
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
         if not input_features:
@@ -373,6 +377,10 @@ class LagPreProcessor(BasePreProcessor):
                 output_features.append(f"{feature}_lag{day}")
         self.output_features = output_features
         return X[output_features].to_numpy()
+    
+    def fit_transform(self, X: Union[np.array, pd.DataFrame], tickers: pd.Series):
+        self.fit(X=X, tickers=tickers)
+        return self.transform(X=X, tickers=tickers)
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
