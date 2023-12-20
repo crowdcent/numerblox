@@ -181,7 +181,7 @@ class KatsuFeatureGenerator(BasePreProcessor):
         macd, macd_signal = self._macd(close_series)
         dataf.loc[:, "feature_MACD"] = macd
         dataf.loc[:, "feature_MACD_signal"] = macd_signal
-        return dataf.bfill()
+        return dataf
 
     def _generate_features(self, dataf_list: list) -> pd.DataFrame:
         """Add features for list of ticker DataFrames and concatenate."""
@@ -269,6 +269,9 @@ class EraQuantileProcessor(BasePreProcessor):
         )
         transformed_data = quantizer.fit_transform(group_data.to_frame()).ravel()
         return pd.Series(transformed_data, index=group_data.index)
+    
+    def fit(self, X: Union[np.array, pd.DataFrame], y=None, eras: pd.Series = None):
+        return self
 
     def transform(
         self, X: Union[np.array, pd.DataFrame],
@@ -352,6 +355,9 @@ class LagPreProcessor(BasePreProcessor):
     def __init__(self, windows: list = None,):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
+
+    def fit(self, X: Union[np.array, pd.DataFrame], y=None, tickers: pd.Series = None):
+        return self
 
     def transform(self, X: Union[np.array, pd.DataFrame], tickers: pd.Series) -> np.array:
         X = pd.DataFrame(X)
@@ -454,7 +460,6 @@ class PandasTaFeatureGenerator(BasePreProcessor):
                                         ta=[{"kind": "rsi", "length": 14, "col_names": ("feature_RSI_14")},
                                             {"kind": "rsi", "length": 60, "col_names": ("feature_RSI_60")}])
         self.strategy = strategy if strategy is not None else standard_strategy
-
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
