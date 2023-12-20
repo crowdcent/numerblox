@@ -12,7 +12,7 @@ class BasePreProcessor(BaseEstimator, TransformerMixin):
     def __init__(self):
         ...
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **kwargs):
         return self
 
     @abstractmethod
