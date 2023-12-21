@@ -1029,7 +1029,8 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         )
 
     def get_neutralized_corr(
-        self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2
+        self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2,
+        corr_col: str = "validationFncV4"
     ) -> pd.Series:
         """
         Retrieved neutralized validation correlation by era. \n
@@ -1042,6 +1043,8 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         2 minutes by default. \n
         :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).
         """
+        VALID_CORR_COLS = ["validationCorrV4", "validationFncV4", "validationIcV2", "validationRic"]
+        assert corr_col in VALID_CORR_COLS, f"corr_col should be one of {VALID_CORR_COLS}. Got: '{corr_col}'"
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
         diagnostics_id = api.upload_diagnostics(df=val_dataf, model_id=model_id)
@@ -1051,9 +1054,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
             diagnostics_id=diagnostics_id,
             timeout_min=timeout_min,
         )
-        dataf = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")[
-            "validationCorr"
-        ]
+        dataf = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")[corr_col]
         dataf.index = pd.to_datetime(dataf.index)
         return dataf
 
