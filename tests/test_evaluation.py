@@ -257,7 +257,7 @@ def mock_api():
         mock_instance.upload_diagnostics.return_value = "test_diag_id"
         
         # Mock diagnostics method
-        mock_instance.diagnostics.return_value = [{"status": "done", "perEraDiagnostics": [{"era": "2023-09-01", "validationCorr": 0.6}]}]
+        mock_instance.diagnostics.return_value = [{"status": "done", "perEraDiagnostics": [{"era": "2023-09-01", "validationFncV4": 0.6, "validationCorrV4": 0.6}]}]
         yield mock_instance
 
 
@@ -274,6 +274,13 @@ def test_get_neutralized_corr(create_signals_sample_data, mock_api):
     mock_api.get_models.assert_called_once()
     mock_api.upload_diagnostics.assert_called_once_with(df=df, model_id='test_model_id')
     mock_api.diagnostics.assert_called()
+
+
+def test_get_neutralized_corr_invalid_corr_col(create_signals_sample_data):
+    df = create_signals_sample_data
+    obj = NumeraiSignalsEvaluator(era_col="date")  
+    with pytest.raises(AssertionError):
+        obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"), corr_col="invalid_corr_col")
 
 
 def test_await_diagnostics_timeout(mock_api):
