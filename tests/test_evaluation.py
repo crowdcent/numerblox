@@ -276,7 +276,7 @@ def test_get_diagnostics(create_signals_sample_data, mock_api):
     mock_api.diagnostics.assert_called()
 
 
-def test_get_diagnostics_all_cols(create_signals_sample_data, mock_api):
+def test_get_diagnostics_all_cols(create_signals_sample_data):
     df = create_signals_sample_data
     obj = NumeraiSignalsEvaluator(era_col="date")  
     result = obj.get_diagnostics(df, "test_model", Key("Hello", "World"), col=None)
