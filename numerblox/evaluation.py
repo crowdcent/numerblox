@@ -1031,9 +1031,9 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
             show_detailed_progress_bar=show_detailed_progress_bar
         )
 
-    def get_neutralized_corr(
+    def get_diagnostics(
         self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2,
-        corr_col: Union[str, None] = "validationFncV4"
+        col: Union[str, None] = "validationFncV4"
     ) -> pd.DataFrame:
         """
         Retrieved neutralized validation correlation by era. \n
@@ -1043,10 +1043,11 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         :param model_name: Any model name for which you have authentication credentials. \n
         :param key: Key object to authenticate upload of diagnostics. \n
         :param timeout_min: How many minutes to wait on diagnostics Computing on Numerai servers before timing out. \n
+        :param col: Which column to return. Should be one of ['validationCorrV4', 'validationFncV4', 'validationIcV2', 'validationRic']. If None, all columns will be returned. \n
         2 minutes by default. \n
         :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).
         """
-        assert corr_col in self.VALID_DIAGNOSTICS_COLS or corr_col is None, f"corr_col should be one of {self.VALID_DIAGNOSTICS_COLS} or None. Got: '{corr_col}'"
+        assert col in self.VALID_DIAGNOSTICS_COLS or col is None, f"corr_col should be one of {self.VALID_DIAGNOSTICS_COLS} or None. Got: '{col}'"
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
         diagnostics_id = api.upload_diagnostics(df=val_dataf, model_id=model_id)
@@ -1058,7 +1059,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         )
         diagnostics_df = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")
         diagnostics_df.index = pd.to_datetime(diagnostics_df.index)
-        return_cols = [corr_col] if corr_col is not None else self.VALID_DIAGNOSTICS_COLS
+        return_cols = [col] if col is not None else self.VALID_DIAGNOSTICS_COLS
         return diagnostics_df[return_cols]
 
     @staticmethod

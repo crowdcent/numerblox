@@ -261,10 +261,10 @@ def mock_api():
         yield mock_instance
 
 
-def test_get_neutralized_corr(create_signals_sample_data, mock_api):
+def test_get_diagnostics(create_signals_sample_data, mock_api):
     df = create_signals_sample_data
     obj = NumeraiSignalsEvaluator(era_col="date")  
-    result = obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"), corr_col="validationIcV2")
+    result = obj.get_diagnostics(df, "test_model", Key("Hello", "World"), col="validationIcV2")
     
     # Asserting if the output is correct
     assert isinstance(result, pd.DataFrame)
@@ -275,10 +275,11 @@ def test_get_neutralized_corr(create_signals_sample_data, mock_api):
     mock_api.upload_diagnostics.assert_called_once_with(df=df, model_id='test_model_id')
     mock_api.diagnostics.assert_called()
 
-def test_get_neutralized_corr_all_cols(create_signals_sample_data, mock_api):
+
+def test_get_diagnostics_all_cols(create_signals_sample_data, mock_api):
     df = create_signals_sample_data
     obj = NumeraiSignalsEvaluator(era_col="date")  
-    result = obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"), corr_col=None)
+    result = obj.get_diagnostics(df, "test_model", Key("Hello", "World"), col=None)
     
     # Asserting if the output is correct
     assert isinstance(result, pd.DataFrame)
@@ -290,11 +291,11 @@ def test_get_neutralized_corr_all_cols(create_signals_sample_data, mock_api):
     assert result.loc["2023-09-01"]["validationFncV4"] == 0.6
 
 
-def test_get_neutralized_corr_invalid_corr_col(create_signals_sample_data):
+def test_get_diagnostics_invalid_col(create_signals_sample_data):
     df = create_signals_sample_data
     obj = NumeraiSignalsEvaluator(era_col="date")  
     with pytest.raises(AssertionError):
-        obj.get_neutralized_corr(df, "test_model", Key("Hello", "World"), corr_col="invalid_corr_col")
+        obj.get_diagnostics(df, "test_model", Key("Hello", "World"), col="invalid_corr_col")
 
 
 def test_await_diagnostics_timeout(mock_api):
