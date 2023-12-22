@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, List, Callable, Dict, Any
+from typing import Tuple, List, Callable, Dict, Any, Union
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
 from numerai_tools.scoring import correlation_contribution
@@ -1011,6 +1011,9 @@ class NumeraiClassicEvaluator(BaseEvaluator):
 
 class NumeraiSignalsEvaluator(BaseEvaluator):
     """Evaluator for all metrics that are relevant in Numerai Signals."""
+    # Columns retrievable from Numerai Signals diagnostics.
+    # More info: https://forum.numer.ai/t/signals-diagnostics-guide/5950
+    VALID_DIAGNOSTICS_COLS = ["validationCorrV4", "validationFncV4", "validationIcV2", "validationRic"]
 
     def __init__(
         self,
@@ -1030,8 +1033,8 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
 
     def get_neutralized_corr(
         self, val_dataf: pd.DataFrame, model_name: str, key: Key, timeout_min: int = 2,
-        corr_col: str = "validationFncV4"
-    ) -> pd.Series:
+        corr_col: Union[str, None] = "validationFncV4"
+    ) -> pd.DataFrame:
         """
         Retrieved neutralized validation correlation by era. \n
         Calculated on Numerai servers. \n
@@ -1043,8 +1046,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         2 minutes by default. \n
         :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).
         """
-        VALID_CORR_COLS = ["validationCorrV4", "validationFncV4", "validationIcV2", "validationRic"]
-        assert corr_col in VALID_CORR_COLS, f"corr_col should be one of {VALID_CORR_COLS}. Got: '{corr_col}'"
+        assert corr_col in self.VALID_DIAGNOSTICS_COLS or corr_col is None, f"corr_col should be one of {self.VALID_DIAGNOSTICS_COLS} or None. Got: '{corr_col}'"
         api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key)
         model_id = api.get_models()[model_name]
         diagnostics_id = api.upload_diagnostics(df=val_dataf, model_id=model_id)
@@ -1054,9 +1056,10 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
             diagnostics_id=diagnostics_id,
             timeout_min=timeout_min,
         )
-        dataf = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")[corr_col]
-        dataf.index = pd.to_datetime(dataf.index)
-        return dataf
+        diagnostics_df = pd.DataFrame(data["perEraDiagnostics"]).set_index("era")
+        diagnostics_df.index = pd.to_datetime(diagnostics_df.index)
+        return_cols = [corr_col] if corr_col is not None else self.VALID_DIAGNOSTICS_COLS
+        return diagnostics_df[return_cols]
 
     @staticmethod
     def __await_diagnostics(

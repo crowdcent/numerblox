@@ -62,9 +62,9 @@ metrics = evaluator.full_evaluation(val_df,
 
 ## Numerai Signals specific metrics
 
-`NumeraiSignalsEvaluator` offers neutralized correlation scores. This is a special operation as it calls on Numerai servers and needs additional authentication, so it is not included in `full_evaluation`. It can still be beneficial to calculate as this metric is close to the one used for payouts.
+`NumeraiSignalsEvaluator` offers [Numerai Signals diagnostics](https://forum.numer.ai/t/signals-diagnostics-guide/5950) scores. This is a special operation as it calls on Numerai servers and needs additional authentication, so it is not included in `full_evaluation`.
 
-Example of how to get neutralized correlation scores for Numerai Signals:
+Example of how to get diagnostic scores for Numerai Signals:
 ```py
 from numerblox.misc import Key
 from numerblox.evaluation import NumeraiSignalsEvaluator
@@ -78,9 +78,8 @@ key = Key(pub_id="Hello", secret_key="World")
 # DataFrame with validation data containing prediction, friday_date, ticker and data_type columns
 val_df = pd.DataFrame()
 
-evaluator.get_neutralized_corr(val, model_name=model_name, key=key)
-# Returns a Pandas Series like this.
-# pd.Series([0.01, ..., 0.02])
+evaluator.get_neutralized_corr(val, model_name=model_name, key=key, corr_col="validationRic")
+# Returns a Pandas DataFrame with validationRic.
 ```
 
 ## Custom functions
