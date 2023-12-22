@@ -2240,9 +2240,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#numerblox.evaluation.NumeraiSignalsEvaluator.get_neutralized_corr" class="md-nav__link">
+  <a href="#numerblox.evaluation.NumeraiSignalsEvaluator.get_diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
-      get_neutralized_corr()
+      get_diagnostics()
     </span>
   </a>
   
@@ -4176,9 +4176,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#numerblox.evaluation.NumeraiSignalsEvaluator.get_neutralized_corr" class="md-nav__link">
+  <a href="#numerblox.evaluation.NumeraiSignalsEvaluator.get_diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
-      get_neutralized_corr()
+      get_diagnostics()
     </span>
   </a>
   
@@ -18954,8 +18954,15 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
 <span class="normal">1087</span>
-<span class="normal">1088</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluator for all metrics that are relevant in Numerai Signals.&quot;&quot;&quot;</span>
+    <span class="c1"># Columns retrievable from Numerai Signals diagnostics.</span>
+    <span class="c1"># More info: https://forum.numer.ai/t/signals-diagnostics-guide/5950</span>
+    <span class="n">VALID_DIAGNOSTICS_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validationCorrV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationFncV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationIcV2&quot;</span><span class="p">,</span> <span class="s2">&quot;validationRic&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -18973,10 +18980,10 @@ TB200 and TB500 are the most common situations.</p>
             <span class="n">show_detailed_progress_bar</span><span class="o">=</span><span class="n">show_detailed_progress_bar</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">get_diagnostics</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">val_dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="n">corr_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;validationFncV4&quot;</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="n">col</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;validationFncV4&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieved neutralized validation correlation by era. \n</span>
 <span class="sd">        Calculated on Numerai servers. \n</span>
@@ -18985,11 +18992,11 @@ TB200 and TB500 are the most common situations.</p>
 <span class="sd">        :param model_name: Any model name for which you have authentication credentials. \n</span>
 <span class="sd">        :param key: Key object to authenticate upload of diagnostics. \n</span>
 <span class="sd">        :param timeout_min: How many minutes to wait on diagnostics Computing on Numerai servers before timing out. \n</span>
+<span class="sd">        :param col: Which column to return. Should be one of [&#39;validationCorrV4&#39;, &#39;validationFncV4&#39;, &#39;validationIcV2&#39;, &#39;validationRic&#39;]. If None, all columns will be returned. \n</span>
 <span class="sd">        2 minutes by default. \n</span>
 <span class="sd">        :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">VALID_CORR_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validationCorrV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationFncV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationIcV2&quot;</span><span class="p">,</span> <span class="s2">&quot;validationRic&quot;</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">corr_col</span> <span class="ow">in</span> <span class="n">VALID_CORR_COLS</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;corr_col should be one of </span><span class="si">{</span><span class="n">VALID_CORR_COLS</span><span class="si">}</span><span class="s2">. Got: &#39;</span><span class="si">{</span><span class="n">corr_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">assert</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span> <span class="ow">or</span> <span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;corr_col should be one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span><span class="si">}</span><span class="s2"> or None. Got: &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="n">api</span> <span class="o">=</span> <span class="n">SignalsAPI</span><span class="p">(</span><span class="n">public_id</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">secret_key</span><span class="p">)</span>
         <span class="n">model_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_models</span><span class="p">()[</span><span class="n">model_name</span><span class="p">]</span>
         <span class="n">diagnostics_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">upload_diagnostics</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">val_dataf</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
@@ -18999,9 +19006,10 @@ TB200 and TB500 are the most common situations.</p>
             <span class="n">diagnostics_id</span><span class="o">=</span><span class="n">diagnostics_id</span><span class="p">,</span>
             <span class="n">timeout_min</span><span class="o">=</span><span class="n">timeout_min</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">dataf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;perEraDiagnostics&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;era&quot;</span><span class="p">)[</span><span class="n">corr_col</span><span class="p">]</span>
-        <span class="n">dataf</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">dataf</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">dataf</span>
+        <span class="n">diagnostics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;perEraDiagnostics&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;era&quot;</span><span class="p">)</span>
+        <span class="n">diagnostics_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">diagnostics_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">return_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span>
+        <span class="k">return</span> <span class="n">diagnostics_df</span><span class="p">[</span><span class="n">return_cols</span><span class="p">]</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__await_diagnostics</span><span class="p">(</span>
@@ -19069,11 +19077,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1061</span>
-<span class="normal">1062</span>
-<span class="normal">1063</span>
-<span class="normal">1064</span>
-<span class="normal">1065</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1065</span>
 <span class="normal">1066</span>
 <span class="normal">1067</span>
 <span class="normal">1068</span>
@@ -19096,7 +19100,11 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
 <span class="normal">1087</span>
-<span class="normal">1088</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">__await_diagnostics</span><span class="p">(</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">SignalsAPI</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -19136,8 +19144,8 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
 
 
-<h3 id="numerblox.evaluation.NumeraiSignalsEvaluator.get_neutralized_corr" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">get_neutralized_corr</span><span class="p">(</span><span class="n">val_dataf</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">corr_col</span><span class="o">=</span><span class="s1">&#39;validationFncV4&#39;</span><span class="p">)</span></code>
+<h3 id="numerblox.evaluation.NumeraiSignalsEvaluator.get_diagnostics" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_diagnostics</span><span class="p">(</span><span class="n">val_dataf</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;validationFncV4&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -19151,15 +19159,13 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <p>:param model_name: Any model name for which you have authentication credentials. </p>
 <p>:param key: Key object to authenticate upload of diagnostics. </p>
 <p>:param timeout_min: How many minutes to wait on diagnostics Computing on Numerai servers before timing out. </p>
+<p>:param col: Which column to return. Should be one of ['validationCorrV4', 'validationFncV4', 'validationIcV2', 'validationRic']. If None, all columns will be returned. </p>
 <p>2 minutes by default. </p>
 <p>:return: Pandas Series with era as index and neutralized validation correlations (validationCorr).</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1031</span>
-<span class="normal">1032</span>
-<span class="normal">1033</span>
-<span class="normal">1034</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1034</span>
 <span class="normal">1035</span>
 <span class="normal">1036</span>
 <span class="normal">1037</span>
@@ -19184,10 +19190,14 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1056</span>
 <span class="normal">1057</span>
 <span class="normal">1058</span>
-<span class="normal">1059</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_neutralized_corr</span><span class="p">(</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_diagnostics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">val_dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">corr_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;validationFncV4&quot;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="n">col</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;validationFncV4&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieved neutralized validation correlation by era. \n</span>
 <span class="sd">    Calculated on Numerai servers. \n</span>
@@ -19196,11 +19206,11 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="sd">    :param model_name: Any model name for which you have authentication credentials. \n</span>
 <span class="sd">    :param key: Key object to authenticate upload of diagnostics. \n</span>
 <span class="sd">    :param timeout_min: How many minutes to wait on diagnostics Computing on Numerai servers before timing out. \n</span>
+<span class="sd">    :param col: Which column to return. Should be one of [&#39;validationCorrV4&#39;, &#39;validationFncV4&#39;, &#39;validationIcV2&#39;, &#39;validationRic&#39;]. If None, all columns will be returned. \n</span>
 <span class="sd">    2 minutes by default. \n</span>
 <span class="sd">    :return: Pandas Series with era as index and neutralized validation correlations (validationCorr).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">VALID_CORR_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validationCorrV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationFncV4&quot;</span><span class="p">,</span> <span class="s2">&quot;validationIcV2&quot;</span><span class="p">,</span> <span class="s2">&quot;validationRic&quot;</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">corr_col</span> <span class="ow">in</span> <span class="n">VALID_CORR_COLS</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;corr_col should be one of </span><span class="si">{</span><span class="n">VALID_CORR_COLS</span><span class="si">}</span><span class="s2">. Got: &#39;</span><span class="si">{</span><span class="n">corr_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+    <span class="k">assert</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span> <span class="ow">or</span> <span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;corr_col should be one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span><span class="si">}</span><span class="s2"> or None. Got: &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="n">api</span> <span class="o">=</span> <span class="n">SignalsAPI</span><span class="p">(</span><span class="n">public_id</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">pub_id</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">secret_key</span><span class="p">)</span>
     <span class="n">model_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_models</span><span class="p">()[</span><span class="n">model_name</span><span class="p">]</span>
     <span class="n">diagnostics_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">upload_diagnostics</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">val_dataf</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
@@ -19210,9 +19220,10 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
         <span class="n">diagnostics_id</span><span class="o">=</span><span class="n">diagnostics_id</span><span class="p">,</span>
         <span class="n">timeout_min</span><span class="o">=</span><span class="n">timeout_min</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">dataf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;perEraDiagnostics&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;era&quot;</span><span class="p">)[</span><span class="n">corr_col</span><span class="p">]</span>
-    <span class="n">dataf</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">dataf</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">dataf</span>
+    <span class="n">diagnostics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;perEraDiagnostics&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;era&quot;</span><span class="p">)</span>
+    <span class="n">diagnostics_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">diagnostics_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">return_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALID_DIAGNOSTICS_COLS</span>
+    <span class="k">return</span> <span class="n">diagnostics_df</span><span class="p">[</span><span class="n">return_cols</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
