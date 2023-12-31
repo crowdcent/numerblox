@@ -6,8 +6,7 @@ from pathlib import PosixPath
 
 from numerblox.download import NumeraiClassicDownloader, KaggleDownloader, EODDownloader
 
-CURRENT_VERSION = "4.2"
-ALL_DATASET_VERSIONS = ["4", "4.1", "4.2"]
+ALL_DATASET_VERSIONS = ["4.2", "4.3"]
 TEST_DIR = f"test_numclassic_general_{uuid4()}"
 
 def test_base():
@@ -32,29 +31,19 @@ def test_classic():
     assert list(dl.version_mapping.keys()) == ALL_DATASET_VERSIONS
 
     # Test inference download
-    dl.download_inference_data("inference", version=CURRENT_VERSION, int8=True)
+    for version in ALL_DATASET_VERSIONS:
+        dl.download_inference_data("inference", version=version)
 
-    # Check that you can't use int8=False with v4.2.
-    funcs = [
-    (dl.download_inference_data, "inference"),
-    (dl.download_training_data, "training")
-    ]
-    for func, arg in funcs:
-        try:
-            func(arg, version="4.2", int8=False)
-        except NotImplementedError:
-            pass
-
-    # Test example data
-    dl.download_example_data("test/", version=CURRENT_VERSION)
-    assert os.path.exists(dl.dir / "test")
-    assert os.path.exists(dl.dir / "test" / "live_example_preds.parquet")
-    assert os.path.exists(dl.dir / "test" / "validation_example_preds.parquet")
+        # Test example data
+        dl.download_example_data("test/", version=version)
+        assert os.path.exists(dl.dir / "test")
+        assert os.path.exists(dl.dir / "test" / "live_example_preds.parquet")
+        assert os.path.exists(dl.dir / "test" / "validation_example_preds.parquet")
 
     # Test features
     features = dl.get_classic_features()
     assert isinstance(features, dict)
-    assert len(features["feature_sets"]["medium"]) == 583
+    assert len(features["feature_sets"]["medium"]) == 705
     # Check that feature_stats and feature_sets keys exist
     assert "feature_stats" in features.keys()
     assert "feature_sets" in features.keys()
@@ -71,8 +60,7 @@ def test_classic_version_mapping():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
     # Test supported versions
-    supported_versions = ["4", "4.1", "4.2"]
-    for version in supported_versions:
+    for version in ALL_DATASET_VERSIONS:
         mapping = downloader._get_version_mapping(version)
         assert isinstance(mapping, dict), f"Mapping for version {version} should return a dictionary."
         assert "train" in mapping, f"Version {version} mapping should contain 'train' key."
@@ -81,7 +69,7 @@ def test_classic_version_mapping():
         assert "example" in mapping, f"Version {version} mapping should contain 'example' key."
 
     # Test unsupported versions
-    unsupported_versions = ["3", "5", "4.3"]
+    unsupported_versions = ["3", "5", "4.4"]
     for version in unsupported_versions:
         with pytest.raises(NotImplementedError, match=f"Version '{version}' is not available"):
             downloader._get_version_mapping(version)

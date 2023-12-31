@@ -162,7 +162,7 @@ class BaseDownloader(BaseIO):
 
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    WARNING: Versions 1-3 (legacy data) are deprecated. Only supporting version 4+.
+    WARNING: Versions 1-3 (legacy data) are deprecated. Only supporting version 4.2+.
 
     Downloading from NumerAPI for Numerai Classic data. \n
     :param directory_path: Base folder to download files to. \n
@@ -173,96 +173,45 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
         # NumerAPI filenames corresponding to version, class and data type
-        self.version_mapping = {"4": {
-                "train": {
-                    "int8": [
-                        "v4/train_int8.parquet",
-                        "v4/validation_int8.parquet"
-                    ],
-                    "float": [
-                        "v4/train.parquet",
-                        "v4/validation.parquet"
-                    ]
-                },
-                "inference": {
-                    "int8": ["v4/live_int8.parquet"],
-                    "float": ["v4/live.parquet"]
-                },
-                "live": {
-                    "int8": ["v4/live_int8.parquet"],
-                    "float": ["v4/live.parquet"]
-                },
-                "example": [
-                    "v4/live_example_preds.parquet",
-                    "v4/validation_example_preds.parquet"
-                ]
-            },
-            "4.1": {
-                "train": {
-                    "int8": [
-                        "v4.1/train_int8.parquet",
-                        "v4.1/validation_int8.parquet"
-                    ],
-                    "float": [
-                        "v4.1/train.parquet",
-                        "v4.1/validation.parquet"
-                    ]
-                },
-                "inference": {
-                    "int8": ["v4.1/live_int8.parquet"],
-                    "float": ["v4.1/live.parquet"]
-                },
-                "live": {
-                    "int8": ["v4.1/live_int8.parquet"],
-                    "float": ["v4.1/live.parquet"]
-                },
-                "example": [
-                    "v4.1/live_example_preds.parquet",
-                    "v4.1/validation_example_preds.parquet"
-                ],
-            },
+        self.version_mapping = {
             "4.2": {
-                "train": {
-                    "int8": [
+                "train": [
                         "v4.2/train_int8.parquet",
                         "v4.2/validation_int8.parquet"
                     ],   
-            },
-                "inference": {
-                    "int8": ["v4.2/live_int8.parquet"],
-                    "float": ["v4.2/live.parquet"]
-                },
-                "live": {
-                    "int8": ["v4.2/live_int8.parquet"],
-                    "float": ["v4.2/live.parquet"]
-                },
+                "inference": ["v4.2/live_int8.parquet"],
+                "live": ["v4.2/live_int8.parquet"],
                 "example": [
                     "v4.2/live_example_preds.parquet",
                     "v4.2/validation_example_preds.parquet"
+                ],
+        },
+            "4.3": {
+                "train": [
+                        "v4.3/train_int8.parquet",
+                        "v4.3/validation_int8.parquet"
+                    ],
+                "inference": ["v4.3/live_int8.parquet"],
+                "live": ["v4.3/live_int8.parquet"],
+                "example": [
+                    "v4.3/live_example_preds.parquet",
+                    "v4.3/validation_example_preds.parquet"
                 ],
         }
         }
 
     def download_training_data(
-        self, subfolder: str = "", version: str = "4.2", int8: bool = True
+        self, subfolder: str = "", version: str = "4.2"
     ):
         """
         Get Numerai classic training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
         :param version: Numerai dataset version.
-        4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
-        NOTE: 4.2 is only available as int8 version so explicitly pass
-        int8 = True if you want to download 4.2 data.
-        :param int8: Integer version of data
+        4.3 
         """
-        data_type = "int8" if int8 else "float"
-        # 4.2 data is only (currently) available in int8 format.
-        # Raise exception to avoid confusion about the 4.2. dataset.
-        if data_type == "float" and version == "4.2":
-            raise NotImplementedError("""No float version of training data is available for version 4.2. If you would like to download the 4.2 (Rain) dataset make sure to explicitly pass `int8=True`.""")
-        train_val_files = self._get_version_mapping(str(version))["train"][data_type]
+        train_val_files = self._get_version_mapping(str(version))["train"]
         for file in train_val_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -274,7 +223,6 @@ class NumeraiClassicDownloader(BaseDownloader):
         self,
         subfolder: str = "",
         version: str = "4.2",
-        int8: bool = True,
         round_num: int = None,
     ):
         """
@@ -285,13 +233,10 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param version: Numerai dataset version 
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
-        :param int8: Integer version of data
+        4.3
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        data_type = "int8" if int8 else "float"
-        if data_type == "float" and version == "4.2":
-            raise NotImplementedError("""No float version of training data is available for version 4.2. onwards. If you would like to download the 4.2 (Rain) dataset make sure to explicitly pass `int8=True`.""")
-        inference_files = self._get_version_mapping(str(version))["inference"][data_type]
+        inference_files = self._get_version_mapping(str(version))["inference"]
         for file in inference_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -323,7 +268,6 @@ class NumeraiClassicDownloader(BaseDownloader):
             self,
             subfolder: str = "",
             version: str = "4.2",
-            int8: bool = False,
             round_num: int = None
     ):
         """
@@ -334,11 +278,9 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param version: Numerai dataset version 
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
-        :param int8: Integer version of data
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        data_type = "int8" if int8 else "float"
-        live_files = self._get_version_mapping(str(version))["live"][data_type]
+        live_files = self._get_version_mapping(str(version))["live"]
         for file in live_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -355,7 +297,7 @@ class NumeraiClassicDownloader(BaseDownloader):
 
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (4.1=Sunshine dataset)
+        :param version: Numerai dataset version (4.2=Rain dataset)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         example_files = self._get_version_mapping(str(version))["example"]
@@ -367,7 +309,7 @@ class NumeraiClassicDownloader(BaseDownloader):
                 round_num=round_num
             )
 
-    def get_classic_features(self, subfolder: str = "", filename="v4.2/features.json", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", filename="v4.3/features.json", *args, **kwargs) -> dict:
         """
         Download feature overview (stats and feature sets) through NumerAPI and load as dict.
         :param subfolder: Specify folder to create folder within base directory root.
@@ -382,7 +324,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
-    def download_meta_model_preds(self, subfolder: str = "", filename="v4.2/meta_model.parquet") -> pd.DataFrame:
+    def download_meta_model_preds(self, subfolder: str = "", filename="v4.3/meta_model.parquet") -> pd.DataFrame:
         """
         Download Meta model predictions through NumerAPI.
         :param subfolder: Specify folder to create folder within base directory root.
