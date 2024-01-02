@@ -183,7 +183,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.dataset_versions.discard("signals")
 
     def download_training_data(
-        self, subfolder: str = "", version: str = "4.2"
+        self, subfolder: str = "", version: str = "4.3"
     ):
         """
         Get Numerai classic training and validation data.
@@ -208,7 +208,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_inference_data(
         self,
         subfolder: str = "",
-        version: str = "4.2",
+        version: str = "4.3",
         round_num: int = None,
     ):
         """
@@ -246,7 +246,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_live_data(
             self,
             subfolder: str = "",
-            version: str = "4.2",
+            version: str = "4.3",
             round_num: int = None
     ):
         """
@@ -272,7 +272,7 @@ class NumeraiClassicDownloader(BaseDownloader):
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: str = "4.2", round_num: int = None
+        self, subfolder: str = "", version: str = "4.3", round_num: int = None
     ):
         """
         Download all example prediction data in specified folder for given version.
