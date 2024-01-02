@@ -4,10 +4,13 @@ import pandas as pd
 from uuid import uuid4
 from pathlib import PosixPath
 
+from numerapi import NumerAPI
 from numerblox.download import NumeraiClassicDownloader, KaggleDownloader, EODDownloader
 
-ALL_DATASET_VERSIONS = ["4.2", "4.3"]
+ALL_DATASET_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets())
+ALL_DATASET_VERSIONS.discard("signals")
 TEST_DIR = f"test_numclassic_general_{uuid4()}"
+TEST_VERSIONS = ["4.2", "4.3"]
 
 def test_base():
     numer_classic_downloader = NumeraiClassicDownloader(TEST_DIR)
@@ -28,11 +31,13 @@ def test_classic():
     dl = NumeraiClassicDownloader(TEST_DIR)
 
     # Check versions
-    assert list(dl.version_mapping.keys()) == ALL_DATASET_VERSIONS
+    assert dl.dataset_versions == ALL_DATASET_VERSIONS
 
     # Test inference download
-    for version in ALL_DATASET_VERSIONS:
+    for version in TEST_VERSIONS:
         dl.download_inference_data("inference", version=version)
+        assert os.path.exists(dl.dir / "inference")
+        assert os.path.exists(dl.dir / "inference" / "live_int8.parquet")
 
         # Test example data
         dl.download_example_data("test/", version=version)
@@ -56,23 +61,18 @@ def test_classic():
 
     dl.remove_base_directory()
 
-def test_classic_version_mapping():
+def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
-    # Test supported versions
-    for version in ALL_DATASET_VERSIONS:
-        mapping = downloader._get_version_mapping(version)
-        assert isinstance(mapping, dict), f"Mapping for version {version} should return a dictionary."
-        assert "train" in mapping, f"Version {version} mapping should contain 'train' key."
-        assert "inference" in mapping, f"Version {version} mapping should contain 'inference' key."
-        assert "live" in mapping, f"Version {version} mapping should contain 'live' key."
-        assert "example" in mapping, f"Version {version} mapping should contain 'example' key."
-
     # Test unsupported versions
-    unsupported_versions = ["3", "5", "4.4"]
+    unsupported_versions = ["3", "5", "6.8"]
     for version in unsupported_versions:
-        with pytest.raises(NotImplementedError, match=f"Version '{version}' is not available"):
-            downloader._get_version_mapping(version)
+        with pytest.raises(AssertionError):
+            downloader.download_training_data(version=version)
+        with pytest.raises(AssertionError):
+            downloader.download_inference_data(version=version)
+        with pytest.raises(AssertionError):
+            downloader.download_live_data(version=version)
             
     downloader.remove_base_directory()
 

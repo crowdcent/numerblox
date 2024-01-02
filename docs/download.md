@@ -2,9 +2,9 @@
 
 ## Numerai Classic
 
-For `NumeraiClassicDownloader` versions `4`, `4.1` (sunshine) and `4.2` (rain) are supported. You can easily download the data with a few lines.
+`NumeraiClassicDownloader` simplifies downloading of datasets from Numerai's API. It allows you to easily download data with a few lines and the data is automatically organized in directories.
 
-NOTE: For the `4.2` data only an int8 version is available.
+NOTE: Only int8 versions are available in this downloader. From v4.2 onwards, Numerai only provides int8 versions of the data.
 
 ```py
 from numerblox.download import NumeraiClassicDownloader
@@ -12,10 +12,10 @@ from numerblox.download import NumeraiClassicDownloader
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 
 # Training and validation data
-dl.download_training_data("train_val", version="4.2", int8=True)
+dl.download_training_data("train_val", version="4.3")
 
 # Inference data (live)
-dl.download_inference_data("live", version="4.2", int8=True)
+dl.download_inference_data("live", version="4.3")
 ```
 
 Besides these common use cases you can also get feature sets and meta model predictions with `NumeraiClassicDownloader`. 
@@ -25,7 +25,7 @@ from numerblox.download import NumeraiClassicDownloader
 
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 
-# Get feature sets (v4.2)
+# Get feature sets (v4.3)
 features = dl.get_classic_features()
 
 # Get meta model predictions

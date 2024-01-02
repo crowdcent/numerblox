@@ -162,43 +162,25 @@ class BaseDownloader(BaseIO):
 
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    WARNING: Versions 1-3 (legacy data) are deprecated. Only supporting version 4.2+.
+    WARNING: Versions 1-3 (legacy data) are deprecated. Only supporting version 4+.
 
     Downloading from NumerAPI for Numerai Classic data. \n
     :param directory_path: Base folder to download files to. \n
     All *args, **kwargs will be passed to NumerAPI initialization.
     """
+    TRAIN_DATASET_NAME = "train_int8.parquet"
+    VALIDATION_DATASET_NAME = "validation_int8.parquet"
+    LIVE_DATASET_NAME = "live_int8.parquet"
+    LIVE_EXAMPLE_PREDS_NAME = "live_example_preds.parquet"
+    VALIDATION_EXAMPLE_PREDS_NAME = "validation_example_preds.parquet"
+
     def __init__(self, directory_path: str, *args, **kwargs):
         super().__init__(directory_path=directory_path)
         self.napi = NumerAPI(*args, **kwargs)
         self.current_round = self.napi.get_current_round()
-        # NumerAPI filenames corresponding to version, class and data type
-        self.version_mapping = {
-            "4.2": {
-                "train": [
-                        "v4.2/train_int8.parquet",
-                        "v4.2/validation_int8.parquet"
-                    ],   
-                "inference": ["v4.2/live_int8.parquet"],
-                "live": ["v4.2/live_int8.parquet"],
-                "example": [
-                    "v4.2/live_example_preds.parquet",
-                    "v4.2/validation_example_preds.parquet"
-                ],
-        },
-            "4.3": {
-                "train": [
-                        "v4.3/train_int8.parquet",
-                        "v4.3/validation_int8.parquet"
-                    ],
-                "inference": ["v4.3/live_int8.parquet"],
-                "live": ["v4.3/live_int8.parquet"],
-                "example": [
-                    "v4.3/live_example_preds.parquet",
-                    "v4.3/validation_example_preds.parquet"
-                ],
-        }
-        }
+        # Get all available versions available for Numerai.
+        self.dataset_versions = set(s.split("/")[0] for s in NumerAPI().list_datasets())
+        self.dataset_versions.discard("signals")
 
     def download_training_data(
         self, subfolder: str = "", version: str = "4.2"
@@ -208,10 +190,14 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
         :param version: Numerai dataset version.
+        4 = April 2022 dataset
+        4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
-        4.3 
+        4.3 = Midnight dataset
         """
-        train_val_files = self._get_version_mapping(str(version))["train"]
+        self._check_dataset_version(version)
+        train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
+                           f"v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -227,23 +213,16 @@ class NumeraiClassicDownloader(BaseDownloader):
     ):
         """
         Get Numerai classic inference (tournament) data.
-        If only minimal live data is needed, consider .download_live_data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version 
+        :param version: Numerai dataset version.
+        4 = April 2022 dataset
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
-        4.3
+        4.3 = Midnight dataset
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        inference_files = self._get_version_mapping(str(version))["inference"]
-        for file in inference_files:
-            dest_path = self.__get_dest_path(subfolder, file)
-            self.download_single_dataset(
-                filename=file,
-                dest_path=dest_path,
-                round_num=round_num
-            )
+        self.download_live_data(subfolder=subfolder, version=version, round_num=round_num)
 
     def download_single_dataset(
         self, filename: str, dest_path: str, round_num: int = None
@@ -275,12 +254,15 @@ class NumeraiClassicDownloader(BaseDownloader):
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version 
+        :param version: Numerai dataset version. 
+        4 = April 2022 dataset
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
+        4.3 = Midnight dataset
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        live_files = self._get_version_mapping(str(version))["live"]
+        self._check_dataset_version(version)
+        live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
         for file in live_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -297,10 +279,16 @@ class NumeraiClassicDownloader(BaseDownloader):
 
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
-        :param version: Numerai dataset version (4.2=Rain dataset)
+        :param version: Numerai dataset version.
+        4 = April 2022 dataset
+        4.1 = Sunshine dataset
+        4.2 (default) = Rain Dataset
+        4.3 = Midnight dataset
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        example_files = self._get_version_mapping(str(version))["example"]
+        self._check_dataset_version(version)
+        example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
+                         f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
             dest_path = self.__get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -318,6 +306,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         *args, **kwargs will be passed to the JSON loader.
         :return: Feature overview dict
         """
+        version = filename.split("/")[0].replace("v", "")
+        self._check_dataset_version(version)
         dest_path = self.__get_dest_path(subfolder, filename)
         self.download_single_dataset(filename=filename,
                                      dest_path=dest_path)
@@ -332,6 +322,8 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param filename: name for meta model predictions file.
         :return: Meta model predictions as DataFrame.
         """
+        version = filename.split("/")[0].replace("v", "")
+        self._check_dataset_version(version)
         dest_path = self.__get_dest_path(subfolder, filename)
         self.download_single_dataset(
             filename=filename,
@@ -339,21 +331,14 @@ class NumeraiClassicDownloader(BaseDownloader):
             )
         return pd.read_parquet(dest_path)
 
-    def _get_version_mapping(self, version: int) -> dict:
-        """ Check if data version is supported and return file mapping for version. """
-        try:
-            mapping_dictionary = self.version_mapping[str(version)]
-        except KeyError:
-            raise NotImplementedError(
-                f"Version '{version}' is not available. Available versions are {list(self.version_mapping.keys())}"
-            )
-        return mapping_dictionary
-
     def __get_dest_path(self, subfolder: str, filename: str) -> str:
         """ Prepare destination path for downloading. """
         dir = self._append_folder(subfolder)
         dest_path = str(dir.joinpath(filename.split("/")[-1]))
         return dest_path
+    
+    def _check_dataset_version(self, version: str):
+        assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in NumerAPI."
 
 
 class KaggleDownloader(BaseDownloader):
