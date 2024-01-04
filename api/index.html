@@ -16370,7 +16370,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
     <span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
 <span class="sd">        wrt the given meta model.</span>
 <span class="sd">        see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
@@ -16393,7 +16393,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="sd">        If the function is called from full_evalation, this is guaranteed because of the checks.</span>
 <span class="sd">        :param other_col: Meta model column containing predictions to neutralize against.</span>
 
-<span class="sd">        :return: List of contributive correlations by era.</span>
+<span class="sd">        :return: A 1D NumPy array of contributive correlations by era.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mc_scores</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
@@ -16401,7 +16401,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                                           <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
                                           <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
             <span class="n">mc_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mc_scores</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mc_scores</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -16694,7 +16694,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
  Make sure the range of targets is [0, 1] (inclusive). 
  If the function is called from full_evalation, this is guaranteed because of the checks.
  :param other_col: Meta model column containing predictions to neutralize against.</p>
-<p>:return: List of contributive correlations by era.</p>
+<p>:return: A 1D NumPy array of contributive correlations by era.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/evaluation.py</code></summary>
@@ -16733,7 +16733,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
 <span class="normal">832</span>
 <span class="normal">833</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
 <span class="sd">    wrt the given meta model.</span>
 <span class="sd">    see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
@@ -16756,7 +16756,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
 <span class="sd">    If the function is called from full_evalation, this is guaranteed because of the checks.</span>
 <span class="sd">    :param other_col: Meta model column containing predictions to neutralize against.</span>
 
-<span class="sd">    :return: List of contributive correlations by era.</span>
+<span class="sd">    :return: A 1D NumPy array of contributive correlations by era.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mc_scores</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
@@ -16764,7 +16764,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
                                       <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
                                       <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
         <span class="n">mc_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mc_scores</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mc_scores</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
