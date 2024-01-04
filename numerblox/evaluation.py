@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-from typing import Tuple, List, Callable, Dict, Any, Union
+from typing import Tuple, List, Dict, Any, Union
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
 from numerai_tools.scoring import correlation_contribution
@@ -799,7 +799,7 @@ class BaseEvaluator:
 
     def contributive_correlation(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str, other_col: str
-    ) -> List[np.float64]:
+    ) -> np.array:
         """Calculate the contributive correlation of the given predictions
         wrt the given meta model.
         see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc
@@ -822,7 +822,7 @@ class BaseEvaluator:
         If the function is called from full_evalation, this is guaranteed because of the checks.
         :param other_col: Meta model column containing predictions to neutralize against.
 
-        :return: List of contributive correlations by era.
+        :return: A 1D NumPy array of contributive correlations by era.
         """
         mc_scores = []
         for _, x in dataf.groupby(self.era_col):
@@ -830,7 +830,7 @@ class BaseEvaluator:
                                           x[other_col], 
                                           x[target_col])
             mc_scores.append(mc)
-        return mc_scores
+        return np.array(mc_scores).ravel()
 
     def check_custom_functions(self):
         if not isinstance(self.custom_functions, dict):
