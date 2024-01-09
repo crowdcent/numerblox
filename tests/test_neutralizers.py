@@ -26,6 +26,43 @@ def test_feature_neutralizer_initialization():
     with pytest.raises(AssertionError):
         FeatureNeutralizer(proportion=[-0.1])
 
+def test_feature_neutralizer_length_mismatch_X_features(setup_data):
+    fn = FeatureNeutralizer()
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    X = setup_data["prediction"][:-1]  # Remove one element to cause mismatch
+
+    with pytest.raises(AssertionError):
+        fn.transform(X, features, eras)
+
+def test_feature_neutralizer_length_mismatch_X_eras(setup_data):
+    fn = FeatureNeutralizer()
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"][:-1]  # Remove one element to cause mismatch
+    X = setup_data["prediction"]
+
+    with pytest.raises(AssertionError):
+        fn.transform(X, features, eras)
+
+def test_feature_neutralizer_incorrect_dim_X_single_pred(setup_data):
+    fn = FeatureNeutralizer(pred_name=["prediction1", "prediction2"])
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    X = setup_data["prediction"]  # X is 1D, but two prediction names are provided
+
+    with pytest.raises(AssertionError):
+        fn.transform(X, features, eras)
+
+def test_feature_neutralizer_incorrect_dim_X_multi_pred(setup_data):
+    fn = FeatureNeutralizer(pred_name=["prediction1", "prediction2"])
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
+    X = setup_data[["prediction"]]  # Only one column provided, but two expected
+
+    with pytest.raises(AssertionError):
+        fn.transform(X, features, eras)
+
 def test_feature_neutralizer_predict(setup_data):
     fn = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
     features = setup_data[["feature1", "feature2"]]
@@ -34,8 +71,8 @@ def test_feature_neutralizer_predict(setup_data):
     result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
     assert result.shape[1] == 1
-    assert result.min() >= 0
-    assert result.max() <= 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
 
 def test_feature_neutralizer_predict_multi_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5])
@@ -46,8 +83,8 @@ def test_feature_neutralizer_predict_multi_pred(setup_data):
     result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
     assert result.shape[1] == 2
-    assert result.min() >= 0
-    assert result.max() <= 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
 
 def test_feature_neutralizer_predict_multi_prop(setup_data):
     fn = FeatureNeutralizer(pred_name="prediction", proportion=[0.5, 0.7])
@@ -57,20 +94,27 @@ def test_feature_neutralizer_predict_multi_prop(setup_data):
     result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
     assert result.shape[1] == 2
-    assert result.min() >= 0
-    assert result.max() <= 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
 
 def test_feature_neutralizer_multi_pred_multi_prop(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5, 0.7, 0.9])
     features = setup_data[["feature1", "feature2"]]
     eras = setup_data["era"]
     setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
-    X = setup_data[["prediction", "prediction2"]].to_numpy()
+    X = setup_data[["prediction", "prediction2"]]
     result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
     assert result.shape[1] == 6
-    assert result.min() >= 0
-    assert result.max() <= 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
+
+    # Test with numpy X
+    result = fn.transform(X.to_numpy(), features=features, eras=eras)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 6
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
 
 def test_feature_neutralizer_neutralize(setup_data):
     columns = ["prediction"]

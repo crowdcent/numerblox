@@ -8,8 +8,6 @@ from joblib import Parallel, delayed
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from .feature_groups import V4_2_FEATURE_GROUP_MAPPING
-
 
 class BaseNeutralizer(BaseEstimator, TransformerMixin):
     """
@@ -61,15 +59,18 @@ class FeatureNeutralizer(BaseNeutralizer):
     """
     Classic feature neutralization by subtracting a linear model.
 
-    :param pred_name: Name of prediction column. For creating the new column name. \n
-    :param proportion: Number in range [0...1] indicating how much to neutralize. \n
-    :param suffix: Optional suffix that is added to new column name. \n
+    :param pred_name: Name of prediction column. For creating the new column name. 
+    :param proportion: Number in range [0...1] indicating how much to neutralize.
+    :param suffix: Optional suffix that is added to new column name.
+    :param num_cores: Number of cores to use for parallel processing.
+    By default, all cores are used.
     """
     def __init__(
         self,
         pred_name: Union[str, list] = "prediction",
         proportion: Union[float, List[float]] = 0.5,
         suffix: str = None,
+        num_cores: int = -1
     ):
         self.pred_name = [pred_name] if isinstance(pred_name, str) else pred_name
         self.proportion = [proportion] if isinstance(proportion, float) else proportion
@@ -88,6 +89,7 @@ class FeatureNeutralizer(BaseNeutralizer):
                 )
         super().__init__(new_col_names=new_col_names)
         self.suffix = suffix
+        self.num_cores = num_cores
 
     def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
         """
@@ -100,12 +102,15 @@ class FeatureNeutralizer(BaseNeutralizer):
         """
         assert len(X) == len(features), "Input predictions must have same length as features."
         assert len(X) == len(eras), "Input predictions must have same length as eras."
-        assert X.shape
         df = features.copy()
         if not isinstance(X, np.ndarray):
             X = np.array(X)
+        # Ensure X is a 2D array and has the same number of columns as pred_name
         if X.ndim == 1:
+            assert len(self.pred_name) == 1, "Only one prediction column found. Please input a 2D array or define one column for 'pred_name'."
             X = X.reshape(-1, 1)
+        else:
+            assert len(self.pred_name) == X.shape[1], "Number of prediction columns given in X does not match 'pred_name'."
         for i, pred_name in enumerate(self.pred_name):
             df[pred_name] = X[:, i]
         df["era"] = eras
@@ -116,7 +121,7 @@ class FeatureNeutralizer(BaseNeutralizer):
             for pred_name in tqdm(self.pred_name, desc="Processing feature neutralizations") 
             for proportion in self.proportion
         ]
-        neutralized_results = Parallel(n_jobs=-1)(tasks)
+        neutralized_results = Parallel(n_jobs=self.num_cores)(tasks)
         neutralized_preds = pd.concat(neutralized_results, axis=1).to_numpy()
         return neutralized_preds
     
