@@ -963,7 +963,7 @@
 
 <h1 id="postprocessing">Postprocessing</h1>
 <h2 id="feature-neutralization">Feature Neutralization</h2>
-<p><code>FeatureNeutralizer</code> provides classic feature neutralization by subtracting a linear model's influence, ensuring that predictions are not overly influenced by a specific set of features.</p>
+<p><code>FeatureNeutralizer</code> provides classic feature neutralization by subtracting linear model influence, ensuring that predictions are not overly influenced by a specific set of features.</p>
 <h3 id="why">Why?</h3>
 <ul>
 <li><strong>Reduce Overfitting</strong>: By neutralizing predictions, you can potentially reduce the risk of overfitting to specific feature characteristics.</li>
@@ -972,6 +972,9 @@
 </ul>
 <h3 id="quickstart">Quickstart</h3>
 <p>Make sure to pass both the features to use for penalization as a <code>pd.DataFrame</code> and the accompanying era column as a <code>pd.Series</code> to the <code>predict</code> method.</p>
+<p>Additionally, <code>pred_name</code> and <code>proportion</code> can be lists. In this case, the neutralization will be performed for each prediction name and proportion. For example, if <code>pred_name=["prediction1", "prediction2"]</code> and <code>proportion=[0.5, 0.7]</code>, then the result will be an array with 4 neutralized prediction columns.
+All neutralizations will be performed in parallel.</p>
+<p>Single column neutralization:</p>
 <pre><code class="language-python">import pandas as pd
 from numerblox.neutralizers import FeatureNeutralizer
 
@@ -979,7 +982,19 @@ predictions = pd.Series([0.24, 0.87, 0.6])
 feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
-neutralizer = FeatureNeutralizer(pred_name=&quot;prediction&quot;, proportion=0.5, cuda=False)
+neutralizer = FeatureNeutralizer(pred_name=&quot;prediction&quot;, proportion=0.5)
+neutralizer.fit()
+neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
+</code></pre>
+<p>Multiple column neutralization:</p>
+<pre><code class="language-python">import pandas as pd
+from numerblox.neutralizers import FeatureNeutralizer
+
+predictions = pd.DataFrame({&quot;prediction1&quot;: [0.24, 0.87, 0.6], &quot;prediction2&quot;: [0.24, 0.87, 0.6]})
+feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
+era_data = pd.Series([1, 1, 2])
+
+neutralizer = FeatureNeutralizer(pred_name=[&quot;prediction1&quot;, &quot;prediction2&quot;], proportion=[0.5, 0.7])
 neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 </code></pre>
