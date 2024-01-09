@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import pandas as pd
 
@@ -5,37 +6,76 @@ from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer
 
 from utils import create_classic_sample_data
 
-
 setup_data = create_classic_sample_data
 
-##### Basic tests #####
-
 def test_base_neutralizer_initialization():
-    bn = BaseNeutralizer(new_col_name="test")
-    assert bn.new_col_name == "test"
+    bn = BaseNeutralizer(new_col_names=["test"])
+    assert bn.new_col_names == ["test"]
 
 def test_base_neutralizer_fit(setup_data):
-    obj = BaseNeutralizer(new_col_name="test").fit(setup_data)
+    obj = BaseNeutralizer(new_col_names=["test"]).fit(setup_data)
     assert isinstance(obj, BaseNeutralizer)
 
 def test_feature_neutralizer_initialization():
     fn = FeatureNeutralizer()
-    assert fn.new_col_name.startswith("prediction_neutralized_")
+    assert fn.new_col_names[0].startswith("prediction_neutralized_")
+
+    # Proportion must be between 0 and 1
+    with pytest.raises(AssertionError):
+        FeatureNeutralizer(proportion=[1.1])
+    with pytest.raises(AssertionError):
+        FeatureNeutralizer(proportion=[-0.1])
 
 def test_feature_neutralizer_predict(setup_data):
-    fn = FeatureNeutralizer()
+    fn = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
     features = setup_data[["feature1", "feature2"]]
     eras = setup_data["era"]
     X = setup_data["prediction"]
     result = fn.transform(X, features=features, eras=eras)
     assert len(result) == len(setup_data)
+    assert result.shape[1] == 1
+    assert result.min() >= 0
+    assert result.max() <= 1
+
+def test_feature_neutralizer_predict_multi_pred(setup_data):
+    fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5])
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
+    X = setup_data[["prediction", "prediction2"]]
+    result = fn.transform(X, features=features, eras=eras)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 2
+    assert result.min() >= 0
+    assert result.max() <= 1
+
+def test_feature_neutralizer_predict_multi_prop(setup_data):
+    fn = FeatureNeutralizer(pred_name="prediction", proportion=[0.5, 0.7])
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    X = setup_data["prediction"]
+    result = fn.transform(X, features=features, eras=eras)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 2
+    assert result.min() >= 0
+    assert result.max() <= 1
+
+def test_feature_neutralizer_multi_pred_multi_prop(setup_data):
+    fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5, 0.7, 0.9])
+    features = setup_data[["feature1", "feature2"]]
+    eras = setup_data["era"]
+    setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
+    X = setup_data[["prediction", "prediction2"]].to_numpy()
+    result = fn.transform(X, features=features, eras=eras)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 6
     assert result.min() >= 0
     assert result.max() <= 1
 
 def test_feature_neutralizer_neutralize(setup_data):
     columns = ["prediction"]
     by = ["feature1", "feature2"]
-    scores = FeatureNeutralizer().neutralize(setup_data, columns, by)
+    scores = FeatureNeutralizer().neutralize(setup_data, columns, by, proportion=0.5)
     assert isinstance(scores, pd.DataFrame)
 
 def test_feature_neutralizer_get_feature_names_out():
