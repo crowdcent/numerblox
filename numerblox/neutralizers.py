@@ -63,7 +63,7 @@ class FeatureNeutralizer(BaseNeutralizer):
     :param proportion: Number in range [0...1] indicating how much to neutralize.
     :param suffix: Optional suffix that is added to new column name.
     :param num_cores: Number of cores to use for parallel processing.
-    By default, all cores are used.
+    By default, all CPU cores are used.
     """
     def __init__(
         self,
@@ -91,14 +91,15 @@ class FeatureNeutralizer(BaseNeutralizer):
         self.suffix = suffix
         self.num_cores = num_cores
 
-    def transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def transform(self, X: Union[np.array, pd.Series, pd.DataFrame], 
+                  features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
         """
         Main transform function.
         :param X: Input predictions to neutralize. \n
         :param features: DataFrame with features for neutralization. \n
         :param eras: Series with era labels for each row in features. \n
         Features, eras and the prediction column must all have the same length.
-        :return: Neutralized predictions.
+        :return: Neutralized predictions NumPy array.
         """
         assert len(X) == len(features), "Input predictions must have same length as features."
         assert len(X) == len(eras), "Input predictions must have same length as eras."
@@ -125,14 +126,30 @@ class FeatureNeutralizer(BaseNeutralizer):
         neutralized_preds = pd.concat(neutralized_results, axis=1).to_numpy()
         return neutralized_preds
     
-    def _process_pred_name(self, df, pred_name, proportion, feature_cols):
+    def _process_pred_name(self, df: pd.DataFrame, pred_name: str, proportion: float, feature_cols: List[str]) -> pd.DataFrame:
+        """ 
+        Process one combination of prediction and proportion.
+        :param df: DataFrame with features and predictions.
+        :param pred_name: Name of prediction column.
+        :param proportion: Proportion to neutralize.
+        :param feature_cols: List of feature column names.
+        :return: Neutralized predictions.
+        Neutralized predictions are scaled to [0...1].
+        """
         neutralized_pred = df.groupby("era", group_keys=False).apply(
             lambda x: self.normalize_and_neutralize(x, [pred_name], feature_cols, proportion)
         )
         return pd.DataFrame(MinMaxScaler().fit_transform(neutralized_pred))
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list, proportion: float) -> pd.DataFrame:
-        """ Neutralize on CPU. """
+        """ 
+        Neutralize on CPU. 
+        :param dataf: DataFrame with features and predictions.
+        :param columns: List of prediction column names.
+        :param by: List of feature column names.
+        :param proportion: Proportion to neutralize.
+        :return: Neutralized predictions.
+        """
         scores = dataf[columns]
         exposures = dataf[by].values
         scores = scores - proportion * self._get_raw_exposures(exposures, scores)
@@ -140,6 +157,13 @@ class FeatureNeutralizer(BaseNeutralizer):
 
     @staticmethod
     def normalize(dataf: pd.DataFrame) -> np.ndarray:
+        """ Normalize predictions.
+        1. Rank predictions.
+        2. Normalize ranks.
+        3. Gaussianize ranks.
+        :param dataf: DataFrame with predictions.
+        :return: Gaussianized rank predictions.
+        """
         normalized_ranks = (dataf.rank(method="first") - 0.5) / len(dataf)
         # Gaussianized ranks
         return sp.norm.ppf(normalized_ranks)
@@ -147,6 +171,14 @@ class FeatureNeutralizer(BaseNeutralizer):
     def normalize_and_neutralize(
         self, dataf: pd.DataFrame, columns: list, by: list, proportion: float
     ) -> pd.DataFrame:
+        """ 
+        Gaussianize predictions and neutralize with one combination of prediction and proportion. 
+        :param dataf: DataFrame with features and predictions.
+        :param columns: List of prediction column names.
+        :param by: List of feature column names.
+        :param proportion: Proportion to neutralize.
+        :return: Neutralized predictions DataFrame.
+        """
         dataf[columns] = self.normalize(dataf[columns])
         dataf[columns] = self.neutralize(dataf, columns, by, proportion)
         return dataf[columns]
