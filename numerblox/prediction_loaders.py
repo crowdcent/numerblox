@@ -35,18 +35,22 @@ class ExamplePredictions(BasePredictionLoader):
     - v4.2. live benchmark models -> "v4.2/live_benchmark_models.parquet"
     - v4.2. validation benchmark models -> "v4.2/validation_benchmark_models.parquet"
     :param round_num: Optional round number. Downloads most recent round by default.
+    :param keep_files: Whether to keep downloaded files.
+    By default, files are deleted after the predictions are loaded.
     """
     def __init__(self, file_name: str = "v4.2/live_example_preds.parquet",
-                 round_num: int = None):
+                 round_num: int = None, keep_files: bool = False):
         super().__init__()
         self.file_name = file_name
         self.round_num = round_num
+        self.keep_files = keep_files
 
     def transform(self, X=None, y=None) -> pd.DataFrame:
         """ Return example predictions. """
         self._download_example_preds()
         example_preds = self._load_example_preds()
-        self.downloader.remove_base_directory()
+        if not self.keep_files:
+            self.downloader.remove_base_directory()
         return example_preds
 
     def _download_example_preds(self):

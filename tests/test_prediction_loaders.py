@@ -1,5 +1,7 @@
+import os
 import numpy as np
 import pandas as pd
+from unittest.mock import patch, MagicMock
 from sklearn.datasets import make_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -62,5 +64,21 @@ def test_example_predictions_get_feature_names_out():
     ep = ExamplePredictions()
     assert ep.get_feature_names_out() == ["v4.2/live_example_preds"]
     assert ep.get_feature_names_out(['a', 'b']) == ['a', 'b']
+
+def test_example_predictions_keep_files():
+    # Test with keep_files = True
+    ep_keep = ExamplePredictions(keep_files=True)
+    ep_keep.fit_transform(None)
+    assert os.path.isdir(ep_keep.downloader.dir), "Directory should be kept with keep_files=True"
+    assert os.path.exists(ep_keep.dest_path), "File should be kept with keep_files=True"
+    # Clean up
+    ep_keep.downloader.remove_base_directory()
+
+    # Test with keep_files = False
+    ep_remove = ExamplePredictions(keep_files=False)
+    ep_remove.fit_transform(None)
+    assert not os.path.isdir(ep_remove.downloader.dir), "Directory should be removed with keep_files=False"
+
+
 
 
