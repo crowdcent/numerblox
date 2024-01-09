@@ -44,14 +44,6 @@ neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
 
-### Note
-Neutralization can be run on the GPU by setting `cuda=True`. When setting this ensure you have CuPy installed.
-
-```bash
-pip install cupy
-```
-
-
 ## FeaturePenalizer
 
 `FeaturePenalizer` neutralizes predictions using TensorFlow based on provided feature exposures. It's designed to integrate seamlessly with scikit-learn.
