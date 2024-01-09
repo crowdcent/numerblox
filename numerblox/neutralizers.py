@@ -100,6 +100,7 @@ class FeatureNeutralizer(BaseNeutralizer):
         """
         assert len(X) == len(features), "Input predictions must have same length as features."
         assert len(X) == len(eras), "Input predictions must have same length as eras."
+        assert X.shape
         df = features.copy()
         if not isinstance(X, np.ndarray):
             X = np.array(X)
