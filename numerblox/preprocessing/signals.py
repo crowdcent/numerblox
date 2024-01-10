@@ -290,6 +290,7 @@ class EraQuantileProcessor(BasePreProcessor):
         Quantile all features by era.
         :param X: Array or DataFrame containing features to be quantiled.
         :param eras: Series containing era information.
+        :return: Quantiled features.
         """
         X = pd.DataFrame(X)
         assert X.shape[0] == eras.shape[0], "Input X and eras must have the same number of rows for quantiling."
