@@ -50,7 +50,7 @@ enhanced_data = feature_gen.fit_transform(dataf)
 
 ### EraQuantileProcessor
 
-`EraQuantileProcessor` transforms features into quantiles by era. This can help normalize data and make patterns more distinguishable.
+`EraQuantileProcessor` transforms features into quantiles by era. This can help normalize data and make patterns more distinguishable. Quantiling operation are parallelized across features for faster processing.
 
 Using `.transform` requires passing the era column as a `pd.Series`. This is because the quantiles are calculated per era so it needs that information along with the raw input features.
 
