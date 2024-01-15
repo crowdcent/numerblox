@@ -48,8 +48,6 @@ class NumerFrame(pd.DataFrame):
         """ Each NumerFrame should have an era column to benefit from all functionality. """
         if "era" in self.columns:
             self.meta.era_col = "era"
-        elif "friday_date" in self.columns:
-            self.meta.era_col = "friday_date"
         elif "date" in self.columns:
             self.meta.era_col = "date"
         else:
@@ -199,16 +197,16 @@ class NumerFrame(pd.DataFrame):
     @property
     def get_dates_from_era_col(self) -> pd.Series:
         """ Column of all dates from era column. """
-        assert self.meta.era_col == "era", \
-            "Era col is not 'era'. Please make sure to have a valid 'era' column to use for converting to dates."
-        return self[self.meta.era_col].astype(int).apply(self.get_date_from_era)
+        assert "era" in self.columns, \
+            "No 'era' column in NumerFrame. Please make sure to have a valid 'era' column to use for converting to dates."
+        return self["era"].astype(int).apply(self.get_date_from_era)
     
     @property
     def get_eras_from_date_col(self) -> pd.Series:
         """ Column of all eras from date column. """
-        assert self.meta.era_col == "date" or self.meta.era_col == "friday_date", \
-            "Era col is not 'date' or 'friday_date'. Please make sure to have a valid 'date' or 'friday_date column to use for converting to eras."
-        return self[self.meta.era_col].apply(self.get_era_from_date)
+        assert "date" in self.columns, \
+            "No 'date' column in NumerFrame. Please make sure to have a valid 'date' column."
+        return self["date"].apply(self.get_era_from_date)
     
     def get_era_range(self, start_era: int, end_era: int) -> "NumerFrame":
         """ 
@@ -217,7 +215,7 @@ class NumerFrame(pd.DataFrame):
         :param end_era: Era number to end with (inclusive).
         :return: NumerFrame with all eras between start_era and end_era.
         """
-        assert "era" in self.columns, "Era column not found. Please make sure to have an 'era' column in your data."
+        assert "era" in self.columns, "No 'era' column in NumerFrame. Please make sure to have an 'era' column."
         assert isinstance(start_era, int), f"start_era should be of type 'int' but is '{type(start_era)}'"
         assert isinstance(end_era, int), f"end_era should be of type 'int' but is '{type(end_era)}'"
         assert 1 <= start_era <= end_era <= get_current_era(), \
@@ -238,8 +236,8 @@ class NumerFrame(pd.DataFrame):
         :param end_date: Ending date (inclusive).
         :return: NumerFrame with all eras between start_date and end_date.
         """
-        assert self.meta.era_col == "date" or self.meta.era_col == "friday_date", \
-            "Era col is not 'date' or 'friday_date'. Please make sure to have a valid 'era' column."
+        assert "date" in self.columns, \
+            "No 'date' column in NumerFrame. Please make sure to have a valid 'date' column."
         assert isinstance(start_date, pd.Timestamp), f"start_date should be of type 'pd.Timestamp' but is '{type(start_date)}'"
         assert isinstance(end_date, pd.Timestamp), f"end_date should be of type 'pd.Timestamp' but is '{type(end_date)}'"
         assert ERA1_TIMESTAMP <= start_date <= pd.Timestamp(get_current_date()), \
@@ -249,7 +247,7 @@ class NumerFrame(pd.DataFrame):
         assert start_date <= end_date, f"start_date should be before end_date. Got '{start_date}' and '{end_date}'"
 
         temp_df = self.copy()
-        result_df = temp_df[(temp_df[self.meta.era_col] >= start_date) & (temp_df[self.meta.era_col] <= end_date)]
+        result_df = temp_df[(temp_df["date"] >= start_date) & (temp_df["date"] <= end_date)]
         return result_df
     
     @staticmethod

@@ -75,7 +75,7 @@ evaluator = NumeraiSignalsEvaluator()
 model_name = "MY_MODEL"
 # NumerBlox Key for accessing the Numerai API
 key = Key(pub_id="Hello", secret_key="World")
-# DataFrame with validation data containing prediction, friday_date, ticker and data_type columns
+# DataFrame with validation data containing prediction, date, ticker and data_type columns
 val_df = pd.DataFrame()
 
 evaluator.get_neutralized_corr(val, model_name=model_name, key=key, corr_col="validationRic")
