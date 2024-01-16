@@ -43,7 +43,7 @@ class BaseSubmitter(BaseIO):
     ):
         """
         For Numerai Classic: Save index column + 'cols' (targets) to CSV.
-        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.
+        For Numerai Signals: Save ticker, date, data_type and signal columns to CSV.
         """
         ...
 
@@ -274,7 +274,7 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
          1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)
          2. signal (Values between 0 and 1 (exclusive))
          Additional columns for if you include validation data (optional):
-         3. friday_date (YYYYMMDD format date indication)
+         3. date (YYYY-MM-DD format date indication)
          4. data_type ('val' and 'live' partitions)
 
          :param cols: All cols that are saved in CSV.

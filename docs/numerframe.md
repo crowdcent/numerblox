@@ -33,7 +33,7 @@ A NumerFrame can be initialized either from an existing `pd.DataFrame` or with `
 
 - Aux columns are all that fall in none of these buckets, like `era`, `data_type` and `id`. 
 
-- Era column is either `era`, `date` or `friday_date`.
+- Era column is either `era` or `date`.
 
 ```py
 import pandas as pd

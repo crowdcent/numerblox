@@ -48,7 +48,7 @@ class BaseEvaluator:
     - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
 
     :param metrics_list: List of metrics to calculate. Default: FAST_METRICS.
-    :param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
+    :param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "date" for Numerai Signals.
     :param custom_functions: Additional functions called in evaluation.
     Check out the NumerBlox docs on evaluation for more info on using custom functions.
     :param show_detailed_progress_bar: Show detailed progress bar for evaluation of each prediction column.
@@ -1017,7 +1017,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
 
     def __init__(
         self,
-        era_col: str = "friday_date",
+        era_col: str = "date",
         metrics_list: List[str] = FAST_METRICS,
         custom_functions: Dict[str, Dict[str, Any]] = None,
         show_detailed_progress_bar: bool = True,
@@ -1038,7 +1038,7 @@ class NumeraiSignalsEvaluator(BaseEvaluator):
         """
         Retrieved neutralized validation correlation by era. \n
         Calculated on Numerai servers. \n
-        :param val_dataf: A DataFrame containing prediction, friday_date, ticker and data_type columns. \n
+        :param val_dataf: A DataFrame containing prediction, date, ticker and data_type columns. \n
         data_type column should contain 'validation' instances. \n
         :param model_name: Any model name for which you have authentication credentials. \n
         :param key: Key object to authenticate upload of diagnostics. \n
