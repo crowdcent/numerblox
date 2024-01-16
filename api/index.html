@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/.icons/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.4">
     
     
       
@@ -7049,9 +7049,7 @@ allows for additional Numerai specific functionality.</p>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumerFrame</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+<span class="normal">277</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumerFrame</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Data structure which extends Pandas DataFrames and</span>
 <span class="sd">    allows for additional Numerai specific functionality.</span>
@@ -7085,8 +7083,6 @@ allows for additional Numerai specific functionality.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Each NumerFrame should have an era column to benefit from all functionality. &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span>
-        <span class="k">elif</span> <span class="s2">&quot;friday_date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;friday_date&quot;</span>
         <span class="k">elif</span> <span class="s2">&quot;date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -7236,16 +7232,16 @@ allows for additional Numerai specific functionality.</p>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_dates_from_era_col</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Column of all dates from era column. &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;era&quot;</span><span class="p">,</span> \
-            <span class="s2">&quot;Era col is not &#39;era&#39;. Please make sure to have a valid &#39;era&#39; column to use for converting to dates.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_date_from_era</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+            <span class="s2">&quot;No &#39;era&#39; column in NumerFrame. Please make sure to have a valid &#39;era&#39; column to use for converting to dates.&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;era&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_date_from_era</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_eras_from_date_col</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Column of all eras from date column. &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;date&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;friday_date&quot;</span><span class="p">,</span> \
-            <span class="s2">&quot;Era col is not &#39;date&#39; or &#39;friday_date&#39;. Please make sure to have a valid &#39;date&#39; or &#39;friday_date column to use for converting to eras.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_era_from_date</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="s2">&quot;date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+            <span class="s2">&quot;No &#39;date&#39; column in NumerFrame. Please make sure to have a valid &#39;date&#39; column.&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_era_from_date</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_era_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
@@ -7254,7 +7250,7 @@ allows for additional Numerai specific functionality.</p>
 <span class="sd">        :param end_era: Era number to end with (inclusive).</span>
 <span class="sd">        :return: NumerFrame with all eras between start_era and end_era.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;Era column not found. Please make sure to have an &#39;era&#39; column in your data.&quot;</span>
+        <span class="k">assert</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;No &#39;era&#39; column in NumerFrame. Please make sure to have an &#39;era&#39; column.&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_era</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;start_era should be of type &#39;int&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start_era</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_era</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;end_era should be of type &#39;int&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end_era</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">start_era</span> <span class="o">&lt;=</span> <span class="n">end_era</span> <span class="o">&lt;=</span> <span class="n">get_current_era</span><span class="p">(),</span> \
@@ -7275,8 +7271,8 @@ allows for additional Numerai specific functionality.</p>
 <span class="sd">        :param end_date: Ending date (inclusive).</span>
 <span class="sd">        :return: NumerFrame with all eras between start_date and end_date.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;date&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;friday_date&quot;</span><span class="p">,</span> \
-            <span class="s2">&quot;Era col is not &#39;date&#39; or &#39;friday_date&#39;. Please make sure to have a valid &#39;era&#39; column.&quot;</span>
+        <span class="k">assert</span> <span class="s2">&quot;date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+            <span class="s2">&quot;No &#39;date&#39; column in NumerFrame. Please make sure to have a valid &#39;date&#39; column.&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;start_date should be of type &#39;pd.Timestamp&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_date</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;end_date should be of type &#39;pd.Timestamp&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
         <span class="k">assert</span> <span class="n">ERA1_TIMESTAMP</span> <span class="o">&lt;=</span> <span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">get_current_date</span><span class="p">()),</span> \
@@ -7286,7 +7282,7 @@ allows for additional Numerai specific functionality.</p>
         <span class="k">assert</span> <span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;start_date should be before end_date. Got &#39;</span><span class="si">{</span><span class="n">start_date</span><span class="si">}</span><span class="s2">&#39; and &#39;</span><span class="si">{</span><span class="n">end_date</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
 
         <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">result_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="p">[(</span><span class="n">temp_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">)]</span>
+        <span class="n">result_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="p">[(</span><span class="n">temp_df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">result_df</span>
 
     <span class="nd">@staticmethod</span>
@@ -7712,14 +7708,10 @@ allows for additional Numerai specific functionality.</p>
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">__set_era_col</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">__set_era_col</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Each NumerFrame should have an era column to benefit from all functionality. &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span>
-    <span class="k">elif</span> <span class="s2">&quot;friday_date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;friday_date&quot;</span>
     <span class="k">elif</span> <span class="s2">&quot;date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
     <span class="k">else</span><span class="p">:</span>
@@ -7747,9 +7739,9 @@ allows for additional Numerai specific functionality.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_column_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_column_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Return NumerFrame from selection of columns. &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">cols</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">cols</span><span class="p">]]</span>
 </code></pre></div></td></tr></table></div>
@@ -7782,7 +7774,9 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
 <span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span>
@@ -7791,9 +7785,7 @@ Should be an integer which is at least 1.
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">277</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_date_from_era</span><span class="p">(</span><span class="n">era</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Get the date from a specific era. </span>
@@ -7831,7 +7823,9 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
@@ -7848,17 +7842,15 @@ Should be an integer which is at least 1.
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get all eras between two dates.</span>
 <span class="sd">    :param start_date: Starting date (inclusive).</span>
 <span class="sd">    :param end_date: Ending date (inclusive).</span>
 <span class="sd">    :return: NumerFrame with all eras between start_date and end_date.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;date&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span> <span class="o">==</span> <span class="s2">&quot;friday_date&quot;</span><span class="p">,</span> \
-        <span class="s2">&quot;Era col is not &#39;date&#39; or &#39;friday_date&#39;. Please make sure to have a valid &#39;era&#39; column.&quot;</span>
+    <span class="k">assert</span> <span class="s2">&quot;date&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+        <span class="s2">&quot;No &#39;date&#39; column in NumerFrame. Please make sure to have a valid &#39;date&#39; column.&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;start_date should be of type &#39;pd.Timestamp&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_date</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;end_date should be of type &#39;pd.Timestamp&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">assert</span> <span class="n">ERA1_TIMESTAMP</span> <span class="o">&lt;=</span> <span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">get_current_date</span><span class="p">()),</span> \
@@ -7868,7 +7860,7 @@ Should be an integer which is at least 1.
     <span class="k">assert</span> <span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;start_date should be before end_date. Got &#39;</span><span class="si">{</span><span class="n">start_date</span><span class="si">}</span><span class="s2">&#39; and &#39;</span><span class="si">{</span><span class="n">end_date</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
 
     <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">result_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="p">[(</span><span class="n">temp_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">era_col</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">)]</span>
+    <span class="n">result_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="p">[(</span><span class="n">temp_df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">)]</span>
     <span class="k">return</span> <span class="n">result_df</span>
 </code></pre></div></td></tr></table></div>
           </details>
@@ -7900,7 +7892,9 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
@@ -7935,9 +7929,7 @@ Should be an integer which is at least 1.
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_era_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eras</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_era_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eras</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
                   <span class="n">convert_to_tf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">aemlp_batch</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">features</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8004,7 +7996,9 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">255</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
@@ -8013,9 +8007,7 @@ Should be an integer which is at least 1.
 <span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_era_from_date</span><span class="p">(</span><span class="n">date_object</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Get the era number from a specific date. </span>
@@ -8053,7 +8045,9 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -8070,16 +8064,14 @@ Should be an integer which is at least 1.
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_era_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_era_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_era</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Get all eras between two era numbers. </span>
 <span class="sd">    :param start_era: Era number to start from (inclusive).</span>
 <span class="sd">    :param end_era: Era number to end with (inclusive).</span>
 <span class="sd">    :return: NumerFrame with all eras between start_era and end_era.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;Era column not found. Please make sure to have an &#39;era&#39; column in your data.&quot;</span>
+    <span class="k">assert</span> <span class="s2">&quot;era&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;No &#39;era&#39; column in NumerFrame. Please make sure to have an &#39;era&#39; column.&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_era</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;start_era should be of type &#39;int&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start_era</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_era</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;end_era should be of type &#39;int&#39; but is &#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end_era</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">start_era</span> <span class="o">&lt;=</span> <span class="n">end_era</span> <span class="o">&lt;=</span> <span class="n">get_current_era</span><span class="p">(),</span> \
@@ -8115,11 +8107,11 @@ Should be an integer which is at least 1.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
 <span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+<span class="normal">139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Get feature group based on name or list of names. &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">V4_2_FEATURE_GROUP_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> \
         <span class="sa">f</span><span class="s2">&quot;Group &#39;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&#39; not found in </span><span class="si">{</span><span class="n">V4_2_FEATURE_GROUP_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -8149,15 +8141,15 @@ Returns all target columns when set to True.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_target_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multi_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;NumerFrame&quot;</span><span class="p">,</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">]:</span>
+<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_target_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multi_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;NumerFrame&quot;</span><span class="p">,</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get split of feature and target columns.</span>
 <span class="sd">    :param multi_target: Returns only &#39;target&#39; column by default.</span>
@@ -8192,15 +8184,15 @@ Make sure eras are sorted in the way you prefer.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">127</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_last_n_eras</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_last_n_eras</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Get data for the last n eras. </span>
 <span class="sd">    Make sure eras are sorted in the way you prefer.</span>
@@ -8233,12 +8225,12 @@ Make sure eras are sorted in the way you prefer.
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_pattern_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
+<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_pattern_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumerFrame&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get columns based on pattern (for example &#39;_20&#39; to get all 20-day Numerai targets).</span>
 <span class="sd">    :param pattern: A &#39;like&#39; pattern (pattern in column_name == True)</span>
@@ -8283,7 +8275,9 @@ For more details check https://pandas.pydata.org/docs/reference/io.html</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/numerframe.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
@@ -8306,9 +8300,7 @@ For more details check https://pandas.pydata.org/docs/reference/io.html</p>
 <span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_numerframe</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumerFrame</span><span class="p">:</span>
+<span class="normal">306</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_numerframe</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumerFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convenient function to initialize NumerFrame.</span>
 <span class="sd">    Support most used file formats for Pandas DataFrames \n</span>
@@ -14914,7 +14906,7 @@ Numerai Classic and Numerai Signals.</p>
 - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
 - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</p>
 <p>:param metrics_list: List of metrics to calculate. Default: FAST_METRICS.
-:param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "friday_date" for Numerai Signals.
+:param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "date" for Numerai Signals.
 :param custom_functions: Additional functions called in evaluation.
 Check out the NumerBlox docs on evaluation for more info on using custom functions.
 :param show_detailed_progress_bar: Show detailed progress bar for evaluation of each prediction column.</p>
@@ -15852,7 +15844,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="sd">    - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</span>
 
 <span class="sd">    :param metrics_list: List of metrics to calculate. Default: FAST_METRICS.</span>
-<span class="sd">    :param era_col: Column name pointing to eras. Most commonly &quot;era&quot; for Numerai Classic and &quot;friday_date&quot; for Numerai Signals.</span>
+<span class="sd">    :param era_col: Column name pointing to eras. Most commonly &quot;era&quot; for Numerai Classic and &quot;date&quot; for Numerai Signals.</span>
 <span class="sd">    :param custom_functions: Additional functions called in evaluation.</span>
 <span class="sd">    Check out the NumerBlox docs on evaluation for more info on using custom functions.</span>
 <span class="sd">    :param show_detailed_progress_bar: Show detailed progress bar for evaluation of each prediction column.</span>
@@ -19026,7 +19018,7 @@ TB200 and TB500 are the most common situations.</p>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;friday_date&quot;</span><span class="p">,</span>
+        <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span>
         <span class="n">metrics_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">FAST_METRICS</span><span class="p">,</span>
         <span class="n">custom_functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">show_detailed_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -19047,7 +19039,7 @@ TB200 and TB500 are the most common situations.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieved neutralized validation correlation by era. \n</span>
 <span class="sd">        Calculated on Numerai servers. \n</span>
-<span class="sd">        :param val_dataf: A DataFrame containing prediction, friday_date, ticker and data_type columns. \n</span>
+<span class="sd">        :param val_dataf: A DataFrame containing prediction, date, ticker and data_type columns. \n</span>
 <span class="sd">        data_type column should contain &#39;validation&#39; instances. \n</span>
 <span class="sd">        :param model_name: Any model name for which you have authentication credentials. \n</span>
 <span class="sd">        :param key: Key object to authenticate upload of diagnostics. \n</span>
@@ -19212,7 +19204,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
   
       <p>Retrieved neutralized validation correlation by era. </p>
 <p>Calculated on Numerai servers. </p>
-<p>:param val_dataf: A DataFrame containing prediction, friday_date, ticker and data_type columns. </p>
+<p>:param val_dataf: A DataFrame containing prediction, date, ticker and data_type columns. </p>
 <p>data_type column should contain 'validation' instances. </p>
 <p>:param model_name: Any model name for which you have authentication credentials. </p>
 <p>:param key: Key object to authenticate upload of diagnostics. </p>
@@ -19259,7 +19251,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieved neutralized validation correlation by era. \n</span>
 <span class="sd">    Calculated on Numerai servers. \n</span>
-<span class="sd">    :param val_dataf: A DataFrame containing prediction, friday_date, ticker and data_type columns. \n</span>
+<span class="sd">    :param val_dataf: A DataFrame containing prediction, date, ticker and data_type columns. \n</span>
 <span class="sd">    data_type column should contain &#39;validation&#39; instances. \n</span>
 <span class="sd">    :param model_name: Any model name for which you have authentication credentials. \n</span>
 <span class="sd">    :param key: Key object to authenticate upload of diagnostics. \n</span>
@@ -19553,7 +19545,7 @@ Useful for if you are uploading many models in a loop and want to skip models th
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For Numerai Classic: Save index column + &#39;cols&#39; (targets) to CSV.</span>
-<span class="sd">        For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.</span>
+<span class="sd">        For Numerai Signals: Save ticker, date, data_type and signal columns to CSV.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
 
@@ -19972,7 +19964,7 @@ For example <code>version</code> argument in Numerai Classic submissions.</p>
   <div class="doc doc-contents ">
   
       <p>For Numerai Classic: Save index column + 'cols' (targets) to CSV.
-For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.</p>
+For Numerai Signals: Save ticker, date, data_type and signal columns to CSV.</p>
 
           <details class="quote">
             <summary>Source code in <code>numerblox/submission.py</code></summary>
@@ -20000,7 +19992,7 @@ For Numerai Signals: Save ticker, friday_date, data_type and signal columns to C
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    For Numerai Classic: Save index column + &#39;cols&#39; (targets) to CSV.</span>
-<span class="sd">    For Numerai Signals: Save ticker, friday_date, data_type and signal columns to CSV.</span>
+<span class="sd">    For Numerai Signals: Save ticker, date, data_type and signal columns to CSV.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="o">...</span>
 </code></pre></div></td></tr></table></div>
@@ -20990,7 +20982,7 @@ Useful for if you are uploading many models in a loop and want to skip models th
 <span class="sd">         1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)</span>
 <span class="sd">         2. signal (Values between 0 and 1 (exclusive))</span>
 <span class="sd">         Additional columns for if you include validation data (optional):</span>
-<span class="sd">         3. friday_date (YYYYMMDD format date indication)</span>
+<span class="sd">         3. date (YYYY-MM-DD format date indication)</span>
 <span class="sd">         4. data_type (&#39;val&#39; and &#39;live&#39; partitions)</span>
 
 <span class="sd">         :param cols: All cols that are saved in CSV.</span>
@@ -21049,7 +21041,7 @@ Useful for if you are uploading many models in a loop and want to skip models th
  1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)
  2. signal (Values between 0 and 1 (exclusive))
  Additional columns for if you include validation data (optional):
- 3. friday_date (YYYYMMDD format date indication)
+ 3. date (YYYY-MM-DD format date indication)
  4. data_type ('val' and 'live' partitions)</p>
 <p>:param cols: All cols that are saved in CSV.
  cols should contain at least 1 ticker column and a 'signal' column.
@@ -21099,7 +21091,7 @@ Useful for if you are uploading many models in a loop and want to skip models th
 <span class="sd">     1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)</span>
 <span class="sd">     2. signal (Values between 0 and 1 (exclusive))</span>
 <span class="sd">     Additional columns for if you include validation data (optional):</span>
-<span class="sd">     3. friday_date (YYYYMMDD format date indication)</span>
+<span class="sd">     3. date (YYYY-MM-DD format date indication)</span>
 <span class="sd">     4. data_type (&#39;val&#39; and &#39;live&#39; partitions)</span>
 
 <span class="sd">     :param cols: All cols that are saved in CSV.</span>
@@ -21211,10 +21203,10 @@ Useful for if you are uploading many models in a loop and want to skip models th
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.expand", "navigation.path", "content.code.copy", "navigation.instant", "navigation.instant.prefetch", "navigation.sections"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.expand", "navigation.path", "content.code.copy", "navigation.instant", "navigation.instant.prefetch", "navigation.sections"], "search": "../assets/javascripts/workers/search.c011b7c0.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.7389ff0e.min.js"></script>
       
     
   </body>
