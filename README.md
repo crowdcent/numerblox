@@ -84,7 +84,7 @@ from numerblox.submission import NumeraiClassicSubmitter
 # Download data
 downloader = NumeraiClassicDownloader("data")
 # Training and validation data
-downloader.download_training_data("train_val", version="4.2", int8=True)
+downloader.download_training_data("train_val", version="4.3")
 df = create_numerframe("data/train_val/train_int8.parquet")
 
 # Train
@@ -95,7 +95,7 @@ xgb.fit(X.values, y.values)
 # Evaluate
 val_df = create_numerframe("data/train_val/validation_int8.parquet")
 val_df['prediction'] = xgb.predict(val_df.get_feature_data)
-val_df['example_preds'] = ExamplePredictions("v4.2/validation_example_preds.parquet").fit_transform(None)['prediction'].values
+val_df['example_preds'] = ExamplePredictions("v4.3/validation_example_preds.parquet").fit_transform(None)['prediction'].values
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
                                     example_col="example_preds", 
@@ -103,7 +103,7 @@ metrics = evaluator.full_evaluation(val_df,
                                     target_col="target")
 
 # Inference
-downloader.download_inference_data("current_round", version="4.2", int8=True)
+downloader.download_live_data("current_round", version="4.3")
 live_df = create_numerframe(file_path="data/current_round/live_int8.parquet")
 live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
 preds = xgb.predict(live_X)
@@ -139,7 +139,7 @@ from numerblox.neutralizers import FeatureNeutralizer
 # Download data
 downloader = NumeraiClassicDownloader("data")
 # Training and validation data
-downloader.download_training_data("train_val", version="4.2", int8=True)
+downloader.download_training_data("train_val", version="4.3")
 df = create_numerframe("data/train_val/train_int8.parquet")
 
 # Setup model pipeline
@@ -163,7 +163,7 @@ val_X, _ = val_df.get_feature_target_pair(multi_target=False)
 val_eras = val_df.get_era_data
 val_features = val_df.get_feature_data
 val_df['prediction'] = full_pipe.predict(val_X, eras=val_eras, features=val_features)
-val_df['example_preds'] = ExamplePredictions("v4.2/validation_example_preds.parquet").fit_transform(None)['prediction'].values
+val_df['example_preds'] = ExamplePredictions("v4.3/validation_example_preds.parquet").fit_transform(None)['prediction'].values
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
                                     example_col="example_preds", 
@@ -171,7 +171,7 @@ metrics = evaluator.full_evaluation(val_df,
                                     target_col="target")
 
 # Inference
-downloader.download_inference_data("current_round", version="4.2", int8=True)
+downloader.download_live_data("current_round", version="4.3")
 live_df = create_numerframe(file_path="data/current_round/live_int8.parquet")
 live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
 live_eras = live_df.get_era_data

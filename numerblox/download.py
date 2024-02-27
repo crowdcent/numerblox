@@ -6,7 +6,7 @@ import shutil
 import concurrent
 import pandas as pd
 from tqdm.auto import tqdm
-from numerapi import NumerAPI
+from numerapi import NumerAPI, SignalsAPI
 from google.cloud import storage
 from datetime import datetime as dt
 from pathlib import Path
@@ -101,6 +101,12 @@ class BaseIO(ABC):
         dir = Path(self.dir / folder)
         dir.mkdir(parents=True, exist_ok=True)
         return dir
+    
+    def _get_dest_path(self, subfolder: str, filename: str) -> str:
+        """ Prepare destination path for downloading. """
+        dir = self._append_folder(subfolder)
+        dest_path = str(dir.joinpath(filename.split("/")[-1]))
+        return dest_path
 
     def _create_directory(self):
         """ Create base directory if it does not exist. """
@@ -136,7 +142,7 @@ class BaseDownloader(BaseIO):
         ...
 
     @abstractmethod
-    def download_inference_data(self, *args, **kwargs):
+    def download_live_data(self, *args, **kwargs):
         """ Download minimal amount of files needed for weekly inference. """
         ...
 
@@ -157,7 +163,7 @@ class BaseDownloader(BaseIO):
         """
         The most common use case will be to get weekly inference data. So calling the class itself returns inference data.
         """
-        self.download_inference_data(*args, **kwargs)
+        self.download_live_data(*args, **kwargs)
 
 
 class NumeraiClassicDownloader(BaseDownloader):
@@ -166,7 +172,7 @@ class NumeraiClassicDownloader(BaseDownloader):
 
     Downloading from NumerAPI for Numerai Classic data. \n
     :param directory_path: Base folder to download files to. \n
-    All *args, **kwargs will be passed to NumerAPI initialization.
+    All kwargs will be passed to NumerAPI initialization.
     """
     TRAIN_DATASET_NAME = "train_int8.parquet"
     VALIDATION_DATASET_NAME = "validation_int8.parquet"
@@ -174,12 +180,12 @@ class NumeraiClassicDownloader(BaseDownloader):
     LIVE_EXAMPLE_PREDS_NAME = "live_example_preds.parquet"
     VALIDATION_EXAMPLE_PREDS_NAME = "validation_example_preds.parquet"
 
-    def __init__(self, directory_path: str, *args, **kwargs):
+    def __init__(self, directory_path: str, **kwargs):
         super().__init__(directory_path=directory_path)
-        self.napi = NumerAPI(*args, **kwargs)
+        self.napi = NumerAPI(**kwargs)
         self.current_round = self.napi.get_current_round()
         # Get all available versions available for Numerai.
-        self.dataset_versions = set(s.split("/")[0] for s in NumerAPI().list_datasets())
+        self.dataset_versions = set(s.split("/")[0] for s in self.napi.list_datasets())
         self.dataset_versions.discard("signals")
 
     def download_training_data(
@@ -199,30 +205,11 @@ class NumeraiClassicDownloader(BaseDownloader):
         train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
                            f"v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
-            dest_path = self.__get_dest_path(subfolder, file)
+            dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
                 filename=file,
                 dest_path=dest_path
             )
-
-    def download_inference_data(
-        self,
-        subfolder: str = "",
-        version: str = "4.3",
-        round_num: int = None,
-    ):
-        """
-        Get Numerai classic inference (tournament) data.
-        :param subfolder: Specify folder to create folder within base directory root.
-        Saves in base directory root by default.
-        :param version: Numerai dataset version.
-        4 = April 2022 dataset
-        4.1 = Sunshine dataset
-        4.2 (default) = Rain Dataset
-        4.3 = Midnight dataset
-        :param round_num: Numerai tournament round number. Downloads latest round by default.
-        """
-        self.download_live_data(subfolder=subfolder, version=version, round_num=round_num)
 
     def download_single_dataset(
         self, filename: str, dest_path: str, round_num: int = None
@@ -264,7 +251,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self._check_dataset_version(version)
         live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
         for file in live_files:
-            dest_path = self.__get_dest_path(subfolder, file)
+            dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
                 filename=file,
                 dest_path=dest_path,
@@ -290,7 +277,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
                          f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
-            dest_path = self.__get_dest_path(subfolder, file)
+            dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
                 filename=file,
                 dest_path=dest_path,
@@ -308,7 +295,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         version = filename.split("/")[0].replace("v", "")
         self._check_dataset_version(version)
-        dest_path = self.__get_dest_path(subfolder, filename)
+        dest_path = self._get_dest_path(subfolder, filename)
         self.download_single_dataset(filename=filename,
                                      dest_path=dest_path)
         json_data = self._load_json(dest_path, *args, **kwargs)
@@ -324,22 +311,121 @@ class NumeraiClassicDownloader(BaseDownloader):
         """
         version = filename.split("/")[0].replace("v", "")
         self._check_dataset_version(version)
-        dest_path = self.__get_dest_path(subfolder, filename)
+        dest_path = self._get_dest_path(subfolder, filename)
         self.download_single_dataset(
             filename=filename,
             dest_path=dest_path,
             )
         return pd.read_parquet(dest_path)
-
-    def __get_dest_path(self, subfolder: str, filename: str) -> str:
-        """ Prepare destination path for downloading. """
-        dir = self._append_folder(subfolder)
-        dest_path = str(dir.joinpath(filename.split("/")[-1]))
-        return dest_path
     
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in NumerAPI."
 
+
+class NumeraiSignalsDownloader(BaseDownloader):
+    """
+    Support for Numerai Signals v1 parquet data.
+
+    Downloading from SignalsAPI for Numerai Signals data. \n
+    :param directory_path: Base folder to download files to. \n
+    All kwargs will be passed to SignalsAPI initialization.
+    """
+    TRAIN_DATASET_NAME = "train.parquet"
+    VALIDATION_DATASET_NAME = "validation.parquet"
+    LIVE_DATASET_NAME = "live.parquet"
+    LIVE_EXAMPLE_PREDS_NAME = "live_example_preds.parquet"
+    VALIDATION_EXAMPLE_PREDS_NAME = "validation_example_preds.parquet"
+
+    def __init__(self, directory_path: str, **kwargs):
+        super().__init__(directory_path=directory_path)
+        self.sapi = SignalsAPI(**kwargs)
+        self.current_round = self.sapi.get_current_round()
+        # Get all available versions available for Numerai Signals.
+        self.dataset_versions = set(s.replace("signals/", "").split("/")[0] for s in self.sapi.list_datasets() if s.startswith("signals/v"))
+
+    def download_training_data(
+        self, subfolder: str = "", version: str = "1.0"
+    ):
+        """
+        Get Numerai Signals training and validation data.
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
+        :param version: Numerai Signals dataset version.
+        Currently only v1.0 is supported.
+        """
+        self._check_dataset_version(version)
+        train_val_files = [f"signals/v{version}/{self.TRAIN_DATASET_NAME}",
+                           f"signals/v{version}/{self.VALIDATION_DATASET_NAME}"]
+        for file in train_val_files:
+            dest_path = self._get_dest_path(subfolder, file)
+            self.download_single_dataset(
+                filename=file,
+                dest_path=dest_path
+            )
+
+    def download_single_dataset(
+        self, filename: str, dest_path: str
+    ):
+        """
+        Download one of the available datasets through SignalsAPI.
+
+        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)
+        :param dest_path: Full path where file will be saved.
+        """
+        print(
+            f"Downloading '{filename}'."
+        )
+        self.sapi.download_dataset(
+            filename=filename,
+            dest_path=dest_path,
+        )
+
+    def download_live_data(
+            self,
+            subfolder: str = "",
+            version: str = "1.0",
+    ):
+        """
+        Download all live data in specified folder (i.e. minimal data needed for inference).
+
+        :param subfolder: Specify folder to create folder within directory root.
+        Saves in directory root by default.
+        :param version: Numerai dataset version. 
+        Currently only v1.0 is supported.
+        """
+        self._check_dataset_version(version)
+        live_files = [f"signals/v{version}/{self.LIVE_DATASET_NAME}"]
+        for file in live_files:
+            dest_path = self._get_dest_path(subfolder, file)
+            self.download_single_dataset(
+                filename=file,
+                dest_path=dest_path,
+            )
+
+    def download_example_data(
+        self, subfolder: str = "", version: str = "1.0"
+    ):
+        """
+        Download all example prediction data in specified folder for given version.
+
+        :param subfolder: Specify folder to create folder within base directory root.
+        Saves in base directory root by default.
+        :param version: Numerai dataset version.
+        Currently only v1.0 is supported.
+        """
+        self._check_dataset_version(version)
+        example_files = [f"signals/v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
+                         f"signals/v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
+        for file in example_files:
+            dest_path = self._get_dest_path(subfolder, file)
+            self.download_single_dataset(
+                filename=file,
+                dest_path=dest_path,
+            )
+
+    def _check_dataset_version(self, version: str):
+        assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in SignalsAPI."
+    
 
 class KaggleDownloader(BaseDownloader):
     """
@@ -358,7 +444,7 @@ class KaggleDownloader(BaseDownloader):
         self.__check_kaggle_import()
         super().__init__(directory_path=directory_path)
 
-    def download_inference_data(self, kaggle_dataset_path: str):
+    def download_live_data(self, kaggle_dataset_path: str):
         """
         Download arbitrary Kaggle dataset.
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
@@ -417,10 +503,10 @@ class EODDownloader(BaseDownloader):
         # EOD rate limit is set at 1000 calls per minute.
         self.sleep_time = self.cpu_count / 32
 
-    def download_inference_data(self):
+    def download_live_data(self):
         """ Download one year of data for defined tickers. """
         start = (pd.Timestamp(self.current_time) - relativedelta(years=1)).strftime("%Y-%m-%d")
-        dataf = self.get_live_data(start=start)
+        dataf = self.get_numerframe_data(start=start)
         dataf.to_parquet(self._default_save_path(start=pd.Timestamp(start),
                                                  end=pd.Timestamp(self.end_date),
                                                  backend="eod"))
@@ -436,7 +522,7 @@ class EODDownloader(BaseDownloader):
                                                  end=pd.Timestamp(self.end_date),
                                                  backend="eod"))
 
-    def get_live_data(self, start: str) -> NumerFrame:
+    def get_numerframe_data(self, start: str) -> NumerFrame:
         """
         Get NumerFrame data from some starting date.
         start: Starting data in %Y-%m-%d format.

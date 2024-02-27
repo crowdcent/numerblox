@@ -14,8 +14,8 @@ dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 # Training and validation data
 dl.download_training_data("train_val", version="4.3")
 
-# Inference data (live)
-dl.download_inference_data("live", version="4.3")
+# Live data 
+dl.download_live_data("live", version="4.3")
 ```
 
 Besides these common use cases you can also get feature sets and meta model predictions with `NumeraiClassicDownloader`. 
@@ -36,6 +36,24 @@ meta_model_preds = pd.read_parquet("my_numerai_data_folder/meta_model.parquet")
 ## Numerai Signals
 
 For Numerai Signals we have several options implemented to download data. Numerai Signals Downloaders have similar methods as `NumeraiClassicDownloader`.
+
+### Numerai Signals Dataset
+
+Numerai provides a basic dataset for Numerai Signals. This is a good starting point for new users.
+
+More information: [https://docs.numer.ai/numerai-signals/signals-data](https://docs.numer.ai/numerai-signals/signals-data)
+
+```py
+from numerblox.download import NumeraiSignalsDownloader
+
+dl = NumeraiSignalsDownloader(directory_path="my_numerai_signals_folder")
+
+# Download full dataset
+dl.download_training_data()
+
+# Live data
+dl.download_live_data()
+```
 
 ### EOD Historical Data
 
@@ -65,8 +83,8 @@ key=eod_api_key, tickers=tickers)
 # Download full dataset
 dl.download_training_data(start="2008-01-01")
 
-# load data directly into DataFrame from January 1st 2023 for inference.
-live_data = dl.downloader_live_data(start="2023-01-01")
+# load data directly into DataFrame from January 1st 2024 for live.
+live_data = dl.download_live_data(start="2024-01-01")
 ```
 
 ### Kaggle
@@ -95,12 +113,12 @@ from numerblox.download import KaggleDownloader
 kd = KaggleDownloader(directory_path="my_numerai_signals_folder")
 
 # A good example of Numerai Signals data on Kaggle Datasets is Katsu1110's yfinance price dataset.
-kd.download_inference_data("code1110/yfinance-stock-price-data-for-numerai-signals")
+kd.download_live_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 ```
 
 ### Rolling your own downloader
 
-We invite users to build out their own downloaders for Numerai Signals. The only requirements are that you inherit from `numerblox.download.BaseDownloader` and implement the `download_training_data` and `download_inference_data` methods. Below you will find a template for this.
+We invite users to build out their own downloaders for Numerai Signals. The only requirements are that you inherit from `numerblox.download.BaseDownloader` and implement the `download_training_data` and `download_live_data` methods. Below you will find a template for this.
 
 If you have a downloader that you would like to share with the community, please open a Pull Request in NumerBlox.
 
@@ -115,8 +133,8 @@ class AwesomeCustomDownloader(BaseDownloader):
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
 
-    def download_inference_data(self, *args, **kwargs):
-        """ (minimal) weekly inference downloading here. """
+    def download_live_data(self, *args, **kwargs):
+        """ (minimal) weekly live downloading here. """
         ...
 
     def download_training_data(self, *args, **kwargs):

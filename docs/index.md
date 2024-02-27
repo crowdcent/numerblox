@@ -77,9 +77,9 @@ from numerblox.download import NumeraiClassicDownloader
 
 downloader = NumeraiClassicDownloader("data")
 # Training and validation data
-downloader.download_training_data("train_val", version="4.2", int8=True)
+downloader.download_training_data("train_val", version="4.3")
 # Live data
-downloader.download_inference_data("current_round", version="4.2", int8=True)
+downloader.download_live_data("current_round", version="4.3")
 df = pd.read_parquet(file_path="data/current_round/live.parquet")
 ```
 
