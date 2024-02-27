@@ -40,23 +40,23 @@ The documentation contains examples and explanations for each component of Numer
 
 NumerBlox has the following features for both Numerai Classic and Signals:
 
-**[Data Download](/download/):** Automated retrieval of Numerai datasets.
+**[Data Download](/numerblox/download/):** Automated retrieval of Numerai datasets.
 
-**[NumerFrame](/numerframe/):** A custom Pandas DataFrame for easier Numerai data manipulation.
+**[NumerFrame](/numerblox/numerframe/):** A custom Pandas DataFrame for easier Numerai data manipulation.
 
-**[Preprocessors](/preprocessing/):** Customizable techniques for data preprocessing.
+**[Preprocessors](/numerblox/preprocessing/):** Customizable techniques for data preprocessing.
 
-**[Target Engineering](/targets/):** Tools for creating new target variables.
+**[Target Engineering](/numerblox/targets/):** Tools for creating new target variables.
 
-**[Postprocessors](/neutralization/):** Ensembling, neutralization, and penalization.
+**[Postprocessors](/numerblox/neutralization/):** Ensembling, neutralization, and penalization.
 
-**[MetaPipeline](/meta/):** An era-aware pipeline extension of scikit-learn's Pipeline. Specifically designed to integrate with era-specific Postprocessors such as neutralization and ensembling. Can be optionally bypassed for custom implementations.
+**[MetaPipeline](/numerblox/meta/):** An era-aware pipeline extension of scikit-learn's Pipeline. Specifically designed to integrate with era-specific Postprocessors such as neutralization and ensembling. Can be optionally bypassed for custom implementations.
 
-**[MetaEstimators](/meta/):** Era-aware estimators that extend scikit-learn's functionality. Includes features like CrossValEstimator which allow for era-specific, multiple-folds fitting seamlessly integrated into the pipeline.
+**[MetaEstimators](/numerblox/meta/):** Era-aware estimators that extend scikit-learn's functionality. Includes features like CrossValEstimator which allow for era-specific, multiple-folds fitting seamlessly integrated into the pipeline.
 
-**[Evaluation](/evaluation/):** Comprehensive metrics aligned with Numerai's evaluation criteria.
+**[Evaluation](/numerblox/evaluation/):** Comprehensive metrics aligned with Numerai's evaluation criteria.
 
-**[Submitters](/submission/):** Facilitates secure and easy submission of predictions.
+**[Submitters](/numerblox/submission/):** Facilitates secure and easy submission of predictions.
 
 
 Example notebooks for each of these components can be found in the [examples](https://github.com/crowdcent/numerblox/examples) directory.
@@ -127,7 +127,7 @@ All core processors in `numerblox` are compatible with `scikit-learn` and theref
 
 The example below illustrates its seamless integration with `scikit-learn`. Aside from core `scikit-learn` processors we use `ColumnSelector` from the [scikit-lego](https://github.com/koaning/scikit-lego) extension library.
 
-For more examples check out the notebooks in the `examples` directory and the [End-To-End Examples section](/end_to_end/).
+For more examples check out the notebooks in the `examples` directory and the [End-To-End Examples section](/numerblox/end_to_end/).
 
 ```py
 import pandas as pd
@@ -172,7 +172,7 @@ val_preds = full_pipe.predict(val_X, eras=val_eras)
 ### 3.4. Evaluation
 
 `NumeraiClassicEvaluator` and `NumeraiSignalsEvaluator` take care of computing all evaluation metrics for you. Below is a quick example of using it for Numerai Classic. 
-For more information on advanced usage and which metrics are computed check the [Evaluators section](/evaluation/).
+For more information on advanced usage and which metrics are computed check the [Evaluators section](/numerblox/evaluation/).
 
 ```py
 from numerblox.evaluation import NumeraiClassicEvaluator
@@ -190,7 +190,7 @@ metrics = evaluator.full_evaluation(val_df,
 
 ### 3.5. Submission
 
-Submission for both Numerai Class and Signals can be done with a few lines of code. Here we illustrate an example for Numerai Classic. Check out the [Submitters section](/submission/) in the documentation for more information.
+Submission for both Numerai Class and Signals can be done with a few lines of code. Here we illustrate an example for Numerai Classic. Check out the [Submitters section](/numerblox/submission/) in the documentation for more information.
 
 ```py
 from numerblox.misc import Key
@@ -215,7 +215,7 @@ submitter.remove_base_directory()
 
 ## 4. Contributing
 
-Be sure to read the [How To Contribute section](/contributing/) for detailed instructions on
+Be sure to read the [How To Contribute section](/numerblox/contributing/) for detailed instructions on
 contributing.
 
 If you have questions or want to discuss new ideas for NumerBlox,
