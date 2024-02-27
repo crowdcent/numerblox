@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/.icons/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.4">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.11">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -297,14 +297,14 @@
     
     
     
-    
-    
       
+        
+        
       
+    
     
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
@@ -398,6 +398,15 @@
   
     <nav class="md-nav" aria-label="Numerai Signals">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#numerai-signals-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Numerai Signals Dataset
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#eod-historical-data" class="md-nav__link">
@@ -645,14 +654,14 @@
     
     
     
-    
-    
       
+        
+        
       
+    
     
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
-        
         
         
           
@@ -715,14 +724,14 @@
     
     
     
-    
-    
       
+        
+        
       
+    
     
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
-        
         
         
           
@@ -864,6 +873,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#numerai-signals-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Numerai Signals Dataset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#eod-historical-data" class="md-nav__link">
     <span class="md-ellipsis">
       EOD Historical Data
@@ -924,8 +942,8 @@ dl = NumeraiClassicDownloader(directory_path=&quot;my_numerai_data_folder&quot;)
 # Training and validation data
 dl.download_training_data(&quot;train_val&quot;, version=&quot;4.3&quot;)
 
-# Inference data (live)
-dl.download_inference_data(&quot;live&quot;, version=&quot;4.3&quot;)
+# Live data 
+dl.download_live_data(&quot;live&quot;, version=&quot;4.3&quot;)
 </code></pre>
 <p>Besides these common use cases you can also get feature sets and meta model predictions with <code>NumeraiClassicDownloader</code>. </p>
 <pre><code class="language-py">from numerblox.download import NumeraiClassicDownloader
@@ -941,6 +959,19 @@ meta_model_preds = pd.read_parquet(&quot;my_numerai_data_folder/meta_model.parqu
 </code></pre>
 <h2 id="numerai-signals">Numerai Signals</h2>
 <p>For Numerai Signals we have several options implemented to download data. Numerai Signals Downloaders have similar methods as <code>NumeraiClassicDownloader</code>.</p>
+<h3 id="numerai-signals-dataset">Numerai Signals Dataset</h3>
+<p>Numerai provides a basic dataset for Numerai Signals. This is a good starting point for new users.</p>
+<p>More information: <a href="https://docs.numer.ai/numerai-signals/signals-data">https://docs.numer.ai/numerai-signals/signals-data</a></p>
+<pre><code class="language-py">from numerblox.download import NumeraiSignalsDownloader
+
+dl = NumeraiSignalsDownloader(directory_path=&quot;my_numerai_signals_folder&quot;)
+
+# Download full dataset
+dl.download_training_data()
+
+# Live data
+dl.download_live_data()
+</code></pre>
 <h3 id="eod-historical-data">EOD Historical Data</h3>
 <p>Download data from EOD historical data. A common data vendor used for Numerai Signals. </p>
 <p>More information: <a href="https://eodhistoricaldata.com">https://eodhistoricaldata.com</a></p>
@@ -959,8 +990,8 @@ key=eod_api_key, tickers=tickers)
 # Download full dataset
 dl.download_training_data(start=&quot;2008-01-01&quot;)
 
-# load data directly into DataFrame from January 1st 2023 for inference.
-live_data = dl.downloader_live_data(start=&quot;2023-01-01&quot;)
+# load data directly into DataFrame from January 1st 2024 for live.
+live_data = dl.download_live_data(start=&quot;2024-01-01&quot;)
 </code></pre>
 <h3 id="kaggle">Kaggle</h3>
 <p>Some Numerai dataset are uploaded and maintained on Kaggle Datasets. NumerBlox offers a convenient API to download these datasets.</p>
@@ -978,10 +1009,10 @@ with therein a kaggle.json file. kaggle.json should have the following structure
 kd = KaggleDownloader(directory_path=&quot;my_numerai_signals_folder&quot;)
 
 # A good example of Numerai Signals data on Kaggle Datasets is Katsu1110's yfinance price dataset.
-kd.download_inference_data(&quot;code1110/yfinance-stock-price-data-for-numerai-signals&quot;)
+kd.download_live_data(&quot;code1110/yfinance-stock-price-data-for-numerai-signals&quot;)
 </code></pre>
 <h3 id="rolling-your-own-downloader">Rolling your own downloader</h3>
-<p>We invite users to build out their own downloaders for Numerai Signals. The only requirements are that you inherit from <code>numerblox.download.BaseDownloader</code> and implement the <code>download_training_data</code> and <code>download_inference_data</code> methods. Below you will find a template for this.</p>
+<p>We invite users to build out their own downloaders for Numerai Signals. The only requirements are that you inherit from <code>numerblox.download.BaseDownloader</code> and implement the <code>download_training_data</code> and <code>download_live_data</code> methods. Below you will find a template for this.</p>
 <p>If you have a downloader that you would like to share with the community, please open a Pull Request in NumerBlox.</p>
 <pre><code class="language-py">class AwesomeCustomDownloader(BaseDownloader):
     &quot;&quot;&quot;
@@ -993,8 +1024,8 @@ kd.download_inference_data(&quot;code1110/yfinance-stock-price-data-for-numerai-
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
 
-    def download_inference_data(self, *args, **kwargs):
-        &quot;&quot;&quot; (minimal) weekly inference downloading here. &quot;&quot;&quot;
+    def download_live_data(self, *args, **kwargs):
+        &quot;&quot;&quot; (minimal) weekly live downloading here. &quot;&quot;&quot;
         ...
 
     def download_training_data(self, *args, **kwargs):
@@ -1073,10 +1104,10 @@ kd.download_inference_data(&quot;code1110/yfinance-stock-price-data-for-numerai-
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.expand", "navigation.path", "content.code.copy", "navigation.instant", "navigation.instant.prefetch", "navigation.sections"], "search": "../assets/javascripts/workers/search.c011b7c0.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.expand", "navigation.path", "content.code.copy", "navigation.instant", "navigation.instant.prefetch", "navigation.sections"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.7389ff0e.min.js"></script>
+      <script src="../assets/javascripts/bundle.8fd75fb4.min.js"></script>
       
     
   </body>
