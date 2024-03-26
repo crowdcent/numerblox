@@ -19,6 +19,7 @@ class BaseTargetProcessor(BaseEstimator, TransformerMixin):
         ...
 
     def fit(self, X, y=None):
+        self.is_fitted_ = True
         return self
 
     @abstractmethod
@@ -62,6 +63,7 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         # make probability of sampling each component equal to better balance rare regimes
         bgmm.weights_[:] = 1 / self.n_components
         self.bgmm_ = bgmm
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: pd.DataFrame, era_series: pd.Series) -> np.array:

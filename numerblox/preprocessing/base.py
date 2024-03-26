@@ -14,6 +14,7 @@ class BasePreProcessor(BaseEstimator, TransformerMixin):
         sklearn.set_config(enable_metadata_routing=True)
 
     def fit(self, X, y=None):
+        self.is_fitted_ = True
         return self
 
     @abstractmethod

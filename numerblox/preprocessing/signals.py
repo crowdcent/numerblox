@@ -278,9 +278,6 @@ class EraQuantileProcessor(BasePreProcessor):
         """
         transformed_data = self.quantiler.fit_transform(group_data.to_frame()).ravel()
         return pd.Series(transformed_data, index=group_data.index)
-    
-    def fit(self, X: Union[np.array, pd.DataFrame], y=None):
-        return self
 
     def transform(
         self, X: Union[np.array, pd.DataFrame],
@@ -379,9 +376,6 @@ class LagPreProcessor(BasePreProcessor):
     def __init__(self, windows: list = None,):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
-
-    def fit(self, X: Union[np.array, pd.DataFrame], y=None):
-        return self
 
     def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series) -> np.array:
         X = pd.DataFrame(X)
@@ -561,6 +555,7 @@ class HLOCVAdjuster(BasePreProcessor):
 
     def fit(self, X: pd.DataFrame, y=None):
         self.ratio_ = X[self.close_col] / X[self.adj_close_col]
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: pd.DataFrame) -> np.array:
@@ -601,6 +596,7 @@ class MinimumDataFilter(BasePreProcessor):
 
     def fit(self, X: pd.DataFrame, y=None):
         self.feature_names_out_ = X.columns.tolist()
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: pd.DataFrame) -> np.array:

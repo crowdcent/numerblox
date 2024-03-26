@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.decomposition import PCA
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, check_is_fitted
 
 from numerblox.preprocessing.base import BasePreProcessor
 from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcessor,
@@ -59,6 +59,7 @@ def test_processors_sklearn(dummy_signals_data):
 
         # Test fit returns self
         assert processor.fit(X=X, y=y) == processor
+        check_is_fitted(processor)
 
         # Inherits from BasePreProcessor
         assert issubclass(processor_cls, BasePreProcessor)
