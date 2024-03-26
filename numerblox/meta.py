@@ -307,6 +307,8 @@ class MetaPipeline(Pipeline):
             # Check if predict params is needed in transform. If so parse along
             sig = inspect.signature(transform.transform)
             params_needed = {k: v for k, v in predict_params.items() if k in sig.parameters}
+            transform_requests = {k: True for k in params_needed.keys()}
+            transform.set_transform_request(**transform_requests)
             # Use the needed parameters when calling transform
             Xt = transform.transform(Xt, **params_needed)
         return self.steps[-1][1].predict(Xt, **predict_params)
@@ -323,11 +325,15 @@ def _fit_transform_one(
         with _print_elapsed_time(message_clsname, message):
             sig = inspect.signature(transformer.transform)
             fit_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
+            fit_requests = {k: True for k in fit_params_needed.keys()}
+            transformer.set_fit_request(**fit_requests)
             # Use the needed parameters when calling fit
             transformer.fit(X, y, **fit_params_needed)
 
             sig = inspect.signature(transformer.transform)
             transform_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
+            transform_requests = {k: True for k in transform_params_needed.keys()}
+            transformer.set_transform_request(**transform_requests)
             # Use the needed parameters when calling transform
             res = transformer.transform(X, **transform_params_needed)
 

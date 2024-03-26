@@ -158,7 +158,7 @@ def test_group_stats_preprocessor():
     result = processor.transform(dataset)
     assert isinstance(result, np.ndarray)
 
-    processor.set_ouput(transform="polars")
+    processor.set_output(transform="polars")
     result = processor.transform(dataset)
     assert isinstance(result, pl.DataFrame)
 
@@ -237,7 +237,7 @@ def test_ticker_mapper():
 
     mapper.set_output(transform="polars")
     result = mapper.transform(test_dataf)
-    assert isinstance(result, pl.Series)
+    assert isinstance(result, pl.series.series.Series)
     
 
 def test_lag_preprocessor(dummy_signals_data):
