@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from copy import deepcopy
 from typing import List, Union
 from abc import abstractmethod
 from scipy.stats import rankdata
@@ -24,14 +23,9 @@ class BaseTargetProcessor(BaseEstimator, TransformerMixin):
 
     @abstractmethod
     def transform(
-        self, X: Union[np.array, pd.DataFrame], y=None, **kwargs
+        self, X: Union[np.array, pd.DataFrame], y=None
     ) -> pd.DataFrame:
         ...
-
-    def __call__(
-        self, X: Union[np.array, pd.DataFrame], y=None, **kwargs
-    ) -> pd.DataFrame:
-        return self.transform(X=X, y=y, **kwargs)
     
     @abstractmethod
     def get_feature_names_out(self, input_features=None) -> List[str]:
@@ -55,47 +49,47 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         self.ridge = Ridge(fit_intercept=False)
         self.bins = [0, 0.05, 0.25, 0.75, 0.95, 1]
 
-    def fit(self, X: pd.DataFrame, y: pd.Series, eras: pd.Series):
+    def fit(self, X: pd.DataFrame, y: pd.Series, era_series: pd.Series):
         """
         Fit Bayesian Gaussian Mixture model on coefficients and normalize.
         :param X: DataFrame containing features.
         :param y: Series containing real target.
-        :param eras: Series containing era information.
+        :param era_series: Series containing era information.
         """
         bgmm = BayesianGaussianMixture(n_components=self.n_components)
-        coefs = self._get_coefs(dataf=X, y=y, eras=eras)
+        coefs = self._get_coefs(dataf=X, y=y, era_series=era_series)
         bgmm.fit(coefs)
         # make probability of sampling each component equal to better balance rare regimes
         bgmm.weights_[:] = 1 / self.n_components
         self.bgmm_ = bgmm
         return self
 
-    def transform(self, X: pd.DataFrame, eras: pd.Series) -> np.array:
+    def transform(self, X: pd.DataFrame, era_series: pd.Series) -> np.array:
         """
         Main method for generating fake target.
         :param X: DataFrame containing features.
-        :param eras: Series containing era information.
+        :param era_series: Series containing era information.
         """
         check_is_fitted(self, "bgmm_")
-        assert len(X) == len(eras), "X and eras must be same length."
-        all_eras = eras.unique().tolist()
+        assert len(X) == len(era_series), "X and eras must be same length."
+        all_eras = era_series.unique().tolist()
         # Scale data between 0 and 1
         X = X.astype(float)
         X /= X.max()
         X -= 0.5
-        X.loc[:, 'era'] = eras
+        X.loc[:, 'era'] = era_series
 
         fake_target = self._generate_target(dataf=X, all_eras=all_eras)
         return fake_target
 
-    def _get_coefs(self, dataf: pd.DataFrame, y: pd.Series, eras: pd.Series) -> np.ndarray:
+    def _get_coefs(self, dataf: pd.DataFrame, y: pd.Series, era_series: pd.Series) -> np.ndarray:
         """
         Generate coefficients for BGMM.
         :param dataf: DataFrame containing features.
         :param y: Series containing real target.
         """
         coefs = []
-        dataf.loc[:, 'era'] = eras
+        dataf.loc[:, 'era'] = era_series
         dataf.loc[:, 'target'] = y
         all_eras = dataf['era'].unique().tolist()
         for era in all_eras:
@@ -155,12 +149,12 @@ class SignalsTargetProcessor(BaseTargetProcessor):
         self.bins = bins if bins else [0, 0.05, 0.25, 0.75, 0.95, 1]
         self.labels = labels if labels else [0, 0.25, 0.50, 0.75, 1]
 
-    def transform(self, dataf: pd.DataFrame, eras: pd.Series) -> np.array:
+    def transform(self, dataf: pd.DataFrame, era_series: pd.Series) -> np.array:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
             dataf.loc[:, f"target_{window}d_raw"] = (
                 dataf[self.price_col].pct_change(periods=window).shift(-window)
             )
-            era_groups = dataf.groupby(eras)
+            era_groups = dataf.groupby(era_series)
 
             dataf.loc[:, f"target_{window}d_rank"] = era_groups[
                 f"target_{window}d_raw"

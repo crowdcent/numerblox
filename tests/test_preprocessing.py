@@ -194,7 +194,7 @@ def test_era_quantile_processor(dummy_signals_data):
     eqp.set_output(transform="pandas")
     X = dummy_signals_data[["close", "volume"]]
     eqp.fit(X)
-    result = eqp.transform(X, eras=dummy_signals_data["date"])
+    result = eqp.transform(X, era_series=dummy_signals_data["date"])
     quantile_cols = [col for col in result.columns if "quantile" in col]
     assert len(result.columns) == 2
     for col in quantile_cols:
@@ -203,17 +203,17 @@ def test_era_quantile_processor(dummy_signals_data):
     assert eqp.get_feature_names_out() == quantile_cols
 
     # Numpy input
-    result = eqp.transform(X.to_numpy(), eras=dummy_signals_data["date"])
+    result = eqp.transform(X.to_numpy(), era_series=dummy_signals_data["date"])
     assert len(result.shape) == 2
     assert isinstance(result, pd.DataFrame)
 
     # Test set_output API
     eqp.set_output(transform="default")
-    result = eqp.transform(X, eras=dummy_signals_data["date"])
+    result = eqp.transform(X, era_series=dummy_signals_data["date"])
     assert isinstance(result, np.ndarray)
 
     eqp.set_output(transform="polars")
-    result = eqp.transform(X, eras=dummy_signals_data["date"])
+    result = eqp.transform(X, era_series=dummy_signals_data["date"])
     assert isinstance(result, pl.DataFrame)
 
 def test_ticker_mapper():
@@ -237,7 +237,7 @@ def test_ticker_mapper():
 
     mapper.set_output(transform="polars")
     result = mapper.transform(test_dataf)
-    assert isinstance(result, pl.series.series.Series)
+    assert isinstance(result, pl.DataFrame)
     
 
 def test_lag_preprocessor(dummy_signals_data):
@@ -245,7 +245,7 @@ def test_lag_preprocessor(dummy_signals_data):
     lpp.set_output(transform="pandas")
     lpp.fit(dummy_signals_data[['close', 'volume']])
     # DataFrame input
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
+    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
     expected_cols = [
     "close_lag20",
     "close_lag40",
@@ -256,7 +256,7 @@ def test_lag_preprocessor(dummy_signals_data):
     assert lpp.get_feature_names_out() == expected_cols
 
     # Numpy input
-    result = lpp.transform(dummy_signals_data[['close', 'volume']].to_numpy(), tickers=dummy_signals_data["ticker"])
+    result = lpp.transform(dummy_signals_data[['close', 'volume']].to_numpy(), ticker_series=dummy_signals_data["ticker"])
     expected_cols = [
     "0_lag20",
     "0lag40",
@@ -266,11 +266,11 @@ def test_lag_preprocessor(dummy_signals_data):
 
     # Test set_output API
     lpp.set_output(transform="default")
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
+    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
     assert isinstance(result, np.ndarray)
 
     lpp.set_output(transform="polars")
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
+    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
     assert isinstance(result, pl.DataFrame)
 
 
@@ -279,7 +279,7 @@ def test_difference_preprocessor(dummy_signals_data):
     lpp.set_output(transform="pandas")
     lpp.fit(dummy_signals_data[['close', 'volume']])
     lags = lpp.transform(dummy_signals_data[['close', 'volume']],
-                         tickers=dummy_signals_data["ticker"])
+                         ticker_series=dummy_signals_data["ticker"])
     dpp = DifferencePreProcessor(windows=[20, 40], abs_diff=True)
     dpp.set_output(transform="pandas")
     result = dpp.fit_transform(lags)

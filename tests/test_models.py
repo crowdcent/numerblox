@@ -23,10 +23,10 @@ def test_initialization():
 def test_fit_method(setup_data):
     model = EraBoostedXGBRegressor(proportion=0.5, num_iters=5, n_estimators=100,
                                    max_depth=3, learning_rate=0.1)
-    X, y, eras = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
+    X, y, era_series = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
     initial_tree_count = model.n_estimators
 
-    model.fit(X, y, eras=eras, verbose=500)
+    model.fit(X, y, era_series=era_series, verbose=500)
 
     assert model.n_estimators > initial_tree_count
     # Check if the final number of trees is as expected
@@ -36,8 +36,8 @@ def test_fit_method(setup_data):
 def test_predictions(setup_data):
     model = EraBoostedXGBRegressor(num_iters=5, proportion=0.5, n_estimators=100,
                                    learning_rate=0.1, max_depth=3)
-    X, y, eras = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
-    model.fit(X, y, eras=eras)
+    X, y, era_series = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
+    model.fit(X, y, era_series=era_series)
 
     predictions = model.predict(X)
     assert len(predictions) == len(X)
@@ -53,8 +53,8 @@ def test_get_feature_names_out(setup_data):
     with pytest.raises(NotFittedError):
         model.get_feature_names_out()
 
-    X, y, eras = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
-    model.fit(X, y, eras=eras)
+    X, y, era_series = setup_data[["feature1", "feature2"]], setup_data['target'], setup_data['era']
+    model.fit(X, y, era_series=era_series)
 
     # Test after fitting
     feature_names = model.get_feature_names_out()

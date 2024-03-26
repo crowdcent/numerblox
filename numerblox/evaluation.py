@@ -1,4 +1,5 @@
 import time
+import sklearn
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -73,6 +74,7 @@ class BaseEvaluator:
         if self.custom_functions is not None:
             self.check_custom_functions()
         self.show_detailed_progress_bar = show_detailed_progress_bar
+        sklearn.set_config(enable_metadata_routing=True)
 
     def full_evaluation(
         self,
@@ -513,8 +515,9 @@ class BaseEvaluator:
         More info: https://docs.numer.ai/tournament/feature-neutral-correlation
         """
         fn = FeatureNeutralizer(pred_name=pred_col, proportion=1.0)
+        fn.set_predict_request(features=True, era_series=True)
         neutralized_preds = fn.predict(
-            dataf[pred_col], features=dataf[feature_names], eras=dataf[self.era_col]
+            dataf[pred_col], features=dataf[feature_names], era_series=dataf[self.era_col]
         )
         # Construct new DataFrame with era col, target col and preds
         neutralized_dataf = pd.DataFrame(columns=[self.era_col, target_col, pred_col])

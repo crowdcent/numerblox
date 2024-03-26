@@ -16,7 +16,7 @@ Make sure to include the era column as a `pd.Series` in the `fit` method.
 from numerblox.models import EraBoostedXGBRegressor
 
 model = EraBoostedXGBRegressor(proportion=0.5, trees_per_step=10, num_iters=20)
-model.fit(X=X_train, y=y_train, eras=eras_train)
+model.fit(X=X_train, y=y_train, era_series=eras_train)
 
 predictions = model.predict(X_live)
 ```

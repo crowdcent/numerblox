@@ -34,13 +34,13 @@ class EraBoostedXGBRegressor(XGBRegressor):
         assert num_iters >= 2, "num_iters must be at least 2."
         self.num_iters = num_iters
 
-    def fit(self, X, y, eras: pd.Series, **fit_params):
+    def fit(self, X, y, era_series: pd.Series, **fit_params):
         super().fit(X, y, **fit_params)
         evaluator = NumeraiClassicEvaluator(era_col="era")
         self.feature_names = self.get_booster().feature_names
         iter_df = pd.DataFrame(X, columns=self.feature_names)
         iter_df["target"] = y
-        iter_df["era"] = eras
+        iter_df["era"] = era_series
 
         for _ in range(self.num_iters - 1):
             preds = self.predict(X)

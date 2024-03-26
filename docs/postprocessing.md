@@ -18,28 +18,38 @@ All neutralizations will be performed in parallel.
 
 Single column neutralization:
 ```python
+import sklearn
 import pandas as pd
 from numerblox.neutralizers import FeatureNeutralizer
+
+# Enable sklearn custom arguments (i.e. metadata routing)
+sklearn.set_config(enable_metadata_routing=True)
 
 predictions = pd.Series([0.24, 0.87, 0.6])
 feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 neutralizer = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
+neutralizer.set_predict_request(era_series=True, features=True)
 neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
 
 Multiple column neutralization:
 ```python
+import sklearn
 import pandas as pd
 from numerblox.neutralizers import FeatureNeutralizer
+
+# Enable sklearn custom arguments (i.e. metadata routing)
+sklearn.set_config(enable_metadata_routing=True)
 
 predictions = pd.DataFrame({"prediction1": [0.24, 0.87, 0.6], "prediction2": [0.24, 0.87, 0.6]})
 feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 neutralizer = FeatureNeutralizer(pred_name=["prediction1", "prediction2"], proportion=[0.5, 0.7])
+neutralizer.set_predict_request(era_series=True, features=True)
 neutralizer.fit()
 neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
@@ -57,13 +67,18 @@ neutralized_predictions = neutralizer.predict(X=predictions, features=feature_da
 
 Make sure to pass both the features to use for penalization as a `pd.DataFrame` and the accompanying era column as a `pd.Series` to the `predict` method.
 ```python
+import sklearn
 from numerblox.penalizers import FeaturePenalizer
+
+# Enable sklearn custom arguments (i.e. metadata routing)
+sklearn.set_config(enable_metadata_routing=True)
 
 predictions = pd.Series([0.24, 0.87, 0.6])
 feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 penalizer = FeaturePenalizer(max_exposure=0.1, pred_name="prediction")
+penalizer.set_predict_request(era_series=True, features=True)
 penalizer.fit(X=predictions)
 penalized_predictions = penalizer.predict(X=predictions, features=feature_data, eras=era_data)
 ```
