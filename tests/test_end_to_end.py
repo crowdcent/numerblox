@@ -1,10 +1,9 @@
 import pytest
 from xgboost import XGBRegressor
 from sklego.preprocessing import ColumnSelector
-import sklearn
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.pipeline import make_union, make_pipeline, FeatureUnion
+from sklearn.pipeline import make_union, make_pipeline
 from sklearn.compose import ColumnTransformer
 
 from numerblox.numerframe import create_numerframe
@@ -12,8 +11,6 @@ from numerblox.preprocessing import GroupStatsPreProcessor
 from numerblox.meta import CrossValEstimator, make_meta_pipeline, MetaEstimator
 from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
 from numerblox.neutralizers import FeatureNeutralizer
-
-sklearn.set_config(enable_metadata_routing=True)
 
 @pytest.fixture(scope="module")
 def setup_data():
