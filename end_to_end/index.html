@@ -912,14 +912,16 @@ preproc_pipe = make_union(gpp, fncv3_selector)
 xgb = XGBRegressor()
 cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
 ens = NumeraiEnsemble()
+ens.set_transform_request(era_series=True)
 fn = FeatureNeutralizer(proportion=0.5)
+fn.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
 # Train full model
-full_pipe.fit(X, y, numeraiensemble__eras=eras);
+full_pipe.fit(X, y, era_series=era_series);
 
 # Inference on validation data
-val_preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
+val_preds = full_pipe.predict(val_X, era_series=val_eras, features=val_features)
 </code></pre>
 <h2 id="2-multi-classification-ensemble">2. Multi Classification Ensemble</h2>
 <p>This example shows a multiclass classification example where the Numerai target is transformed into integers (<code>[0, 0.25, 0.5, 0.75, 1.0] -&gt; [0, 1, 2, 3, 4]</code>) and treated as a classification problem. </p>
@@ -935,12 +937,14 @@ model = DecisionTreeClassifier()
 crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
 pred_rud = PredictionReducer(n_models=3, n_classes=5)
 ens2 = NumeraiEnsemble(donate_weighted=True)
+ens2.set_transform_request(era_series=True)
 neut2 = FeatureNeutralizer(proportion=0.5)
+neut2.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
-full_pipe.fit(X, y, numeraiensemble__eras=eras)
+full_pipe.fit(X, y, era_series=era_series)
 
-preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
+preds = full_pipe.predict(val_X, era_series=val_eras, features=val_features)
 </code></pre>
 <h2 id="3-ensemble-of-ensemble-of-regressors">3. Ensemble of ensemble of regressors</h2>
 <p>This object introduces a <code>ColumnTransformer</code> that contains 3 pipelines. Each pipeline can have a different set of arguments. Here we simplify by passing every pipeline with the same columns. 
@@ -953,6 +957,7 @@ from numerblox.meta import CrossValEstimator, make_meta_pipeline
 from numerblox.ensemble import NumeraiEnsemble,
 from numerblox.neutralizers import FeatureNeutralizer
 
+
 pipes = []
 for i in range(3):
     model = DecisionTreeRegressor()
@@ -962,14 +967,14 @@ for i in range(3):
 
 models = make_column_transformer(*[(pipe, features.columns.tolist()) for pipe in pipes])
 ens_end = NumeraiEnsemble()
+ens_end.set_transform_request(era_series=True)
 neut = FeatureNeutralizer(proportion=0.5)
+neut.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(models, ens_end, neut)
 
-full_pipe.fit(X, y, 
-              columntransformer__eras=eras,
-              numeraiensemble__eras=eras)
+full_pipe.fit(X, y, era_series=era_series)
 
-preds = full_pipe.predict(val_X, eras=val_eras, features=val_features)
+preds = full_pipe.predict(val_X, era_series=val_eras, features=val_features)
 </code></pre>
 
 
