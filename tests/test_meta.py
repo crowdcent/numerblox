@@ -288,7 +288,6 @@ class MockEstimator:
 def test_feature_neutralizer_pipeline(setup_data):
     lr1 = Ridge()
     fn = FeatureNeutralizer(proportion=0.5)
-    fn.set_predict_request(features=True, era_series=True)
     pipeline = make_meta_pipeline(lr1, fn)
     X, y = setup_data[["feature1", "feature2"]], setup_data["target"]
     pipeline.fit(X, y)
@@ -315,7 +314,6 @@ def test_meta_pipeline_missing_eras(setup_data):
 def test_meta_pipeline_missing_features(setup_data):
     # Create a pipeline with a final step that requires 'features' and 'era_series' arguments.
     final_step = MockFinalStep()
-    final_step.set_predict_request(features=True, era_series=True)
     steps = [("ridge", Ridge()), ("final_step", final_step)]
     pipeline = MetaPipeline(steps)
 
@@ -328,7 +326,6 @@ def test_meta_pipeline_missing_features(setup_data):
 def test_meta_pipeline_missing_eras_for_final_step(setup_data):
     # Create a pipeline with a final step that requires 'features' and 'era_series' arguments.
     final_step = MockFinalStep()
-    final_step.set_predict_request(features=True, era_series=True)
     steps = [("ridge", Ridge()), ("final_step", final_step)]
     pipeline = MetaPipeline(steps)
 

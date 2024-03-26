@@ -23,8 +23,6 @@ def test_base_neutralizer_fit(setup_data):
 
 def test_feature_neutralizer_initialization():
     fn = FeatureNeutralizer()
-    fn.set_transform_request(features=True, era_series=True)
-    fn.set_predict_request(features=True, era_series=True)
     assert fn.new_col_names[0].startswith("prediction_neutralized_")
 
     # Proportion must be between 0 and 1
@@ -42,8 +40,6 @@ def test_feature_neutralizer_initialization():
 
 def test_feature_neutralizer_length_mismatch_X_features(setup_data):
     fn = FeatureNeutralizer()
-    fn.set_transform_request(features=True, era_series=True)
-    fn.set_predict_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     X = setup_data["prediction"][:-1]  # Remove one element to cause mismatch
@@ -53,7 +49,6 @@ def test_feature_neutralizer_length_mismatch_X_features(setup_data):
 
 def test_feature_neutralizer_length_mismatch_X_eras(setup_data):
     fn = FeatureNeutralizer()
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"][:-1]  # Remove one element to cause mismatch
     X = setup_data["prediction"]
@@ -63,7 +58,6 @@ def test_feature_neutralizer_length_mismatch_X_eras(setup_data):
 
 def test_feature_neutralizer_incorrect_dim_X_single_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction1", "prediction2"])
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     X = setup_data["prediction"]  # X is 1D, but two prediction names are provided
@@ -73,7 +67,6 @@ def test_feature_neutralizer_incorrect_dim_X_single_pred(setup_data):
 
 def test_feature_neutralizer_incorrect_dim_X_multi_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction1", "prediction2"])
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
@@ -84,7 +77,6 @@ def test_feature_neutralizer_incorrect_dim_X_multi_pred(setup_data):
 
 def test_feature_neutralizer_predict(setup_data):
     fn = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     X = setup_data["prediction"]
@@ -96,7 +88,6 @@ def test_feature_neutralizer_predict(setup_data):
 
 def test_feature_neutralizer_predict_multi_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5])
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     setup_data["prediction2"] = np.random.uniform(size=len(setup_data))
@@ -109,7 +100,6 @@ def test_feature_neutralizer_predict_multi_pred(setup_data):
 
 def test_feature_neutralizer_predict_multi_prop(setup_data):
     fn = FeatureNeutralizer(pred_name="prediction", proportion=[0.5, 0.7])
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     X = setup_data["prediction"]
@@ -121,7 +111,6 @@ def test_feature_neutralizer_predict_multi_prop(setup_data):
 
 def test_feature_neutralizer_multi_pred_multi_prop(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5, 0.7, 0.9])
-    fn.set_transform_request(features=True, era_series=True)
     features = setup_data[["feature1", "feature2"]]
     era_series = setup_data["era"]
     setup_data["prediction2"] = np.random.uniform(size=len(setup_data))

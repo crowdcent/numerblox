@@ -56,9 +56,7 @@ preproc_pipe = make_union(gpp, fncv3_selector)
 xgb = XGBRegressor()
 cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
 ens = NumeraiEnsemble()
-ens.set_transform_request(era_series=True)
 fn = FeatureNeutralizer(proportion=0.5)
-fn.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
 # Train full model
@@ -87,9 +85,7 @@ model = DecisionTreeClassifier()
 crossval1 = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
 pred_rud = PredictionReducer(n_models=3, n_classes=5)
 ens2 = NumeraiEnsemble(donate_weighted=True)
-ens2.set_transform_request(era_series=True)
 neut2 = FeatureNeutralizer(proportion=0.5)
-neut2.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(preproc_pipe, crossval1, pred_rud, ens2, neut2)
 
 full_pipe.fit(X, y, era_series=era_series)
@@ -121,9 +117,7 @@ for i in range(3):
 
 models = make_column_transformer(*[(pipe, features.columns.tolist()) for pipe in pipes])
 ens_end = NumeraiEnsemble()
-ens_end.set_transform_request(era_series=True)
 neut = FeatureNeutralizer(proportion=0.5)
-neut.set_predict_request(era_series=True, features=True)
 full_pipe = make_meta_pipeline(models, ens_end, neut)
 
 full_pipe.fit(X, y, era_series=era_series)
