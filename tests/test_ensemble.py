@@ -15,7 +15,7 @@ def sample_data():
 
 @pytest.fixture
 def ensemble():
-    return NumeraiEnsemble()
+    return NumeraiEnsemble().set_transform_request(era_series=True)
 
 ##### NumeraiEnsemble #####
 
@@ -32,7 +32,7 @@ def test_numeraiensemble_predict(ensemble, sample_data):
     eras = np.array([1]*50 + [2]*50)
     input_preds = np.random.uniform(size=(100, 5))
 
-    ensemble_preds = ensemble.predict(input_preds, eras)
+    ensemble_preds = ensemble.predict(input_preds, era_series=eras)
     # The length of output should have the same shape as input preds
     assert len(ensemble_preds) == len(input_preds)
     # Output should be a numpy array with values between 0 and 1
@@ -82,7 +82,7 @@ def test_numeraiensemble_standardize_by_era(ensemble):
 
 def test_numeraiensemble_predict_with_constant_values(ensemble):
     # Create an instance of your ensemble with mock estimators
-    eras = np.random.randint(1, 5, size=100)
+    era_series = np.random.randint(1, 5, size=100)
     
     X_fit = np.random.rand(100, 3)
     y_fit = np.random.rand(100)
@@ -92,11 +92,11 @@ def test_numeraiensemble_predict_with_constant_values(ensemble):
 
     with pytest.raises(ValueError, match="Predictions for all columns are constant. No valid predictions to ensemble."):
         with pytest.warns(UserWarning, match="Some estimator predictions are constant. Consider checking your estimators. Skipping these estimator predictions in ensembling."):
-            ensemble.predict(constant_preds, eras)
+            ensemble.predict(constant_preds, era_series)
 
 def test_numeraiensemble_predict_with_nans(ensemble):
     # Create an instance of your ensemble with mock estimators
-    eras = np.random.randint(1, 5, size=100)
+    era_series = np.random.randint(1, 5, size=100)
     
     X_fit = np.random.rand(100, 3)
     y_fit = np.random.rand(100)
@@ -107,7 +107,7 @@ def test_numeraiensemble_predict_with_nans(ensemble):
     nan_preds[:5, 1] = np.nan
 
     with pytest.warns(UserWarning, match="Predictions in column"):
-        ensemble_preds = ensemble.predict(nan_preds, eras)
+        ensemble_preds = ensemble.predict(nan_preds, era_series)
     assert len(ensemble_preds) == len(nan_preds)
     # Output should be a numpy array with values between 0 and 1
     assert isinstance(ensemble_preds, np.ndarray) 
@@ -141,15 +141,15 @@ def test_numeraiensemble_get_feature_names_out(ensemble):
 
 def test_numeraiensemble_set_output(ensemble, sample_data):
     X, y = sample_data
-    eras = np.array([1]*50 + [2]*50)
+    era_series = np.array([1]*50 + [2]*50)
     ens_ins = ensemble
     ens_ins.fit(X, y)
 
     ens_ins.set_output(transform="pandas")
-    preds = ens_ins.predict(X, eras=eras)
+    preds = ens_ins.predict(X, era_series=era_series)
     assert isinstance(preds, pd.DataFrame)
     ens_ins.set_output(transform="default")
-    preds = ens_ins.predict(X, eras=eras)
+    preds = ens_ins.predict(X, era_series=era_series)
     assert isinstance(preds, np.ndarray)
 
 ##### PredictionReducer #####

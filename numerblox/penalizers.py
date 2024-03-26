@@ -22,32 +22,26 @@ class BasePenalizer(BaseEstimator, TransformerMixin):
         self.new_col_name = new_col_name
         super().__init__()
 
-    def fit(self, X=None, y=None, **kwargs):
+    def fit(self, X=None, y=None):
         return self
 
     @abstractmethod
     def transform(
         self, X: Union[np.array, pd.DataFrame], 
-        features: pd.DataFrame, eras: pd.Series, **kwargs
+        features: pd.DataFrame, eras: pd.Series
     ) -> np.array:
         ...
 
-    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
         """ Convenience function for scikit-learn compatibility. """
-        return self.transform(X=X, features=features, eras=eras)
+        return self.transform(X=X, features=features, era_series=era_series)
 
-    def fit_transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
         """ 
         Convenience function for scikit-learn compatibility.
         Needed because fit and transform except different arguments here.
         """
-        return self.fit().transform(X=X, features=features, eras=eras)
-    
-    def __call__(
-        self, X: Union[np.array, pd.DataFrame],
-        features: pd.DataFrame, eras: pd.Series, **kwargs
-    ) -> np.array:
-        return self.predict(X=X, features=features, eras=eras, **kwargs)
+        return self.fit().transform(X=X, features=features, era_series=era_series)
     
     def get_feature_names_out(self, input_features: list = None) -> list:
         """ 
@@ -89,20 +83,20 @@ class FeaturePenalizer(BasePenalizer):
         super().__init__(new_col_name=new_col_name)
         self.suffix = suffix
 
-    def transform(self, X: pd.DataFrame, features: pd.DataFrame, eras: pd.Series) -> np.array:
+    def transform(self, X: pd.DataFrame, features: pd.DataFrame, era_series: pd.Series) -> np.array:
         """
         Main transform method.
         :param X: Input predictions to neutralize. 
         :param features: DataFrame with features for neutralization. 
-        :param eras: Series with era labels for each row in features. 
+        :param era_series: Series with era labels for each row in features. 
         Features, eras and the prediction column must all have the same length.
         :return: Penalized predictions.
         """
         assert len(X) == len(features), "Input predictions must have same length as features."
-        assert len(X) == len(eras), "Input predictions must have same length as eras."
+        assert len(X) == len(era_series), "Input predictions must have same length as eras."
         df = features.copy()
         df["prediction"] = X
-        df["era"] = eras
+        df["era"] = era_series
         penalized_data = self._reduce_all_exposures(
             dataf=df, column=self.pred_name, neutralizers=list(features.columns)
         )
@@ -173,7 +167,6 @@ class FeaturePenalizer(BasePenalizer):
             if loss < 1e-7:
                 break
 
-    @tf.function(experimental_relax_shapes=True)
     def __train_loop_body(self, model, feats, pred, target_exps):
         with tf.GradientTape() as tape:
             exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
@@ -184,7 +177,6 @@ class FeaturePenalizer(BasePenalizer):
         return loss, tape.gradient(loss, model.trainable_variables)
 
     @staticmethod
-    @tf.function(experimental_relax_shapes=True, experimental_compile=True)
     def __exposures(x, y):
         x = x - tf.math.reduce_mean(x, axis=0)
         x = x / tf.norm(x, axis=0)

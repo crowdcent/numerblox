@@ -1,23 +1,19 @@
-import inspect
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from typing import Union, List
+import sklearn
 from sklearn import clone
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators, _final_estimator_has
+from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.model_selection import BaseCrossValidator
 from sklearn.utils.validation import (
     check_is_fitted,
     check_X_y,
-    check_memory,
     FLOAT_DTYPES,
 )     
-from sklearn.utils.metaestimators import available_if
-
-from sklearn.utils import _print_elapsed_time
 
 
 class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
@@ -32,6 +28,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
     """
 
     def __init__(self, estimator, predict_func="predict", model_type="regressor"):
+        sklearn.set_config(enable_metadata_routing=True)
         self.estimator = estimator
         if predict_func not in ["predict", "predict_proba", "predict_log_proba", "transform"]:
             raise ValueError("predict_func must be 'predict', 'predict_proba', 'predict_log_proba' or 'transform'.")
@@ -91,6 +88,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
     :param verbose: Whether to print progress.
     """
     def __init__(self, estimator: BaseEstimator, cv: BaseCrossValidator, evaluation_func=None, predict_func="predict", verbose=False):
+        sklearn.set_config(enable_metadata_routing=True)
         super().__init__()
         self.cv = cv
         if not hasattr(self.cv, "split") or isinstance(self.cv, str):
@@ -215,6 +213,7 @@ class MetaPipeline(Pipeline):
     :param predict_func: Name of the function that will be used for prediction.
     """
     def __init__(self, steps, memory=None, verbose=False, predict_func="predict"):
+        sklearn.set_config(enable_metadata_routing=True)
         self.predict_func = predict_func
         self.modified_steps = self.wrap_estimators_as_transformers(steps)
         self.steps = self.modified_steps
@@ -237,7 +236,6 @@ class MetaPipeline(Pipeline):
             else:
                 name, step = step_tuple
                 transformed_steps.append(self._wrap_step(name, step, is_last_step=is_last_step))
-                
         return transformed_steps
     
     def _wrap_step(self, name, step, columns=None, is_last_step=False):
@@ -262,78 +260,6 @@ class MetaPipeline(Pipeline):
                 return (name, MetaEstimator(step, predict_func=self.predict_func))
 
             return (name, step, columns) if columns else (name, step)
-    
-    def _fit(self, X, y=None, **fit_params_steps):
-        # shallow copy of steps - this should really be steps_
-        self.steps = list(self.steps)
-        self._validate_steps()
-        # Setup the memory
-        memory = check_memory(self.memory)
-
-        for step_idx, name, transformer in self._iter(
-            with_final=False, filter_passthrough=False
-        ):
-            if transformer is None or transformer == "passthrough":
-                with _print_elapsed_time("Pipeline", self._log_message(step_idx)):
-                    continue
-
-            if hasattr(memory, "location") and memory.location is None:
-                # we do not clone when caching is disabled to
-                # preserve backward compatibility
-                cloned_transformer = transformer
-            else:
-                cloned_transformer = clone(transformer)
-            # Fit or load from cache the current transformer
-            X, fitted_transformer = _fit_transform_one(
-                cloned_transformer,
-                X,
-                y,
-                None,
-                message_clsname="Pipeline",
-                message=self._log_message(step_idx),
-                **fit_params_steps[name],
-            )
-            # Replace the transformer of the step with the fitted
-            # transformer. This is necessary when loading the transformer
-            # from the cache.
-            self.steps[step_idx] = (name, fitted_transformer)
-        return X
-    
-    @available_if(_final_estimator_has("predict"))
-    def predict(self, X, **predict_params):
-        """ Overrides predict method in Pipeline so it also parses arguments to transforms."""
-        Xt = X
-        for _, name, transform in self._iter(with_final=False):
-            # Check if predict params is needed in transform. If so parse along
-            sig = inspect.signature(transform.transform)
-            params_needed = {k: v for k, v in predict_params.items() if k in sig.parameters}
-            # Use the needed parameters when calling transform
-            Xt = transform.transform(Xt, **params_needed)
-        return self.steps[-1][1].predict(Xt, **predict_params)
-    
-
-def _fit_transform_one(
-        transformer, X, y, weight, message_clsname="", message=None, **fit_params
-    ):
-        """
-        Fits ``transformer`` to ``X`` and ``y``. The transformed result is returned
-        with the fitted transformer. If ``weight`` is not ``None``, the result will
-        be multiplied by ``weight``.
-        """
-        with _print_elapsed_time(message_clsname, message):
-            sig = inspect.signature(transformer.transform)
-            fit_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
-            # Use the needed parameters when calling fit
-            transformer.fit(X, y, **fit_params_needed)
-
-            sig = inspect.signature(transformer.transform)
-            transform_params_needed = {k: v for k, v in fit_params.items() if k in sig.parameters}
-            # Use the needed parameters when calling transform
-            res = transformer.transform(X, **transform_params_needed)
-
-        if weight is None:
-            return res, transformer
-        return res * weight, transformer
 
 
 def make_meta_pipeline(*steps, memory=None, verbose=False) -> MetaPipeline:

@@ -278,13 +278,10 @@ class EraQuantileProcessor(BasePreProcessor):
         """
         transformed_data = self.quantiler.fit_transform(group_data.to_frame()).ravel()
         return pd.Series(transformed_data, index=group_data.index)
-    
-    def fit(self, X: Union[np.array, pd.DataFrame], y=None, eras: pd.Series = None):
-        return self
 
     def transform(
         self, X: Union[np.array, pd.DataFrame],
-        eras: pd.Series,
+        era_series: pd.Series,
     ) -> np.array:
         """ 
         Quantile all features by era.
@@ -293,9 +290,9 @@ class EraQuantileProcessor(BasePreProcessor):
         :return: Quantiled features.
         """
         X = pd.DataFrame(X)
-        assert X.shape[0] == eras.shape[0], "Input X and eras must have the same number of rows for quantiling."
+        assert X.shape[0] == era_series.shape[0], "Input X and eras must have the same number of rows for quantiling."
         self.features = [col for col in X.columns]
-        X.loc[:, "era"] = eras
+        X.loc[:, "era"] = era_series
         date_groups = X.groupby('era', group_keys=False)
 
         def process_feature(feature):
@@ -380,13 +377,10 @@ class LagPreProcessor(BasePreProcessor):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
 
-    def fit(self, X: Union[np.array, pd.DataFrame], y=None, tickers: pd.Series = None):
-        return self
-
-    def transform(self, X: Union[np.array, pd.DataFrame], tickers: pd.Series) -> np.array:
+    def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series) -> np.array:
         X = pd.DataFrame(X)
         feature_cols = X.columns.tolist()
-        X["ticker"] = tickers
+        X["ticker"] = ticker_series
         ticker_groups = X.groupby("ticker")
         output_features = []
         for feature in tqdm(feature_cols, desc="Lag feature generation"):
@@ -398,9 +392,9 @@ class LagPreProcessor(BasePreProcessor):
         self.output_features = output_features
         return X[output_features].to_numpy()
     
-    def fit_transform(self, X: Union[np.array, pd.DataFrame], tickers: pd.Series):
-        self.fit(X=X, tickers=tickers)
-        return self.transform(X=X, tickers=tickers)
+    def fit_transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series):
+        self.fit(X=X)
+        return self.transform(X=X, ticker_series=ticker_series)
     
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
@@ -561,6 +555,7 @@ class HLOCVAdjuster(BasePreProcessor):
 
     def fit(self, X: pd.DataFrame, y=None):
         self.ratio_ = X[self.close_col] / X[self.adj_close_col]
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: pd.DataFrame) -> np.array:
@@ -601,6 +596,7 @@ class MinimumDataFilter(BasePreProcessor):
 
     def fit(self, X: pd.DataFrame, y=None):
         self.feature_names_out_ = X.columns.tolist()
+        self.is_fitted_ = True
         return self
 
     def transform(self, X: pd.DataFrame) -> np.array:

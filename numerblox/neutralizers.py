@@ -5,6 +5,7 @@ from typing import Union, List
 import scipy.stats as sp
 from abc import abstractmethod
 from joblib import Parallel, delayed
+import sklearn
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -16,34 +17,29 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
     """
     def __init__(self, new_col_names: list):
         self.new_col_names = new_col_names
+        sklearn.set_config(enable_metadata_routing=True)
         super().__init__()
 
-    def fit(self, X=None, y=None, **kwargs):
+    def fit(self, X=None, y=None):
         return self
 
     @abstractmethod
     def transform(
         self, X: Union[np.array, pd.DataFrame], 
-        features: pd.DataFrame, eras: pd.Series, **kwargs
+        features: pd.DataFrame, era_series: pd.Series
     ) -> np.array:
         ...
 
-    def predict(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
         """ Convenience function for scikit-learn compatibility. """
-        return self.transform(X=X, features=features, eras=eras)
+        return self.transform(X=X, features=features, era_series=era_series)
 
-    def fit_transform(self, X: np.array, features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+    def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
         """ 
         Convenience function for scikit-learn compatibility.
         Needed because fit and transform except different arguments here.
         """
-        return self.fit().transform(X=X, features=features, eras=eras)
-    
-    def __call__(
-        self, X: Union[np.array, pd.DataFrame],
-        features: pd.DataFrame, eras: pd.Series, **kwargs
-    ) -> np.array:
-        return self.predict(X=X, features=features, eras=eras, **kwargs)
+        return self.fit().transform(X=X, features=features, era_series=era_series)
     
     def get_feature_names_out(self, input_features: list = None) -> list:
         """ 
@@ -92,17 +88,19 @@ class FeatureNeutralizer(BaseNeutralizer):
         self.num_cores = num_cores
 
     def transform(self, X: Union[np.array, pd.Series, pd.DataFrame], 
-                  features: pd.DataFrame, eras: Union[np.array, pd.Series]) -> np.array:
+                  features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
         """
         Main transform function.
         :param X: Input predictions to neutralize. \n
         :param features: DataFrame with features for neutralization. \n
-        :param eras: Series with era labels for each row in features. \n
-        Features, eras and the prediction column must all have the same length.
+        :param era_series: Series with era labels for each row in features. \n
+        Features, era_series and the prediction column must all have the same length.
         :return: Neutralized predictions NumPy array.
         """
+        if features is None or era_series is None:
+            raise ValueError("Features and era_series must be provided.")
         assert len(X) == len(features), "Input predictions must have same length as features."
-        assert len(X) == len(eras), "Input predictions must have same length as eras."
+        assert len(X) == len(era_series), "Input predictions must have same length as eras."
         df = features.copy()
         if not isinstance(X, np.ndarray):
             X = np.array(X)
@@ -114,7 +112,7 @@ class FeatureNeutralizer(BaseNeutralizer):
             assert len(self.pred_name) == X.shape[1], "Number of prediction columns given in X does not match 'pred_name'."
         for i, pred_name in enumerate(self.pred_name):
             df[pred_name] = X[:, i]
-        df["era"] = eras
+        df["era"] = era_series
 
         feature_cols = list(features.columns)
         tasks = [
@@ -192,5 +190,5 @@ class FeatureNeutralizer(BaseNeutralizer):
         :param scores: DataFrame with predictions.
         :return: Raw exposures for each era.
         """
-        return exposures.dot(np.linalg.pinv(exposures).dot(scores))
+        return exposures.dot(np.linalg.pinv(exposures).dot(scores))   
     

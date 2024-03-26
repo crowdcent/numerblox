@@ -259,19 +259,21 @@ def test_binary_class_postprocess():
 ##### MetaPipeline #####
 
 class MockTransform(BaseEstimator, TransformerMixin):
-    """A mock transformer that requires 'eras' as an argument in its transform method."""
+    """A mock transformer that requires 'era_series' as an argument in its transform method."""
     def fit(self, X, y=None):
         return self
     
-    def predict(self, X, eras):
-        return self.transform(X, eras)
+    def predict(self, X, era_series):
+        assert not era_series is None, "era_series should be provided."
+        return self.transform(X, era_series)
 
 class MockFinalStep(BaseEstimator, RegressorMixin):
-    """A mock final step for the pipeline that requires 'features' and 'eras' in its predict method."""
+    """A mock final step for the pipeline that requires 'features' and 'era_series' in its predict method."""
     def fit(self, X, y=None):
         return self
 
-    def predict(self, X, features, eras):
+    def predict(self, X, features, era_series):
+        assert not features is None and not era_series is None, "features and era_series should be provided."
         return X
     
 class MockEstimator:
@@ -286,49 +288,54 @@ class MockEstimator:
 def test_feature_neutralizer_pipeline(setup_data):
     lr1 = Ridge()
     fn = FeatureNeutralizer(proportion=0.5)
+    fn.set_predict_request(features=True, era_series=True)
     pipeline = make_meta_pipeline(lr1, fn)
     X, y = setup_data[["feature1", "feature2"]], setup_data["target"]
     pipeline.fit(X, y)
-    eras = setup_data["era"]
+    era_series = setup_data["era"]
 
-    result = pipeline.predict(X, features=X, eras=eras)
+    result = pipeline.predict(X, features=X, era_series=era_series)
     assert isinstance(result, np.ndarray)
     assert len(result) == len(setup_data)
     assert result.min() >= 0
     assert result.max() <= 1
 
 def test_meta_pipeline_missing_eras(setup_data):
-    # Create a pipeline where a step requires the 'eras' argument.
+    # Create a pipeline where a step requires the 'era_series' argument.
     steps = [("mock_transform", MockTransform()), ("final_step", MockFinalStep())]
     pipeline = MetaPipeline(steps)
 
     X = setup_data[["feature1", "feature2"]]
     y = setup_data["target"]
 
-    # Predict without providing 'eras' should raise a TypeError from MetaEstimator.
+    # Predict without providing 'era_series' should raise a TypeError from MetaEstimator.
     with pytest.raises(TypeError):
         pipeline.fit(X, y).predict(X, features=[])
 
 def test_meta_pipeline_missing_features(setup_data):
-    # Create a pipeline with a final step that requires 'features' and 'eras' arguments.
-    steps = [("ridge", Ridge()), ("final_step", MockFinalStep())]
+    # Create a pipeline with a final step that requires 'features' and 'era_series' arguments.
+    final_step = MockFinalStep()
+    final_step.set_predict_request(features=True, era_series=True)
+    steps = [("ridge", Ridge()), ("final_step", final_step)]
     pipeline = MetaPipeline(steps)
 
     X = setup_data[["feature1", "feature2"]]
     y = setup_data["target"]
     # Predict without providing 'features' should raise an error.
     with pytest.raises(TypeError, match=re.escape("predict() missing 1 required positional argument: 'features'")):
-        pipeline.fit(X, y).predict(X, eras=[])
+        pipeline.fit(X, y).predict(X, era_series=[])
 
 def test_meta_pipeline_missing_eras_for_final_step(setup_data):
-    # Create a pipeline with a final step that requires 'features' and 'eras' arguments.
-    steps = [("ridge", Ridge()), ("final_step", MockFinalStep())]
+    # Create a pipeline with a final step that requires 'features' and 'era_series' arguments.
+    final_step = MockFinalStep()
+    final_step.set_predict_request(features=True, era_series=True)
+    steps = [("ridge", Ridge()), ("final_step", final_step)]
     pipeline = MetaPipeline(steps)
 
     X = setup_data[["feature1", "feature2"]]
     y = setup_data["target"]
-    # Predict without providing 'eras' for the final step should raise an error.
-    with pytest.raises(TypeError, match=re.escape("predict() missing 1 required positional argument: 'eras'")):
+    # Predict without providing 'era_series' for the final step should raise an error.
+    with pytest.raises(TypeError, match=re.escape("predict() missing 1 required positional argument: 'era_series'")):
         pipeline.fit(X, y).predict(X, features=[])
 
 def test_do_not_wrap_transformer():

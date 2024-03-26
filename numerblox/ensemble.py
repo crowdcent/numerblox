@@ -2,9 +2,8 @@ import scipy
 import warnings
 import numpy as np
 import pandas as pd
-
 from typing import Union, List
-from sklearn.utils.validation import check_is_fitted
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
         
 
@@ -22,25 +21,26 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     Example donate weighting for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
     """
     def __init__(self, weights=None, donate_weighted=False):
+        sklearn.set_config(enable_metadata_routing=True)
         super().__init__()
         self.weights = weights
         if self.weights and sum(self.weights) != 1:
             warnings.warn(f"Warning: Weights do not sum to 1. Got {sum(self.weights)}.")
         self.donate_weighted = donate_weighted
 
-    def fit(self, X=None, y=None, **kwargs):
+    def fit(self, X: Union[np.array, pd.DataFrame], y=None):
         self.is_fitted_ = True
         return self
 
-    def transform(self, X: Union[np.array, pd.DataFrame], eras: pd.Series) -> np.array:
+    def transform(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series) -> np.array:
         """ 
         Standardize by era and ensemble. 
         :param X: Input data where each column contains predictions from an estimator.
-        :param eras: Era labels (strings) for each row in X.
+        :param era_series: Era labels (strings) for each row in X.
         :return: Ensembled predictions.
         """
-        check_is_fitted(self)
-        assert len(X) == len(eras), f"input X and eras must have the same length. Got {len(X)} != {len(eras)}."
+        assert not era_series is None, "Era series must be provided for NumeraiEnsemble."
+        assert len(X) == len(era_series), f"input X and era_series must have the same length. Got {len(X)} != {len(era_series)}."
 
         if len(X.shape) == 1:
             raise ValueError("NumeraiEnsemble requires at least 2 prediction columns. Got 1.")
@@ -67,7 +67,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
             if np.all(pred == pred[0]):
                 warnings.warn(f"Warning: Predictions in column '{i}' are all constant. Consider checking your estimators. Skipping these estimator predictions in ensembling.")
             else:
-                standardized_pred = self._standardize_by_era(pred, eras)
+                standardized_pred = self._standardize_by_era(pred, era_series)
                 standardized_pred_list.append(standardized_pred)
         standardized_pred_arr = np.asarray(standardized_pred_list).T
 
@@ -78,11 +78,15 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         ensembled_predictions = np.average(standardized_pred_arr, axis=1, weights=weights)
         return ensembled_predictions.reshape(-1, 1)
     
-    def predict(self, X: Union[np.array, pd.DataFrame], eras: pd.Series) -> np.array:
+    def fit_transform(self, X: Union[np.array, pd.DataFrame], y=None, era_series: pd.Series = None) -> np.array:
+        self.fit(X, y)
+        return self.transform(X, era_series)
+    
+    def predict(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series) -> np.array:
         """ 
         For if a NumeraiEnsemble happens to be the last step in the pipeline. Has same behavior as transform.
         """
-        return self.transform(X, eras)
+        return self.transform(X, era_series=era_series)
 
     def _standardize(self, X: np.array) -> np.array:
         """ 
@@ -93,16 +97,16 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         percentile_X = (scipy.stats.rankdata(X, method="ordinal") - 0.5) / len(X)
         return percentile_X
     
-    def _standardize_by_era(self, X: np.array, eras: Union[np.array, pd.Series, pd.DataFrame]) -> np.array:
+    def _standardize_by_era(self, X: np.array, era_series: Union[np.array, pd.Series, pd.DataFrame]) -> np.array:
         """
         Standardize predictions of a single estimator by era.
         :param X: All predictions of a single estimator.
-        :param eras: Era labels (strings) for each row in X.
+        :param era_series: Era labels (strings) for each row in X.
         :return: Standardized predictions.
         """
-        if isinstance(eras, (pd.Series, pd.DataFrame)):
-            eras = eras.to_numpy().flatten()
-        df = pd.DataFrame({'prediction': X, 'era': eras})
+        if isinstance(era_series, (pd.Series, pd.DataFrame)):
+            era_series = era_series.to_numpy().flatten()
+        df = pd.DataFrame({'prediction': X, 'era': era_series})
         df['standardized_prediction'] = df.groupby('era')['prediction'].transform(self._standardize)
         return df['standardized_prediction'].values.flatten()
     
@@ -144,8 +148,7 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
         self.n_classes = n_classes
         self.dot_array = [i for i in range(self.n_classes)]
 
-    def fit(self, X, y=None):
-        self.is_fitted_ = True
+    def fit(self, X: np.array, y=None):
         return self
 
     def transform(self, X: np.array):
@@ -153,7 +156,6 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
         :param X: Input predictions.
         :return: Reduced predictions of shape (X.shape[0], self.n_models).
         """
-        check_is_fitted(self)
         reduced = []
         expected_n_cols = self.n_models * self.n_classes
         if len(X.shape) != 2:

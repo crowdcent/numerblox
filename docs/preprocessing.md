@@ -52,13 +52,14 @@ enhanced_data = feature_gen.fit_transform(dataf)
 
 `EraQuantileProcessor` transforms features into quantiles by era. This can help normalize data and make patterns more distinguishable. Quantiling operation are parallelized across features for faster processing.
 
-Using `.transform` requires passing the era column as a `pd.Series`. This is because the quantiles are calculated per era so it needs that information along with the raw input features.
+Using `.transform` requires passing `era_series`. This is because the quantiles are calculated per era so it needs that information along with the raw input features.
 
 ```py
 from numerblox.preprocessing import EraQuantileProcessor
 
 eq_processor = EraQuantileProcessor(num_quantiles=50, random_state=42)
-transformed_data = eq_processor.fit_transform(X, eras=eras_series)
+eq_processor.set_transform_request(era_series=True)
+transformed_data = eq_processor.fit_transform(X, era_series=eras_series)
 ```
 
 ### TickerMapper
@@ -79,14 +80,15 @@ mapped_data = ticker_mapper.transform(dataf["ticker"])
 
 `LagPreProcessor` generates lag features based on specified windows. Lag features can capture temporal patterns in time-series data.
 
-Note that `LagPreProcessor` needs a series of `tickers` in the `.transform` step.
+Note that `LagPreProcessor` needs a `ticker_series` in the `.transform` step.
 
 ```py
 from numerblox.preprocessing import LagPreProcessor
 
 lag_processor = LagPreProcessor(windows=[5, 10, 20])
+lag_processor.set_transform_request(ticker_series=True)
 lag_processor.fit(X)
-lagged_data = lag_processor.transform(X, tickers=tickers_series)
+lagged_data = lag_processor.transform(X, ticker_series=tickers_series)
 
 ```
 
@@ -96,18 +98,19 @@ lagged_data = lag_processor.transform(X, tickers=tickers_series)
 
 WARNING: `DifferencePreProcessor` works only on `pd.DataFrame` and with columns that are generated in `LagPreProcessor`. If you are using these in a Pipeline make sure `LagPreProcessor` is defined before `DifferencePreProcessor` and that output API is set to Pandas (`pipeline.set_output(transform="pandas")`).
 
-Note that `LagPreProcessor` needs a series of `tickers` in the `.transform` step so a pipeline with both preprocessors will need a `tickers` argument in `.transform`.
+Note that `LagPreProcessor` needs a `ticker_series` in the `.transform` step so a pipeline with both preprocessors will need a `tickers` argument in `.transform`.
 
 ```py
 from sklearn.pipeline import make_pipeline
 from numerblox.preprocessing import DifferencePreProcessor
 
 lag = LagPreProcessor(windows=[5, 10])
+lag.set_transform_request(ticker_series=True)
 diff = DifferencePreProcessor(windows=[5, 10], pct_diff=True)
 pipe = make_pipeline(lag, diff)
 pipe.set_output(transform="pandas")
 pipe.fit(X)
-diff_data = pipe.transform(X, tickers=tickers_series)
+diff_data = pipe.transform(X, ticker_series=tickers_series)
 ```
 
 ### PandasTaFeatureGenerator
