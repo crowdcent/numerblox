@@ -153,16 +153,16 @@ full_pipe = make_meta_pipeline(preproc_pipe, crossval, pred_rud, ens, neut)
 # Train
 X, y = df.get_feature_target_pair(multi_target=False)
 y_int = (y * 4).astype(int)
-eras = df.get_era_data
+era_series = df.get_era_data
 features = df.get_feature_data
-full_pipe.fit(X, y_int, numeraiensemble__eras=eras)
+full_pipe.fit(X, y_int, era_series=era_series)
 
 # Evaluate
 val_df = create_numerframe("data/train_val/validation_int8.parquet")
 val_X, _ = val_df.get_feature_target_pair(multi_target=False)
 val_eras = val_df.get_era_data
 val_features = val_df.get_feature_data
-val_df['prediction'] = full_pipe.predict(val_X, eras=val_eras, features=val_features)
+val_df['prediction'] = full_pipe.predict(val_X, era_series=val_eras, features=val_features)
 val_df['example_preds'] = ExamplePredictions("v4.3/validation_example_preds.parquet").fit_transform(None)['prediction'].values
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
@@ -176,7 +176,7 @@ live_df = create_numerframe(file_path="data/current_round/live_int8.parquet")
 live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
 live_eras = live_df.get_era_data
 live_features = live_df.get_feature_data
-preds = full_pipe.predict(live_X, eras=live_eras, features=live_features)
+preds = full_pipe.predict(live_X, era_series=live_eras, features=live_features)
 
 # Submit
 NUMERAI_PUBLIC_ID = "YOUR_PUBLIC_ID"
@@ -195,7 +195,6 @@ submitter.full_submission(dataf=pred_dataf,
 downloader.remove_base_directory()
 submitter.remove_base_directory()
 ```
-
 
 ## 4. Contributing
 
