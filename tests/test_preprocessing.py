@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+import polars as pl
 import pandas as pd
 from tqdm import tqdm
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -96,6 +97,12 @@ def test_reduce_memory_preprocessor(dummy_signals_data):
     reduced_data = rmp.transform(dummy_signals_data.to_numpy())
     assert isinstance(reduced_data, np.ndarray)
 
+    # Test polars Output
+    rmp.set_output(transform="polars")
+    reduced_data = rmp.transform(dummy_signals_data)
+    assert isinstance(reduced_data, pl.DataFrame)
+
+
 def test_group_stats_preprocessor():
     # Test with part groups selects
     test_group_processor = GroupStatsPreProcessor(groups=["sunshine", "rain"])
@@ -151,6 +158,10 @@ def test_group_stats_preprocessor():
     result = processor.transform(dataset)
     assert isinstance(result, np.ndarray)
 
+    processor.set_ouput(transform="polars")
+    result = processor.transform(dataset)
+    assert isinstance(result, pl.DataFrame)
+
     # Test get_feature_names_out
     assert test_group_processor.get_feature_names_out() == expected_cols
     assert test_group_processor.get_feature_names_out(["fancy"]) == ["fancy"]
@@ -201,6 +212,10 @@ def test_era_quantile_processor(dummy_signals_data):
     result = eqp.transform(X, eras=dummy_signals_data["date"])
     assert isinstance(result, np.ndarray)
 
+    eqp.set_output(transform="polars")
+    result = eqp.transform(X, eras=dummy_signals_data["date"])
+    assert isinstance(result, pl.DataFrame)
+
 def test_ticker_mapper():
     # Basic
     test_dataf = pd.Series(["AAPL", "MSFT"])
@@ -219,7 +234,12 @@ def test_ticker_mapper():
     mapper.set_output(transform="default")
     result = mapper.transform(test_dataf)
     assert isinstance(result, np.ndarray)
+
+    mapper.set_output(transform="polars")
+    result = mapper.transform(test_dataf)
+    assert isinstance(result, pl.Series)
     
+
 def test_lag_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
@@ -249,6 +269,11 @@ def test_lag_preprocessor(dummy_signals_data):
     result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
     assert isinstance(result, np.ndarray)
 
+    lpp.set_output(transform="polars")
+    result = lpp.transform(dummy_signals_data[['close', 'volume']], tickers=dummy_signals_data["ticker"])
+    assert isinstance(result, pl.DataFrame)
+
+
 def test_difference_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
@@ -267,6 +292,10 @@ def test_difference_preprocessor(dummy_signals_data):
     dpp.set_output(transform="default")
     result = dpp.transform(lags)
     assert isinstance(result, np.ndarray)
+
+    dpp.set_output(transform="polars")
+    result = dpp.transform(lags)
+    assert isinstance(result, pl.DataFrame)
 
 def test_pandasta_feature_generator(dummy_signals_data):
     ptfg = PandasTaFeatureGenerator()
@@ -295,6 +324,15 @@ def test_hlocv_adjuster_basic(dummy_signals_data):
     assert np.isclose(original_row["open"] / ratio, adjusted_row["adjusted_open"])
     assert np.isclose(original_row["volume"] * ratio, adjusted_row["adjusted_volume"])
 
+    # Test set_output API
+    adjuster.set_output(transform="default")
+    result = adjuster.transform(dummy_signals_data)
+    assert isinstance(result, np.ndarray)
+
+    adjuster.set_output(transform="polars")
+    result = adjuster.transform(dummy_signals_data)
+    assert isinstance(result, pl.DataFrame)
+
 def test_minimum_data_filter(dummy_signals_data):
     before_tickers = dummy_signals_data["ticker"].unique().tolist()
     for tick in ["XYZ.US", "RST.US", "UVW.US"]:
@@ -316,4 +354,8 @@ def test_minimum_data_filter(dummy_signals_data):
     filter.set_output(transform="default")
     result = filter.transform(dummy_signals_data)
     assert isinstance(result, np.ndarray)
+
+    filter.set_output(transform="polars")
+    result = filter.transform(dummy_signals_data)
+    assert isinstance(result, pl.DataFrame)
 
