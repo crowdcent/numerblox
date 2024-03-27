@@ -308,7 +308,7 @@ class EraQuantileProcessor(BasePreProcessor):
         return output_df.to_numpy()
     
     def fit_transform(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series):
-        self.fit(X=X, era_series=era_series)
+        self.fit(X=X)
         return self.transform(X=X, era_series=era_series)
 
     def get_feature_names_out(self, input_features=None) -> List[str]:
