@@ -100,7 +100,6 @@ def test_feature_neutralizer_transform_no_era(setup_data):
     assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
 
     fn.set_transform_request(era_series=False)
-    result = fn.transform(X, features=features)
     # Ensure warning is raised
     with pytest.warns(UserWarning):
         result2 = fn.transform(X, features=features)
