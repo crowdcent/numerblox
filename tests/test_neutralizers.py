@@ -2,6 +2,7 @@ import pytest
 import sklearn
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import make_pipeline
 from sklearn.utils._metadata_requests import MetadataRequest
 
 from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer
@@ -85,6 +86,27 @@ def test_feature_neutralizer_predict(setup_data):
     assert result.shape[1] == 1
     assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
     assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
+
+def test_feature_neutralizer_transform_no_era(setup_data):
+    fn = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
+    fn.set_transform_request(era_series=False)
+    features = setup_data[["feature1", "feature2"]]
+    X = setup_data["prediction"]
+    result = fn.transform(X, features=features)
+    # Ensure warning is raised
+    with pytest.warns(UserWarning):
+        result = fn.transform(X, features=features)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
+
+    fn.set_transform_request(era_series=None)
+    era_series = setup_data["era"]
+    pipe = make_pipeline(fn)
+    # Passing era_series should give an error with metadata routing set to None
+    with pytest.raises(ValueError):
+        result = pipe.fit_transform(X, features=features, era_series=era_series)
 
 def test_feature_neutralizer_predict_multi_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5])

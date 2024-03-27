@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -32,11 +33,11 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
     ) -> np.array:
         ...
 
-    def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
+    def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
         """ Convenience function for scikit-learn compatibility. """
         return self.transform(X=X, features=features, era_series=era_series)
 
-    def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
+    def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
         """ 
         Convenience function for scikit-learn compatibility.
         Needed because fit and transform except different arguments here.
@@ -90,7 +91,7 @@ class FeatureNeutralizer(BaseNeutralizer):
         self.num_cores = num_cores
 
     def transform(self, X: Union[np.array, pd.Series, pd.DataFrame], 
-                  features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
+                  features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
         """
         Main transform function.
         :param X: Input predictions to neutralize. \n
@@ -99,10 +100,15 @@ class FeatureNeutralizer(BaseNeutralizer):
         Features, era_series and the prediction column must all have the same length.
         :return: Neutralized predictions NumPy array.
         """
-        if features is None or era_series is None:
-            raise ValueError("Features and era_series must be provided.")
+        if era_series is None:
+            warnings.warn("WARNING: 'era_series' not provided for neutralization! Neutralization will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to neutralization in this way! Not providing 'era_series' is valid for live inference, where only one era is used to generate predictions.")
+        else:
+            assert len(X) == len(era_series), "Input predictions must have same length as era_series."
+
+        if features is None:
+            raise ValueError("`features` argument must be provided for neutralization.")
         assert len(X) == len(features), "Input predictions must have same length as features."
-        assert len(X) == len(era_series), "Input predictions must have same length as eras."
+
         df = features.copy()
         if not isinstance(X, np.ndarray):
             X = np.array(X)
@@ -114,7 +120,8 @@ class FeatureNeutralizer(BaseNeutralizer):
             assert len(self.pred_name) == X.shape[1], "Number of prediction columns given in X does not match 'pred_name'."
         for i, pred_name in enumerate(self.pred_name):
             df[pred_name] = X[:, i]
-        df["era"] = era_series
+        # Treat input as 1 era if era_series is not provided.
+        df["era"] = era_series if era_series is not None else "X"
 
         feature_cols = list(features.columns)
         tasks = [
