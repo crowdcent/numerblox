@@ -58,7 +58,6 @@ Using `.transform` requires passing `era_series`. This is because the quantiles 
 from numerblox.preprocessing import EraQuantileProcessor
 
 eq_processor = EraQuantileProcessor(num_quantiles=50, random_state=42)
-eq_processor.set_transform_request(era_series=True)
 transformed_data = eq_processor.fit_transform(X, era_series=eras_series)
 ```
 
@@ -86,7 +85,6 @@ Note that `LagPreProcessor` needs a `ticker_series` in the `.transform` step.
 from numerblox.preprocessing import LagPreProcessor
 
 lag_processor = LagPreProcessor(windows=[5, 10, 20])
-lag_processor.set_transform_request(ticker_series=True)
 lag_processor.fit(X)
 lagged_data = lag_processor.transform(X, ticker_series=tickers_series)
 
@@ -105,7 +103,6 @@ from sklearn.pipeline import make_pipeline
 from numerblox.preprocessing import DifferencePreProcessor
 
 lag = LagPreProcessor(windows=[5, 10])
-lag.set_transform_request(ticker_series=True)
 diff = DifferencePreProcessor(windows=[5, 10], pct_diff=True)
 pipe = make_pipeline(lag, diff)
 pipe.set_output(transform="pandas")

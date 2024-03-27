@@ -145,10 +145,10 @@ df = create_numerframe(file_path="data/train_val/train_int8.parquet")
 val_df = create_numerframe(file_path="data/train_val/validation_int8.parquet")
 
 X, y = df.get_feature_target_pair()
-eras = df.get_era_data()
+train_eras = df.get_era_data
 
 val_X, val_y = val_df.get_feature_target_pair()
-val_eras = val_df.get_era_data()
+val_eras = val_df.get_era_data
 
 fncv3_cols = nf.get_fncv3_features.columns.tolist()
 
@@ -164,9 +164,9 @@ ensembler = NumeraiEnsemble(donate_weighted=True)
 
 full_pipe = make_pipeline(preproc_pipe, model, ensembler)
 
-full_pipe.fit(X, y, numeraiensemble__eras=eras)
+full_pipe.fit(X, y, era_series=train_eras)
 
-val_preds = full_pipe.predict(val_X, eras=val_eras)
+val_preds = full_pipe.predict(val_X, era_series=val_eras)
 ```
 
 ### 3.4. Evaluation

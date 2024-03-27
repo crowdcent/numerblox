@@ -32,7 +32,6 @@ def test_feature_penalizer_get_feature_names_out_with_input_features():
 # TODO Fast FeaturePenalizer tests
 # def test_feature_penalizer_predict(setup_data):
 #     fp = FeaturePenalizer(max_exposure=0.5)
-#     fp.set_transform_request(features=True, era_series=True)
 #     features = setup_data[["feature1", "feature2"]]
 #     era_series = setup_data["era"]
 #     X = setup_data["prediction"]

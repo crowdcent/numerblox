@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import sklearn
-from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from numerblox.targets import BayesianGMMTargetProcessor, SignalsTargetProcessor
@@ -13,8 +11,6 @@ dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
 dummy_signals_data = create_signals_sample_data
 
 ALL_PROCESSORS = [BayesianGMMTargetProcessor, SignalsTargetProcessor]
-
-sklearn.set_config(enable_metadata_routing=True)
 
 def test_processors_sklearn():
     data = dataset.sample(50)
@@ -27,7 +23,6 @@ def test_processors_sklearn():
     for processor_cls in tqdm(ALL_PROCESSORS, desc="Testing target processors for scikit-learn compatibility"):
         # Initialization
         processor = processor_cls()
-        processor.set_transform_request(era_series=True)
 
         # Inherits from Sklearn classes
         assert issubclass(processor_cls, (BaseEstimator, TransformerMixin))
@@ -37,7 +32,6 @@ def test_processors_sklearn():
 
 def test_bayesian_gmm_target_preprocessor():
     bgmm = BayesianGMMTargetProcessor(n_components=2)
-    bgmm.set_transform_request(era_series=True)
 
     y = dataset["target_jerome_v4_20"].fillna(0.5)
     era_series = dataset["era"]
@@ -69,7 +63,6 @@ def test_bayesian_gmm_target_preprocessor():
 
 def test_signals_target_processor(dummy_signals_data):
     stp = SignalsTargetProcessor()
-    stp.set_transform_request(era_series=True)
     stp.set_output(transform="pandas")
     era_series = dummy_signals_data["date"]
     stp.fit(dummy_signals_data)
@@ -83,3 +76,4 @@ def test_signals_target_processor(dummy_signals_data):
     stp.set_output(transform="default")
     result = stp.transform(dummy_signals_data, era_series=era_series)
     assert isinstance(result, np.ndarray)
+    

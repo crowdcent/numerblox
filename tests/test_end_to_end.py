@@ -38,9 +38,7 @@ def test_neutralized_xgboost_pipeline(setup_data):
     xgb = XGBRegressor()
     cve = CrossValEstimator(estimator=xgb, cv=TimeSeriesSplit(n_splits=5))
     ens = NumeraiEnsemble()
-    ens.set_transform_request(era_series=True)
     fn = FeatureNeutralizer(proportion=0.5)
-    fn.set_predict_request(era_series=True, features=True)
     full_pipe = make_meta_pipeline(preproc_pipe, cve, ens, fn)
 
     # Train full model
@@ -68,9 +66,7 @@ def test_multi_classification_ensemble(setup_data):
     crossval = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=3), predict_func='predict_proba')
     pred_rud = PredictionReducer(n_models=3, n_classes=5)
     ens = NumeraiEnsemble(donate_weighted=True)
-    ens.set_transform_request(era_series=True)
     fn = FeatureNeutralizer(proportion=0.5)
-    fn.set_predict_request(era_series=True, features=True)
     full_pipe = make_meta_pipeline(preproc_pipe, crossval, pred_rud, ens, fn)
 
     y_int = (y * 4).astype(int)
@@ -118,7 +114,6 @@ def test_column_transformer_pipeline(setup_data):
                                       ("selector", "passthrough", fncv3_cols[2:])])
     xgb = MetaEstimator(XGBRegressor())
     fn = FeatureNeutralizer(proportion=0.5)
-    fn.set_predict_request(era_series=True, features=True)
     model_pipe = make_pipeline(preproc_pipe, xgb, fn)
 
     model_pipe.fit(X, y)

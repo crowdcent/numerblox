@@ -7,7 +7,7 @@ from random import choices
 from copy import deepcopy
 from datetime import datetime
 from string import ascii_uppercase
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from dateutil.relativedelta import relativedelta, FR
 
 from numerblox.misc import Key

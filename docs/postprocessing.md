@@ -26,9 +26,8 @@ feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 neutralizer = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
-neutralizer.set_predict_request(era_series=True, features=True)
 neutralizer.fit()
-neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
+neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, era_series=era_data)
 ```
 
 Multiple column neutralization:
@@ -41,9 +40,8 @@ feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 neutralizer = FeatureNeutralizer(pred_name=["prediction1", "prediction2"], proportion=[0.5, 0.7])
-neutralizer.set_predict_request(era_series=True, features=True)
 neutralizer.fit()
-neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, eras=era_data)
+neutralized_predictions = neutralizer.predict(X=predictions, features=feature_data, era_series=era_data)
 ```
 
 ## FeaturePenalizer
@@ -66,7 +64,6 @@ feature_data = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
 era_data = pd.Series([1, 1, 2])
 
 penalizer = FeaturePenalizer(max_exposure=0.1, pred_name="prediction")
-penalizer.set_predict_request(era_series=True, features=True)
 penalizer.fit(X=predictions)
-penalized_predictions = penalizer.predict(X=predictions, features=feature_data, eras=era_data)
+penalized_predictions = penalizer.predict(X=predictions, features=feature_data, era_series=era_data)
 ```

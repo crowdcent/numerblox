@@ -1,9 +1,10 @@
 import scipy
-from abc import abstractmethod
-from typing import Union
 import numpy as np
 import pandas as pd
+from typing import Union
 from tqdm.auto import tqdm
+from abc import abstractmethod
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 
 try:
@@ -19,6 +20,9 @@ class BasePenalizer(BaseEstimator, TransformerMixin):
     :param new_col_name: Name of new neutralized column.
     """
     def __init__(self, new_col_name: str):
+        sklearn.set_config(enable_metadata_routing=True)
+        self.set_transform_request(features=True, era_series=True)
+        self.set_predict_request(features=True, era_series=True)
         self.new_col_name = new_col_name
         super().__init__()
 
@@ -28,7 +32,7 @@ class BasePenalizer(BaseEstimator, TransformerMixin):
     @abstractmethod
     def transform(
         self, X: Union[np.array, pd.DataFrame], 
-        features: pd.DataFrame, eras: pd.Series
+        features: pd.DataFrame, era_series: pd.Series
     ) -> np.array:
         ...
 

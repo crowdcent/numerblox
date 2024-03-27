@@ -1,6 +1,5 @@
 import pandas as pd
 from pathlib import Path
-from datetime import date, timedelta
 from typing import Union, Tuple, Any, List
 from numerai_era_data.date_utils import (ERA_ONE_START, get_current_era, 
                                          get_current_date, get_era_for_date,

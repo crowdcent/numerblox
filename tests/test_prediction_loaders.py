@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-from unittest.mock import patch, MagicMock
 from sklearn.datasets import make_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin

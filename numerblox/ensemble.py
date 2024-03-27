@@ -22,6 +22,8 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     """
     def __init__(self, weights=None, donate_weighted=False):
         sklearn.set_config(enable_metadata_routing=True)
+        self.set_transform_request(era_series=True)
+        self.set_predict_request(era_series=True)
         super().__init__()
         self.weights = weights
         if self.weights and sum(self.weights) != 1:

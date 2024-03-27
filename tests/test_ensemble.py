@@ -15,7 +15,7 @@ def sample_data():
 
 @pytest.fixture
 def ensemble():
-    return NumeraiEnsemble().set_transform_request(era_series=True)
+    return NumeraiEnsemble()
 
 ##### NumeraiEnsemble #####
 
