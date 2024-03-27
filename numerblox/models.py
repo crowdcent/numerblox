@@ -1,5 +1,6 @@
 import pandas as pd
 from xgboost import XGBRegressor
+import sklearn
 from sklearn.utils.validation import check_is_fitted
 
 from .evaluation import NumeraiClassicEvaluator
@@ -22,6 +23,8 @@ class EraBoostedXGBRegressor(XGBRegressor):
     :param num_iters: Number of total era boosting iterations.
     """
     def __init__(self, proportion=0.5, trees_per_step=10, num_iters=200, **xgb_params):
+        sklearn.set_config(enable_metadata_routing=True)
+        self.set_fit_request(era_series=True)
         super().__init__(**xgb_params)
         if not self.n_estimators:
             self.n_estimators = 100

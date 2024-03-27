@@ -18,6 +18,7 @@ class BaseTargetProcessor(BaseEstimator, TransformerMixin):
 
     def __init__(self):
         sklearn.set_config(enable_metadata_routing=True)
+        self.set_transform_request(era_series=True)
 
     def fit(self, X, y=None):
         self.is_fitted_ = True
@@ -46,6 +47,7 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         self,
         n_components: int = 3,
     ):
+        self.set_fit_request(era_series=True)
         super().__init__()
         self.n_components = n_components
         self.ridge = Ridge(fit_intercept=False)

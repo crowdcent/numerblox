@@ -1,6 +1,7 @@
 import re
 import pytest
 import numpy as np
+import sklearn
 from sklearn.metrics import log_loss
 from sklearn.linear_model import Ridge, LogisticRegression
 from sklearn.compose import ColumnTransformer
@@ -257,9 +258,14 @@ def test_binary_class_postprocess():
 
 
 ##### MetaPipeline #####
+sklearn.set_config(enable_metadata_routing=True)
 
 class MockTransform(BaseEstimator, TransformerMixin):
     """A mock transformer that requires 'era_series' as an argument in its transform method."""
+    def __init__(self):
+        self.set_predict_request(era_series=True)
+        super().__init__()
+
     def fit(self, X, y=None):
         return self
     
@@ -269,6 +275,10 @@ class MockTransform(BaseEstimator, TransformerMixin):
 
 class MockFinalStep(BaseEstimator, RegressorMixin):
     """A mock final step for the pipeline that requires 'features' and 'era_series' in its predict method."""
+    def __init__(self):
+        self.set_predict_request(features=True, era_series=True)
+        super().__init__()
+
     def fit(self, X, y=None):
         return self
 

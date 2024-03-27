@@ -18,6 +18,8 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
     def __init__(self, new_col_names: list):
         self.new_col_names = new_col_names
         sklearn.set_config(enable_metadata_routing=True)
+        self.set_transform_request(features=True, era_series=True)
+        self.set_predict_request(features=True, era_series=True)
         super().__init__()
 
     def fit(self, X=None, y=None):

@@ -269,6 +269,8 @@ class EraQuantileProcessor(BasePreProcessor):
         self.quantiler = QuantileTransformer(
             n_quantiles=self.num_quantiles, random_state=self.random_state
         )
+        # Metadata routing
+        self.set_transform_request(era_series=True)
 
     def _quantile_transform(self, group_data: pd.Series) -> pd.Series:
         """
@@ -305,9 +307,9 @@ class EraQuantileProcessor(BasePreProcessor):
         output_df = pd.concat(output_series_list, axis=1)
         return output_df.to_numpy()
     
-    def fit_transform(self, X: Union[np.array, pd.DataFrame], eras: pd.Series):
-        self.fit(X=X, eras=eras)
-        return self.transform(X=X, eras=eras)
+    def fit_transform(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series):
+        self.fit(X=X, era_series=era_series)
+        return self.transform(X=X, era_series=era_series)
 
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
@@ -376,6 +378,8 @@ class LagPreProcessor(BasePreProcessor):
     def __init__(self, windows: list = None,):
         super().__init__()
         self.windows = windows if windows else [5, 10, 15, 20]
+        # Metadata routing
+        self.set_transform_request(ticker_series=True)
 
     def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series) -> np.array:
         X = pd.DataFrame(X)
