@@ -1,4 +1,5 @@
 import numpy as np
+import polars as pl
 import pandas as pd
 from tqdm import tqdm
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -76,4 +77,8 @@ def test_signals_target_processor(dummy_signals_data):
     stp.set_output(transform="default")
     result = stp.transform(dummy_signals_data, era_series=era_series)
     assert isinstance(result, np.ndarray)
+
+    stp.set_output(transform="polars")
+    result = stp.transform(dummy_signals_data, era_series=era_series)
+    assert isinstance(result, pl.DataFrame)
     

@@ -47,8 +47,8 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         self,
         n_components: int = 3,
     ):
-        self.set_fit_request(era_series=True)
         super().__init__()
+        self.set_fit_request(era_series=True)
         self.n_components = n_components
         self.ridge = Ridge(fit_intercept=False)
         self.bins = [0, 0.05, 0.25, 0.75, 0.95, 1]
