@@ -4,8 +4,9 @@ First, thank you for your consideration to contribute to `numerblox`! This docum
 
 ## Installation
 
-If you haven't installed `numerblox` yet, clone the project into your favorite development environment and install the repo in editable mode and with all dev dependencies. 
+If you haven't installed `numerblox` yet, clone the project into your favorite development environment and install the repository in editable mode with all dev dependencies. 
 
+This can be done through the following commands:
 ```bash
 git clone https://github.com/crowdcent/numerblox.git
 pip install poetry
@@ -17,16 +18,18 @@ poetry install
 
 ### 1. Building a new component
 
-If you want to build a new component. Please consider the following steps:
+If you would like to build a new component for Numerblox, please consider the following steps:
 
-1. Place the new component in the appropriate section. Is it a Downloader (`download.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)? Also check the documentation on that section to check for templates, conventions and how these blocks are constructed in general.
+1. Place the new component in the appropriate section. Is it a Downloader (`download.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)? Also check the documentation on that section for templates, conventions and how these blocks are constructed in general.
 2. Add tests for this new component in the appropriate test file. If you are introducing a new Downloader, add tests in `tests/test_downloader.py`. If you are introducing a new Preprocessor, add tests in `tests/test_preprocessing.py`. etc.
 3. When making a preprocessor or postprocessor, make sure the component follows [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator). The core things to implement are inheriting from `BaseEstimator` and implementing `fit`, `transform` and `get_feature_names_out` methods. 
 4. If your component introduces new dependencies, make sure to add them to poetry with `poetry add <library>`.
+5. Consider adding support for [metadata routing](https://scikit-learn.org/stable/metadata_routing.html) if your component uses additional arguments for `fit`, `transform` and/or `predict`. Check out the documentation and other Numerblox components that use this feature for examples. We are also happy to help out with implementation of metadata routing.
 
 
 ### 2. Fixing bugs
-Even though most of the components in this library are tested, users will still likely run into issues. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a Github issue. Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
+
+Even though most of the components in this library are tested, users will still likely run into issues. If you discover bugs, other issues or ideas for enhancements, do not hesitate to make a [Github issue](https://github.com/crowdcent/numerblox/issues). Describe in the issue what code was run on what machine and background on the issue. Add stacktraces and screenshots if this is relevant for solving the issue. Also, please add appropriate labels for the Github issue.
 
 - Ensure the bug was not already reported by searching on GitHub under Issues.
 - If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.

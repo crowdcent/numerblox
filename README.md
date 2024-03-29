@@ -209,10 +209,10 @@ please create a Github issue first.
 Some of the components in this library may be based on forum posts,
 notebooks or ideas made public by the Numerai community. We have done
 our best to ask all parties who posted a specific piece of code for
-their permission and credit their work in the documentation. If your
-code is used in this library without credits, please let us know, so we
-can add a link to your article/code.
+their permission and credit their work in docstrings and documentation. If your
+code is public and used in this library without credits, please let us know, so we
+can add a link to your article/code. We want to always give credit where credit is due.
 
 If you are contributing to NumerBlox and are using ideas posted
 earlier by someone else, make sure to credit them by posting a link to
-their article/code in documentation.
+their article/code in docstrings and documentation.
