@@ -283,18 +283,21 @@ class EraQuantileProcessor(BasePreProcessor):
 
     def transform(
         self, X: Union[np.array, pd.DataFrame],
-        era_series: pd.Series,
+        era_series: pd.Series = None,
     ) -> np.array:
         """ 
         Quantile all features by era.
         :param X: Array or DataFrame containing features to be quantiled.
-        :param eras: Series containing era information.
+        :param era_series: Series containing era information.
         :return: Quantiled features.
         """
         X = pd.DataFrame(X)
-        assert X.shape[0] == era_series.shape[0], "Input X and eras must have the same number of rows for quantiling."
+        if era_series is None:
+            warnings.warn("WARNING: 'era_series' not provided for EraQuantileProcessor! Quantiling will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to EraQuantileProcessor in this way! Not providing 'era_series' is valid for live inference, where only one era is used for quantiling.")
+        else:
+            assert X.shape[0] == era_series.shape[0], "Input X and era_series must have the same number of rows for quantiling."
         self.features = [col for col in X.columns]
-        X.loc[:, "era"] = era_series
+        X.loc[:, "era"] = era_series if era_series is not None else "X"
         date_groups = X.groupby('era', group_keys=False)
 
         def process_feature(feature):
@@ -308,7 +311,7 @@ class EraQuantileProcessor(BasePreProcessor):
         return output_df.to_numpy()
     
     def fit_transform(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series):
-        self.fit(X=X, era_series=era_series)
+        self.fit(X=X)
         return self.transform(X=X, era_series=era_series)
 
     def get_feature_names_out(self, input_features=None) -> List[str]:
@@ -381,10 +384,15 @@ class LagPreProcessor(BasePreProcessor):
         # Metadata routing
         self.set_transform_request(ticker_series=True)
 
-    def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series) -> np.array:
+    def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series = None) -> np.array:
+        if ticker_series is None:
+            warnings.warn("WARNING: 'era_series' not provided for LagPreProcessor! Lags will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to LagPreProcessor in this way! Not providing 'era_series' is valid for live inference, where only one era is used for creating lags.")
+        else:
+            assert X.shape[0] == ticker_series.shape[0], "Input X and ticker_series must have the same number of rows for lag generation."
+
         X = pd.DataFrame(X)
         feature_cols = X.columns.tolist()
-        X["ticker"] = ticker_series
+        X["ticker"] = ticker_series if ticker_series is not None else "XXXXXXXXXXXXXXXXXXXXXX"
         ticker_groups = X.groupby("ticker")
         output_features = []
         for feature in tqdm(feature_cols, desc="Lag feature generation"):
@@ -445,10 +453,10 @@ class DifferencePreProcessor(BasePreProcessor):
                         if self.pct_diff
                         else X[feature] - X[feature]
                     )
-                X[f"{feature}_diff{day}"] = differenced_values
+                X.loc[:, f"{feature}_diff{day}"] = differenced_values
                 output_features.append(f"{feature}_diff{day}")
                 if self.abs_diff:
-                    X[f"{feature}_absdiff{day}"] = np.abs(
+                    X.loc[:, f"{feature}_absdiff{day}"] = np.abs(
                             X[f"{feature}_diff{day}"]
                         )
                     output_features.append(f"{feature}_absdiff{day}")

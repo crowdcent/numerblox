@@ -2,6 +2,7 @@ import pytest
 import sklearn
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import make_pipeline
 from sklearn.utils._metadata_requests import MetadataRequest
 
 from numerblox.neutralizers import BaseNeutralizer, FeatureNeutralizer
@@ -85,6 +86,34 @@ def test_feature_neutralizer_predict(setup_data):
     assert result.shape[1] == 1
     assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
     assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
+
+def test_feature_neutralizer_transform_no_era(setup_data):
+    fn = FeatureNeutralizer(pred_name="prediction", proportion=0.5)
+    features = setup_data[["feature1", "feature2"]]
+    X = setup_data["prediction"]
+    # Ensure warning is raised. Omitting era_series with .set_transform_request(era_series=True) does not raise an error.
+    with pytest.warns(UserWarning):
+        result = make_pipeline(fn).transform(X, features=features)
+    assert len(result) == len(setup_data)
+    assert result.shape[1] == 1
+    assert np.all(np.isclose(result, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result, 1, atol=1e-8) | (result <= 1))
+
+    fn.set_transform_request(era_series=False)
+    # Ensure warning is raised
+    with pytest.warns(UserWarning):
+        result2 = fn.transform(X, features=features)
+    assert np.all(result == result2)
+    assert len(result2) == len(setup_data)
+    assert result2.shape[1] == 1
+    assert np.all(np.isclose(result2, 0, atol=1e-8) | (result >= 0))
+    assert np.all(np.isclose(result2, 1, atol=1e-8) | (result <= 1))
+
+    fn.set_transform_request(era_series=None)
+    era_series = setup_data["era"]
+    # Passing era_series should give an error with metadata routing set to None
+    with pytest.raises(ValueError):
+        make_pipeline(fn).fit_transform(X, features=features, era_series=era_series)
 
 def test_feature_neutralizer_predict_multi_pred(setup_data):
     fn = FeatureNeutralizer(pred_name=["prediction", "prediction2"], proportion=[0.5])

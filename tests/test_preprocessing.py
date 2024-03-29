@@ -1,9 +1,10 @@
+import pytest
 import warnings
 import numpy as np
 import polars as pl
 import pandas as pd
 from tqdm import tqdm
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin, check_is_fitted
 
@@ -217,6 +218,19 @@ def test_era_quantile_processor(dummy_signals_data):
     result = eqp.transform(X, era_series=dummy_signals_data["date"])
     assert isinstance(result, pl.DataFrame)
 
+    # Test metadata routing changes
+    with pytest.warns(UserWarning):
+        make_pipeline(eqp).transform(X)
+
+    eqp.set_transform_request(era_series=False)
+    with pytest.warns(UserWarning):
+        eqp.transform(X)
+
+    eqp.set_transform_request(era_series=None)
+    with pytest.raises(ValueError):
+        make_pipeline(eqp).transform(X, era_series=dummy_signals_data["date"])
+
+
 def test_ticker_mapper():
     # Basic
     test_dataf = pd.Series(["AAPL", "MSFT"])
@@ -244,9 +258,11 @@ def test_ticker_mapper():
 def test_lag_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
-    lpp.fit(dummy_signals_data[['close', 'volume']])
+    X = dummy_signals_data[['close', 'volume']]
+    ticker_series = dummy_signals_data["ticker"]
+    lpp.fit(X)
     # DataFrame input
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
+    result = lpp.transform(X, ticker_series=ticker_series)
     expected_cols = [
     "close_lag20",
     "close_lag40",
@@ -257,22 +273,38 @@ def test_lag_preprocessor(dummy_signals_data):
     assert lpp.get_feature_names_out() == expected_cols
 
     # Numpy input
-    result = lpp.transform(dummy_signals_data[['close', 'volume']].to_numpy(), ticker_series=dummy_signals_data["ticker"])
+    result = lpp.transform(X.to_numpy(), ticker_series=ticker_series)
     expected_cols = [
     "0_lag20",
     "0lag40",
     "1_lag20",
     "1_lag40",
 ]
+    
+    # Just unaligned X and ticker_series
+    with pytest.raises(AssertionError):
+        lpp.transform(X, ticker_series=ticker_series.iloc[1:])
 
     # Test set_output API
     lpp.set_output(transform="default")
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
+    result = lpp.transform(X, ticker_series=ticker_series)
     assert isinstance(result, np.ndarray)
 
     lpp.set_output(transform="polars")
-    result = lpp.transform(dummy_signals_data[['close', 'volume']], ticker_series=dummy_signals_data["ticker"])
+    result = lpp.transform(X, ticker_series=ticker_series)
     assert isinstance(result, pl.DataFrame)
+
+    # Test metadata routing changes
+    with pytest.warns(UserWarning):
+        make_pipeline(lpp).transform(X)
+
+    lpp.set_transform_request(ticker_series=False)
+    with pytest.warns(UserWarning):
+        lpp.transform(X)
+
+    lpp.set_transform_request(ticker_series=None)
+    with pytest.raises(ValueError):
+        make_pipeline(lpp).transform(X, ticker_series=ticker_series)
 
 
 def test_difference_preprocessor(dummy_signals_data):
