@@ -11,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
-
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -25,6 +24,7 @@ jobs:
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Configure Poetry
         run: |
@@ -46,6 +46,6 @@ jobs:
         run: |
           pip install dist/*.whl
   
-      - name: Test installed wheel
+      - name: Run tests
         run: |
-          pytest -s
+          poetry run pytest -s tests/ --cov=numerblox --cov-report term-missing
