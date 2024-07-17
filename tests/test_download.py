@@ -11,7 +11,10 @@ ALL_CLASSIC_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets() i
 ALL_SIGNALS_VERSIONS = set(s.replace("signals/", "").split("/")[0] for s in SignalsAPI().list_datasets() if s.startswith("signals/v"))
 TEST_CLASSIC_DIR = f"test_numclassic_general_{uuid4()}"
 TEST_SIGNALS_DIR = f"test_numsignals_general_{uuid4()}"
-TEST_CLASSIC_VERSIONS = ["4.2", "4.3"]
+# Train and val data available for v5.0
+TEST_CLASSIC_VERSIONS = ["4.2", "4.3", "5.0"]
+# Live data for v5.0 will be released in September 2024
+TEST_CLASSIC_LIVE_VERSIONS = ["4.2", "4.3"]
 TEST_SIGNALS_VERSIONS = ["1.0"]
 
 def test_base():
@@ -37,7 +40,7 @@ def test_classic():
     assert dl.dataset_versions == ALL_CLASSIC_VERSIONS
 
     # Test live download
-    for version in TEST_CLASSIC_VERSIONS:
+    for version in TEST_CLASSIC_LIVE_VERSIONS:
         dl.download_live_data("live", version=version)
         assert os.path.exists(dl.dir / "live")
         assert os.path.exists(dl.dir / "live" / "live_int8.parquet")
@@ -90,7 +93,7 @@ def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
     # Test unsupported versions
-    unsupported_versions = ["3", "5", "6.8"]
+    unsupported_versions = ["3", "6.8"]
     for version in unsupported_versions:
         with pytest.raises(AssertionError):
             downloader.download_training_data(version=version)
@@ -104,7 +107,7 @@ def test_signals_versions():
     downloader = NumeraiSignalsDownloader(directory_path=f"some_path_{uuid4()}")
 
     # Test unsupported versions
-    unsupported_versions = ["0", "0.5", "2", "3.5"]
+    unsupported_versions = ["0", "0.5", "3.5"]
     for version in unsupported_versions:
         with pytest.raises(AssertionError):
             downloader.download_training_data(version=version)
