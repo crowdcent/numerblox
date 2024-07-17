@@ -11,7 +11,7 @@ ALL_CLASSIC_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets() i
 ALL_SIGNALS_VERSIONS = set(s.replace("signals/", "").split("/")[0] for s in SignalsAPI().list_datasets() if s.startswith("signals/v"))
 TEST_CLASSIC_DIR = f"test_numclassic_general_{uuid4()}"
 TEST_SIGNALS_DIR = f"test_numsignals_general_{uuid4()}"
-TEST_CLASSIC_VERSIONS = ["4.2", "4.3"]
+TEST_CLASSIC_VERSIONS = ["4.2", "4.3", "5.0"]
 TEST_SIGNALS_VERSIONS = ["1.0"]
 
 def test_base():

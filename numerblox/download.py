@@ -175,8 +175,11 @@ class NumeraiClassicDownloader(BaseDownloader):
     All kwargs will be passed to NumerAPI initialization.
     """
     TRAIN_DATASET_NAME = "train_int8.parquet"
+    TRAIN_DATASET_NAME_5 = "train.parquet"
     VALIDATION_DATASET_NAME = "validation_int8.parquet"
+    VALIDATION_DATASET_NAME_5 = "validation.parquet"
     LIVE_DATASET_NAME = "live_int8.parquet"
+    LIVE_DATASET_NAME_5 = "live.parquet"
     LIVE_EXAMPLE_PREDS_NAME = "live_example_preds.parquet"
     VALIDATION_EXAMPLE_PREDS_NAME = "validation_example_preds.parquet"
 
@@ -200,10 +203,15 @@ class NumeraiClassicDownloader(BaseDownloader):
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
         4.3 = Midnight dataset
+        5.0 = New dataset
         """
         self._check_dataset_version(version)
-        train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
-                           f"v{version}/{self.VALIDATION_DATASET_NAME}"]
+        if float(version) >= 5.0:
+            train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME_5}",
+                               f"v{version}/{self.VALIDATION_DATASET_NAME_5}"]
+        else:
+            train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
+                            f"v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
             dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -246,9 +254,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
         4.3 = Midnight dataset
+        5.0 = New dataset (Live data will be available around September 2024)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
+        if float(version) >= 5.0:
+            raise NotImplementedError("Live data not available yet for version 5.0. Live data for 5.0 will be available around September 2024")
         live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
         for file in live_files:
             dest_path = self._get_dest_path(subfolder, file)
@@ -271,9 +282,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
         4.3 = Midnight dataset
+        5.0 = New dataset (Live data will be available around September 2024)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
+        if float(version) >= 5.0:
+            raise NotImplementedError("Live example data not available yet for version 5.0. Live example data for 5.0 will be available around September 2024")
         example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
                          f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
