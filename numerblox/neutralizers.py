@@ -196,5 +196,5 @@ class FeatureNeutralizer(BaseNeutralizer):
         :param scores: DataFrame with predictions.
         :return: Raw exposures for each era.
         """
-        return exposures.dot(np.linalg.lstsq(exposures, scores))[0]
+        return exposures.dot(np.linalg.lstsq(exposures, scores, rcond=None))[0]
     
