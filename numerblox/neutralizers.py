@@ -104,9 +104,6 @@ class FeatureNeutralizer(BaseNeutralizer):
             warnings.warn("WARNING: 'era_series' not provided for neutralization! Neutralization will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to neutralization in this way! Not providing 'era_series' is valid for live inference, where only one era is used to generate predictions.")
         else:
             assert len(X) == len(era_series), "Input predictions must have same length as era_series."
-
-        if features is None:
-            raise ValueError("`features` argument must be provided for neutralization.")
         assert len(X) == len(features), "Input predictions must have same length as features."
 
         df = features.copy()
@@ -199,5 +196,5 @@ class FeatureNeutralizer(BaseNeutralizer):
         :param scores: DataFrame with predictions.
         :return: Raw exposures for each era.
         """
-        return exposures.dot(np.linalg.pinv(exposures).dot(scores))   
+        return exposures.dot(np.linalg.lstsq(exposures, scores))[0]
     
