@@ -2,20 +2,23 @@ import time
 import sklearn
 import numpy as np
 import pandas as pd
+from numerai_tools import scoring as nt_scoring, signals as nt_signals
 from scipy import stats
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from typing import Tuple, List, Dict, Any, Union
 from numerapi import SignalsAPI
 from joblib import Parallel, delayed
-from numerai_tools.scoring import correlation_contribution
 
 from .neutralizers import FeatureNeutralizer
 from .misc import Key
 from .feature_groups import FNCV3_FEATURES
 
 FAST_METRICS = ["mean_std_sharpe", "apy", "max_drawdown", "calmar_ratio"]
-ALL_NO_BENCH_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", "legacy_mean_std_sharpe", "fn_mean_std_sharpe", "tb200_mean_std_sharpe", "tb500_mean_std_sharpe"]
+ALL_NO_BENCH_METRICS = FAST_METRICS + ["autocorrelation", "max_feature_exposure", "smart_sharpe",
+                                       "legacy_mean_std_sharpe", "fn_mean_std_sharpe", 
+                                       "tb200_mean_std_sharpe", "tb500_mean_std_sharpe",
+                                       "churn", "tb200_churn", "tb500_churn"]
 BENCH_METRICS = ["corr_with", "mc_mean_std_sharpe", "legacy_mc_mean_std_sharpe", "ex_diss",
                  "ex_diss_pearson", "ex_diss_spearman"]
 CLASSIC_SPECIFIC_METRICS = ["fncv3_mean_std_sharpe"]
@@ -25,7 +28,9 @@ ALL_COMMON_METRICS = FAST_METRICS + ALL_NO_BENCH_METRICS + BENCH_METRICS
 MINI_METRICS = ["mean_std_sharpe"]
 CORE_METRICS = FAST_METRICS + ["max_feature_exposure", "smart_sharpe", "legacy_mean_std_sharpe"] + BENCH_METRICS
 ALL_CLASSIC_METRICS = ALL_COMMON_METRICS + CLASSIC_SPECIFIC_METRICS
+# No signals specific metrics yet
 ALL_SIGNALS_METRICS = ALL_COMMON_METRICS
+ALL_METRICS = list(set(ALL_CLASSIC_METRICS + ALL_SIGNALS_METRICS))
 
 
 class BaseEvaluator:
@@ -44,9 +49,10 @@ class BaseEvaluator:
     - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
     - Autocorrelation (1st order).
     - Calmar Ratio.
+    - Churn: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3.
     - Performance vs. Benchmark predictions.
-    - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
-    - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
+    - Mean, Standard Deviation, Sharpe and Churn for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
+    - Mean, Standard Deviation, Sharpe and Churn for TB500 (Buy top 500 stocks and sell bottom 500 stocks).
 
     :param metrics_list: List of metrics to calculate. Default: FAST_METRICS.
     :param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "date" for Numerai Signals.
@@ -60,7 +66,6 @@ class BaseEvaluator:
     More info:
     https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy
     """
-
     def __init__(
         self,
         metrics_list: List[str],
@@ -73,8 +78,12 @@ class BaseEvaluator:
         self.custom_functions = custom_functions
         if self.custom_functions is not None:
             self.check_custom_functions()
+        for metric in self.metrics_list:
+            assert (
+                metric in ALL_METRICS
+            ), f"Metric '{metric}' not found. Make sure to use one of the following: {ALL_METRICS}."
         self.show_detailed_progress_bar = show_detailed_progress_bar
-        sklearn.set_config(enable_metadata_routing=True)
+        self.n_bench_metrics = sum(1 for metric in self.metrics_list if metric in BENCH_METRICS)
 
     def full_evaluation(
         self,
@@ -157,11 +166,11 @@ class BaseEvaluator:
                 ), f"All predictions for '{col}' should be between 0 and 1 (inclusive)."
 
         if self.show_detailed_progress_bar:
-            len_metrics_list = len(self.metrics_list)
-            len_benchmark_cols = 0 if benchmark_cols is None else len(benchmark_cols)
             len_custom_functions = 0 if self.custom_functions is None else len(list(self.custom_functions.keys()))
-            len_pbar = len_metrics_list + len_benchmark_cols + len_custom_functions
+            len_pbar = len(self.metrics_list) + len_custom_functions
             pbar = tqdm(total=len_pbar, desc="Evaluation")
+        else:
+            pbar = None
 
         col_stats = {}
         col_stats["target"] = target_col
@@ -173,18 +182,14 @@ class BaseEvaluator:
 
         # check if mean, std, or sharpe are in metrics_list
         if "mean_std_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"mean_std_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="mean_std_sharpe for evaluation")
             mean, std, sharpe = self.mean_std_sharpe(era_corrs=per_era_numerai_corrs)
             col_stats["mean"] = mean
             col_stats["std"] = std
             col_stats["sharpe"] = sharpe
 
         if "legacy_mean_std_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"legacy_mean_std_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="legacy_mean_std_sharpe for evaluation")
             per_era_corrs = self.per_era_corrs(
                 dataf=dataf, pred_col=pred_col, target_col=target_col
             )
@@ -196,23 +201,18 @@ class BaseEvaluator:
             col_stats["legacy_sharpe"] = legacy_sharpe
 
         if "max_drawdown" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"max_drawdown for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="max_drawdown for evaluation")
             col_stats["max_drawdown"] = self.max_drawdown(
                 era_corrs=per_era_numerai_corrs
             )
 
-        if "apy":
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"apy for evaluation")
-                pbar.update(1)
+        if "apy" in self.metrics_list:
+            self.update_progress_bar(pbar, desc="apy for evaluation")
             col_stats["apy"] = self.apy(era_corrs=per_era_numerai_corrs)
 
         if "calmar_ratio" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"calmar_ratio for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="calmar_ratio for evaluation")
+            # Max drawdown and APY need for calmar ratio calculation
             if not "max_drawdown" in self.metrics_list:
                 col_stats["max_drawdown"] = self.max_drawdown(
                     era_corrs=per_era_numerai_corrs
@@ -226,40 +226,44 @@ class BaseEvaluator:
             )
 
         if "autocorrelation" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description(f"autocorrelation for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="autocorrelation for evaluation")
             col_stats["autocorrelation"] = self.autocorr1(per_era_numerai_corrs)
 
         if "max_feature_exposure" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"max_feature_exposure for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="max_feature_exposure for evaluation")
             col_stats["max_feature_exposure"] = self.max_feature_exposure(
                 dataf=dataf, feature_cols=feature_cols, pred_col=pred_col
             )
 
         if "smart_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"smart_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="smart_sharpe for evaluation")
             col_stats["smart_sharpe"] = self.smart_sharpe(
                 era_corrs=per_era_numerai_corrs
             )
 
+        if "churn" in self.metrics_list:
+            self.update_progress_bar(pbar, desc="churn for evaluation")
+            col_stats["churn"] = self.churn(
+                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=None
+            )
+        if "tb200_churn" in self.metrics_list:
+            self.update_progress_bar(pbar, desc="tb200_churn for evaluation")
+            col_stats["tb200_churn"] = self.churn(
+                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
+            )
+        if "tb500_churn" in self.metrics_list:
+            self.update_progress_bar(pbar, desc="tb500_churn for evaluation")
+            col_stats["tb500_churn"] = self.churn(
+                dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
+            )
+
         if benchmark_cols is not None:
             for bench_col in benchmark_cols:
-                if self.show_detailed_progress_bar:
-                    pbar.set_description_str(f"Evaluation for benchmark column: '{bench_col}'")
-                    pbar.update(1)
-
                 per_era_bench_corrs = self.per_era_numerai_corrs(
                     dataf=dataf, pred_col=bench_col, target_col=target_col
                 )
 
                 if "mean_std_sharpe" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"mean_std_sharpe for benchmark column: '{bench_col}'")
                     bench_mean, bench_std, bench_sharpe = self.mean_std_sharpe(
                         era_corrs=per_era_bench_corrs
                     )
@@ -268,8 +272,6 @@ class BaseEvaluator:
                     col_stats[f"sharpe_vs_{bench_col}"] = sharpe - bench_sharpe
 
                 if "mc_mean_std_sharpe" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"mc_mean_std_sharpe for benchmark column: '{bench_col}'")
                     mc_scores = self.contributive_correlation(
                         dataf=dataf,
                         pred_col=pred_col,
@@ -286,15 +288,11 @@ class BaseEvaluator:
                     )
 
                 if "corr_with" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"corr_with for benchmark column: '{bench_col}'")
                     col_stats[f"corr_with_{bench_col}"] = self.cross_correlation(
                         dataf=dataf, pred_col=bench_col, other_col=bench_col
                     )
 
                 if "legacy_mc_mean_std_sharpe" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"legacy_mc_mean_std_sharpe for benchmark column: '{bench_col}'")
                     legacy_mc_scores = self.legacy_contribution(
                         dataf=dataf,
                         pred_col=pred_col,
@@ -315,8 +313,6 @@ class BaseEvaluator:
                     )
 
                 if "ex_diss" in self.metrics_list or "ex_diss_pearson" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"ex_diss_pearson for benchmark column: '{bench_col}'")
                     col_stats[
                         f"exposure_dissimilarity_pearson_{bench_col}"
                     ] = self.exposure_dissimilarity(
@@ -324,20 +320,17 @@ class BaseEvaluator:
                         corr_method="pearson"
                     )
                 if "ex_diss_spearman" in self.metrics_list:
-                    if self.show_detailed_progress_bar:
-                        pbar.set_description_str(f"ex_diss_spearman for benchmark column: '{bench_col}'")
                     col_stats[
                         f"exposure_dissimilarity_spearman_{bench_col}"
                     ] = self.exposure_dissimilarity(
                         dataf=dataf, pred_col=pred_col, other_col=bench_col,
                         corr_method="spearman"
                     )
+            self.update_progress_bar(pbar, desc=f"Finished evaluation for '{self.n_bench_metrics}' benchmark metrics", update=self.n_bench_metrics)
 
         # Compute intensive stats
         if "fn_mean_std_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"fn_mean_std_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="fn_mean_std_sharpe for evaluation")
             fn_mean, fn_std, fn_sharpe = self.feature_neutral_mean_std_sharpe(
                 dataf=dataf,
                 pred_col=pred_col,
@@ -349,9 +342,7 @@ class BaseEvaluator:
             col_stats["feature_neutral_sharpe"] = fn_sharpe
 
         if "tb200_mean_std_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"tb200_mean_std_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="tb200_mean_std_sharpe for evaluation")
             tb200_mean, tb200_std, tb200_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=200
             )
@@ -360,9 +351,7 @@ class BaseEvaluator:
             col_stats["tb200_sharpe"] = tb200_sharpe
 
         if "tb500_mean_std_sharpe" in self.metrics_list:
-            if self.show_detailed_progress_bar:
-                pbar.set_description_str(f"tb500_mean_std_sharpe for evaluation")
-                pbar.update(1)
+            self.update_progress_bar(pbar, desc="tb500_mean_std_sharpe for evaluation")
             tb500_mean, tb500_std, tb500_sharpe = self.tbx_mean_std_sharpe(
                 dataf=dataf, pred_col=pred_col, target_col=target_col, tb=500
             )
@@ -374,9 +363,8 @@ class BaseEvaluator:
         if self.custom_functions is not None:
             local_vars = locals()
             for func_name, func_info in self.custom_functions.items():
-                if self.show_detailed_progress_bar:
-                    pbar.set_description_str(f"custom function: '{func_name}' for evaluation")
-                    pbar.update(1)
+                self.update_progress_bar(pbar, desc=f"custom function: '{func_name}' for evaluation")
+
                 func = func_info['func']
                 args = func_info['args']
                 local_args = func_info['local_args']
@@ -393,10 +381,23 @@ class BaseEvaluator:
                 col_stats[func_name] = func(**resolved_args)
 
         col_stats_df = pd.DataFrame(col_stats, index=[pred_col])
-        if self.show_detailed_progress_bar:
-            pbar.update(1)
-            pbar.close()
+        self.update_progress_bar(pbar, desc="Finished evaluation", close=True)
         return col_stats_df
+
+    def update_progress_bar(self, pbar, desc: str, update: int = 1,
+                            close: bool = False):
+        """ 
+        Update progress bar for evaluation.
+        :param pbar: tqdm progress bar object.
+        :param desc: Description to show in progress bar.
+        :param update: Update progress by n steps.
+        :param close: Close progress bar.
+        """
+        if self.show_detailed_progress_bar and pbar is not None:
+            pbar.set_description_str(desc)
+            pbar.update(update)
+            if close:
+                pbar.close()
 
     def per_era_corrs(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str
@@ -803,12 +804,12 @@ class BaseEvaluator:
     def contributive_correlation(
         self, dataf: pd.DataFrame, pred_col: str, target_col: str, other_col: str
     ) -> np.array:
-        """Calculate the contributive correlation of the given predictions
-        wrt the given meta model.
-        see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc
+        """Calculate the contributive correlation of predictions
+        with respect to the meta model.
+        More information: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc
 
         Uses Numerai's official scoring function for contribution under the hood.
-        See: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py
+        More information: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py
         
         Calculate contributive correlation by:
         1. tie-kept ranking each prediction and the meta model
@@ -829,11 +830,33 @@ class BaseEvaluator:
         """
         mc_scores = []
         for _, x in dataf.groupby(self.era_col):
-            mc = correlation_contribution(x[[pred_col]], 
-                                          x[other_col], 
-                                          x[target_col])
+            mc = nt_scoring.correlation_contribution(x[[pred_col]], 
+                                                                x[other_col], 
+                                                                x[target_col])
             mc_scores.append(mc)
         return np.array(mc_scores).ravel()
+    
+    def churn(self, dataf: pd.DataFrame, pred_col: str, target_col: str,
+              tb: int = None) -> np.float64:
+        """
+        Describes how the alpha scores of a signal changes over time.
+        More information: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3
+        
+        Uses Numerai's official scoring function for churn under the hood.
+        More information: https://github.com/numerai/numerai-tools/blob/575ae46c97e66bb6d7258803a2f4196b93cb99e8/numerai_tools/signals.py#L12
+        :param dataf: DataFrame containing era_col, pred_col and target_col.
+        :param pred_col: Prediction column to calculate churn for.
+        :param target_col: Target column to calculate churn against.
+        :param tb: How many of top and bottom predictions to focus on.
+        For example, tb200_churn -> tb=200. tb500_churn -> tb=500. By default all predictions are considered.
+        :return: Churn score for the given prediction column.
+        """
+        churn_scores = []
+        for _, x in dataf.groupby(self.era_col):
+            churn_score = nt_signals.churn(s1=x[pred_col], s2=x[target_col],
+                                                      top_bottom=tb)
+            churn_scores.append(churn_score)
+        return np.nanmean(churn_scores)
 
     def check_custom_functions(self):
         if not isinstance(self.custom_functions, dict):
@@ -939,10 +962,7 @@ class BaseEvaluator:
 
 
 class NumeraiClassicEvaluator(BaseEvaluator):
-    """
-    Evaluator for all metrics that are relevant in Numerai Classic.
-    """
-
+    """ Evaluator for all Numerai Classic metrics. """
     def __init__(
         self,
         era_col: str = "era",
@@ -984,31 +1004,29 @@ class NumeraiClassicEvaluator(BaseEvaluator):
             )
             valid_features = []
 
-        with tqdm(pred_cols, desc="Evaluation") as pbar:
-            for col in pbar:
-                # Metrics that can be calculated for both Numerai Classic and Signals
-                col_stats = self.evaluation_one_col(
+        for col in pred_cols:
+            # Metrics that can be calculated for both Numerai Classic and Signals
+            col_stats = self.evaluation_one_col(
                     dataf=dataf,
                     feature_cols=feature_cols,
                     pred_col=col,
                     target_col=target_col,
                     benchmark_cols=benchmark_cols,
                 )
-                # Numerai Classic specific metrics
-                if valid_features and "fncv3_mean_std_sharpe" in self.metrics_list:
-                    pbar.set_description_str(f"fncv3_mean_std_sharpe for evaluation of '{col}'")
-                    # Using only valid features defined in FNCV3_FEATURES
-                    fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
+            # Numerai Classic specific metrics
+            if valid_features and "fncv3_mean_std_sharpe" in self.metrics_list:
+                # Using only valid features defined in FNCV3_FEATURES
+                fnc_v3, fn_std_v3, fn_sharpe_v3 = self.feature_neutral_mean_std_sharpe(
                         dataf=dataf,
                         pred_col=col,
                         target_col=target_col,
                         feature_names=valid_features,
                     )
-                    col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
-                    col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
-                    col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
+                col_stats.loc[col, "feature_neutral_mean_v3"] = fnc_v3
+                col_stats.loc[col, "feature_neutral_std_v3"] = fn_std_v3
+                col_stats.loc[col, "feature_neutral_sharpe_v3"] = fn_sharpe_v3
 
-                val_stats = pd.concat([val_stats, col_stats], axis=0)
+            val_stats = pd.concat([val_stats, col_stats], axis=0)
         return val_stats
 
 

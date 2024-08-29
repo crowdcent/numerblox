@@ -10,9 +10,12 @@ from utils import create_signals_sample_data, classic_test_data
 
 
 BASE_STATS_COLS = ["target", "mean", "std", "sharpe", "apy", "max_drawdown", "calmar_ratio"]
-MAIN_CLASSIC_STATS_COLS = BASE_STATS_COLS + ["autocorrelation", "max_feature_exposure",
-                                    "smart_sharpe", "legacy_mean", "legacy_std", "legacy_sharpe", "feature_neutral_mean_v3", "feature_neutral_std_v3", "feature_neutral_sharpe_v3","feature_neutral_mean", "feature_neutral_std",
-                                    "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe"]
+MAIN_CLASSIC_STATS_COLS = BASE_STATS_COLS + ["autocorrelation", "max_feature_exposure", "smart_sharpe", 
+                                    "legacy_mean", "legacy_std", "legacy_sharpe", 
+                                    "feature_neutral_mean_v3", "feature_neutral_std_v3", "feature_neutral_sharpe_v3",
+                                    "feature_neutral_mean", "feature_neutral_std", "feature_neutral_sharpe",
+                                    "feature_neutral_sharpe", "tb200_mean", "tb200_std", "tb200_sharpe", "tb500_mean", "tb500_std", "tb500_sharpe",
+                                    "churn", "tb200_churn", "tb500_churn"]
 
 
 def test_numerai_classic_evaluator_fast_metrics(classic_test_data):
