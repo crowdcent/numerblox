@@ -2087,6 +2087,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#numerblox.evaluation.BaseEvaluator.churn" class="md-nav__link">
+    <span class="md-ellipsis">
+      churn
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#numerblox.evaluation.BaseEvaluator.contributive_correlation" class="md-nav__link">
     <span class="md-ellipsis">
       contributive_correlation
@@ -2243,6 +2252,15 @@
   <a href="#numerblox.evaluation.BaseEvaluator.tbx_mean_std_sharpe" class="md-nav__link">
     <span class="md-ellipsis">
       tbx_mean_std_sharpe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numerblox.evaluation.BaseEvaluator.update_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      update_progress_bar
     </span>
   </a>
   
@@ -4065,6 +4083,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#numerblox.evaluation.BaseEvaluator.churn" class="md-nav__link">
+    <span class="md-ellipsis">
+      churn
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#numerblox.evaluation.BaseEvaluator.contributive_correlation" class="md-nav__link">
     <span class="md-ellipsis">
       contributive_correlation
@@ -4221,6 +4248,15 @@
   <a href="#numerblox.evaluation.BaseEvaluator.tbx_mean_std_sharpe" class="md-nav__link">
     <span class="md-ellipsis">
       tbx_mean_std_sharpe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numerblox.evaluation.BaseEvaluator.update_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      update_progress_bar
     </span>
   </a>
   
@@ -15063,9 +15099,10 @@ Numerai Classic and Numerai Signals.</p>
 - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.
 - Autocorrelation (1st order).
 - Calmar Ratio.
+- Churn: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3.
 - Performance vs. Benchmark predictions.
-- Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
-- Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</p>
+- Mean, Standard Deviation, Sharpe and Churn for TB200 (Buy top 200 stocks and sell bottom 200 stocks).
+- Mean, Standard Deviation, Sharpe and Churn for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</p>
 <p>:param metrics_list: List of metrics to calculate. Default: FAST_METRICS.
 :param era_col: Column name pointing to eras. Most commonly "era" for Numerai Classic and "date" for Numerai Signals.
 :param custom_functions: Additional functions called in evaluation.
@@ -15079,12 +15116,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
               <details class="quote">
                 <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 31</span>
-<span class="normal"> 32</span>
-<span class="normal"> 33</span>
-<span class="normal"> 34</span>
-<span class="normal"> 35</span>
-<span class="normal"> 36</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 36</span>
 <span class="normal"> 37</span>
 <span class="normal"> 38</span>
 <span class="normal"> 39</span>
@@ -15986,7 +16018,30 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="normal">935</span>
 <span class="normal">936</span>
 <span class="normal">937</span>
-<span class="normal">938</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BaseEvaluator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluation functionality that is relevant for both</span>
 <span class="sd">    Numerai Classic and Numerai Signals.</span>
@@ -16002,9 +16057,10 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="sd">    - Exposure Dissimilarity: https://forum.numer.ai/t/true-contribution-details/5128/4.</span>
 <span class="sd">    - Autocorrelation (1st order).</span>
 <span class="sd">    - Calmar Ratio.</span>
+<span class="sd">    - Churn: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3.</span>
 <span class="sd">    - Performance vs. Benchmark predictions.</span>
-<span class="sd">    - Mean, Standard Deviation and Sharpe for TB200 (Buy top 200 stocks and sell bottom 200 stocks).</span>
-<span class="sd">    - Mean, Standard Deviation and Sharpe for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</span>
+<span class="sd">    - Mean, Standard Deviation, Sharpe and Churn for TB200 (Buy top 200 stocks and sell bottom 200 stocks).</span>
+<span class="sd">    - Mean, Standard Deviation, Sharpe and Churn for TB500 (Buy top 500 stocks and sell bottom 500 stocks).</span>
 
 <span class="sd">    :param metrics_list: List of metrics to calculate. Default: FAST_METRICS.</span>
 <span class="sd">    :param era_col: Column name pointing to eras. Most commonly &quot;era&quot; for Numerai Classic and &quot;date&quot; for Numerai Signals.</span>
@@ -16018,7 +16074,6 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="sd">    More info:</span>
 <span class="sd">    https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">metrics_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -16031,8 +16086,12 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
         <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="o">=</span> <span class="n">custom_functions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_custom_functions</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">metric</span> <span class="ow">in</span> <span class="n">ALL_METRICS</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Metric &#39;</span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">&#39; not found. Make sure to use one of the following: </span><span class="si">{</span><span class="n">ALL_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span> <span class="o">=</span> <span class="n">show_detailed_progress_bar</span>
-        <span class="n">sklearn</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">enable_metadata_routing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bench_metrics</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span> <span class="k">if</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">BENCH_METRICS</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -16115,11 +16174,11 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                 <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;All predictions for &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39; should be between 0 and 1 (inclusive).&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">len_metrics_list</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">)</span>
-            <span class="n">len_benchmark_cols</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">benchmark_cols</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">benchmark_cols</span><span class="p">)</span>
             <span class="n">len_custom_functions</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-            <span class="n">len_pbar</span> <span class="o">=</span> <span class="n">len_metrics_list</span> <span class="o">+</span> <span class="n">len_benchmark_cols</span> <span class="o">+</span> <span class="n">len_custom_functions</span>
+            <span class="n">len_pbar</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">)</span> <span class="o">+</span> <span class="n">len_custom_functions</span>
             <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">len_pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Evaluation&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">col_stats</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_col</span>
@@ -16131,18 +16190,14 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
         <span class="c1"># check if mean, std, or sharpe are in metrics_list</span>
         <span class="k">if</span> <span class="s2">&quot;mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sharpe</span>
 
         <span class="k">if</span> <span class="s2">&quot;legacy_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;legacy_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;legacy_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">per_era_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_era_corrs</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
             <span class="p">)</span>
@@ -16154,23 +16209,18 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;legacy_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">legacy_sharpe</span>
 
         <span class="k">if</span> <span class="s2">&quot;max_drawdown&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;max_drawdown for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;max_drawdown for evaluation&quot;</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_drawdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span>
                 <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="s2">&quot;apy&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;apy for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;apy&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;apy for evaluation&quot;</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;apy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apy</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;calmar_ratio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;calmar_ratio for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;calmar_ratio for evaluation&quot;</span><span class="p">)</span>
+            <span class="c1"># Max drawdown and APY need for calmar ratio calculation</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;max_drawdown&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
                 <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_drawdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span>
                     <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
@@ -16184,40 +16234,44 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;autocorrelation&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;autocorrelation for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;autocorrelation for evaluation&quot;</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;autocorrelation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocorr1</span><span class="p">(</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;max_feature_exposure&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;max_feature_exposure for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;max_feature_exposure for evaluation&quot;</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_feature_exposure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_feature_exposure</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;smart_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;smart_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;smart_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;smart_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smart_sharpe</span><span class="p">(</span>
                 <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
             <span class="p">)</span>
 
+        <span class="k">if</span> <span class="s2">&quot;churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;churn for evaluation&quot;</span><span class="p">)</span>
+            <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+                <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;tb200_churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb200_churn for evaluation&quot;</span><span class="p">)</span>
+            <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb200_churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+                <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">200</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;tb500_churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb500_churn for evaluation&quot;</span><span class="p">)</span>
+            <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb500_churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+                <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">500</span>
+            <span class="p">)</span>
+
         <span class="k">if</span> <span class="n">benchmark_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">bench_col</span> <span class="ow">in</span> <span class="n">benchmark_cols</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluation for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
                 <span class="n">per_era_bench_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_era_numerai_corrs</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="s2">&quot;mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">bench_mean</span><span class="p">,</span> <span class="n">bench_std</span><span class="p">,</span> <span class="n">bench_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span>
                         <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_bench_corrs</span>
                     <span class="p">)</span>
@@ -16226,8 +16280,6 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                     <span class="n">col_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sharpe_vs_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sharpe</span> <span class="o">-</span> <span class="n">bench_sharpe</span>
 
                 <span class="k">if</span> <span class="s2">&quot;mc_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mc_mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">mc_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributive_correlation</span><span class="p">(</span>
                         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                         <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -16244,15 +16296,11 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                     <span class="p">)</span>
 
                 <span class="k">if</span> <span class="s2">&quot;corr_with&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;corr_with for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">col_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;corr_with_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_correlation</span><span class="p">(</span>
                         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span> <span class="n">other_col</span><span class="o">=</span><span class="n">bench_col</span>
                     <span class="p">)</span>
 
                 <span class="k">if</span> <span class="s2">&quot;legacy_mc_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;legacy_mc_mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">legacy_mc_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">legacy_contribution</span><span class="p">(</span>
                         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                         <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -16273,8 +16321,6 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                     <span class="p">)</span>
 
                 <span class="k">if</span> <span class="s2">&quot;ex_diss&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span> <span class="ow">or</span> <span class="s2">&quot;ex_diss_pearson&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ex_diss_pearson for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">col_stats</span><span class="p">[</span>
                         <span class="sa">f</span><span class="s2">&quot;exposure_dissimilarity_pearson_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure_dissimilarity</span><span class="p">(</span>
@@ -16282,20 +16328,17 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                         <span class="n">corr_method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span>
                     <span class="p">)</span>
                 <span class="k">if</span> <span class="s2">&quot;ex_diss_spearman&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ex_diss_spearman for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                     <span class="n">col_stats</span><span class="p">[</span>
                         <span class="sa">f</span><span class="s2">&quot;exposure_dissimilarity_spearman_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure_dissimilarity</span><span class="p">(</span>
                         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">other_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span>
                         <span class="n">corr_method</span><span class="o">=</span><span class="s2">&quot;spearman&quot;</span>
                     <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Finished evaluation for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bench_metrics</span><span class="si">}</span><span class="s2">&#39; benchmark metrics&quot;</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bench_metrics</span><span class="p">)</span>
 
         <span class="c1"># Compute intensive stats</span>
         <span class="k">if</span> <span class="s2">&quot;fn_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fn_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;fn_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">fn_mean</span><span class="p">,</span> <span class="n">fn_std</span><span class="p">,</span> <span class="n">fn_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                 <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -16307,9 +16350,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;feature_neutral_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_sharpe</span>
 
         <span class="k">if</span> <span class="s2">&quot;tb200_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tb200_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb200_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">tb200_mean</span><span class="p">,</span> <span class="n">tb200_std</span><span class="p">,</span> <span class="n">tb200_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbx_mean_std_sharpe</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">200</span>
             <span class="p">)</span>
@@ -16318,9 +16359,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb200_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tb200_sharpe</span>
 
         <span class="k">if</span> <span class="s2">&quot;tb500_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tb500_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb500_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
             <span class="n">tb500_mean</span><span class="p">,</span> <span class="n">tb500_std</span><span class="p">,</span> <span class="n">tb500_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbx_mean_std_sharpe</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">500</span>
             <span class="p">)</span>
@@ -16332,9 +16371,8 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">local_vars</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;custom function: &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; for evaluation&quot;</span><span class="p">)</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;custom function: &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; for evaluation&quot;</span><span class="p">)</span>
+
                 <span class="n">func</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
                 <span class="n">args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
                 <span class="n">local_args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">]</span>
@@ -16351,10 +16389,23 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
                 <span class="n">col_stats</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">resolved_args</span><span class="p">)</span>
 
         <span class="n">col_stats_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">col_stats</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Finished evaluation&quot;</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">col_stats_df</span>
+
+    <span class="k">def</span> <span class="nf">update_progress_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="n">close</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Update progress bar for evaluation.</span>
+<span class="sd">        :param pbar: tqdm progress bar object.</span>
+<span class="sd">        :param desc: Description to show in progress bar.</span>
+<span class="sd">        :param update: Update progress by n steps.</span>
+<span class="sd">        :param close: Close progress bar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span> <span class="ow">and</span> <span class="n">pbar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">close</span><span class="p">:</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
@@ -16761,12 +16812,12 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
     <span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
-<span class="sd">        wrt the given meta model.</span>
-<span class="sd">        see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of predictions</span>
+<span class="sd">        with respect to the meta model.</span>
+<span class="sd">        More information: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
 
 <span class="sd">        Uses Numerai&#39;s official scoring function for contribution under the hood.</span>
-<span class="sd">        See: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</span>
+<span class="sd">        More information: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</span>
 
 <span class="sd">        Calculate contributive correlation by:</span>
 <span class="sd">        1. tie-kept ranking each prediction and the meta model</span>
@@ -16787,11 +16838,33 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mc_scores</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
-            <span class="n">mc</span> <span class="o">=</span> <span class="n">correlation_contribution</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="n">pred_col</span><span class="p">]],</span> 
-                                          <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
-                                          <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
+            <span class="n">mc</span> <span class="o">=</span> <span class="n">nt_scoring</span><span class="o">.</span><span class="n">correlation_contribution</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="n">pred_col</span><span class="p">]],</span> 
+                                                                <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
+                                                                <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
             <span class="n">mc_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mc_scores</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">churn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">tb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Describes how the alpha scores of a signal changes over time.</span>
+<span class="sd">        More information: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3</span>
+
+<span class="sd">        Uses Numerai&#39;s official scoring function for churn under the hood.</span>
+<span class="sd">        More information: https://github.com/numerai/numerai-tools/blob/575ae46c97e66bb6d7258803a2f4196b93cb99e8/numerai_tools/signals.py#L12</span>
+<span class="sd">        :param dataf: DataFrame containing era_col, pred_col and target_col.</span>
+<span class="sd">        :param pred_col: Prediction column to calculate churn for.</span>
+<span class="sd">        :param target_col: Target column to calculate churn against.</span>
+<span class="sd">        :param tb: How many of top and bottom predictions to focus on.</span>
+<span class="sd">        For example, tb200_churn -&gt; tb=200. tb500_churn -&gt; tb=500. By default all predictions are considered.</span>
+<span class="sd">        :return: Churn score for the given prediction column.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">churn_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
+            <span class="n">churn_score</span> <span class="o">=</span> <span class="n">nt_signals</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">s2</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">],</span>
+                                                      <span class="n">top_bottom</span><span class="o">=</span><span class="n">tb</span><span class="p">)</span>
+            <span class="n">churn_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">churn_score</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">churn_scores</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">check_custom_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -16930,8 +17003,7 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">466</span>
-<span class="normal">467</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">467</span>
 <span class="normal">468</span>
 <span class="normal">469</span>
 <span class="normal">470</span>
@@ -16947,7 +17019,8 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <span class="normal">480</span>
 <span class="normal">481</span>
 <span class="normal">482</span>
-<span class="normal">483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">483</span>
+<span class="normal">484</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">apy</span><span class="p">(</span><span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">stake_compounding_lag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Annual percentage yield.</span>
@@ -16987,12 +17060,12 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">768</span>
-<span class="normal">769</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">769</span>
 <span class="normal">770</span>
 <span class="normal">771</span>
 <span class="normal">772</span>
-<span class="normal">773</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="normal">773</span>
+<span class="normal">774</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    1st order autocorrelation.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era.</span>
@@ -17020,15 +17093,15 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">758</span>
-<span class="normal">759</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">759</span>
 <span class="normal">760</span>
 <span class="normal">761</span>
 <span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
-<span class="normal">766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="normal">766</span>
+<span class="normal">767</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">autocorr_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adjusting factor for autocorrelation. Used in Smart Sharpe.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era.</span>
@@ -17046,6 +17119,77 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 <div class="doc doc-object doc-function">
 
 
+<h3 id="numerblox.evaluation.BaseEvaluator.churn" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">churn</span><span class="p">(</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Describes how the alpha scores of a signal changes over time.
+More information: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3</p>
+<p>Uses Numerai's official scoring function for churn under the hood.
+More information: https://github.com/numerai/numerai-tools/blob/575ae46c97e66bb6d7258803a2f4196b93cb99e8/numerai_tools/signals.py#L12
+:param dataf: DataFrame containing era_col, pred_col and target_col.
+:param pred_col: Prediction column to calculate churn for.
+:param target_col: Target column to calculate churn against.
+:param tb: How many of top and bottom predictions to focus on.
+For example, tb200_churn -&gt; tb=200. tb500_churn -&gt; tb=500. By default all predictions are considered.
+:return: Churn score for the given prediction column.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>numerblox/evaluation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">churn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+          <span class="n">tb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Describes how the alpha scores of a signal changes over time.</span>
+<span class="sd">    More information: https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638#p-17958-reducing-signals-churn-3</span>
+
+<span class="sd">    Uses Numerai&#39;s official scoring function for churn under the hood.</span>
+<span class="sd">    More information: https://github.com/numerai/numerai-tools/blob/575ae46c97e66bb6d7258803a2f4196b93cb99e8/numerai_tools/signals.py#L12</span>
+<span class="sd">    :param dataf: DataFrame containing era_col, pred_col and target_col.</span>
+<span class="sd">    :param pred_col: Prediction column to calculate churn for.</span>
+<span class="sd">    :param target_col: Target column to calculate churn against.</span>
+<span class="sd">    :param tb: How many of top and bottom predictions to focus on.</span>
+<span class="sd">    For example, tb200_churn -&gt; tb=200. tb500_churn -&gt; tb=500. By default all predictions are considered.</span>
+<span class="sd">    :return: Churn score for the given prediction column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">churn_scores</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
+        <span class="n">churn_score</span> <span class="o">=</span> <span class="n">nt_signals</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">s2</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">],</span>
+                                                  <span class="n">top_bottom</span><span class="o">=</span><span class="n">tb</span><span class="p">)</span>
+        <span class="n">churn_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">churn_score</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">churn_scores</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="numerblox.evaluation.BaseEvaluator.contributive_correlation" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">contributive_correlation</span><span class="p">(</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">,</span> <span class="n">other_col</span><span class="p">)</span></code>
 
@@ -17054,11 +17198,11 @@ https://stackoverflow.com/questions/24984178/different-std-in-pandas-vs-numpy</p
 
     <div class="doc doc-contents ">
 
-      <p>Calculate the contributive correlation of the given predictions
- wrt the given meta model.
- see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</p>
+      <p>Calculate the contributive correlation of predictions
+ with respect to the meta model.
+ More information: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</p>
 <p>Uses Numerai's official scoring function for contribution under the hood.
- See: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</p>
+ More information: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</p>
 <p>Calculate contributive correlation by:
  1. tie-kept ranking each prediction and the meta model
  2. gaussianizing each prediction and the meta model
@@ -17076,8 +17220,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">803</span>
-<span class="normal">804</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">804</span>
 <span class="normal">805</span>
 <span class="normal">806</span>
 <span class="normal">807</span>
@@ -17109,15 +17252,16 @@ then normalize by the length of the target (equivalent to covariance)</p>
 <span class="normal">833</span>
 <span class="normal">834</span>
 <span class="normal">835</span>
-<span class="normal">836</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
+<span class="normal">836</span>
+<span class="normal">837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">contributive_correlation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of the given predictions</span>
-<span class="sd">    wrt the given meta model.</span>
-<span class="sd">    see: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the contributive correlation of predictions</span>
+<span class="sd">    with respect to the meta model.</span>
+<span class="sd">    More information: https://docs.numer.ai/numerai-tournament/scoring/meta-model-contribution-mmc-and-bmc</span>
 
 <span class="sd">    Uses Numerai&#39;s official scoring function for contribution under the hood.</span>
-<span class="sd">    See: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</span>
+<span class="sd">    More information: https://github.com/numerai/numerai-tools/blob/master/numerai_tools/scoring.py</span>
 
 <span class="sd">    Calculate contributive correlation by:</span>
 <span class="sd">    1. tie-kept ranking each prediction and the meta model</span>
@@ -17138,9 +17282,9 @@ then normalize by the length of the target (equivalent to covariance)</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mc_scores</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dataf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">era_col</span><span class="p">):</span>
-        <span class="n">mc</span> <span class="o">=</span> <span class="n">correlation_contribution</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="n">pred_col</span><span class="p">]],</span> 
-                                      <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
-                                      <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">nt_scoring</span><span class="o">.</span><span class="n">correlation_contribution</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="n">pred_col</span><span class="p">]],</span> 
+                                                            <span class="n">x</span><span class="p">[</span><span class="n">other_col</span><span class="p">],</span> 
+                                                            <span class="n">x</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span>
         <span class="n">mc_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mc_scores</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -17168,8 +17312,7 @@ then normalize by the length of the target (equivalent to covariance)</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
-<span class="normal">486</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
@@ -17181,7 +17324,8 @@ then normalize by the length of the target (equivalent to covariance)</p>
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
-<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cross_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">498</span>
+<span class="normal">499</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cross_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Corrv2 correlation with other predictions (like another model, example predictions or meta model prediction).</span>
 <span class="sd">    :param dataf: DataFrame containing both pred_col and other_col.</span>
@@ -17217,16 +17361,7 @@ against given target and benchmark column(s).</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
@@ -17483,21 +17618,7 @@ against given target and benchmark column(s).</p>
 <span class="normal">382</span>
 <span class="normal">383</span>
 <span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span>
+<span class="normal">385</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">evaluation_one_col</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">feature_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -17538,11 +17659,11 @@ against given target and benchmark column(s).</p>
             <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;All predictions for &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39; should be between 0 and 1 (inclusive).&quot;</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-        <span class="n">len_metrics_list</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">)</span>
-        <span class="n">len_benchmark_cols</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">benchmark_cols</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">benchmark_cols</span><span class="p">)</span>
         <span class="n">len_custom_functions</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="n">len_pbar</span> <span class="o">=</span> <span class="n">len_metrics_list</span> <span class="o">+</span> <span class="n">len_benchmark_cols</span> <span class="o">+</span> <span class="n">len_custom_functions</span>
+        <span class="n">len_pbar</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">)</span> <span class="o">+</span> <span class="n">len_custom_functions</span>
         <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">len_pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Evaluation&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">col_stats</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_col</span>
@@ -17554,18 +17675,14 @@ against given target and benchmark column(s).</p>
 
     <span class="c1"># check if mean, std, or sharpe are in metrics_list</span>
     <span class="k">if</span> <span class="s2">&quot;mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sharpe</span>
 
     <span class="k">if</span> <span class="s2">&quot;legacy_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;legacy_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;legacy_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">per_era_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_era_corrs</span><span class="p">(</span>
             <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
         <span class="p">)</span>
@@ -17577,23 +17694,18 @@ against given target and benchmark column(s).</p>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;legacy_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">legacy_sharpe</span>
 
     <span class="k">if</span> <span class="s2">&quot;max_drawdown&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;max_drawdown for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;max_drawdown for evaluation&quot;</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_drawdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span>
             <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
         <span class="p">)</span>
 
-    <span class="k">if</span> <span class="s2">&quot;apy&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;apy for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;apy&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;apy for evaluation&quot;</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;apy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apy</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;calmar_ratio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;calmar_ratio for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;calmar_ratio for evaluation&quot;</span><span class="p">)</span>
+        <span class="c1"># Max drawdown and APY need for calmar ratio calculation</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;max_drawdown&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
             <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_drawdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span>
                 <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
@@ -17607,40 +17719,44 @@ against given target and benchmark column(s).</p>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;autocorrelation&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;autocorrelation for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;autocorrelation for evaluation&quot;</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;autocorrelation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">autocorr1</span><span class="p">(</span><span class="n">per_era_numerai_corrs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;max_feature_exposure&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;max_feature_exposure for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;max_feature_exposure for evaluation&quot;</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;max_feature_exposure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_feature_exposure</span><span class="p">(</span>
             <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;smart_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;smart_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;smart_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;smart_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smart_sharpe</span><span class="p">(</span>
             <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_numerai_corrs</span>
         <span class="p">)</span>
 
+    <span class="k">if</span> <span class="s2">&quot;churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;churn for evaluation&quot;</span><span class="p">)</span>
+        <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+            <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;tb200_churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb200_churn for evaluation&quot;</span><span class="p">)</span>
+        <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb200_churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+            <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">200</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;tb500_churn&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb500_churn for evaluation&quot;</span><span class="p">)</span>
+        <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb500_churn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">churn</span><span class="p">(</span>
+            <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">500</span>
+        <span class="p">)</span>
+
     <span class="k">if</span> <span class="n">benchmark_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">bench_col</span> <span class="ow">in</span> <span class="n">benchmark_cols</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluation for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
             <span class="n">per_era_bench_corrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_era_numerai_corrs</span><span class="p">(</span>
                 <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="s2">&quot;mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">bench_mean</span><span class="p">,</span> <span class="n">bench_std</span><span class="p">,</span> <span class="n">bench_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span>
                     <span class="n">era_corrs</span><span class="o">=</span><span class="n">per_era_bench_corrs</span>
                 <span class="p">)</span>
@@ -17649,8 +17765,6 @@ against given target and benchmark column(s).</p>
                 <span class="n">col_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sharpe_vs_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sharpe</span> <span class="o">-</span> <span class="n">bench_sharpe</span>
 
             <span class="k">if</span> <span class="s2">&quot;mc_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mc_mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">mc_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributive_correlation</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                     <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -17667,15 +17781,11 @@ against given target and benchmark column(s).</p>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="s2">&quot;corr_with&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;corr_with for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">col_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;corr_with_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_correlation</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span> <span class="n">other_col</span><span class="o">=</span><span class="n">bench_col</span>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="s2">&quot;legacy_mc_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;legacy_mc_mean_std_sharpe for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">legacy_mc_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">legacy_contribution</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                     <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -17696,8 +17806,6 @@ against given target and benchmark column(s).</p>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="s2">&quot;ex_diss&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span> <span class="ow">or</span> <span class="s2">&quot;ex_diss_pearson&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ex_diss_pearson for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">col_stats</span><span class="p">[</span>
                     <span class="sa">f</span><span class="s2">&quot;exposure_dissimilarity_pearson_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure_dissimilarity</span><span class="p">(</span>
@@ -17705,20 +17813,17 @@ against given target and benchmark column(s).</p>
                     <span class="n">corr_method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="s2">&quot;ex_diss_spearman&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ex_diss_spearman for benchmark column: &#39;</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 <span class="n">col_stats</span><span class="p">[</span>
                     <span class="sa">f</span><span class="s2">&quot;exposure_dissimilarity_spearman_</span><span class="si">{</span><span class="n">bench_col</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure_dissimilarity</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">other_col</span><span class="o">=</span><span class="n">bench_col</span><span class="p">,</span>
                     <span class="n">corr_method</span><span class="o">=</span><span class="s2">&quot;spearman&quot;</span>
                 <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Finished evaluation for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bench_metrics</span><span class="si">}</span><span class="s2">&#39; benchmark metrics&quot;</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bench_metrics</span><span class="p">)</span>
 
     <span class="c1"># Compute intensive stats</span>
     <span class="k">if</span> <span class="s2">&quot;fn_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fn_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;fn_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">fn_mean</span><span class="p">,</span> <span class="n">fn_std</span><span class="p">,</span> <span class="n">fn_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
             <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
             <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span>
@@ -17730,9 +17835,7 @@ against given target and benchmark column(s).</p>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;feature_neutral_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_sharpe</span>
 
     <span class="k">if</span> <span class="s2">&quot;tb200_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tb200_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb200_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">tb200_mean</span><span class="p">,</span> <span class="n">tb200_std</span><span class="p">,</span> <span class="n">tb200_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbx_mean_std_sharpe</span><span class="p">(</span>
             <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">200</span>
         <span class="p">)</span>
@@ -17741,9 +17844,7 @@ against given target and benchmark column(s).</p>
         <span class="n">col_stats</span><span class="p">[</span><span class="s2">&quot;tb200_sharpe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tb200_sharpe</span>
 
     <span class="k">if</span> <span class="s2">&quot;tb500_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tb500_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;tb500_mean_std_sharpe for evaluation&quot;</span><span class="p">)</span>
         <span class="n">tb500_mean</span><span class="p">,</span> <span class="n">tb500_std</span><span class="p">,</span> <span class="n">tb500_sharpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbx_mean_std_sharpe</span><span class="p">(</span>
             <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">pred_col</span><span class="o">=</span><span class="n">pred_col</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="mi">500</span>
         <span class="p">)</span>
@@ -17755,9 +17856,8 @@ against given target and benchmark column(s).</p>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">local_vars</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;custom function: &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; for evaluation&quot;</span><span class="p">)</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;custom function: &#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&#39; for evaluation&quot;</span><span class="p">)</span>
+
             <span class="n">func</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
             <span class="n">args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
             <span class="n">local_args</span> <span class="o">=</span> <span class="n">func_info</span><span class="p">[</span><span class="s1">&#39;local_args&#39;</span><span class="p">]</span>
@@ -17774,9 +17874,7 @@ against given target and benchmark column(s).</p>
             <span class="n">col_stats</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">resolved_args</span><span class="p">)</span>
 
     <span class="n">col_stats_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">col_stats</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">pred_col</span><span class="p">])</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span><span class="p">:</span>
-        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Finished evaluation&quot;</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">col_stats_df</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -17805,8 +17903,7 @@ corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'pears
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">550</span>
-<span class="normal">551</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">551</span>
 <span class="normal">552</span>
 <span class="normal">553</span>
 <span class="normal">554</span>
@@ -17827,7 +17924,8 @@ corr_method should be one of ['pearson', 'kendall', 'spearman']. Default: 'pears
 <span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
-<span class="normal">572</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">exposure_dissimilarity</span><span class="p">(</span>
+<span class="normal">572</span>
+<span class="normal">573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">exposure_dissimilarity</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corr_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pearson&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17872,8 +17970,7 @@ More info: https://docs.numer.ai/tournament/feature-neutral-correlation</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
-<span class="normal">511</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span>
@@ -17896,7 +17993,8 @@ More info: https://docs.numer.ai/tournament/feature-neutral-correlation</p>
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
-<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
+<span class="normal">534</span>
+<span class="normal">535</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -17948,16 +18046,7 @@ Evaluation is done against given target and benchmark prediction column.
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
 <span class="normal"> 89</span>
 <span class="normal"> 90</span>
 <span class="normal"> 91</span>
@@ -17986,7 +18075,16 @@ Evaluation is done against given target and benchmark prediction column.
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">full_evaluation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -18054,8 +18152,7 @@ Default: -1 (all cores).
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">704</span>
-<span class="normal">705</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">705</span>
 <span class="normal">706</span>
 <span class="normal">707</span>
 <span class="normal">708</span>
@@ -18097,7 +18194,8 @@ Default: -1 (all cores).
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
-<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_corrv2</span><span class="p">(</span>
+<span class="normal">747</span>
+<span class="normal">748</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_corrv2</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -18167,8 +18265,7 @@ Default: -1 (all cores).
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">658</span>
-<span class="normal">659</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
 <span class="normal">662</span>
@@ -18211,7 +18308,8 @@ Default: -1 (all cores).
 <span class="normal">699</span>
 <span class="normal">700</span>
 <span class="normal">701</span>
-<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_pearson</span><span class="p">(</span>
+<span class="normal">702</span>
+<span class="normal">703</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_feature_exposures_pearson</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -18283,8 +18381,7 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">775</span>
-<span class="normal">776</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span>
@@ -18309,7 +18406,8 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 <span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
-<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">legacy_contribution</span><span class="p">(</span>
+<span class="normal">801</span>
+<span class="normal">802</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">legacy_contribution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -18361,8 +18459,7 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
-<span class="normal">456</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
 <span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
@@ -18370,7 +18467,8 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
-<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">464</span>
+<span class="normal">465</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">max_drawdown</span><span class="p">(</span><span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum drawdown per era.&quot;&quot;&quot;</span>
     <span class="c1"># Arbitrarily large window</span>
@@ -18401,15 +18499,15 @@ More info: https://forum.numer.ai/t/mmc2-announcement/93</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">500</span>
-<span class="normal">501</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">501</span>
 <span class="normal">502</span>
 <span class="normal">503</span>
 <span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
-<span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">max_feature_exposure</span><span class="p">(</span>
+<span class="normal">508</span>
+<span class="normal">509</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">max_feature_exposure</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum exposure over all features.&quot;&quot;&quot;</span>
@@ -18440,8 +18538,7 @@ correlations per era.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
-<span class="normal">420</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
@@ -18450,7 +18547,8 @@ correlations per era.</p>
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
-<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span>
+<span class="normal">429</span>
+<span class="normal">430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -18484,8 +18582,7 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
-<span class="normal">432</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
@@ -18506,7 +18603,8 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 <span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numerai_corr</span><span class="p">(</span>
+<span class="normal">453</span>
+<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numerai_corr</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -18550,15 +18648,15 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">401</span>
-<span class="normal">402</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
-<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
+<span class="normal">409</span>
+<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_corrs</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Correlation between prediction and target for each era.&quot;&quot;&quot;</span>
@@ -18588,13 +18686,13 @@ More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">411</span>
-<span class="normal">412</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
 <span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_numerai_corrs</span><span class="p">(</span>
+<span class="normal">417</span>
+<span class="normal">418</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">per_era_numerai_corrs</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Numerai Corr between prediction and target for each era.&quot;&quot;&quot;</span>
@@ -18628,30 +18726,7 @@ This is optional for if you already have per era correlations prepared in your i
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">861</span>
-<span class="normal">862</span>
-<span class="normal">863</span>
-<span class="normal">864</span>
-<span class="normal">865</span>
-<span class="normal">866</span>
-<span class="normal">867</span>
-<span class="normal">868</span>
-<span class="normal">869</span>
-<span class="normal">870</span>
-<span class="normal">871</span>
-<span class="normal">872</span>
-<span class="normal">873</span>
-<span class="normal">874</span>
-<span class="normal">875</span>
-<span class="normal">876</span>
-<span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span>
-<span class="normal">880</span>
-<span class="normal">881</span>
-<span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">884</span>
 <span class="normal">885</span>
 <span class="normal">886</span>
 <span class="normal">887</span>
@@ -18687,7 +18762,30 @@ This is optional for if you already have per era correlations prepared in your i
 <span class="normal">917</span>
 <span class="normal">918</span>
 <span class="normal">919</span>
-<span class="normal">920</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">plot_correlations</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">pred_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -18769,14 +18867,14 @@ This is optional for if you already have per era correlations prepared in your i
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
-<span class="normal">750</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
 <span class="normal">753</span>
 <span class="normal">754</span>
 <span class="normal">755</span>
-<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">smart_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="normal">756</span>
+<span class="normal">757</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">smart_sharpe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">era_corrs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sharpe adjusted for autocorrelation.</span>
 <span class="sd">    :param era_corrs: Correlation scores by era</span>
@@ -18808,8 +18906,7 @@ TB200 and TB500 are the most common situations.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">536</span>
-<span class="normal">537</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
 <span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
@@ -18820,7 +18917,8 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
-<span class="normal">548</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tbx_mean_std_sharpe</span><span class="p">(</span>
+<span class="normal">548</span>
+<span class="normal">549</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tbx_mean_std_sharpe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pred_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -18833,6 +18931,58 @@ TB200 and TB500 are the most common situations.</p>
         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">pred_col</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">tb</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_std_sharpe</span><span class="p">(</span><span class="n">era_corrs</span><span class="o">=</span><span class="n">tb_val_corrs</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="numerblox.evaluation.BaseEvaluator.update_progress_bar" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">update_progress_bar</span><span class="p">(</span><span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Update progress bar for evaluation.
+:param pbar: tqdm progress bar object.
+:param desc: Description to show in progress bar.
+:param update: Update progress by n steps.
+:param close: Close progress bar.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>numerblox/evaluation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_progress_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">close</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Update progress bar for evaluation.</span>
+<span class="sd">    :param pbar: tqdm progress bar object.</span>
+<span class="sd">    :param desc: Description to show in progress bar.</span>
+<span class="sd">    :param update: Update progress by n steps.</span>
+<span class="sd">    :param close: Close progress bar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_detailed_progress_bar</span> <span class="ow">and</span> <span class="n">pbar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">close</span><span class="p">:</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -18863,34 +19013,11 @@ TB200 and TB500 are the most common situations.</p>
               Bases: <code><a class="autorefs autorefs-internal" title="numerblox.evaluation.BaseEvaluator" href="#numerblox.evaluation.BaseEvaluator">BaseEvaluator</a></code></p>
 
 
-      <p>Evaluator for all metrics that are relevant in Numerai Classic.</p>
+      <p>Evaluator for all Numerai Classic metrics.</p>
 
               <details class="quote">
                 <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 941</span>
-<span class="normal"> 942</span>
-<span class="normal"> 943</span>
-<span class="normal"> 944</span>
-<span class="normal"> 945</span>
-<span class="normal"> 946</span>
-<span class="normal"> 947</span>
-<span class="normal"> 948</span>
-<span class="normal"> 949</span>
-<span class="normal"> 950</span>
-<span class="normal"> 951</span>
-<span class="normal"> 952</span>
-<span class="normal"> 953</span>
-<span class="normal"> 954</span>
-<span class="normal"> 955</span>
-<span class="normal"> 956</span>
-<span class="normal"> 957</span>
-<span class="normal"> 958</span>
-<span class="normal"> 959</span>
-<span class="normal"> 960</span>
-<span class="normal"> 961</span>
-<span class="normal"> 962</span>
-<span class="normal"> 963</span>
-<span class="normal"> 964</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 964</span>
 <span class="normal"> 965</span>
 <span class="normal"> 966</span>
 <span class="normal"> 967</span>
@@ -18938,11 +19065,26 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">1009</span>
 <span class="normal">1010</span>
 <span class="normal">1011</span>
-<span class="normal">1012</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Evaluator for all metrics that are relevant in Numerai Classic.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span>
+<span class="normal">1030</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiClassicEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Evaluator for all Numerai Classic metrics. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">era_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;era&quot;</span><span class="p">,</span>
@@ -18984,31 +19126,29 @@ TB200 and TB500 are the most common situations.</p>
             <span class="p">)</span>
             <span class="n">valid_features</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">pred_cols</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Evaluation&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
-                <span class="c1"># Metrics that can be calculated for both Numerai Classic and Signals</span>
-                <span class="n">col_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_one_col</span><span class="p">(</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">pred_cols</span><span class="p">:</span>
+            <span class="c1"># Metrics that can be calculated for both Numerai Classic and Signals</span>
+            <span class="n">col_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_one_col</span><span class="p">(</span>
                     <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                     <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
                     <span class="n">pred_col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
                     <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
                     <span class="n">benchmark_cols</span><span class="o">=</span><span class="n">benchmark_cols</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="c1"># Numerai Classic specific metrics</span>
-                <span class="k">if</span> <span class="n">valid_features</span> <span class="ow">and</span> <span class="s2">&quot;fncv3_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fncv3_mean_std_sharpe for evaluation of &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                    <span class="c1"># Using only valid features defined in FNCV3_FEATURES</span>
-                    <span class="n">fnc_v3</span><span class="p">,</span> <span class="n">fn_std_v3</span><span class="p">,</span> <span class="n">fn_sharpe_v3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
+            <span class="c1"># Numerai Classic specific metrics</span>
+            <span class="k">if</span> <span class="n">valid_features</span> <span class="ow">and</span> <span class="s2">&quot;fncv3_mean_std_sharpe&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_list</span><span class="p">:</span>
+                <span class="c1"># Using only valid features defined in FNCV3_FEATURES</span>
+                <span class="n">fnc_v3</span><span class="p">,</span> <span class="n">fn_std_v3</span><span class="p">,</span> <span class="n">fn_sharpe_v3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_neutral_mean_std_sharpe</span><span class="p">(</span>
                         <span class="n">dataf</span><span class="o">=</span><span class="n">dataf</span><span class="p">,</span>
                         <span class="n">pred_col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
                         <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
                         <span class="n">feature_names</span><span class="o">=</span><span class="n">valid_features</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_mean_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fnc_v3</span>
-                    <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_std_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_std_v3</span>
-                    <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_sharpe_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_sharpe_v3</span>
+                <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_mean_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fnc_v3</span>
+                <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_std_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_std_v3</span>
+                <span class="n">col_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;feature_neutral_sharpe_v3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn_sharpe_v3</span>
 
-                <span class="n">val_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">val_stats</span><span class="p">,</span> <span class="n">col_stats</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">val_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">val_stats</span><span class="p">,</span> <span class="n">col_stats</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">val_stats</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -19053,25 +19193,7 @@ TB200 and TB500 are the most common situations.</p>
 
               <details class="quote">
                 <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1015</span>
-<span class="normal">1016</span>
-<span class="normal">1017</span>
-<span class="normal">1018</span>
-<span class="normal">1019</span>
-<span class="normal">1020</span>
-<span class="normal">1021</span>
-<span class="normal">1022</span>
-<span class="normal">1023</span>
-<span class="normal">1024</span>
-<span class="normal">1025</span>
-<span class="normal">1026</span>
-<span class="normal">1027</span>
-<span class="normal">1028</span>
-<span class="normal">1029</span>
-<span class="normal">1030</span>
-<span class="normal">1031</span>
-<span class="normal">1032</span>
-<span class="normal">1033</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1033</span>
 <span class="normal">1034</span>
 <span class="normal">1035</span>
 <span class="normal">1036</span>
@@ -19133,7 +19255,25 @@ TB200 and TB500 are the most common situations.</p>
 <span class="normal">1092</span>
 <span class="normal">1093</span>
 <span class="normal">1094</span>
-<span class="normal">1095</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
+<span class="normal">1095</span>
+<span class="normal">1096</span>
+<span class="normal">1097</span>
+<span class="normal">1098</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span>
+<span class="normal">1102</span>
+<span class="normal">1103</span>
+<span class="normal">1104</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span>
+<span class="normal">1110</span>
+<span class="normal">1111</span>
+<span class="normal">1112</span>
+<span class="normal">1113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">NumeraiSignalsEvaluator</span><span class="p">(</span><span class="n">BaseEvaluator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluator for all metrics that are relevant in Numerai Signals.&quot;&quot;&quot;</span>
     <span class="c1"># Columns retrievable from Numerai Signals diagnostics.</span>
     <span class="c1"># More info: https://forum.numer.ai/t/signals-diagnostics-guide/5950</span>
@@ -19249,25 +19389,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1068</span>
-<span class="normal">1069</span>
-<span class="normal">1070</span>
-<span class="normal">1071</span>
-<span class="normal">1072</span>
-<span class="normal">1073</span>
-<span class="normal">1074</span>
-<span class="normal">1075</span>
-<span class="normal">1076</span>
-<span class="normal">1077</span>
-<span class="normal">1078</span>
-<span class="normal">1079</span>
-<span class="normal">1080</span>
-<span class="normal">1081</span>
-<span class="normal">1082</span>
-<span class="normal">1083</span>
-<span class="normal">1084</span>
-<span class="normal">1085</span>
-<span class="normal">1086</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1086</span>
 <span class="normal">1087</span>
 <span class="normal">1088</span>
 <span class="normal">1089</span>
@@ -19276,7 +19398,25 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1092</span>
 <span class="normal">1093</span>
 <span class="normal">1094</span>
-<span class="normal">1095</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1095</span>
+<span class="normal">1096</span>
+<span class="normal">1097</span>
+<span class="normal">1098</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span>
+<span class="normal">1102</span>
+<span class="normal">1103</span>
+<span class="normal">1104</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span>
+<span class="normal">1110</span>
+<span class="normal">1111</span>
+<span class="normal">1112</span>
+<span class="normal">1113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">__await_diagnostics</span><span class="p">(</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">SignalsAPI</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -19334,25 +19474,7 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 
             <details class="quote">
               <summary>Source code in <code>numerblox/evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1037</span>
-<span class="normal">1038</span>
-<span class="normal">1039</span>
-<span class="normal">1040</span>
-<span class="normal">1041</span>
-<span class="normal">1042</span>
-<span class="normal">1043</span>
-<span class="normal">1044</span>
-<span class="normal">1045</span>
-<span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
-<span class="normal">1049</span>
-<span class="normal">1050</span>
-<span class="normal">1051</span>
-<span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1055</span>
 <span class="normal">1056</span>
 <span class="normal">1057</span>
 <span class="normal">1058</span>
@@ -19363,7 +19485,25 @@ Try every 'interval_sec' seconds until 'timeout_min' minutes have passed.</p>
 <span class="normal">1063</span>
 <span class="normal">1064</span>
 <span class="normal">1065</span>
-<span class="normal">1066</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_diagnostics</span><span class="p">(</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span>
+<span class="normal">1073</span>
+<span class="normal">1074</span>
+<span class="normal">1075</span>
+<span class="normal">1076</span>
+<span class="normal">1077</span>
+<span class="normal">1078</span>
+<span class="normal">1079</span>
+<span class="normal">1080</span>
+<span class="normal">1081</span>
+<span class="normal">1082</span>
+<span class="normal">1083</span>
+<span class="normal">1084</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_diagnostics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">val_dataf</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="p">,</span> <span class="n">timeout_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">col</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;validationFncV4&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
