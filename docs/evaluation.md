@@ -42,6 +42,12 @@ The following metrics only work if `benchmark_cols` are defined in `full_evaluat
 
 - "ex_diss_spearman" -> [Exposure Dissimilarity](https://forum.numer.ai/t/true-contribution-details/5128/4) to benchmark predictions using Spearman correlation. Will be slower compared to "ex_diss_pearson".
 
+- "churn" -> [Churn](https://forum.numer.ai/t/better-lgbm-params-signals-v2-data-and-reducing-signals-churn/7638) is a statistic describing how the alpha scores of a signal changes over time.
+
+- "tb200_churn" -> Churn based on TB200.
+
+- "tb500_churn" -> Churn based on TB500.
+
 ## Numerai Classic specific metrics
 
 `NumeraiClassicEvaluator` can also compute [FNCv3](https://docs.numer.ai/numerai-tournament/scoring/feature-neutral-correlation#fnc-on-the-website). If you want to compute this add `fncv3_mean_std_sharpe` to the `metrics_list`.

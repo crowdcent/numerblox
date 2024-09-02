@@ -364,6 +364,8 @@ class TickerMapper(BasePreProcessor):
         :return tickers: Mapped tickers
         """
         tickers = pd.DataFrame(X, columns=[self.ticker_col])[self.ticker_col].map(self.mapping)
+        # Convert NaN values to None so we have all strings.
+        tickers = tickers.where(pd.notna(tickers), None)
         return tickers.to_numpy()
     
     def get_feature_names_out(self, input_features=None) -> List[str]:

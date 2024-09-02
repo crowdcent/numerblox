@@ -31,6 +31,7 @@ TICKER_PROCESSORS = [LagPreProcessor]
 dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
 dummy_signals_data = create_signals_sample_data
 
+
 def test_base_preprocessor():
     assert hasattr(BasePreProcessor, 'fit')
     assert hasattr(BasePreProcessor, 'transform')
@@ -243,7 +244,7 @@ def test_ticker_mapper():
     mapper = TickerMapper(ticker_col="bloomberg_ticker", target_ticker_format="signals_ticker",
                         mapper_path="tests/test_assets/eodhd-map.csv")
     result = mapper.transform(test_dataf)
-    assert result.tolist() == ["LLB.SW", "DRAK.AS", "5211.KLSE", "ELEKTRA.MX", np.nan]
+    assert result.tolist() == ["LLB.SW", "DRAK.AS", "5211.KLSE", "ELEKTRA.MX", None]
 
     # Test set_output API
     mapper.set_output(transform="default")
