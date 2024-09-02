@@ -137,34 +137,29 @@ class BaseEvaluator:
         Perform evaluation for one prediction column
         against given target and benchmark column(s).
         """
+        # Era column check
         assert (
             self.era_col in dataf.columns
         ), f"Era column '{self.era_col}' not found in DataFrame. Make sure to set the correct era_col."
+        # Prediction column check
         assert (
                 pred_col in dataf.columns
             ), f"Prediction column '{pred_col}' not found in DataFrame. Make sure to set the correct pred_col."
+        assert self._check_column_range(dataf[pred_col]), "All predictions should be between 0 and 1 (inclusive)."
+        # Target column check
         assert (
             target_col in dataf.columns
         ), f"Target column '{target_col}' not found in DataFrame. Make sure to set the correct target_col."
-        if benchmark_cols:
+        assert self._check_column_range(dataf[target_col]), "All targets should be between 0 and 1 (inclusive)."
+        # Benchmark columns check
+        if benchmark_cols is not None:
             for col in benchmark_cols:
                 assert (
                     col in dataf.columns
                 ), f"Benchmark column '{col}' not found in DataFrame. Make sure to set the correct benchmark_cols."
+                assert self._check_column_range(dataf[col]), f"All predictions for '{col}' should be between 0 and 1 (inclusive)."
 
-        # Check that all values are between 0 and 1
-        assert (
-            dataf[pred_col].min().min() >= 0 and dataf[pred_col].max().max() <= 1
-        ), "All predictions should be between 0 and 1 (inclusive)."
-        assert (
-            dataf[target_col].min() >= 0 and dataf[target_col].max() <= 1
-        ), "All targets should be between 0 and 1 (inclusive)."
-        if benchmark_cols is not None:
-            for col in benchmark_cols:
-                assert (
-                    dataf[col].min() >= 0 and dataf[col].max() <= 1
-                ), f"All predictions for '{col}' should be between 0 and 1 (inclusive)."
-
+        # Set up progress bar
         if self.show_detailed_progress_bar:
             len_custom_functions = 0 if self.custom_functions is None else len(list(self.custom_functions.keys()))
             len_pbar = len(self.metrics_list) + len_custom_functions
@@ -959,6 +954,16 @@ class BaseEvaluator:
 
         plt.show()
         return
+    
+    @staticmethod
+    def _check_column_range(obj) -> bool:
+        """ 
+        Check that values are between 0 and 1 (inclusive). 
+        :param obj: Pandas DataFrame or Series.
+        """
+        min_val = obj.min().min() if isinstance(obj, pd.DataFrame) else obj.min()
+        max_val = obj.max().max() if isinstance(obj, pd.DataFrame) else obj.max()
+        return min_val >= 0 and max_val <= 1
 
 
 class NumeraiClassicEvaluator(BaseEvaluator):
