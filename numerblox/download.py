@@ -5,14 +5,14 @@ import json
 import shutil
 import concurrent
 import pandas as pd
+from pathlib import Path
 from tqdm.auto import tqdm
-from numerapi import NumerAPI, SignalsAPI
 from google.cloud import storage
 from datetime import datetime as dt
-from pathlib import Path
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from dateutil.relativedelta import relativedelta
+from numerapi import NumerAPI, SignalsAPI, CryptoAPI
 
 from .numerframe import NumerFrame
 
@@ -186,8 +186,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def __init__(self, directory_path: str, **kwargs):
         super().__init__(directory_path=directory_path)
         self.napi = NumerAPI(**kwargs)
-        self.current_round = self.napi.get_current_round()
-        # Get all available versions available for Numerai.
+        # Get all available versions available for Numerai Classic.
         self.dataset_versions = set(s.split("/")[0] for s in self.napi.list_datasets())
         self.dataset_versions.discard("signals")
 
@@ -282,7 +281,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         4.1 = Sunshine dataset
         4.2 (default) = Rain Dataset
         4.3 = Midnight dataset
-        5.0 = New dataset (Live data will be available around September 2024)
+        5.0 = Atlas dataset (Live data will be available around mid-September 2024)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
@@ -335,11 +334,9 @@ class NumeraiClassicDownloader(BaseDownloader):
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in NumerAPI."
 
-
 class NumeraiSignalsDownloader(BaseDownloader):
     """
     Support for Numerai Signals v1 parquet data.
-
     Downloading from SignalsAPI for Numerai Signals data. \n
     :param directory_path: Base folder to download files to. \n
     All kwargs will be passed to SignalsAPI initialization.
@@ -353,7 +350,6 @@ class NumeraiSignalsDownloader(BaseDownloader):
     def __init__(self, directory_path: str, **kwargs):
         super().__init__(directory_path=directory_path)
         self.sapi = SignalsAPI(**kwargs)
-        self.current_round = self.sapi.get_current_round()
         # Get all available versions available for Numerai Signals.
         self.dataset_versions = set(s.replace("signals/", "").split("/")[0] for s in self.sapi.list_datasets() if s.startswith("signals/v"))
 
@@ -383,7 +379,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
         """
         Download one of the available datasets through SignalsAPI.
 
-        :param filename: Name as listed in NumerAPI (Check NumerAPI().list_datasets() for full overview)
+        :param filename: Name as listed in SignalsAPI (Check SignalsAPI().list_datasets() for full overview)
         :param dest_path: Full path where file will be saved.
         """
         print(
@@ -439,7 +435,84 @@ class NumeraiSignalsDownloader(BaseDownloader):
 
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in SignalsAPI."
-    
+
+class NumeraiCryptoDownloader(BaseDownloader):
+    """
+    Download Numerai Crypto data.
+
+    :param directory_path: Base folder to download files to.
+    """
+    LIVE_DATASET_NAME = "live_universe.parquet"
+    TRAIN_TARGETS_NAME = "train_targets.parquet"
+
+    def __init__(self, directory_path: str, **kwargs):
+        super().__init__(directory_path=directory_path)
+        self.capi = CryptoAPI(**kwargs)
+        self.dataset_versions = ["v1.0"]
+
+    def download_training_data(
+            self,
+            subfolder: str = "",
+            version: str = "1.0",
+    ):
+        """
+        Download all training data in specified folder for given version.
+
+        :param subfolder: Specify folder to create folder within directory root.
+        Saves in directory root by default.
+        :param version: Numerai dataset version. 
+        Currently only v1.0 is supported.
+        """
+        self._check_dataset_version(version)
+        training_files = [f"crypto/v{version}/{self.TRAIN_TARGETS_NAME}"]
+        for file in training_files:
+            dest_path = self._get_dest_path(subfolder, file)
+            self.download_single_dataset(
+                filename=file,
+                dest_path=dest_path,
+            )
+
+    def download_live_data(
+            self,
+            subfolder: str = "",
+            version: str = "1.0",
+    ):
+        """
+        Download all live data in specified folder (i.e. minimal data needed for inference).
+
+        :param subfolder: Specify folder to create folder within directory root.
+        Saves in directory root by default.
+        :param version: Numerai dataset version. 
+        Currently only v1.0 is supported.
+        """
+        self._check_dataset_version(version)
+        live_files = [f"crypto/v{version}/{self.LIVE_DATASET_NAME}"]
+        for file in live_files:
+            dest_path = self._get_dest_path(subfolder, file)
+            self.download_single_dataset(
+                filename=file,
+                dest_path=dest_path,
+            )
+
+    def download_single_dataset(
+        self, filename: str, dest_path: str
+    ):
+        """
+        Download one of the available datasets through CryptoAPI.
+
+        :param filename: Name as listed in CryptoAPI (Check CryptoAPI().list_datasets() for full overview)
+        :param dest_path: Full path where file will be saved.
+        """
+        print(
+            f"Downloading '{filename}'."
+        )
+        self.capi.download_dataset(
+            filename=filename,
+            dest_path=dest_path,
+        )
+
+    def _check_dataset_version(self, version: str):
+        assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in CryptoAPI."
 
 class KaggleDownloader(BaseDownloader):
     """
@@ -480,7 +553,6 @@ class KaggleDownloader(BaseDownloader):
             import kaggle
         except OSError:
             raise OSError("Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.")
-
 
 class EODDownloader(BaseDownloader):
     """
