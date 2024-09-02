@@ -35,13 +35,9 @@ meta_model_preds = pd.read_parquet("my_numerai_data_folder/meta_model.parquet")
 
 ## Numerai Signals
 
-For Numerai Signals we have several options implemented to download data. Numerai Signals Downloaders have similar methods as `NumeraiClassicDownloader`.
-
-### Numerai Signals Dataset
-
 Numerai provides a basic dataset for Numerai Signals. This is a good starting point for new users.
 
-More information: [https://docs.numer.ai/numerai-signals/signals-data](https://docs.numer.ai/numerai-signals/signals-data)
+More information: [https://signals.numer.ai/data/v1.0](https://signals.numer.ai/data/v1.0)
 
 ```py
 from numerblox.download import NumeraiSignalsDownloader
@@ -52,6 +48,24 @@ dl = NumeraiSignalsDownloader(directory_path="my_numerai_signals_folder")
 dl.download_training_data()
 
 # Live data
+dl.download_live_data()
+```
+
+## Numerai Crypto
+
+For Numerai Crypto there are some basic files to download.
+
+More information: [https://crypto.numer.ai/data/v1.0](https://crypto.numer.ai/data/v1.0)
+
+```py
+from numerblox.download import NumeraiCryptoDownloader
+
+dl = NumeraiCryptoDownloader(directory_path="my_numerai_crypto_folder")
+
+# Training targets
+dl.download_training_data()
+
+# Live Crypto universe data
 dl.download_live_data()
 ```
 
