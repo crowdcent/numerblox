@@ -10,6 +10,7 @@ TEST_SIGNALS_DIR = f"test_numsignals_general_{uuid4()}"
 TEST_SIGNALS_VERSIONS = ["1.0"]
 
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_signals():
     dl = NumeraiSignalsDownloader(TEST_SIGNALS_DIR)
 
@@ -30,6 +31,7 @@ def test_signals():
 
     dl.remove_base_directory()
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_signals_versions():
     downloader = NumeraiSignalsDownloader(directory_path=f"some_path_{uuid4()}")
 
@@ -43,6 +45,7 @@ def test_signals_versions():
             
     downloader.remove_base_directory()
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting or missing credentials")
 def test_kaggle_downloader():
     try:
         kd = KaggleDownloader(f"test_kaggle_{uuid4()}")
@@ -51,6 +54,7 @@ def test_kaggle_downloader():
     except OSError:
         pass
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting or missing credentials")
 def test_eod():
     eod = EODDownloader(f"test_eod_{uuid4()}", key="DEMO", tickers=["AAPL.US"])
     eod.download_live_data()

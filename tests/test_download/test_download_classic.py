@@ -16,6 +16,7 @@ TEST_CLASSIC_VERSIONS = ["4.2", "4.3", "5.0"]
 # Live data for v5.0 will be released in mid-September 2024
 TEST_CLASSIC_LIVE_VERSIONS = ["4.2", "4.3"]
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_base():
     numer_classic_downloader = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 
@@ -31,6 +32,7 @@ def test_base():
     numer_classic_downloader.remove_base_directory()
     assert not os.path.exists(TEST_CLASSIC_DIR)
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic():
     dl = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 
@@ -65,6 +67,7 @@ def test_classic():
 
     dl.remove_base_directory()
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 

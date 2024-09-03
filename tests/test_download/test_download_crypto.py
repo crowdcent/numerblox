@@ -7,6 +7,7 @@ from numerblox.download import NumeraiCryptoDownloader
 
 ALL_CRYPTO_VERSIONS = ["v1.0"]
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_crypto():
     TEST_CRYPTO_DIR = f"test_numcrypto_general_{uuid4()}"
     dl = NumeraiCryptoDownloader(TEST_CRYPTO_DIR)
@@ -24,6 +25,7 @@ def test_crypto():
     assert os.path.exists(dl.dir / "train")
     assert os.path.exists(dl.dir / "train" / "train_targets.parquet")
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_crypto_versions():
     downloader = NumeraiCryptoDownloader(directory_path=f"some_path_{uuid4()}")
 
