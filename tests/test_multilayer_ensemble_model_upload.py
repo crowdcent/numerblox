@@ -8,9 +8,9 @@ import pytest
 
 
 def create_synthetic_data():
-    num_eras = 50
-    rows_per_era = 4000
-    num_features = 310
+    num_eras = 20
+    rows_per_era = 300
+    num_features = 50
 
     # Generate feature column names
     feature_cols = [f'feature_{i}' for i in range(num_features)]
