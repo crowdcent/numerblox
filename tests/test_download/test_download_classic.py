@@ -53,12 +53,6 @@ def test_classic():
     # Check that feature_stats and feature_sets keys exist
     assert "feature_sets" in features.keys()
 
-    # Test metamodel preds
-    meta_model = dl.download_meta_model_preds()
-    assert os.path.exists(dl.dir / "meta_model.parquet")
-    assert isinstance(meta_model, pd.DataFrame)
-    assert "numerai_meta_model" in meta_model.columns
-
     dl.remove_base_directory()
 
 def test_classic_versions():

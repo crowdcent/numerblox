@@ -315,7 +315,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
-    def download_meta_model_preds(self, subfolder: str = "", filename="v5.0/meta_model.parquet") -> pd.DataFrame:
+    def download_meta_model_preds(self, subfolder: str = "", filename="v4.3/meta_model.parquet") -> pd.DataFrame:
         """
         Download Meta model predictions through NumerAPI.
         :param subfolder: Specify folder to create folder within base directory root.
