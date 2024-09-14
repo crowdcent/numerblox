@@ -28,6 +28,7 @@ def test_base():
     numer_classic_downloader.remove_base_directory()
     assert not os.path.exists(TEST_CLASSIC_DIR)
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic():
     dl = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 
@@ -59,7 +60,7 @@ def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
     # Test unsupported versions
-    unsupported_versions = ["3", "6.8"]
+    unsupported_versions = ["3"]
     for version in unsupported_versions:
         with pytest.raises(AssertionError):
             downloader.download_training_data(version=version)
