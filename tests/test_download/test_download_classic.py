@@ -1,6 +1,5 @@
 import os
 import pytest
-import pandas as pd
 from uuid import uuid4
 from pathlib import PosixPath
 from numerapi import NumerAPI
