@@ -15,15 +15,7 @@ Downloaded files are automatically cleaned up after data is loaded with the `tra
 
 ```py
 from numerblox.prediction_loaders import ExamplePredictions
-# Instantiate and load example predictions for v4.3
-example_loader = ExamplePredictions(file_name="v4.3/live_example_preds.parquet", keep_files=False)
+# Instantiate and load example predictions for v5.0
+example_loader = ExamplePredictions(file_name="v5.0/live_example_preds.parquet", keep_files=False)
 example_preds_df = example_loader.transform()
-```
-
-Besides the v4.3 data you can also retrieve example preds from earlier datasets. Check [Numerai's data page](https://numer.ai/data) to see which datasets are supported.
-
-```py
-from numerblox.prediction_loaders import ExamplePredictions
-example_loader_v42 = ExamplePredictions(file_name="v4.2/live_example_preds.parquet", keep_files=True)
-example_preds_v42_df = example_loader_v41.transform()
 ```

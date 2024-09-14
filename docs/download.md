@@ -12,10 +12,10 @@ from numerblox.download import NumeraiClassicDownloader
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 
 # Training and validation data
-dl.download_training_data("train_val", version="4.3")
+dl.download_training_data("train_val", version="5.0")
 
 # Live data 
-dl.download_live_data("live", version="4.3")
+dl.download_live_data("live", version="5.0")
 ```
 
 Besides these common use cases you can also get feature sets and meta model predictions with `NumeraiClassicDownloader`. 

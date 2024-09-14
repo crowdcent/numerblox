@@ -191,7 +191,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.dataset_versions.discard("signals")
 
     def download_training_data(
-        self, subfolder: str = "", version: str = "4.3"
+        self, subfolder: str = "", version: str = "5.0"
     ):
         """
         Get Numerai classic training and validation data.
@@ -199,16 +199,17 @@ class NumeraiClassicDownloader(BaseDownloader):
         Saves in base directory root by default.
         :param version: Numerai dataset version.
         4 = April 2022 dataset
-        4.1 = Sunshine dataset
-        4.2 (default) = Rain Dataset
-        4.3 = Midnight dataset
-        5.0 = New dataset
+        4.1 = Sunshine
+        4.2 = Rain
+        4.3 = Midnight
+        5.0 = Atlas (default)
         """
         self._check_dataset_version(version)
         if float(version) >= 5.0:
             train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME_5}",
                                f"v{version}/{self.VALIDATION_DATASET_NAME_5}"]
         else:
+            print("WARNING: v4 data will only be supported until Sept. 27, 2024!!!")
             train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
                             f"v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
@@ -240,7 +241,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def download_live_data(
             self,
             subfolder: str = "",
-            version: str = "4.3",
+            version: str = "5.0",
             round_num: int = None
     ):
         """
@@ -249,17 +250,19 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
         :param version: Numerai dataset version. 
-        4 = April 2022 dataset
-        4.1 = Sunshine dataset
-        4.2 (default) = Rain Dataset
-        4.3 = Midnight dataset
-        5.0 = New dataset (Live data will be available around September 2024)
+        4 = April 2022
+        4.1 = Sunshine 
+        4.2 = Rain
+        4.3 = Midnight
+        5.0 = Atlas (default)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
         if float(version) >= 5.0:
-            raise NotImplementedError("Live data not available yet for version 5.0. Live data for 5.0 will be available around September 2024")
-        live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
+            live_files = [f"v{version}/{self.LIVE_DATASET_NAME_5}"]
+        else:
+            print("WARNING: v4 data will only be supported until Sept. 27, 2024!!!")
+            live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
         for file in live_files:
             dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -269,7 +272,7 @@ class NumeraiClassicDownloader(BaseDownloader):
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: str = "4.3", round_num: int = None
+        self, subfolder: str = "", version: str = "5.0", round_num: int = None
     ):
         """
         Download all example prediction data in specified folder for given version.
@@ -278,15 +281,13 @@ class NumeraiClassicDownloader(BaseDownloader):
         Saves in base directory root by default.
         :param version: Numerai dataset version.
         4 = April 2022 dataset
-        4.1 = Sunshine dataset
-        4.2 (default) = Rain Dataset
-        4.3 = Midnight dataset
-        5.0 = Atlas dataset (Live data will be available around mid-September 2024)
+        4.1 = Sunshine
+        4.2 = Rain
+        4.3 = Midnight
+        5.0 = Atlas (default)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
-        if float(version) >= 5.0:
-            raise NotImplementedError("Live example data not available yet for version 5.0. Live example data for 5.0 will be available around September 2024")
         example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
                          f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
@@ -297,7 +298,7 @@ class NumeraiClassicDownloader(BaseDownloader):
                 round_num=round_num
             )
 
-    def get_classic_features(self, subfolder: str = "", filename="v4.3/features.json", *args, **kwargs) -> dict:
+    def get_classic_features(self, subfolder: str = "", filename="v5.0/features.json", *args, **kwargs) -> dict:
         """
         Download feature overview (stats and feature sets) through NumerAPI and load as dict.
         :param subfolder: Specify folder to create folder within base directory root.
@@ -314,7 +315,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
-    def download_meta_model_preds(self, subfolder: str = "", filename="v4.3/meta_model.parquet") -> pd.DataFrame:
+    def download_meta_model_preds(self, subfolder: str = "", filename="v5.0/meta_model.parquet") -> pd.DataFrame:
         """
         Download Meta model predictions through NumerAPI.
         :param subfolder: Specify folder to create folder within base directory root.

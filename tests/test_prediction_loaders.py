@@ -61,7 +61,7 @@ def test_example_predictions_feature_union():
 
 def test_example_predictions_get_feature_names_out():
     ep = ExamplePredictions()
-    assert ep.get_feature_names_out() == ["v4.2/live_example_preds"]
+    assert ep.get_feature_names_out() == ["v5.0/live_example_preds"]
     assert ep.get_feature_names_out(['a', 'b']) == ['a', 'b']
 
 def test_example_predictions_keep_files():

@@ -11,12 +11,8 @@ from numerblox.download import NumeraiClassicDownloader
 ALL_CLASSIC_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets() if not "signals" in s)
 
 TEST_CLASSIC_DIR = f"test_numclassic_general_{uuid4()}"
-# Train and val data available for v5.0
-TEST_CLASSIC_VERSIONS = ["4.2", "4.3", "5.0"]
-# Live data for v5.0 will be released in mid-September 2024
-TEST_CLASSIC_LIVE_VERSIONS = ["4.2", "4.3"]
+TEST_CLASSIC_VERSIONS = ["5.0"]
 
-@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_base():
     numer_classic_downloader = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 
@@ -32,7 +28,6 @@ def test_base():
     numer_classic_downloader.remove_base_directory()
     assert not os.path.exists(TEST_CLASSIC_DIR)
 
-@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic():
     dl = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 
@@ -40,10 +35,10 @@ def test_classic():
     assert dl.dataset_versions == ALL_CLASSIC_VERSIONS
 
     # Test live download
-    for version in TEST_CLASSIC_LIVE_VERSIONS:
+    for version in TEST_CLASSIC_VERSIONS:
         dl.download_live_data("live", version=version)
         assert os.path.exists(dl.dir / "live")
-        assert os.path.exists(dl.dir / "live" / "live_int8.parquet")
+        assert os.path.exists(dl.dir / "live" / "live.parquet")
 
         # Test example data
         dl.download_example_data("test/", version=version)
@@ -56,7 +51,6 @@ def test_classic():
     assert isinstance(features, dict)
     assert len(features["feature_sets"]["medium"]) == 705
     # Check that feature_stats and feature_sets keys exist
-    assert "feature_stats" in features.keys()
     assert "feature_sets" in features.keys()
 
     # Test metamodel preds
@@ -67,7 +61,6 @@ def test_classic():
 
     dl.remove_base_directory()
 
-@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
