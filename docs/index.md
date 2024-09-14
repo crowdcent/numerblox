@@ -77,9 +77,9 @@ from numerblox.download import NumeraiClassicDownloader
 
 downloader = NumeraiClassicDownloader("data")
 # Training and validation data
-downloader.download_training_data("train_val", version="4.3")
+downloader.download_training_data("train_val", version="5.0")
 # Live data
-downloader.download_live_data("current_round", version="4.3")
+downloader.download_live_data("current_round", version="5.0")
 df = pd.read_parquet(file_path="data/current_round/live.parquet")
 ```
 
@@ -141,8 +141,8 @@ from numerblox.preprocessing import GroupStatsPreProcessor
 from numerblox.numerframe import create_numerframe
 
 # Easy data parsing with NumerFrame
-df = create_numerframe(file_path="data/train_val/train_int8.parquet")
-val_df = create_numerframe(file_path="data/train_val/validation_int8.parquet")
+df = create_numerframe(file_path="data/train_val/train.parquet")
+val_df = create_numerframe(file_path="data/train_val/validation.parquet")
 
 X, y = df.get_feature_target_pair()
 train_eras = df.get_era_data

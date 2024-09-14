@@ -8,9 +8,9 @@ First we download the classic data with NumeraiClassicDownloader. We use a Numer
 from numerblox.numerframe import create_numerframe
 from numerblox.download import NumeraiClassicDownloader
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
-dl.download_training_data("train_val", version="4.2", int8=True)
-df = create_numerframe("my_numerai_data_folder/train_val/train_int8.parquet")
-val_df = create_numerframe("my_numerai_data_folder/train_val/val_int8.parquet")
+dl.download_training_data("train_val", version="5.0", int8=True)
+df = create_numerframe("my_numerai_data_folder/train_val/train.parquet")
+val_df = create_numerframe("my_numerai_data_folder/train_val/val.parquet")
 
 X, y = df.get_feature_target_pair(multi_target=False)
 fncv3_cols = df.get_fncv3_feature_data.columns.tolist()
