@@ -25,7 +25,7 @@ from numerblox.download import NumeraiClassicDownloader
 
 dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
 
-# Get feature sets (v4.3)
+# Get feature sets
 features = dl.get_classic_features()
 
 # Get meta model predictions
