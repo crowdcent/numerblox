@@ -7,8 +7,7 @@ from numerai_era_data.date_utils import (ERA_ONE_START, get_current_era,
 
 from .misc import AttrDict
 from .feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
-                             SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
-                             V3_EQUIVALENT_FEATURES)
+                             SMALL_FEATURES, MEDIUM_FEATURES)
 
 
 ERA1_TIMESTAMP = pd.Timestamp(ERA_ONE_START)
@@ -105,16 +104,6 @@ class NumerFrame(pd.DataFrame):
     def get_medium_feature_data(self) -> "NumerFrame":
         """ Medium subset of the Numerai dataset for v4.2 data. """
         return self.get_column_selection(cols=MEDIUM_FEATURES)
-    
-    @property
-    def get_v2_equivalent_feature_data(self) -> "NumerFrame":
-        """ Features equivalent to the deprecated v2 Numerai data. For v4.2 data. """
-        return self.get_column_selection(cols=V2_EQUIVALENT_FEATURES)
-    
-    @property
-    def get_v3_equivalent_feature_data(self) -> "NumerFrame":
-        """ Features equivalent to the deprecated v3 Numerai data. For v4.2 data. """
-        return self.get_column_selection(cols=V3_EQUIVALENT_FEATURES)
 
     @property
     def get_unique_eras(self) -> List[str]:

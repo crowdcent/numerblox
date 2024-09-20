@@ -4,8 +4,6 @@
 
 `NumeraiClassicDownloader` simplifies downloading of datasets from Numerai's API. It allows you to easily download data with a few lines and the data is automatically organized in directories.
 
-NOTE: Only int8 versions are available in this downloader. From v4.2 onwards, Numerai only provides int8 versions of the data.
-
 ```py
 from numerblox.download import NumeraiClassicDownloader
 

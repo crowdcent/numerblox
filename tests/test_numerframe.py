@@ -104,18 +104,6 @@ def test_get_medium_features():
     assert isinstance(result, NumerFrame)
     assert result.columns.tolist() == MEDIUM_FEATURES
 
-def test_get_v2_equivalent_features():
-    nf = NumerFrame(dataset)
-    result = nf.get_v2_equivalent_feature_data
-    assert isinstance(result, NumerFrame)
-    assert result.columns.tolist() == V2_EQUIVALENT_FEATURES
-
-def test_get_v3_equivalent_features():
-    nf = NumerFrame(dataset)
-    result = nf.get_v3_equivalent_feature_data
-    assert isinstance(result, NumerFrame)
-    assert result.columns.tolist() == V3_EQUIVALENT_FEATURES
-
 def test_get_unique_eras():
     nf = NumerFrame(dataset)
     result = nf.get_unique_eras
