@@ -2,10 +2,12 @@
 
 The `NumeraiModelUpload` class is designed for uploading trained models to Numerai for automated submissions. You can upload a single trained model or a complete `sklearn` pipeline, allowing seamless integration with various machine learning workflows. This class efficiently handles model serialization, validation, and uploading, making it adaptable for different types of models and workflows.
 
+***Warning**: The `NumeraiModelUpload` class is designed to work with very specific requirements. For compatibility, make sure your environment matches the requirements listed in the official numerai-predict repository: [numerai-predict/requirements.txt](https://github.com/numerai/numerai-predict/blob/master/requirements.txt). Using different versions or additional packages may lead to issues during model upload and execution.*
+
 ## Why Use NumeraiModelUpload?
 
 - **Automation**: Automates the model submission process to Numerai, reducing the need for manual intervention.
-- **Support for Sklearn Pipelines**: Integrates seamlessly with `sklearn` pipelines, allowing users to submit models with preprocessing, feature engineering, and stacking in a single workflow.
+- **Support for Sklearn Pipelines**: Integrates seamlessly with `sklearn` pipelines and NumerBlox processors, allowing users to submit models with preprocessing, feature engineering, and stacking in a single workflow.
 - **Error Handling**: Offers robust error handling with retry logic, ensuring reliable uploads even in case of network or API errors.
 - **Custom Predict Function**: Supports custom prediction functions for advanced use cases, offering greater flexibility.
 
