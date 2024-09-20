@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from typing import Union, Tuple, Any, List
+from typing import Union, Any
 from numerai_era_data.date_utils import (ERA_ONE_START, get_current_era, 
                                          get_current_date, get_era_for_date,
                                          get_date_for_era)
@@ -132,7 +132,7 @@ class NumerFrame(pd.DataFrame):
         """
         return self.filter(like=pattern)
 
-    def get_feature_target_pair(self, multi_target=False) -> Tuple["NumerFrame", "NumerFrame"]:
+    def get_feature_target_pair(self, multi_target=False) -> tuple["NumerFrame", "NumerFrame"]:
         """
         Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
@@ -142,12 +142,12 @@ class NumerFrame(pd.DataFrame):
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
 
-    def get_era_batch(self, eras: List[Any],
+    def get_era_batch(self, eras: list[Any],
                       convert_to_tf = False,
                       aemlp_batch = False,
                       features: list = None,
                       targets: list = None,
-                      *args, **kwargs) -> Tuple["NumerFrame", "NumerFrame"]:
+                      *args, **kwargs) -> tuple["NumerFrame", "NumerFrame"]:
         """
         Get feature target pair batch of 1 or multiple eras. \n
         :param eras: Selection of era names that should be present in era_col. \n
