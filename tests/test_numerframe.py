@@ -6,7 +6,8 @@ from numerai_era_data.date_utils import ERA_ONE_START
 from numerblox.numerframe import NumerFrame, create_numerframe
 from numerblox.feature_groups import FNCV3_FEATURES, SMALL_FEATURES, MEDIUM_FEATURES, V5_FEATURE_GROUP_MAPPING
 
-dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
+TEST_FILE_PATH = "tests/test_assets/val_3_eras.parquet"
+dataset = pd.read_parquet(TEST_FILE_PATH)
 
 def test_numerframe_initialization():
     nf = NumerFrame(dataset)
@@ -221,6 +222,5 @@ def test_get_date_range():
         nf.get_date_range(pd.Timestamp('2016-01-01'), "2016-01-10")
 
 def test_create_numerframe():
-    file_path = "tests/test_assets/train_int8_5_eras.parquet"
-    nf = create_numerframe(file_path)
+    nf = create_numerframe(TEST_FILE_PATH)
     assert isinstance(nf, NumerFrame)
