@@ -1,35 +1,32 @@
 import time
-from typing import List, Callable, Optional, Union, Dict, Any
-import pandas as pd
 import cloudpickle
+import pandas as pd
 from numerapi import NumerAPI
+from typing import List, Callable, Optional, Union, Any
+
 from .misc import Key
-import numpy as np
 
 
 class NumeraiModelUpload:
     """
     A class to handle the uploading of machine learning models to Numerai's servers.
 
-    Attributes:
-        api (NumerAPI): Instance of NumerAPI used for interacting with Numerai's API.
-        max_retries (int): Maximum number of attempts to upload the model.
-        sleep_time (int): Number of seconds to wait between retries.
-        fail_silently (bool): Whether to suppress exceptions during upload.
+    :param key: API key object containing public and secret keys for NumerAPI authentication.
+    :param max_retries: Maximum number of attempts to upload the model.
+    :param sleep_time: Number of seconds to wait between retries.
+    :param fail_silently: Whether to suppress exceptions during upload.
     """
-
     def __init__(self, key: Key = None, max_retries: int = 2, sleep_time: int = 10,
                  fail_silently: bool = False, *args, **kwargs):
         """
         Initializes the NumeraiModelUpload class with the necessary configuration.
 
-        Args:
-            key (Key): API key object containing public and secret keys for NumerAPI authentication.
-            max_retries (int): Maximum number of retry attempts for model upload.
-            sleep_time (int): Time (in seconds) to wait between retries.
-            fail_silently (bool): If True, suppress errors during model upload.
-            *args: Additional arguments for NumerAPI.
-            **kwargs: Additional keyword arguments for NumerAPI.
+        :param key: API key object containing public and secret keys for NumerAPI authentication.
+        :param max_retries: Maximum number of retry attempts for model upload.
+        :param sleep_time: Time (in seconds) to wait between retries.
+        :param fail_silently: If True, suppress errors during model upload.
+        :param *args: Additional arguments for NumerAPI.
+        :param **kwargs: Additional keyword arguments for NumerAPI.
         """
         # Initialize NumerAPI with the provided keys and other arguments
         self.api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
@@ -47,18 +44,15 @@ class NumeraiModelUpload:
                                 custom_predict_func: Callable[[pd.DataFrame], pd.DataFrame] = None) -> Union[str, None]:
         """
         Creates a model prediction function, serializes it, and uploads the model to Numerai.
+        :param model: The machine learning model object.
+        :param feature_cols: List of feature column names for predictions. Defaults to None.
+        :param model_name: The name of the model to upload.
+        :param file_path: The file path where the serialized model function will be saved.
+        :param data_version: Data version to use for model upload.
+        :param docker_image: Docker image to use for model upload.
+        :param custom_predict_func: Custom prediction function to use instead of the model's predict method.
 
-        Args:
-            model (Any): The machine learning model object.
-            feature_cols (Optional[List[str]]): List of feature column names for predictions. Defaults to None.
-            model_name (str): The name of the model to upload.
-            file_path (str): The file path where the serialized model function will be saved.
-            data_version (str): Data version to use for model upload.
-            docker_image (str): Docker image to use for model upload.
-            custom_predict_func (Callable): Custom prediction function to use instead of the model's predict method.
-
-        Returns:
-            Union[str, None]: Upload ID if the upload is successful, None otherwise.
+        :return: Upload ID if the upload is successful, None otherwise.
         """
         # Determine which prediction function to use
         if custom_predict_func is not None:
@@ -123,8 +117,7 @@ class NumeraiModelUpload:
         """
         Retrieves the available data versions for model uploads.
 
-        Returns:
-            dict: A dictionary of available data versions.
+        :return: A dictionary of available data versions.
         """
         # Call NumerAPI to get available data versions
         return self.api.model_upload_data_versions()
@@ -133,8 +126,7 @@ class NumeraiModelUpload:
         """
         Retrieves the available Docker images for model uploads.
 
-        Returns:
-            dict: A dictionary of available Docker images.
+        :return: A dictionary of available Docker images.
         """
         # Call NumerAPI to get available Docker images
         return self.api.model_upload_docker_images()
@@ -143,14 +135,10 @@ class NumeraiModelUpload:
         """
         Retrieves the model ID for a given model name.
 
-        Args:
-            model_name (str): The name of the model.
-
-        Returns:
-            str: The ID of the model.
-
-        Raises:
-            ValueError: If the model name is not found in the user's Numerai account.
+        :param model_name: The name of the model.
+        :return: The ID of the model.
+        
+        Raises ValueError if the model name is not found in the user's Numerai account.
         """
         # Get the mapping of model names to model IDs
         model_mapping = self.get_model_mapping
@@ -167,8 +155,7 @@ class NumeraiModelUpload:
         """
         Retrieves the mapping of model names to their IDs from the user's Numerai account.
 
-        Returns:
-            dict: A dictionary mapping model names to model IDs.
+        :return: A dictionary mapping model names to model IDs.
         """
         # Call NumerAPI to get the model mapping
         return self.api.get_models()
