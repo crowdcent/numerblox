@@ -14,7 +14,7 @@ from numerblox.neutralizers import FeatureNeutralizer
 
 @pytest.fixture(scope="module")
 def setup_data():
-    df = create_numerframe("tests/test_assets/train_int8_5_eras.parquet")
+    df = create_numerframe("tests/test_assets/val_3_eras.parquet")
     return df
 
 def test_neutralized_xgboost_pipeline(setup_data):

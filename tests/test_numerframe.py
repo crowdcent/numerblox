@@ -4,11 +4,9 @@ import pandas as pd
 from numerai_era_data.date_utils import ERA_ONE_START
 
 from numerblox.numerframe import NumerFrame, create_numerframe
-from numerblox.feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
-                                      SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
-                                      V3_EQUIVALENT_FEATURES)
+from numerblox.feature_groups import FNCV3_FEATURES, SMALL_FEATURES, MEDIUM_FEATURES, V5_FEATURE_GROUP_MAPPING
 
-dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
+dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 
 def test_numerframe_initialization():
     nf = NumerFrame(dataset)
@@ -24,9 +22,9 @@ def test_get_feature_data():
 
 def test_get_pattern_data():
     nf = NumerFrame(dataset)
-    jerome_targets = nf.get_pattern_data('jerome')
-    assert isinstance(jerome_targets, NumerFrame)
-    assert jerome_targets.columns.tolist() == ['target_jerome_v4_20', 'target_jerome_v4_60']
+    xerxes_targets = nf.get_pattern_data('xerxes')
+    assert isinstance(xerxes_targets, NumerFrame)
+    assert xerxes_targets.columns.tolist() == ['target_xerxes_20', 'target_xerxes_60']
 
 def test_get_target_data():
     nf = NumerFrame(dataset)
@@ -48,9 +46,9 @@ def test_get_prediction_data():
 
 def test_get_column_selection():
     nf = NumerFrame(dataset)
-    result = nf.get_column_selection(['target_jerome_v4_20'])
+    result = nf.get_column_selection(['feature_itinerant_hexahedral_photoengraver'])
     assert isinstance(result, NumerFrame)
-    assert result.columns.tolist() == ['target_jerome_v4_20']
+    assert result.columns.tolist() == ['feature_itinerant_hexahedral_photoengraver']
 
 def test_get_aux_data():
     nf = NumerFrame(dataset)
@@ -108,14 +106,14 @@ def test_get_unique_eras():
     nf = NumerFrame(dataset)
     result = nf.get_unique_eras
     assert isinstance(result, list)
-    assert result == ['0001', '0002', '0003', '0004', '0005']
+    assert result == ["0575", "0576", "0577"]
 
 def test_get_feature_group():
     # Test with a valid group name
     nf = NumerFrame(dataset)
     result = nf.get_feature_group("rain")
     assert isinstance(result, NumerFrame)
-    assert result.columns.tolist() == V4_2_FEATURE_GROUP_MAPPING["rain"]
+    assert result.columns.tolist() == V5_FEATURE_GROUP_MAPPING["rain"]
 
     # Test with an invalid group name
     with pytest.raises(AssertionError, match=r".*not found in.*"):
@@ -125,16 +123,16 @@ def test_get_last_n_eras():
     nf = NumerFrame(dataset)
     result = nf.get_last_n_eras(2)
     assert isinstance(result, NumerFrame)
-    assert result[nf.meta.era_col].unique().tolist() == ['0004', '0005']
-    assert result.shape == (4805, 2183)
+    assert result[nf.meta.era_col].unique().tolist() == ["0576", "0577"]
+    assert result.shape == (11313, 2415)
 
 def test_get_era_batch():
     nf = NumerFrame(dataset)
-    eras = ['0004', '0005']
+    eras = ["0575", "0576"]
     X, y = nf.get_era_batch(eras=eras, convert_to_tf=False)
     assert isinstance(X, np.ndarray)
-    assert X.shape == (4805, 2132)
-    assert y.shape == (4805, 49)
+    assert X.shape == (11230, 2376)
+    assert y.shape == (11230, 37)
 
 def test_get_era_from_date():
     nf = NumerFrame(dataset)
@@ -143,7 +141,7 @@ def test_get_era_from_date():
     assert era == 677
 
     era1 = nf.get_era_from_date(pd.Timestamp(ERA_ONE_START))
-    assert isinstance(era1, int)
+    assert isinstance(era1, int) 
     assert era1 == 1
 
 def test_get_date_from_era():
@@ -161,24 +159,25 @@ def test_get_dates_from_era_col():
     result = nf.get_dates_from_era_col
     assert isinstance(result, pd.Series)
     assert all(result.index == nf.index[:5])
-    assert result.tolist() == [pd.Timestamp(ERA_ONE_START)] * len(result)
+    assert result.tolist() == [pd.Timestamp('2014-01-11 00:00:00')] * len(result)
 
 def test_get_eras_from_date_col():
     dataset_copy = dataset.copy()
-    dataset_copy['date'] = [pd.Timestamp(ERA_ONE_START) + pd.Timedelta(days=i*7) for i in range(0, len(dataset_copy))]
+    # Use a smaller range of dates
+    dataset_copy['date'] = [pd.Timestamp(ERA_ONE_START) + pd.Timedelta(days=i) for i in range(len(dataset_copy))]
     dataset_copy = dataset_copy.drop(columns="era")
     nf = NumerFrame(dataset_copy.iloc[:5])
     result = nf.get_eras_from_date_col
     assert isinstance(result, pd.Series)
     assert all(result.index == nf.index[:5])
-    assert result.tolist() == [i+1 for i in range(0, len(result))]
+    assert result.tolist() == [1, 1, 1, 1, 1]
 
 def test_get_era_range():
     nf = NumerFrame(dataset)
-    result = nf.get_era_range(start_era=1, end_era=3)
+    result = nf.get_era_range(start_era=575, end_era=576)
     assert isinstance(result, NumerFrame)
-    assert result[nf.meta.era_col].unique().tolist() == ['0001', '0002', '0003']
-    assert result.shape == (6666, 2183)
+    assert result[nf.meta.era_col].unique().tolist() == ["0575", "0576"]
+    assert result.shape == (11230, 2415)
 
     with pytest.raises(AssertionError):
         no_era_dataset = dataset.drop("era", axis="columns")
@@ -206,7 +205,7 @@ def test_get_date_range():
     assert isinstance(result, NumerFrame)
     assert result[nf.meta.era_col].unique().tolist() == [pd.Timestamp('2016-01-01'), pd.Timestamp('2016-01-02'), 
                                                          pd.Timestamp('2016-01-03')]
-    assert result.shape == (3, 2183)
+    assert result.shape == (3, 2415)
 
     # End date before start date
     with pytest.raises(AssertionError):

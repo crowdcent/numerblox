@@ -1,5 +1,4 @@
 import time
-import sklearn
 import numpy as np
 import pandas as pd
 from numerai_tools import scoring as nt_scoring, signals as nt_signals
@@ -1000,7 +999,7 @@ class NumeraiClassicEvaluator(BaseEvaluator):
         feature_set = set(dataf.columns)
         if set(self.fncv3_features).issubset(feature_set):
             print(
-                "Using 'v4.2/features.json/fncv3_features' feature set to calculate FNC metrics."
+                "Using 'v5/features.json/fncv3_features' feature set to calculate FNC metrics."
             )
             valid_features = self.fncv3_features
         else:
