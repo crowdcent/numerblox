@@ -15,13 +15,15 @@ All components can be used standalone and all processors are fully compatible to
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
 
 ## 1. Installation
+### Recommended
+Simply install numerblox from PyPi by running:
 
-Install numerblox from PyPi by running:
+```bash
+pip install numerblox
+```
 
-`pip install numerblox`
-
-Alternatively you can clone this repository and install it in
-development mode by installing using `poetry`:
+### Development
+Alternatively you can clone this repository and install it in development mode using `poetry`:
 
 ```bash
 git clone https://github.com/crowdcent/numerblox.git
@@ -33,9 +35,7 @@ poetry install
 Installation without dev dependencies can be done by adding `--only main` to the `poetry install` line.
 
 Test your installation using one of the education notebooks in
-[examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your
-Notebook environment to quickly test if your installation has succeeded.
-The documentation contains examples and explanations for each component of NumerBlox.
+[examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your notebook environment to quickly test if your installation has succeeded. The documentation contains examples and explanations for each component of NumerBlox.
 
 ## 2. Core functionality
 
@@ -59,6 +59,8 @@ NumerBlox has the following features for both Numerai Classic and Signals:
 
 **[Submitters](https://crowdcent.github.io/numerblox/submission/):** Facilitates secure and easy submission of predictions.
 
+**[Model Upload](https://crowdcent.github.io/numerblox/model_upload/):** Assists in the process of uploading trained models to Numerai for automated submissions.
+
 Example notebooks for each of these components can be found in the [examples](https://github.com/crowdcent/numerblox/examples). Also check out [the documentation](https://crowdcent.github.io/numerblox) for more information.
 
 
@@ -66,153 +68,131 @@ Example notebooks for each of these components can be found in the [examples](ht
 
 Below are two examples of how NumerBlox can be used to train and do inference on Numerai data. For a full overview of all components check out the documentation. More advanced examples to leverage NumerBlox to the fullest can be found in the [End-To-End Example section](https://crowdcent.github.io/numerblox/end_to_end/).
 
-### 3.1 Simple example
+### 3.1. Simple example
 
-The example below shows how NumerBlox simplifies training and inference on an XGBoost model.
+The example below shows how NumerBlox can simplify the process of downloading, loading, training, evaluating, inferring and submitting data for Numerai Classic.
+
 NumerBlox is used here for easy downloading, data parsing, evaluation, inference and submission. You can experiment with this setup yourself in the example notebook [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb).
 
+#### Downloading, loading, and training
 ```python
-import pandas as pd
-from xgboost import XGBRegressor
-from numerblox.misc import Key
-from numerblox.numerframe import create_numerframe
 from numerblox.download import NumeraiClassicDownloader
-from numerblox.prediction_loaders import ExamplePredictions
-from numerblox.evaluation import NumeraiClassicEvaluator
-from numerblox.submission import NumeraiClassicSubmitter
+from numerblox.numerframe import create_numerframe
+from xgboost import XGBRegressor
 
-# Download data
 downloader = NumeraiClassicDownloader("data")
-# Training and validation data
 downloader.download_training_data("train_val", version="5.0")
 df = create_numerframe("data/train_val/train.parquet")
 
-# Train
 X, y = df.get_feature_target_pair(multi_target=False)
-xgb = XGBRegressor()
-xgb.fit(X.values, y.values)
+model = XGBRegressor()
+model.fit(X.values, y.values)
+```
 
-# Evaluate
+#### Evaluation
+```python
+from numerblox.prediction_loaders import ExamplePredictions
+from numerblox.evaluation import NumeraiClassicEvaluator
+
 val_df = create_numerframe("data/train_val/validation.parquet")
-val_df['prediction'] = xgb.predict(val_df.get_feature_data)
+val_df['prediction'] = model.predict(val_df.get_feature_data)
 val_df['example_preds'] = ExamplePredictions("v5.0/validation_example_preds.parquet").fit_transform(None)['prediction'].values
 evaluator = NumeraiClassicEvaluator()
 metrics = evaluator.full_evaluation(val_df, 
                                     example_col="example_preds", 
                                     pred_cols=["prediction"], 
                                     target_col="target")
+```
 
-# Inference
+#### Live Inference
+```python
 downloader.download_live_data("current_round", version="5.0")
 live_df = create_numerframe(file_path="data/current_round/live.parquet")
 live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
-preds = xgb.predict(live_X)
+preds = model.predict(live_X)
+```
 
-# Submit
+#### Submission
+```python
+from numerblox.misc import Key
+from numerblox.submission import NumeraiClassicSubmitter
+
 NUMERAI_PUBLIC_ID = "YOUR_PUBLIC_ID"
 NUMERAI_SECRET_KEY = "YOUR_SECRET_KEY"
 key = Key(pub_id=NUMERAI_PUBLIC_ID, secret_key=NUMERAI_SECRET_KEY)
 submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
-# Your prediction file with 'id' as index and defined 'cols' below.
 pred_dataf = pd.DataFrame(preds, index=live_df.index, columns=["prediction"])
-# Only works with valid key credentials and model_name
 submitter.full_submission(dataf=pred_dataf,
                           cols="prediction",
                           file_name="submission.csv",
                           model_name="MY_MODEL_NAME")
 ```
 
+#### Model Upload
+```python
+from numerblox.submission import NumeraiModelUpload
+
+uploader = NumeraiModelUpload(key=key, max_retries=3, sleep_time=15, fail_silently=True)
+uploader.create_and_upload_model(model=model, 
+                                 model_name="MY_MODEL_NAME", 
+                                 file_path="models/my_model.pkl")
+```
+
 ### 3.2. Advanced NumerBlox modeling
 
-This example showcases how you can really push NumerBlox to create powerful pipelines. This pipeline approaches the Numerai Classic data as a classification problem. It fits multiple cross validation folds, reduces the classification probabilties to single values and create a weighted ensemble of these where the most recent folds get a higher weight. Lastly, the predictions are neutralized. The model is evaluated in validation data, inference is done on live data and a submission is done.
-Lastly, we remove the download and submission directories to clean up the environment. This is especially convenient if you are running daily inference on your own server or a cloud VM.
+Building on the simple example, this advanced setup showcases how to leverage NumerBlox's powerful components to create a sophisticated pipeline that can replace the "simple" XGBoost model in the example above. This advanced example creates an extensible scikit-learn pipeline with metadata routing that:
 
-```py
+- Approaches Numerai Classic as a classification problem
+- Uses cross-validation with multiple folds
+- Reduces classification probabilities to single values
+- Creates a weighted ensemble favoring recent folds
+- Applies neutralization to the predictions
+
+#### Creating the pipeline
+```python
 from xgboost import XGBClassifier
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from numerblox.meta import CrossValEstimator, make_meta_pipeline
-from numerblox.prediction_loaders import ExamplePredictions
 from numerblox.ensemble import NumeraiEnsemble, PredictionReducer
 from numerblox.neutralizers import FeatureNeutralizer
 
-# Download data
-downloader = NumeraiClassicDownloader("data")
-# Training and validation data
-downloader.download_training_data("train_val", version="5.0")
-df = create_numerframe("data/train_val/train.parquet")
-
-# Setup model pipeline
 model = XGBClassifier()
 crossval = CrossValEstimator(estimator=model, cv=TimeSeriesSplit(n_splits=5), predict_func='predict_proba')
 pred_rud = PredictionReducer(n_models=5, n_classes=5)
 ens = NumeraiEnsemble(donate_weighted=True)
 neut = FeatureNeutralizer(proportion=0.5)
-full_pipe = make_meta_pipeline(preproc_pipe, crossval, pred_rud, ens, neut)
+full_pipe = make_meta_pipeline(crossval, pred_rud, ens, neut)
+```
 
-# Train
+#### Training
+```python
+# ... Assume df is already defined as in the simple example ...
 X, y = df.get_feature_target_pair(multi_target=False)
-y_int = (y * 4).astype(int)
+y_int = (y * 4).astype(int)  # Convert targets to integer classes for classification
 era_series = df.get_era_data
 features = df.get_feature_data
 full_pipe.fit(X, y_int, era_series=era_series)
+```
 
-# Evaluate
-val_df = create_numerframe("data/train_val/validation.parquet")
-val_X, _ = val_df.get_feature_target_pair(multi_target=False)
-val_eras = val_df.get_era_data
-val_features = val_df.get_feature_data
-val_df['prediction'] = full_pipe.predict(val_X, era_series=val_eras, features=val_features)
-val_df['example_preds'] = ExamplePredictions("v5.0/validation_example_preds.parquet").fit_transform(None)['prediction'].values
-evaluator = NumeraiClassicEvaluator()
-metrics = evaluator.full_evaluation(val_df, 
-                                    example_col="example_preds", 
-                                    pred_cols=["prediction"], 
-                                    target_col="target")
-
-# Inference
-downloader.download_live_data("current_round", version="5.0")
-live_df = create_numerframe(file_path="data/current_round/live.parquet")
-live_X, live_y = live_df.get_feature_target_pair(multi_target=False)
+#### Inference
+```python
 live_eras = live_df.get_era_data
 live_features = live_df.get_feature_data
 preds = full_pipe.predict(live_X, era_series=live_eras, features=live_features)
-
-# Submit
-NUMERAI_PUBLIC_ID = "YOUR_PUBLIC_ID"
-NUMERAI_SECRET_KEY = "YOUR_SECRET_KEY"
-key = Key(pub_id=NUMERAI_PUBLIC_ID, secret_key=NUMERAI_SECRET_KEY)
-submitter = NumeraiClassicSubmitter(directory_path="sub_current_round", key=key)
-# Your prediction file with 'id' as index and defined 'cols' below.
-pred_dataf = pd.DataFrame(preds, index=live_df.index, columns=["prediction"])
-# Only works with valid key credentials and model_name
-submitter.full_submission(dataf=pred_dataf,
-                          cols="prediction",
-                          file_name="submission.csv",
-                          model_name="MY_MODEL_NAME")
-
-# Clean up environment
-downloader.remove_base_directory()
-submitter.remove_base_directory()
 ```
+
+Scikit-learn estimators, pipelines, and metadata routing are used to make sure we pass the correct era and feature information to estimators in the pipeline that require those parameters. It is worth familiarizing yourself with these concepts before using the advanced modeling features of NumerBlox: 
+- [scikit-learn pipelines](https://scikit-learn.org/stable/modules/compose.html)
+- [scikit-learn metadata routing](https://scikit-learn.org/stable/modules/metadata_routing.html)
 
 ## 4. Contributing
 
-Be sure to read the [How To Contribute section](https://crowdcent.github.io/numerblox/contributing/) section in the documentation for detailed instructions on
-contributing.
+Be sure to read the [How To Contribute section](https://crowdcent.github.io/numerblox/contributing/) section in the documentation for detailed instructions on contributing.
 
-If you have questions or want to discuss new ideas for NumerBlox,
-please create a Github issue first.
+If you have questions or want to discuss new ideas for NumerBlox, please create a Github issue first.
 
 ## 5. Crediting sources
 
-Some of the components in this library may be based on forum posts,
-notebooks or ideas made public by the Numerai community. We have done
-our best to ask all parties who posted a specific piece of code for
-their permission and credit their work in docstrings and documentation. If your
-code is public and used in this library without credits, please let us know, so we
-can add a link to your article/code. We want to always give credit where credit is due.
+Some of the components in this library may be based on forum posts, notebooks or ideas made public by the Numerai community. We have done our best to ask all parties who posted a specific piece of code for their permission and credit their work in docstrings and documentation. If your code is public and used in this library without credits, please let us know, so we can add a link to your article/code. We want to always give credit where credit is due.
 
-If you are contributing to NumerBlox and are using ideas posted
-earlier by someone else, make sure to credit them by posting a link to
-their article/code in docstrings and documentation.
+If you are contributing to NumerBlox and are using ideas posted earlier by someone else, make sure to credit them by posting a link to their article/code in docstrings and documentation.
