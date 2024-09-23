@@ -31,6 +31,7 @@ def test_signals():
 
     dl.remove_base_directory()
 
+@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_signals_versions():
     downloader = NumeraiSignalsDownloader(directory_path=f"some_path_{uuid4()}")
 
