@@ -183,7 +183,7 @@ preds = full_pipe.predict(live_X, era_series=live_eras, features=live_features)
 
 Scikit-learn estimators, pipelines, and metadata routing are used to make sure we pass the correct era and feature information to estimators in the pipeline that require those parameters. It is worth familiarizing yourself with these concepts before using the advanced modeling features of NumerBlox: 
 - [scikit-learn pipelines](https://scikit-learn.org/stable/modules/compose.html)
-- [scikit-learn metadata routing](https://scikit-learn.org/stable/modules/metadata_routing.html)
+- [scikit-learn metadata routing](https://scikit-learn.org/stable/metadata_routing.html)
 
 ## 4. Contributing
 
