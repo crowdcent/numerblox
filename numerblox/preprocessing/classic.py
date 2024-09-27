@@ -4,13 +4,12 @@ import pandas as pd
 from typing import List
 
 from numerblox.preprocessing.base import BasePreProcessor
-from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
+from numerblox.feature_groups import V5_FEATURE_GROUP_MAPPING
 
 class GroupStatsPreProcessor(BasePreProcessor):
     """
-    WARNING: Only supported for v4.2 (Rain) data. The Rain dataset (re)introduced feature groups. \n
     Note that this class only works with `pd.DataFrame` input.
-    We using in a Pipeline, make sure that the Pandas output API is set (`.set_output(transform="pandas")`.
+    When using in a Pipeline, make sure that the Pandas output API is set (`.set_output(transform="pandas")`.
     
     Calculates group statistics for all data groups. \n
     :param groups: Groups to create features for. All groups by default. \n
@@ -31,7 +30,7 @@ class GroupStatsPreProcessor(BasePreProcessor):
         ]
         self.groups = groups 
         self.group_names = groups if self.groups else self.all_groups
-        self.feature_group_mapping = V4_2_FEATURE_GROUP_MAPPING
+        self.feature_group_mapping = V5_FEATURE_GROUP_MAPPING
 
     def transform(self, X: pd.DataFrame) -> np.array:
         """Check validity and add group features."""

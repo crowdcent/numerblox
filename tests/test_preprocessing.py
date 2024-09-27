@@ -15,7 +15,7 @@ from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcess
                                      LagPreProcessor, 
                                      DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster,
                                      MinimumDataFilter)
-from numerblox.feature_groups import V4_2_FEATURE_GROUP_MAPPING
+from numerblox.feature_groups import V5_FEATURE_GROUP_MAPPING
 
 from utils import create_signals_sample_data
 
@@ -28,7 +28,7 @@ WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor,
                          DifferencePreProcessor]
 TICKER_PROCESSORS = [LagPreProcessor]
 
-dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
+dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 dummy_signals_data = create_signals_sample_data
 
 
@@ -41,9 +41,9 @@ def test_processors_sklearn(dummy_signals_data):
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
     data['ticker'] = ["AAPL US"] * 25 + ["MSFT US"] * 25
-    y = data["target_jerome_v4_20"].fillna(0.5)
-    feature_names = ["feature_tallish_grimier_tumbrel",
-                     "feature_partitive_labyrinthine_sard"]
+    y = data["target_xerxes_20"].fillna(0.5)
+    feature_names = ['feature_melismatic_daily_freak',
+                     'feature_pleasurable_facultative_benzol',]
     classic_X = data[feature_names].fillna(0.5)
     signals_X = dummy_signals_data[["open", "high", "low", "close", "volume", "adjusted_close"]]
 
@@ -127,9 +127,9 @@ def test_group_stats_preprocessor():
         # Std should be between 0 and 2
         if col.endswith("std"):
             assert result[col].min() >= 0.0
-            assert result[col].max() <= 2.0
+            assert result[col].max() <= 2.1081851067789197
 
-    random_rain_features = np.random.choice(V4_2_FEATURE_GROUP_MAPPING['rain'], size=10).tolist()
+    random_rain_features = np.random.choice(V5_FEATURE_GROUP_MAPPING['rain'], size=10).tolist()
     # Warn if not all columns of a group are in the dataset
     processor = GroupStatsPreProcessor(groups=['rain'])
     processor.set_output(transform="pandas")
@@ -144,7 +144,7 @@ def test_group_stats_preprocessor():
         assert result["feature_rain_mean"].max() <= 4.0
         # Check Std between 0 and 2
         assert result["feature_rain_std"].min() >= 0.0
-        assert result["feature_rain_std"].max() <= 2.0
+        assert result["feature_rain_std"].max() <= 2.1081851067789197
 
     # Warn if none of the columns of a group are in the dataset
     processor = GroupStatsPreProcessor(groups=['intelligence'])

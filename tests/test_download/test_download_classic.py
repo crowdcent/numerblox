@@ -27,7 +27,6 @@ def test_base():
     numer_classic_downloader.remove_base_directory()
     assert not os.path.exists(TEST_CLASSIC_DIR)
 
-@pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_classic():
     dl = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
 

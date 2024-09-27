@@ -8,7 +8,7 @@ from numerblox.targets import BayesianGMMTargetProcessor, SignalsTargetProcessor
 
 from utils import create_signals_sample_data
 
-dataset = pd.read_parquet("tests/test_assets/train_int8_5_eras.parquet")
+dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 dummy_signals_data = create_signals_sample_data
 
 ALL_PROCESSORS = [BayesianGMMTargetProcessor, SignalsTargetProcessor]
@@ -16,9 +16,9 @@ ALL_PROCESSORS = [BayesianGMMTargetProcessor, SignalsTargetProcessor]
 def test_processors_sklearn():
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
-    y = data["target_jerome_v4_20"].fillna(0.5)
-    feature_names = ["feature_tallish_grimier_tumbrel",
-                     "feature_partitive_labyrinthine_sard"]
+    y = data["target_xerxes_20"].fillna(0.5)
+    feature_names = ['feature_melismatic_daily_freak',
+                     'feature_pleasurable_facultative_benzol',]
     X = data[feature_names].fillna(0.5)
 
     for processor_cls in tqdm(ALL_PROCESSORS, desc="Testing target processors for scikit-learn compatibility"):
@@ -34,10 +34,10 @@ def test_processors_sklearn():
 def test_bayesian_gmm_target_preprocessor():
     bgmm = BayesianGMMTargetProcessor(n_components=2)
 
-    y = dataset["target_jerome_v4_20"].fillna(0.5)
+    y = dataset["target_xerxes_20"].fillna(0.5)
     era_series = dataset["era"]
-    feature_names = ["feature_tallish_grimier_tumbrel",
-                     "feature_partitive_labyrinthine_sard"]
+    feature_names = ['feature_melismatic_daily_freak',
+                     'feature_pleasurable_facultative_benzol',]
     X = dataset[feature_names]
 
     bgmm.fit(X, y, era_series=era_series)
@@ -50,7 +50,7 @@ def test_bayesian_gmm_target_preprocessor():
 
     # _get_coefs
     coefs = bgmm._get_coefs(X, y, era_series=era_series)
-    assert coefs.shape == (5, 2)
+    assert coefs.shape == (3, 2)
     assert coefs.min() >= 0.0
     assert coefs.max() <= 1.0
 

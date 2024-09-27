@@ -4,7 +4,7 @@ import pandas as pd
 from unittest.mock import patch
 
 from numerblox.misc import Key
-from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluator, ALL_CLASSIC_METRICS, ALL_SIGNALS_METRICS, FAST_METRICS
+from numerblox.evaluation import NumeraiClassicEvaluator, NumeraiSignalsEvaluator, ALL_CLASSIC_METRICS, FAST_METRICS
 
 from utils import create_signals_sample_data, classic_test_data
 

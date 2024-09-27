@@ -7,7 +7,7 @@ from numerblox.download import NumeraiSignalsDownloader, KaggleDownloader, EODDo
 
 ALL_SIGNALS_VERSIONS = set(s.replace("signals/", "").split("/")[0] for s in SignalsAPI().list_datasets() if s.startswith("signals/v"))
 TEST_SIGNALS_DIR = f"test_numsignals_general_{uuid4()}"
-TEST_SIGNALS_VERSIONS = ["1.0"]
+TEST_SIGNALS_VERSIONS = ["2.0"]
 
 
 @pytest.mark.xfail(reason="May fail due to API rate limiting")

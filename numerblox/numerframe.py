@@ -1,14 +1,12 @@
 import pandas as pd
 from pathlib import Path
-from typing import Union, Tuple, Any, List
+from typing import Union, Any
 from numerai_era_data.date_utils import (ERA_ONE_START, get_current_era, 
                                          get_current_date, get_era_for_date,
                                          get_date_for_era)
 
 from .misc import AttrDict
-from .feature_groups import (V4_2_FEATURE_GROUP_MAPPING, FNCV3_FEATURES, 
-                             SMALL_FEATURES, MEDIUM_FEATURES, V2_EQUIVALENT_FEATURES, 
-                             V3_EQUIVALENT_FEATURES)
+from .feature_groups import FNCV3_FEATURES, SMALL_FEATURES, MEDIUM_FEATURES, V5_FEATURE_GROUP_MAPPING
 
 
 ERA1_TIMESTAMP = pd.Timestamp(ERA_ONE_START)
@@ -98,26 +96,16 @@ class NumerFrame(pd.DataFrame):
     
     @property
     def get_small_feature_data(self) -> "NumerFrame":
-        """ Small subset of the Numerai dataset for v4.2 data. """
+        """ Small subset of the Numerai dataset for v5 data. """
         return self.get_column_selection(cols=SMALL_FEATURES)
     
     @property
     def get_medium_feature_data(self) -> "NumerFrame":
-        """ Medium subset of the Numerai dataset for v4.2 data. """
+        """ Medium subset of the Numerai dataset for v5 data. """
         return self.get_column_selection(cols=MEDIUM_FEATURES)
-    
-    @property
-    def get_v2_equivalent_feature_data(self) -> "NumerFrame":
-        """ Features equivalent to the deprecated v2 Numerai data. For v4.2 data. """
-        return self.get_column_selection(cols=V2_EQUIVALENT_FEATURES)
-    
-    @property
-    def get_v3_equivalent_feature_data(self) -> "NumerFrame":
-        """ Features equivalent to the deprecated v3 Numerai data. For v4.2 data. """
-        return self.get_column_selection(cols=V3_EQUIVALENT_FEATURES)
 
     @property
-    def get_unique_eras(self) -> List[str]:
+    def get_unique_eras(self) -> list[str]:
         """ Get all unique eras in the data. """
         return self[self.meta.era_col].unique().tolist()
     
@@ -133,9 +121,9 @@ class NumerFrame(pd.DataFrame):
     
     def get_feature_group(self, group: str) -> "NumerFrame":
         """ Get feature group based on name or list of names. """
-        assert group in V4_2_FEATURE_GROUP_MAPPING.keys(), \
-            f"Group '{group}' not found in {V4_2_FEATURE_GROUP_MAPPING.keys()}"
-        return self.get_column_selection(cols=V4_2_FEATURE_GROUP_MAPPING[group])
+        assert group in V5_FEATURE_GROUP_MAPPING.keys(), \
+            f"Group '{group}' not found in {V5_FEATURE_GROUP_MAPPING.keys()}"
+        return self.get_column_selection(cols=V5_FEATURE_GROUP_MAPPING[group])
 
     def get_pattern_data(self, pattern: str) -> "NumerFrame":
         """
@@ -144,7 +132,7 @@ class NumerFrame(pd.DataFrame):
         """
         return self.filter(like=pattern)
 
-    def get_feature_target_pair(self, multi_target=False) -> Tuple["NumerFrame", "NumerFrame"]:
+    def get_feature_target_pair(self, multi_target=False) -> tuple["NumerFrame", "NumerFrame"]:
         """
         Get split of feature and target columns.
         :param multi_target: Returns only 'target' column by default.
@@ -154,12 +142,12 @@ class NumerFrame(pd.DataFrame):
         y = self.get_target_data if multi_target else self.get_single_target_data
         return X, y
 
-    def get_era_batch(self, eras: List[Any],
+    def get_era_batch(self, eras: list[Any],
                       convert_to_tf = False,
                       aemlp_batch = False,
                       features: list = None,
                       targets: list = None,
-                      *args, **kwargs) -> Tuple["NumerFrame", "NumerFrame"]:
+                      *args, **kwargs) -> tuple["NumerFrame", "NumerFrame"]:
         """
         Get feature target pair batch of 1 or multiple eras. \n
         :param eras: Selection of era names that should be present in era_col. \n
