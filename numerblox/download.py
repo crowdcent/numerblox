@@ -168,10 +168,10 @@ class BaseDownloader(BaseIO):
 
 class NumeraiClassicDownloader(BaseDownloader):
     """
-    WARNING: Numerai only supports version 5.0+ data.
+    Download from NumerAPI for Numerai Classic data.
+    More information: https://numer.ai/data
 
-    Downloading from NumerAPI for Numerai Classic data. \n
-    :param directory_path: Base folder to download files to. \n
+    :param directory_path: Base folder to download files to.
     All kwargs will be passed to NumerAPI initialization.
     """
     TRAIN_DATASET_NAME = "train.parquet"
@@ -183,7 +183,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     def __init__(self, directory_path: str, **kwargs):
         super().__init__(directory_path=directory_path)
         self.napi = NumerAPI(**kwargs)
-        # Get all available versions available for Numerai Classic.
+        # Get all available versions for Numerai Classic.
         self.dataset_versions = set(s.split("/")[0] for s in self.napi.list_datasets())
         self.dataset_versions.discard("signals")
 
@@ -313,7 +313,8 @@ class NumeraiClassicDownloader(BaseDownloader):
 
 class NumeraiSignalsDownloader(BaseDownloader):
     """
-    Support for Numerai Signals v1 parquet data.
+    Support for Numerai Signals data.
+    More information: https://signals.numer.ai/data
     Downloading from SignalsAPI for Numerai Signals data. \n
     :param directory_path: Base folder to download files to. \n
     All kwargs will be passed to SignalsAPI initialization.
@@ -331,14 +332,13 @@ class NumeraiSignalsDownloader(BaseDownloader):
         self.dataset_versions = set(s.replace("signals/", "").split("/")[0] for s in self.sapi.list_datasets() if s.startswith("signals/v"))
 
     def download_training_data(
-        self, subfolder: str = "", version: str = "1.0"
+        self, subfolder: str = "", version: str = "2.0"
     ):
         """
         Get Numerai Signals training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
         :param version: Numerai Signals dataset version.
-        Currently only v1.0 is supported.
         """
         self._check_dataset_version(version)
         train_val_files = [f"signals/v{version}/{self.TRAIN_DATASET_NAME}",
@@ -370,7 +370,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
     def download_live_data(
             self,
             subfolder: str = "",
-            version: str = "1.0",
+            version: str = "2.0",
     ):
         """
         Download all live data in specified folder (i.e. minimal data needed for inference).
@@ -378,7 +378,6 @@ class NumeraiSignalsDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
         :param version: Numerai dataset version. 
-        Currently only v1.0 is supported.
         """
         self._check_dataset_version(version)
         live_files = [f"signals/v{version}/{self.LIVE_DATASET_NAME}"]
@@ -390,7 +389,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
             )
 
     def download_example_data(
-        self, subfolder: str = "", version: str = "1.0"
+        self, subfolder: str = "", version: str = "2.0"
     ):
         """
         Download all example prediction data in specified folder for given version.
@@ -398,7 +397,6 @@ class NumeraiSignalsDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within base directory root.
         Saves in base directory root by default.
         :param version: Numerai dataset version.
-        Currently only v1.0 is supported.
         """
         self._check_dataset_version(version)
         example_files = [f"signals/v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
@@ -416,6 +414,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
 class NumeraiCryptoDownloader(BaseDownloader):
     """
     Download Numerai Crypto data.
+    More information: https://crypto.numer.ai/data
 
     :param directory_path: Base folder to download files to.
     """
@@ -438,7 +437,6 @@ class NumeraiCryptoDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
         :param version: Numerai dataset version. 
-        Currently only v1.0 is supported.
         """
         self._check_dataset_version(version)
         training_files = [f"crypto/v{version}/{self.TRAIN_TARGETS_NAME}"]
@@ -460,7 +458,6 @@ class NumeraiCryptoDownloader(BaseDownloader):
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
         :param version: Numerai dataset version. 
-        Currently only v1.0 is supported.
         """
         self._check_dataset_version(version)
         live_files = [f"crypto/v{version}/{self.LIVE_DATASET_NAME}"]

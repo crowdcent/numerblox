@@ -4,6 +4,9 @@
 
 `NumeraiClassicDownloader` simplifies downloading of datasets from Numerai's API. It allows you to easily download data with a few lines and the data is automatically organized in directories.
 
+More information: [https://numer.ai/data](https://numer.ai/data)
+
+
 ```py
 from numerblox.download import NumeraiClassicDownloader
 
@@ -33,9 +36,9 @@ meta_model_preds = pd.read_parquet("my_numerai_data_folder/meta_model.parquet")
 
 ## Numerai Signals
 
-Numerai provides a basic dataset for Numerai Signals. This is a good starting point for new users.
+Numerai provides a dataset for Numerai Signals. This is a good starting point for new users.
 
-More information: [https://signals.numer.ai/data/v1.0](https://signals.numer.ai/data/v1.0)
+More information: [https://signals.numer.ai/data](https://signals.numer.ai/data)
 
 ```py
 from numerblox.download import NumeraiSignalsDownloader
@@ -51,9 +54,9 @@ dl.download_live_data()
 
 ## Numerai Crypto
 
-For Numerai Crypto there are some basic files to download.
+For Numerai Crypto there are files to download.
 
-More information: [https://crypto.numer.ai/data/v1.0](https://crypto.numer.ai/data/v1.0)
+More information: [https://crypto.numer.ai/data](https://crypto.numer.ai/data)
 
 ```py
 from numerblox.download import NumeraiCryptoDownloader
@@ -154,10 +157,3 @@ class AwesomeCustomDownloader(BaseDownloader):
         ...
 
 ```
-
-
-
-
-
-
-

@@ -11,7 +11,7 @@ from unittest.mock import patch
 from dateutil.relativedelta import relativedelta, FR
 
 from numerblox.misc import Key
-from numerblox.submission import NumeraiClassicSubmitter, NumeraiSignalsSubmitter
+from numerblox.submission import NumeraiClassicSubmitter, NumeraiSignalsSubmitter, NumeraiCryptoSubmitter
 
 
 TARGET_NAME = "prediction"
@@ -57,7 +57,7 @@ def test_classic_submitter():
     # Test that saving breaks if range is invalid.
     with pytest.raises(ValueError):
         invalid_signal = deepcopy(test_dataf)
-        invalid_signal.iloc[0][TARGET_NAME] += 10
+        invalid_signal[TARGET_NAME] = invalid_signal[TARGET_NAME].add(10)
         num_sub.save_csv(
             invalid_signal,
             file_name="should_not_save.csv",
@@ -116,6 +116,65 @@ def test_signals_submitter():
     # Wind down
     signals_sub.remove_base_directory()
     assert not os.path.exists(test_dir)
+
+
+def test_crypto_submitter():
+    # Initialization
+    test_dir = f"test_sub_{uuid4()}"
+    crypto_key = Key(pub_id="Hello", secret_key="World")
+    crypto_sub = NumeraiCryptoSubmitter(directory_path=test_dir, key=crypto_key)
+    assert crypto_sub.dir.is_dir()
+
+    # Create random crypto predictions dataframe
+    def create_random_crypto_df(n_rows=1000):
+        crypto_test_dataf = pd.DataFrame(
+            np.random.uniform(size=(n_rows, 1)), columns=["signal"]
+        )
+        crypto_test_dataf["symbol"] = [
+            f"CRYPTO_{i:04d}" for i in range(n_rows)
+        ]
+        return crypto_test_dataf
+
+    # Save CSVs
+    test_dataf = create_random_crypto_df()
+    crypto_cols = ["symbol", "signal"]
+    file_name = "crypto_test.csv"
+    crypto_sub.save_csv(dataf=test_dataf, file_name=file_name, cols=crypto_cols)
+    crypto_sub.save_csv(dataf=test_dataf, file_name="crypto_test2.csv", cols=crypto_cols)
+
+    combined_crypto = crypto_sub.combine_csvs(csv_paths=[
+        f"{test_dir}/crypto_test.csv", 
+        f"{test_dir}/crypto_test2.csv"
+        ],
+        aux_cols=['symbol'],
+        pred_col='signal'
+        )
+    assert combined_crypto.columns == ['signal']
+
+    # Test that saving breaks if range is invalid.
+    with pytest.raises(ValueError):
+        invalid_signal = deepcopy(test_dataf)
+        invalid_signal.loc[0, "signal"] += 10
+        crypto_sub.save_csv(
+            invalid_signal,
+            file_name="should_not_save.csv",
+            cols=list(invalid_signal.columns),
+        )
+
+    # Test that saving breaks if symbol column is missing
+    with pytest.raises(AssertionError):
+        invalid_symbol = deepcopy(test_dataf)
+        invalid_symbol = invalid_symbol.rename(columns={"symbol": "not_symbol"})
+        crypto_sub.save_csv(
+            invalid_symbol,
+            file_name="should_not_save.csv",
+            cols=list(invalid_symbol.columns),
+        )
+
+    # Wind down
+    crypto_sub.remove_base_directory()
+    assert not os.path.exists(test_dir)
+
 
 def raise_api_error(*args, **kwargs):
     raise ValueError("Your session is invalid or has expired.")

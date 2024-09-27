@@ -5,7 +5,7 @@ from typing import Union
 from copy import deepcopy
 from tqdm.auto import tqdm
 from abc import abstractmethod
-from numerapi import NumerAPI, SignalsAPI
+from numerapi import NumerAPI, SignalsAPI, CryptoAPI
 
 from .download import BaseIO
 from .misc import Key
@@ -15,16 +15,16 @@ class BaseSubmitter(BaseIO):
     """
     Basic functionality for submitting to Numerai. 
     Uses numerapi under the hood.
-    More info: https://numerapi.readthedocs.io/ 
+    More info: https://numerapi.readthedocs.io
 
     :param directory_path: Directory to store and read submissions from. 
-    :param api: NumerAPI or SignalsAPI
+    :param api: NumerAPI, SignalsAPI or CryptoAPI
     :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
     :param sleep_time: Time to sleep between uploading retries.
     :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
     Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     """
-    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI], max_retries: int, 
+    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI, CryptoAPI], max_retries: int, 
                  sleep_time: int, fail_silently: bool):
         super().__init__(directory_path)
         self.api = api
@@ -302,6 +302,60 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
 Supported: '{self.supported_ticker_formats}'"
             )
 
+class NumeraiCryptoSubmitter(BaseSubmitter):
+    """
+    Submit for Numerai Crypto.
+
+    :param directory_path: Base directory to save and read prediction files from. \n
+    :param key: Key object containing valid credentials for Numerai Crypto. \n
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param sleep_time: Time to sleep between uploading retries.
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
+    *args, **kwargs will be passed to CryptoAPI initialization.
+    """
+    def __init__(self, directory_path: str, key: Key, 
+                 max_retries: int = 2, sleep_time: int = 10, 
+                 fail_silently=False, *args, **kwargs):
+        api = CryptoAPI(
+            public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs
+        )
+        super().__init__(
+            directory_path=directory_path, api=api,
+            max_retries=max_retries, sleep_time=sleep_time,
+            fail_silently=fail_silently
+        )
+
+    def save_csv(
+            self,
+            dataf: pd.DataFrame,
+            cols: list,
+            file_name: str = "submission.csv",
+            *args, **kwargs
+    ):
+        """
+        :param dataf: DataFrame which should have at least the following columns:
+         1. symbol col
+         2. signal (Values between 0 and 1 (exclusive))
+         Additional columns for if you include validation data (optional):
+         3. date (YYYY-MM-DD format date indication)
+         4. data_type ('val' and 'live' partitions)
+
+         :param cols: All cols that are saved in CSV.
+         cols should contain at least 1 ticker column and a 'signal' column.
+         For example: ['bloomberg_ticker', 'signal']
+         :param file_name: .csv file path.
+        """
+        assert "symbol" in cols, "'symbol' column is required for Numerai Crypto submissions."
+        self._check_value_range(dataf=dataf, cols="signal")
+
+        full_path = str(self.dir / file_name)
+        print(
+            f"Saving Signals predictions CSV to '{full_path}'."
+        )
+        dataf.loc[:, cols].reset_index(drop=True).to_csv(
+            full_path, index=False, *args, **kwargs
+        )
 
 class NumerBaySubmitter(BaseSubmitter):
     """

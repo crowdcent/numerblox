@@ -77,7 +77,25 @@ dataf = pd.DataFrame(columns=['bloomberg_ticker', 'signal'])
 submitter.full_submission(dataf=dataf,
                           cols=["bloomberg_ticker", "signal"],
                           file_name="submission.csv",
-                          model_name="my_model")
+                          model_name="my_signals_model")
+```
+
+## Numerai Crypto
+
+`NumeraiCryptoSubmitter` has checks specific to Crypto. Mainly, it checks if the data contains a valid symbol column (`"symbol"`) and a `'signal'` column.
+
+`NumeraiCryptoSubmitter.full_submission` handles checks, saving of CSV and uploading with `numerapi`.
+
+```py
+from numerblox.submission import NumeraiCryptoSubmitter
+submitter = NumeraiCryptoSubmitter(directory_path="sub_current_round", key=key)
+# Your prediction file with 'id' as index, a valid symbol column and signal column below.
+dataf = pd.DataFrame(columns=['symbol', 'signal'])
+# Only works with valid key credentials and model_name
+submitter.full_submission(dataf=dataf,
+                          cols=["symbol", "signal"],
+                          file_name="submission.csv",
+                          model_name="my_crypto_model")
 ```
 
 ## NumerBay
