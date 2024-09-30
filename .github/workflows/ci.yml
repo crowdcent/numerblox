@@ -1,4 +1,4 @@
-name: UV CI
+name: CI
 
 on:
   push:
@@ -7,6 +7,14 @@ on:
     branches: [ master ]
 
 jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v1
+        with:
+          version: latest
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -35,9 +43,6 @@ jobs:
         run: |
           uv pip install 'setuptools[pkg_resources]'
           uv pip install -e ".[test]"
-
-      - name: Run Ruff
-        run: ruff check .
 
       - name: Run tests with coverage
         run: |
