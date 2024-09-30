@@ -340,7 +340,7 @@ class BaseEvaluator:
         Computes 'Numerai Corr' aka 'Corrv2'.
         More info: https://forum.numer.ai/t/target-cyrus-new-primary-target/6303
 
-        Assumes original target col as input (i.e. in [0, 1] range).
+        Assumes original target col as input (i.e. in [0...1] range).
         """
         # Rank and gaussianize predictions
         ranked_preds = self._normalize_uniform(dataf[pred_col].fillna(0.5), method="average")

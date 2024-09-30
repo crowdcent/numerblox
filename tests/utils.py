@@ -56,8 +56,3 @@ def create_signals_sample_data():
                 }
             )
     return pd.DataFrame(instances)
-
-
-@pytest.fixture()
-def classic_test_data():
-    return pd.read_parquet("tests/test_assets/val_3_eras.parquet")
