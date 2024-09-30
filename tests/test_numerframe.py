@@ -130,7 +130,7 @@ def test_get_last_n_eras():
 def test_get_era_batch():
     nf = NumerFrame(dataset)
     eras = ["0575", "0576"]
-    X, y = nf.get_era_batch(eras=eras, convert_to_tf=False)
+    X, y = nf.get_era_batch(eras=eras)
     assert isinstance(X, np.ndarray)
     assert X.shape == (11230, 2376)
     assert y.shape == (11230, 37)
