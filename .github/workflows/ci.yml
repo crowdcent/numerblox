@@ -28,22 +28,18 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[test]"
-
-      - name: Run tests
-        run: |
-          uv run -- pytest
-
-      - name: Build wheel
-        run: |
-          uv pip install build
-          uv run -- python -m build --wheel
-
-      - name: Install built wheel
-        run: |
-          uv pip install dist/*.whl
+          uv pip install --system -e ".[test]"
 
       - name: Run tests with coverage
         run: |
-          uv pip install pytest-cov
-          uv run -- pytest -s tests/ --cov=numerblox --cov-report term-missing
+          uv pip install --system pytest-cov
+          uv run pytest -s tests/ --cov=numerblox --cov-report term-missing
+
+      - name: Build wheel
+        run: |
+          uv pip install --system build
+          uv run python -m build --wheel
+
+      - name: Install built wheel
+        run: |
+          uv pip install --system dist/*.whl
