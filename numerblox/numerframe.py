@@ -143,20 +143,16 @@ class NumerFrame(pd.DataFrame):
         return X, y
 
     def get_era_batch(self, eras: list[Any],
-                      convert_to_tf = False,
                       aemlp_batch = False,
                       features: list = None,
-                      targets: list = None,
-                      *args, **kwargs) -> tuple["NumerFrame", "NumerFrame"]:
+                      targets: list = None) -> tuple["NumerFrame", "NumerFrame"]:
         """
         Get feature target pair batch of 1 or multiple eras. \n
         :param eras: Selection of era names that should be present in era_col. \n
-        :param convert_to_tf: Convert to tf.Tensor. \n
         :param aemlp_batch: Specific target batch for autoencoder training. \n
         `y` output will contain three components: features, targets and targets. \n
         :param features: List of features to select. All by default \n
         :param targets: List of targets to select. All by default. \n
-        *args, **kwargs are passed to initialization of Tensor.
         """
         valid_eras = []
         for era in eras:
@@ -168,17 +164,6 @@ class NumerFrame(pd.DataFrame):
         y = self.loc[self[self.meta.era_col].isin(valid_eras)][targets].values
         if aemlp_batch:
             y = [X.copy(), y.copy(), y.copy()]
-
-        if convert_to_tf:
-            try:
-                import tensorflow as tf
-            except ImportError:
-                raise ImportError("TensorFlow is not installed. Please make sure to have Tensorflow installed when setting `convert_to_tf=True`.")
-            X = tf.convert_to_tensor(X, *args, **kwargs)
-            if aemlp_batch:
-                y = [tf.convert_to_tensor(i, *args, **kwargs) for i in y]
-            else:
-                y = tf.convert_to_tensor(y, *args, **kwargs)
         return X, y
     
     @property

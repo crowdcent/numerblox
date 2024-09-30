@@ -6,12 +6,15 @@ from tqdm.auto import tqdm
 from abc import abstractmethod
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
+import warnings
 
 try:
     import tensorflow as tf
 except ImportError:
-    raise ImportError(
-        "TensorFlow is required for NumerBlox Penalizers. `pip install tensorflow` first."
+    warnings.warn(
+        "TensorFlow is not installed. Some NumerBlox Penalizers may not work. "
+        "To use all features, please install TensorFlow: `pip install tensorflow`",
+        ImportWarning
     )
 
 class BasePenalizer(BaseEstimator, TransformerMixin):
@@ -187,4 +190,3 @@ class FeaturePenalizer(BasePenalizer):
         y = y - tf.math.reduce_mean(y, axis=0)
         y = y / tf.norm(y, axis=0)
         return tf.matmul(x, y, transpose_a=True)
-    
