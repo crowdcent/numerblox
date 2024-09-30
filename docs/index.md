@@ -15,24 +15,47 @@ All components can be used standalone and all processors are fully compatible to
 [crowdcent.github.io/numerblox](https://crowdcent.github.io/numerblox)
 
 ## 1. Installation
-### Recommended
-Simply install numerblox from PyPi by running:
+
+### Recommended (using pip)
+Simply install numerblox from PyPI by running:
 
 ```bash
 pip install numerblox
 ```
 
-### Development
-Alternatively you can clone this repository and install it in development mode using `poetry`:
+If you prefer to use [uv](https://github.com/astral-sh/uv), you can install numerblox with:
 
 ```bash
-git clone https://github.com/crowdcent/numerblox.git
-pip install poetry
-cd numerblox
-poetry install
+uv pip install numerblox
 ```
 
-Installation without dev dependencies can be done by adding `--only main` to the `poetry install` line.
+### Development
+To install for development, clone the repository and use either pip or uv:
+
+Using pip:
+```bash
+git clone https://github.com/crowdcent/numerblox.git
+cd numerblox
+pip install -e ".[test]"
+```
+
+Using [uv](https://github.com/astral-sh/uv):
+```bash
+git clone https://github.com/crowdcent/numerblox.git
+cd numerblox
+uv venv
+uv pip install -e ".[test]"
+```
+
+For installation without dev dependencies, omit the `[test]` extra:
+
+```bash
+pip install -e .
+```
+or
+```bash
+uv pip install -e .
+```
 
 Test your installation using one of the education notebooks in
 [examples](https://github.com/crowdcent/numerblox/examples). Good places to start are [quickstart.ipynb](https://github.com/crowdcent/numerblox/examples/quickstart.ipynb) and [numerframe_tutorial.ipynb](https://github.com/crowdcent/numerblox/examples/numerframe_tutorial.ipynb). Run it in your notebook environment to quickly test if your installation has succeeded. The documentation contains examples and explanations for each component of NumerBlox.
