@@ -89,7 +89,8 @@ class FeatureNeutralizer(BaseNeutralizer):
         :return: Neutralized predictions NumPy array.
         """
         if era_series is None:
-            warnings.warn("WARNING: 'era_series' not provided for neutralization! Neutralization will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to neutralization in this way! Not providing 'era_series' is valid for live inference, where only one era is used to generate predictions.")
+            warnings.warn("""WARNING: 'era_series' not provided for 
+                          neutralization! Neutralization will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to neutralization in this way! Not providing 'era_series' is valid for live inference, where only one era is used to generate predictions.""")
         else:
             assert len(X) == len(era_series), "Input predictions must have same length as era_series."
         assert len(X) == len(features), "Input predictions must have same length as features."

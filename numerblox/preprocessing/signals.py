@@ -249,7 +249,12 @@ class EraQuantileProcessor(BasePreProcessor):
         """
         X = pd.DataFrame(X)
         if era_series is None:
-            warnings.warn("WARNING: 'era_series' not provided for EraQuantileProcessor! Quantiling will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to EraQuantileProcessor in this way! Not providing 'era_series' is valid for live inference, where only one era is used for quantiling.")
+            warnings.warn("""WARNING: 'era_series' not provided for 
+                          EraQuantileProcessor! Quantiling will be treated as if
+                          'X' is 1 era of data. Ensure you are not passing  multiple
+                          eras to EraQuantileProcessor in this way! Not providing
+                          'era_series' is valid for live inference, where only one
+                          era is used for quantiling.""")
         else:
             assert X.shape[0] == era_series.shape[0], "Input X and era_series must have the same number of rows for quantiling."
         self.features = [col for col in X.columns]
@@ -336,7 +341,9 @@ class LagPreProcessor(BasePreProcessor):
 
     def transform(self, X: Union[np.array, pd.DataFrame], ticker_series: pd.Series = None) -> np.array:
         if ticker_series is None:
-            warnings.warn("WARNING: 'era_series' not provided for LagPreProcessor! Lags will be treated as if 'X' is 1 era of data. Ensure you are not passing multiple eras to LagPreProcessor in this way! Not providing 'era_series' is valid for live inference, where only one era is used for creating lags.")
+            warnings.warn("""WARNING: 'era_series' not provided for 
+                          LagPreProcessor! Lags will be treated as if 'X' is 1
+                          era of data. Ensure you are not passing multiple eras to LagPreProcessor in this way! Not providing 'era_series' is valid for live inference, where only one era is used for creating lags.""")
         else:
             assert X.shape[0] == ticker_series.shape[0], "Input X and ticker_series must have the same number of rows for lag generation."
 
