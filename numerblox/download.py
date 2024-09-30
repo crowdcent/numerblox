@@ -1,18 +1,19 @@
-import os
-import time
+import concurrent
 import glob
 import json
+import os
 import shutil
-import concurrent
-import pandas as pd
-from pathlib import Path
-from tqdm.auto import tqdm
-from google.cloud import storage
-from datetime import datetime as dt
+import time
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime as dt
+from pathlib import Path
+
+import pandas as pd
 from dateutil.relativedelta import relativedelta
-from numerapi import NumerAPI, SignalsAPI, CryptoAPI
+from google.cloud import storage
+from numerapi import CryptoAPI, NumerAPI, SignalsAPI
+from tqdm.auto import tqdm
 
 from .numerframe import NumerFrame
 
@@ -23,6 +24,7 @@ class BaseIO(ABC):
 
     :param directory_path: Base folder for IO. Will be created if it does not exist.
     """
+
     def __init__(self, directory_path: str):
         self.dir = Path(directory_path)
         self._create_directory()
@@ -30,9 +32,7 @@ class BaseIO(ABC):
     def remove_base_directory(self):
         """Remove directory with all contents."""
         abs_path = self.dir.resolve()
-        print(
-            f"WARNING: Deleting directory for '{self.__class__.__name__}'\nPath: '{abs_path}'"
-        )
+        print(f"WARNING: Deleting directory for '{self.__class__.__name__}'\nPath: '{abs_path}'")
         shutil.rmtree(abs_path)
 
     def download_file_from_gcs(self, bucket_name: str, gcs_path: str):
@@ -43,9 +43,7 @@ class BaseIO(ABC):
         blob_path = str(self.dir.resolve())
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=blob_path)
         blob.download_to_filename(gcs_path)
-        print(
-            f"Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'."
-        )
+        print(f"Downloaded GCS object '{gcs_path}' from bucket '{blob.bucket.id}' to local directory '{blob_path}'.")
 
     def upload_file_to_gcs(self, bucket_name: str, gcs_path: str, local_path: str):
         """
@@ -54,9 +52,7 @@ class BaseIO(ABC):
         """
         blob = self._get_gcs_blob(bucket_name=bucket_name, blob_path=gcs_path)
         blob.upload_from_filename(local_path)
-        print(
-            f"Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}"
-        )
+        print(f"Local file '{local_path}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}")
 
     def download_directory_from_gcs(self, bucket_name: str, gcs_path: str):
         """
@@ -68,9 +64,7 @@ class BaseIO(ABC):
         for gcs_file in glob.glob(gcs_path + "/**", recursive=True):
             if os.path.isfile(gcs_file):
                 blob.download_to_filename(blob_path)
-        print(
-            f"Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}'"
-        )
+        print(f"Directory '{gcs_path}' from bucket '{blob.bucket.id}' downloaded to '{blob_path}'")
 
     def upload_directory_to_gcs(self, bucket_name: str, gcs_path: str):
         """
@@ -81,12 +75,10 @@ class BaseIO(ABC):
         for local_path in glob.glob(str(self.dir) + "/**", recursive=True):
             if os.path.isfile(local_path):
                 blob.upload_from_filename(local_path)
-        print(
-            f"Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}"
-        )
+        print(f"Directory '{self.dir}' uploaded to '{gcs_path}' in bucket {blob.bucket.id}")
 
     def _get_gcs_blob(self, bucket_name: str, blob_path: str) -> storage.Blob:
-        """ Create blob that interacts with Google Cloud Storage (GCS). """
+        """Create blob that interacts with Google Cloud Storage (GCS)."""
         client = storage.Client()
         # https://console.cloud.google.com/storage/browser/[bucket_name]
         bucket = client.get_bucket(bucket_name)
@@ -101,29 +93,27 @@ class BaseIO(ABC):
         dir = Path(self.dir / folder)
         dir.mkdir(parents=True, exist_ok=True)
         return dir
-    
+
     def _get_dest_path(self, subfolder: str, filename: str) -> str:
-        """ Prepare destination path for downloading. """
+        """Prepare destination path for downloading."""
         dir = self._append_folder(subfolder)
         dest_path = str(dir.joinpath(filename.split("/")[-1]))
         return dest_path
 
     def _create_directory(self):
-        """ Create base directory if it does not exist. """
+        """Create base directory if it does not exist."""
         if not self.dir.is_dir():
-            print(
-                f"No existing directory found at '{self.dir}'. Creating directory..."
-            )
+            print(f"No existing directory found at '{self.dir}'. Creating directory...")
             self.dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def get_all_files(self) -> list:
-        """ Return all paths of contents in directory. """
+        """Return all paths of contents in directory."""
         return list(self.dir.iterdir())
 
     @property
     def is_empty(self) -> bool:
-        """ Check if directory is empty. """
+        """Check if directory is empty."""
         return not bool(self.get_all_files)
 
 
@@ -133,22 +123,23 @@ class BaseDownloader(BaseIO):
 
     :param directory_path: Base folder to download files to.
     """
+
     def __init__(self, directory_path: str):
         super().__init__(directory_path=directory_path)
 
     @abstractmethod
     def download_training_data(self, *args, **kwargs):
-        """ Download all necessary files needed for training. """
+        """Download all necessary files needed for training."""
         ...
 
     @abstractmethod
     def download_live_data(self, *args, **kwargs):
-        """ Download minimal amount of files needed for weekly inference. """
+        """Download minimal amount of files needed for weekly inference."""
         ...
 
     @staticmethod
     def _load_json(file_path: str, verbose=False, *args, **kwargs) -> dict:
-        """ Load JSON from file and return as dictionary. """
+        """Load JSON from file and return as dictionary."""
         with open(Path(file_path)) as json_file:
             json_data = json.load(json_file, *args, **kwargs)
         if verbose:
@@ -156,7 +147,7 @@ class BaseDownloader(BaseIO):
         return json_data
 
     def _default_save_path(self, start: dt, end: dt, backend: str):
-        """ Save to downloader directory indicating backend, start date and end date as parquet file. """
+        """Save to downloader directory indicating backend, start date and end date as parquet file."""
         return f"{self.dir}/{backend}_{start.strftime('%Y%m%d')}_{end.strftime('%Y%m%d')}.parquet"
 
     def __call__(self, *args, **kwargs):
@@ -174,6 +165,7 @@ class NumeraiClassicDownloader(BaseDownloader):
     :param directory_path: Base folder to download files to.
     All kwargs will be passed to NumerAPI initialization.
     """
+
     TRAIN_DATASET_NAME = "train.parquet"
     VALIDATION_DATASET_NAME = "validation.parquet"
     LIVE_DATASET_NAME = "live.parquet"
@@ -187,9 +179,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.dataset_versions = set(s.split("/")[0] for s in self.napi.list_datasets())
         self.dataset_versions.discard("signals")
 
-    def download_training_data(
-        self, subfolder: str = "", version: str = "5.0"
-    ):
+    def download_training_data(self, subfolder: str = "", version: str = "5.0"):
         """
         Get Numerai classic training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
@@ -198,18 +188,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         5.0 = Atlas (default)
         """
         self._check_dataset_version(version)
-        train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}",
-                           f"v{version}/{self.VALIDATION_DATASET_NAME}"]
+        train_val_files = [f"v{version}/{self.TRAIN_DATASET_NAME}", f"v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
             dest_path = self._get_dest_path(subfolder, file)
-            self.download_single_dataset(
-                filename=file,
-                dest_path=dest_path
-            )
+            self.download_single_dataset(filename=file, dest_path=dest_path)
 
-    def download_single_dataset(
-        self, filename: str, dest_path: str, round_num: int = None
-    ):
+    def download_single_dataset(self, filename: str, dest_path: str, round_num: int = None):
         """
         Download one of the available datasets through NumerAPI.
 
@@ -217,27 +201,16 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param dest_path: Full path where file will be saved.
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
-        print(
-            f"Downloading '{filename}'."
-        )
-        self.napi.download_dataset(
-            filename=filename,
-            dest_path=dest_path,
-            round_num=round_num
-        )
+        print(f"Downloading '{filename}'.")
+        self.napi.download_dataset(filename=filename, dest_path=dest_path, round_num=round_num)
 
-    def download_live_data(
-            self,
-            subfolder: str = "",
-            version: str = "5.0",
-            round_num: int = None
-    ):
+    def download_live_data(self, subfolder: str = "", version: str = "5.0", round_num: int = None):
         """
         Download all live data in specified folder for given version (i.e. minimal data needed for inference).
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version. 
+        :param version: Numerai dataset version.
         5.0 = Atlas (default)
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
@@ -245,15 +218,9 @@ class NumeraiClassicDownloader(BaseDownloader):
         live_files = [f"v{version}/{self.LIVE_DATASET_NAME}"]
         for file in live_files:
             dest_path = self._get_dest_path(subfolder, file)
-            self.download_single_dataset(
-                filename=file,
-                dest_path=dest_path,
-                round_num=round_num
-            )
+            self.download_single_dataset(filename=file, dest_path=dest_path, round_num=round_num)
 
-    def download_example_data(
-        self, subfolder: str = "", version: str = "5.0", round_num: int = None
-    ):
+    def download_example_data(self, subfolder: str = "", version: str = "5.0", round_num: int = None):
         """
         Download all example prediction data in specified folder for given version.
 
@@ -264,15 +231,10 @@ class NumeraiClassicDownloader(BaseDownloader):
         :param round_num: Numerai tournament round number. Downloads latest round by default.
         """
         self._check_dataset_version(version)
-        example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
-                         f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
+        example_files = [f"v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", f"v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
             dest_path = self._get_dest_path(subfolder, file)
-            self.download_single_dataset(
-                filename=file,
-                dest_path=dest_path,
-                round_num=round_num
-            )
+            self.download_single_dataset(filename=file, dest_path=dest_path, round_num=round_num)
 
     def get_classic_features(self, subfolder: str = "", filename="v5.0/features.json", *args, **kwargs) -> dict:
         """
@@ -286,8 +248,7 @@ class NumeraiClassicDownloader(BaseDownloader):
         version = filename.split("/")[0].replace("v", "")
         self._check_dataset_version(version)
         dest_path = self._get_dest_path(subfolder, filename)
-        self.download_single_dataset(filename=filename,
-                                     dest_path=dest_path)
+        self.download_single_dataset(filename=filename, dest_path=dest_path)
         json_data = self._load_json(dest_path, *args, **kwargs)
         return json_data
 
@@ -305,11 +266,12 @@ class NumeraiClassicDownloader(BaseDownloader):
         self.download_single_dataset(
             filename=filename,
             dest_path=dest_path,
-            )
+        )
         return pd.read_parquet(dest_path)
-    
+
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in NumerAPI."
+
 
 class NumeraiSignalsDownloader(BaseDownloader):
     """
@@ -319,6 +281,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
     :param directory_path: Base folder to download files to. \n
     All kwargs will be passed to SignalsAPI initialization.
     """
+
     TRAIN_DATASET_NAME = "train.parquet"
     VALIDATION_DATASET_NAME = "validation.parquet"
     LIVE_DATASET_NAME = "live.parquet"
@@ -331,9 +294,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
         # Get all available versions available for Numerai Signals.
         self.dataset_versions = set(s.replace("signals/", "").split("/")[0] for s in self.sapi.list_datasets() if s.startswith("signals/v"))
 
-    def download_training_data(
-        self, subfolder: str = "", version: str = "2.0"
-    ):
+    def download_training_data(self, subfolder: str = "", version: str = "2.0"):
         """
         Get Numerai Signals training and validation data.
         :param subfolder: Specify folder to create folder within base directory root.
@@ -341,43 +302,35 @@ class NumeraiSignalsDownloader(BaseDownloader):
         :param version: Numerai Signals dataset version.
         """
         self._check_dataset_version(version)
-        train_val_files = [f"signals/v{version}/{self.TRAIN_DATASET_NAME}",
-                           f"signals/v{version}/{self.VALIDATION_DATASET_NAME}"]
+        train_val_files = [f"signals/v{version}/{self.TRAIN_DATASET_NAME}", f"signals/v{version}/{self.VALIDATION_DATASET_NAME}"]
         for file in train_val_files:
             dest_path = self._get_dest_path(subfolder, file)
-            self.download_single_dataset(
-                filename=file,
-                dest_path=dest_path
-            )
+            self.download_single_dataset(filename=file, dest_path=dest_path)
 
-    def download_single_dataset(
-        self, filename: str, dest_path: str
-    ):
+    def download_single_dataset(self, filename: str, dest_path: str):
         """
         Download one of the available datasets through SignalsAPI.
 
         :param filename: Name as listed in SignalsAPI (Check SignalsAPI().list_datasets() for full overview)
         :param dest_path: Full path where file will be saved.
         """
-        print(
-            f"Downloading '{filename}'."
-        )
+        print(f"Downloading '{filename}'.")
         self.sapi.download_dataset(
             filename=filename,
             dest_path=dest_path,
         )
 
     def download_live_data(
-            self,
-            subfolder: str = "",
-            version: str = "2.0",
+        self,
+        subfolder: str = "",
+        version: str = "2.0",
     ):
         """
         Download all live data in specified folder (i.e. minimal data needed for inference).
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version. 
+        :param version: Numerai dataset version.
         """
         self._check_dataset_version(version)
         live_files = [f"signals/v{version}/{self.LIVE_DATASET_NAME}"]
@@ -388,9 +341,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
                 dest_path=dest_path,
             )
 
-    def download_example_data(
-        self, subfolder: str = "", version: str = "2.0"
-    ):
+    def download_example_data(self, subfolder: str = "", version: str = "2.0"):
         """
         Download all example prediction data in specified folder for given version.
 
@@ -399,8 +350,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
         :param version: Numerai dataset version.
         """
         self._check_dataset_version(version)
-        example_files = [f"signals/v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", 
-                         f"signals/v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
+        example_files = [f"signals/v{version}/{self.LIVE_EXAMPLE_PREDS_NAME}", f"signals/v{version}/{self.VALIDATION_EXAMPLE_PREDS_NAME}"]
         for file in example_files:
             dest_path = self._get_dest_path(subfolder, file)
             self.download_single_dataset(
@@ -411,6 +361,7 @@ class NumeraiSignalsDownloader(BaseDownloader):
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in SignalsAPI."
 
+
 class NumeraiCryptoDownloader(BaseDownloader):
     """
     Download Numerai Crypto data.
@@ -418,6 +369,7 @@ class NumeraiCryptoDownloader(BaseDownloader):
 
     :param directory_path: Base folder to download files to.
     """
+
     LIVE_DATASET_NAME = "live_universe.parquet"
     TRAIN_TARGETS_NAME = "train_targets.parquet"
 
@@ -427,16 +379,16 @@ class NumeraiCryptoDownloader(BaseDownloader):
         self.dataset_versions = ["v1.0"]
 
     def download_training_data(
-            self,
-            subfolder: str = "",
-            version: str = "1.0",
+        self,
+        subfolder: str = "",
+        version: str = "1.0",
     ):
         """
         Download all training data in specified folder for given version.
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version. 
+        :param version: Numerai dataset version.
         """
         self._check_dataset_version(version)
         training_files = [f"crypto/v{version}/{self.TRAIN_TARGETS_NAME}"]
@@ -448,16 +400,16 @@ class NumeraiCryptoDownloader(BaseDownloader):
             )
 
     def download_live_data(
-            self,
-            subfolder: str = "",
-            version: str = "1.0",
+        self,
+        subfolder: str = "",
+        version: str = "1.0",
     ):
         """
         Download all live data in specified folder (i.e. minimal data needed for inference).
 
         :param subfolder: Specify folder to create folder within directory root.
         Saves in directory root by default.
-        :param version: Numerai dataset version. 
+        :param version: Numerai dataset version.
         """
         self._check_dataset_version(version)
         live_files = [f"crypto/v{version}/{self.LIVE_DATASET_NAME}"]
@@ -468,18 +420,14 @@ class NumeraiCryptoDownloader(BaseDownloader):
                 dest_path=dest_path,
             )
 
-    def download_single_dataset(
-        self, filename: str, dest_path: str
-    ):
+    def download_single_dataset(self, filename: str, dest_path: str):
         """
         Download one of the available datasets through CryptoAPI.
 
         :param filename: Name as listed in CryptoAPI (Check CryptoAPI().list_datasets() for full overview)
         :param dest_path: Full path where file will be saved.
         """
-        print(
-            f"Downloading '{filename}'."
-        )
+        print(f"Downloading '{filename}'.")
         self.capi.download_dataset(
             filename=filename,
             dest_path=dest_path,
@@ -487,6 +435,7 @@ class NumeraiCryptoDownloader(BaseDownloader):
 
     def _check_dataset_version(self, version: str):
         assert f"v{version}" in self.dataset_versions, f"Version '{version}' is not available in CryptoAPI."
+
 
 class KaggleDownloader(BaseDownloader):
     """
@@ -501,6 +450,7 @@ class KaggleDownloader(BaseDownloader):
 
     :param directory_path: Base folder to download files to.
     """
+
     def __init__(self, directory_path: str):
         self.__check_kaggle_import()
         super().__init__(directory_path=directory_path)
@@ -518,15 +468,16 @@ class KaggleDownloader(BaseDownloader):
         :param kaggle_dataset_path: Path on Kaggle (URL slug on kaggle.com/)
         """
         import kaggle
-        kaggle.api.dataset_download_files(kaggle_dataset_path,
-                                          path=self.dir, unzip=True)
+
+        kaggle.api.dataset_download_files(kaggle_dataset_path, path=self.dir, unzip=True)
 
     @staticmethod
     def __check_kaggle_import():
         try:
-            import kaggle
+            pass
         except OSError:
             raise OSError("Could not find kaggle.json credentials. Make sure it's located in /home/runner/.kaggle. Or use the environment method. Check github.com/Kaggle/kaggle-api#api-credentials for more information on authentication.")
+
 
 class EODDownloader(BaseDownloader):
     """
@@ -542,15 +493,12 @@ class EODDownloader(BaseDownloader):
     :param frequency: Choose from [d, w, m]. \n
     Daily data by default.
     """
-    def __init__(self,
-                 directory_path: str,
-                 key: str,
-                 tickers: list,
-                 frequency: str = "d"):
+
+    def __init__(self, directory_path: str, key: str, tickers: list, frequency: str = "d"):
         super().__init__(directory_path=directory_path)
         self.key = key
         self.tickers = tickers
-        try: 
+        try:
             from eod import EodHistoricalData
         except ImportError:
             raise ImportError("Could not import eod package. Please install eod package with 'pip install eod'")
@@ -564,12 +512,10 @@ class EODDownloader(BaseDownloader):
         self.sleep_time = self.cpu_count / 32
 
     def download_live_data(self):
-        """ Download one year of data for defined tickers. """
+        """Download one year of data for defined tickers."""
         start = (pd.Timestamp(self.current_time) - relativedelta(years=1)).strftime("%Y-%m-%d")
         dataf = self.get_numerframe_data(start=start)
-        dataf.to_parquet(self._default_save_path(start=pd.Timestamp(start),
-                                                 end=pd.Timestamp(self.end_date),
-                                                 backend="eod"))
+        dataf.to_parquet(self._default_save_path(start=pd.Timestamp(start), end=pd.Timestamp(self.end_date), backend="eod"))
 
     def download_training_data(self, start: str = None):
         """
@@ -578,9 +524,7 @@ class EODDownloader(BaseDownloader):
         """
         start = start if start else "1970-01-01"
         dataf = self.generate_full_dataf(start=start)
-        dataf.to_parquet(self._default_save_path(start=pd.Timestamp(start),
-                                                 end=pd.Timestamp(self.end_date),
-                                                 backend="eod"))
+        dataf.to_parquet(self._default_save_path(start=pd.Timestamp(start), end=pd.Timestamp(self.end_date), backend="eod"))
 
     def get_numerframe_data(self, start: str) -> NumerFrame:
         """
@@ -598,9 +542,7 @@ class EODDownloader(BaseDownloader):
         price_datafs = []
         with ThreadPoolExecutor(max_workers=self.cpu_count) as executor:
             tasks = [executor.submit(self.generate_stock_dataf, ticker, start) for ticker in self.tickers]
-            for task in tqdm(concurrent.futures.as_completed(tasks),
-                             total=len(self.tickers),
-                             desc="EOD price data extraction"):
+            for task in tqdm(concurrent.futures.as_completed(tasks), total=len(self.tickers), desc="EOD price data extraction"):
                 price_datafs.append(task.result())
         return pd.concat(price_datafs)
 
@@ -613,10 +555,9 @@ class EODDownloader(BaseDownloader):
         """
         time.sleep(self.sleep_time)
         try:
-            resp = self.client.get_prices_eod(ticker, period=self.frequency,
-                                              from_=start, to=self.end_date)
-            stock_df = pd.DataFrame(resp).set_index('date')
-            stock_df['ticker'] = ticker
+            resp = self.client.get_prices_eod(ticker, period=self.frequency, from_=start, to=self.end_date)
+            stock_df = pd.DataFrame(resp).set_index("date")
+            stock_df["ticker"] = ticker
         except Exception as e:
             print(f"WARNING: Date pull failed on ticker: '{ticker}'. Exception: {e}")
             stock_df = pd.DataFrame()

@@ -1,8 +1,8 @@
+from abc import abstractmethod
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from typing import Union, List
-from abc import abstractmethod
-
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -18,12 +18,7 @@ class BasePreProcessor(BaseEstimator, TransformerMixin):
         return self
 
     @abstractmethod
-    def transform(
-        self, X: Union[np.array, pd.DataFrame], y=None, **kwargs
-    ) -> pd.DataFrame:
-        ...
-    
+    def transform(self, X: Union[np.array, pd.DataFrame], y=None, **kwargs) -> pd.DataFrame: ...
+
     @abstractmethod
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        ...
-    
+    def get_feature_names_out(self, input_features=None) -> List[str]: ...

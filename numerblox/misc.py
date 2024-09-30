@@ -1,13 +1,17 @@
 import json
 
+
 class AttrDict(dict):
-    """ Access dictionary elements as attributes. """
+    """Access dictionary elements as attributes."""
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
+
 class Key:
     """Numerai credentials."""
+
     def __init__(self, pub_id: str, secret_key: str):
         self.pub_id = pub_id
         self.secret_key = secret_key

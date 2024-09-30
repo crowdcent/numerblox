@@ -1,11 +1,12 @@
-import scipy
 import warnings
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from typing import Union, List
+import scipy
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
-        
+
 
 class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     """
@@ -20,6 +21,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
     Paper Link: https://doi.org/10.1016/j.neucom.2012.02.053
     Example donate weighting for 5 folds: [0.0625, 0.0625, 0.125, 0.25, 0.5]
     """
+
     def __init__(self, weights=None, donate_weighted=False):
         sklearn.set_config(enable_metadata_routing=True)
         self.set_transform_request(era_series=True)
@@ -35,28 +37,28 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series) -> np.array:
-        """ 
-        Standardize by era and ensemble. 
+        """
+        Standardize by era and ensemble.
         :param X: Input data where each column contains predictions from an estimator.
         :param era_series: Era labels (strings) for each row in X.
         :return: Ensembled predictions.
         """
-        assert not era_series is None, "Era series must be provided for NumeraiEnsemble."
+        assert era_series is not None, "Era series must be provided for NumeraiEnsemble."
         assert len(X) == len(era_series), f"input X and era_series must have the same length. Got {len(X)} != {len(era_series)}."
 
         if len(X.shape) == 1:
             raise ValueError("NumeraiEnsemble requires at least 2 prediction columns. Got 1.")
-        
+
         n_models = X.shape[1]
         if n_models <= 1:
             raise ValueError(f"NumeraiEnsemble requires at least 2 predictions columns. Got {len(n_models)}.")
-        
+
         # Override weights if donate_weighted is True
         if self.donate_weighted:
             weights = self._get_donate_weights(n=n_models)
         else:
             weights = self.weights
-            
+
         if isinstance(X, pd.DataFrame):
             X = X.values
         # Standardize predictions by era
@@ -79,26 +81,26 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         # Average out predictions
         ensembled_predictions = np.average(standardized_pred_arr, axis=1, weights=weights)
         return ensembled_predictions.reshape(-1, 1)
-    
+
     def fit_transform(self, X: Union[np.array, pd.DataFrame], y=None, era_series: pd.Series = None) -> np.array:
         self.fit(X, y)
         return self.transform(X, era_series)
-    
+
     def predict(self, X: Union[np.array, pd.DataFrame], era_series: pd.Series) -> np.array:
-        """ 
+        """
         For if a NumeraiEnsemble happens to be the last step in the pipeline. Has same behavior as transform.
         """
         return self.transform(X, era_series=era_series)
 
     def _standardize(self, X: np.array) -> np.array:
-        """ 
+        """
         Standardize single era.
         :param X: Predictions for a single era.
         :return: Standardized predictions.
         """
         percentile_X = (scipy.stats.rankdata(X, method="ordinal") - 0.5) / len(X)
         return percentile_X
-    
+
     def _standardize_by_era(self, X: np.array, era_series: Union[np.array, pd.Series, pd.DataFrame]) -> np.array:
         """
         Standardize predictions of a single estimator by era.
@@ -108,10 +110,10 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         """
         if isinstance(era_series, (pd.Series, pd.DataFrame)):
             era_series = era_series.to_numpy().flatten()
-        df = pd.DataFrame({'prediction': X, 'era': era_series})
-        df['standardized_prediction'] = df.groupby('era')['prediction'].transform(self._standardize)
-        return df['standardized_prediction'].values.flatten()
-    
+        df = pd.DataFrame({"prediction": X, "era": era_series})
+        df["standardized_prediction"] = df.groupby("era")["prediction"].transform(self._standardize)
+        return df["standardized_prediction"].values.flatten()
+
     def _get_donate_weights(self, n: int) -> list:
         """
         Exponential weights as per Donate et al.'s formula.
@@ -127,19 +129,20 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
             weights.append(1 / (2 ** (n + 1 - j)))
         return weights
 
-    def get_feature_names_out(self, input_features = None) -> List[str]:
+    def get_feature_names_out(self, input_features=None) -> List[str]:
         return ["numerai_ensemble_predictions"] if not input_features else input_features
 
 
 class PredictionReducer(BaseEstimator, TransformerMixin):
-    """ 
-    Reduce multiclassification and proba preds to 1 column per model. 
+    """
+    Reduce multiclassification and proba preds to 1 column per model.
     If predictions were generated with a regressor or regular predict you don't need this step.
-    :param n_models: Number of resulting columns. 
+    :param n_models: Number of resulting columns.
     This indicates how many models were trained to generate the prediction array.
     :param n_classes: Number of classes for each prediction.
     If predictions were generated with predict_proba and binary classification -> n_classes = 2.
     """
+
     def __init__(self, n_models: int, n_classes: int):
         super().__init__()
         if n_models < 1:
@@ -166,20 +169,19 @@ class PredictionReducer(BaseEstimator, TransformerMixin):
             raise ValueError(f"Input X must have {expected_n_cols} columns. Got {X.shape[1]} columns while n_models={self.n_models} * n_classes={self.n_classes} = {expected_n_cols}. ")
         for i in range(self.n_models):
             # Extracting the predictions of the i-th model
-            model_preds = X[:, i*self.n_classes:(i+1)*self.n_classes]
+            model_preds = X[:, i * self.n_classes : (i + 1) * self.n_classes]
             r = model_preds @ self.dot_array
             reduced.append(r)
         reduced_arr = np.column_stack(reduced)
         return reduced_arr
-    
+
     def predict(self, X: np.array):
-        """ 
+        """
         For if PredictionReducer happens to be the last step in the pipeline. Has same behavior as transform.
         :param X: Input predictions.
         :return: Reduced predictions of shape (X.shape[0], self.n_models).
         """
         return self.transform(X)
-    
+
     def get_feature_names_out(self, input_features=None) -> List[str]:
         return [f"reduced_prediction_{i}" for i in range(self.n_models)] if not input_features else input_features
-    

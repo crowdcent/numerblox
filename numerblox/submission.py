@@ -1,11 +1,12 @@
 import time
+from abc import abstractmethod
+from copy import deepcopy
+from typing import Union
+
 import numpy as np
 import pandas as pd
-from typing import Union
-from copy import deepcopy
+from numerapi import CryptoAPI, NumerAPI, SignalsAPI
 from tqdm.auto import tqdm
-from abc import abstractmethod
-from numerapi import NumerAPI, SignalsAPI, CryptoAPI
 
 from .download import BaseIO
 from .misc import Key
@@ -13,19 +14,19 @@ from .misc import Key
 
 class BaseSubmitter(BaseIO):
     """
-    Basic functionality for submitting to Numerai. 
+    Basic functionality for submitting to Numerai.
     Uses numerapi under the hood.
     More info: https://numerapi.readthedocs.io
 
-    :param directory_path: Directory to store and read submissions from. 
+    :param directory_path: Directory to store and read submissions from.
     :param api: NumerAPI, SignalsAPI or CryptoAPI
-    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai.
     :param sleep_time: Time to sleep between uploading retries.
-    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error.
     Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     """
-    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI, CryptoAPI], max_retries: int, 
-                 sleep_time: int, fail_silently: bool):
+
+    def __init__(self, directory_path: str, api: Union[NumerAPI, SignalsAPI, CryptoAPI], max_retries: int, sleep_time: int, fail_silently: bool):
         super().__init__(directory_path)
         self.api = api
         self.max_retries = max_retries
@@ -56,17 +57,11 @@ class BaseSubmitter(BaseIO):
         full_path = str(self.dir / file_name)
         model_id = self._get_model_id(model_name=model_name)
         api_type = str(self.api.__class__.__name__)
-        print(
-            f"{api_type}: Uploading predictions from '{full_path}' for model '{model_name}' (model_id='{model_id}')"
-        )
+        print(f"{api_type}: Uploading predictions from '{full_path}' for model '{model_name}' (model_id='{model_id}')")
         for attempt in range(self.max_retries):
             try:
-                self.api.upload_predictions(
-                    file_path=full_path, model_id=model_id, *args, **kwargs
-                )
-                print(
-                    f"{api_type} submission of '{full_path}' for '{model_name}' is successful!"
-                )
+                self.api.upload_predictions(file_path=full_path, model_id=model_id, *args, **kwargs)
+                print(f"{api_type} submission of '{full_path}' for '{model_name}' is successful!")
                 return
             except Exception as e:
                 if attempt < self.max_retries - 1:  # i.e. not the last attempt
@@ -86,7 +81,7 @@ class BaseSubmitter(BaseIO):
         dataf: pd.DataFrame,
         model_name: str,
         cols: Union[str, list],
-        file_name: str = 'submission.csv',
+        file_name: str = "submission.csv",
         *args,
         **kwargs,
     ):
@@ -103,15 +98,9 @@ class BaseSubmitter(BaseIO):
         For example `version` argument in Numerai Classic submissions.
         """
         self.save_csv(dataf=dataf, file_name=file_name, cols=cols)
-        self.upload_predictions(
-            file_name=file_name, model_name=model_name,
-            *args, **kwargs
-        )
+        self.upload_predictions(file_name=file_name, model_name=model_name, *args, **kwargs)
 
-    def combine_csvs(self, csv_paths: list,
-                     aux_cols: list,
-                     era_col: str = None,
-                     pred_col: str = 'prediction') -> pd.DataFrame:
+    def combine_csvs(self, csv_paths: list, aux_cols: list, era_col: str = None, pred_col: str = "prediction") -> pd.DataFrame:
         """
         Read in csv files and combine all predictions with a rank mean. \n
         Multi-target predictions will be averaged out. \n
@@ -126,9 +115,7 @@ class BaseSubmitter(BaseIO):
         final_dataf = pd.concat(all_datafs, axis="columns")
         # Remove issue of duplicate columns
         numeric_cols = final_dataf.select_dtypes(include=np.number).columns
-        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))},
-                           axis=1,
-                           inplace=True)
+        final_dataf.rename({k: str(v) for k, v in zip(numeric_cols, range(len(numeric_cols)))}, axis=1, inplace=True)
         # Combine all numeric columns with rank mean
         num_dataf = final_dataf.select_dtypes(include=np.number)
         num_dataf = num_dataf.groupby(era_col) if era_col else num_dataf
@@ -149,7 +136,7 @@ class BaseSubmitter(BaseIO):
         return self.api.get_models()
 
     def _check_value_range(self, dataf: pd.DataFrame, cols: Union[str, list]):
-        """ Check if all predictions are in range (0...1). """
+        """Check if all predictions are in range (0...1)."""
         cols = [cols] if isinstance(cols, str) else cols
         for col in cols:
             if not dataf[col].between(0, 1).all():
@@ -160,13 +147,13 @@ Found min value of '{min_val}' and max value of '{max_val}' for column '{col}'."
                 )
 
     def __call__(
-            self,
-            dataf: pd.DataFrame,
-            model_name: str,
-            file_name: str = "submission.csv",
-            cols: Union[str, list] = "prediction",
-            *args,
-            **kwargs,
+        self,
+        dataf: pd.DataFrame,
+        model_name: str,
+        file_name: str = "submission.csv",
+        cols: Union[str, list] = "prediction",
+        *args,
+        **kwargs,
     ):
         """
         The most common use case will be to create a CSV and submit it immediately after that.
@@ -188,29 +175,24 @@ class NumeraiClassicSubmitter(BaseSubmitter):
 
     :param directory_path: Base directory to save and read prediction files from. \n
     :param key: Key object containing valid credentials for Numerai Classic. \n
-    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai.
     :param sleep_time: Time to sleep between uploading retries.
-    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error.
     Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     *args, **kwargs will be passed to NumerAPI initialization.
     """
-    def __init__(self, directory_path: str, key: Key, 
-                 max_retries: int = 2, sleep_time: int = 10, 
-                 fail_silently=False, *args, **kwargs):
+
+    def __init__(self, directory_path: str, key: Key, max_retries: int = 2, sleep_time: int = 10, fail_silently=False, *args, **kwargs):
         api = NumerAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
-        super().__init__(
-            directory_path=directory_path, api=api,
-            max_retries=max_retries, sleep_time=sleep_time, 
-            fail_silently=fail_silently
-        )
+        super().__init__(directory_path=directory_path, api=api, max_retries=max_retries, sleep_time=sleep_time, fail_silently=fail_silently)
 
     def save_csv(
-            self,
-            dataf: pd.DataFrame,
-            file_name: str = "submission.csv",
-            cols: str = 'prediction',
-            *args,
-            **kwargs,
+        self,
+        dataf: pd.DataFrame,
+        file_name: str = "submission.csv",
+        cols: str = "prediction",
+        *args,
+        **kwargs,
     ):
         """
         :param dataf: DataFrame which should have at least the following columns:
@@ -224,11 +206,9 @@ class NumeraiClassicSubmitter(BaseSubmitter):
         self._check_value_range(dataf=sub_dataf, cols=cols)
 
         full_path = str(self.dir / file_name)
-        print(
-            f"Saving predictions CSV to '{full_path}'."
-        )
-        sub_dataf.loc[:, 'prediction'] = sub_dataf[cols]
-        sub_dataf.loc[:, 'prediction'].to_csv(full_path, *args, **kwargs)
+        print(f"Saving predictions CSV to '{full_path}'.")
+        sub_dataf.loc[:, "prediction"] = sub_dataf[cols]
+        sub_dataf.loc[:, "prediction"].to_csv(full_path, *args, **kwargs)
 
 
 class NumeraiSignalsSubmitter(BaseSubmitter):
@@ -237,23 +217,16 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
 
     :param directory_path: Base directory to save and read prediction files from. \n
     :param key: Key object containing valid credentials for Numerai Signals. \n
-    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai.
     :param sleep_time: Time to sleep between uploading retries.
-    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error.
     Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     *args, **kwargs will be passed to SignalsAPI initialization.
     """
-    def __init__(self, directory_path: str, key: Key, 
-                 max_retries: int = 2, sleep_time: int = 10, 
-                 fail_silently=False, *args, **kwargs):
-        api = SignalsAPI(
-            public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs
-        )
-        super().__init__(
-            directory_path=directory_path, api=api,
-            max_retries=max_retries, sleep_time=sleep_time,
-            fail_silently=fail_silently
-        )
+
+    def __init__(self, directory_path: str, key: Key, max_retries: int = 2, sleep_time: int = 10, fail_silently=False, *args, **kwargs):
+        api = SignalsAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
+        super().__init__(directory_path=directory_path, api=api, max_retries=max_retries, sleep_time=sleep_time, fail_silently=fail_silently)
         self.supported_ticker_formats = [
             "cusip",
             "sedol",
@@ -262,13 +235,7 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
             "bloomberg_ticker",
         ]
 
-    def save_csv(
-            self,
-            dataf: pd.DataFrame,
-            cols: list,
-            file_name: str = "submission.csv",
-            *args, **kwargs
-    ):
+    def save_csv(self, dataf: pd.DataFrame, cols: list, file_name: str = "submission.csv", *args, **kwargs):
         """
         :param dataf: DataFrame which should have at least the following columns:
          1. One of supported ticker formats (cusip, sedol, ticker, numerai_ticker or bloomberg_ticker)
@@ -286,15 +253,11 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
         self._check_value_range(dataf=dataf, cols="signal")
 
         full_path = str(self.dir / file_name)
-        print(
-            f"Saving Signals predictions CSV to '{full_path}'."
-        )
-        dataf.loc[:, cols].reset_index(drop=True).to_csv(
-            full_path, index=False, *args, **kwargs
-        )
+        print(f"Saving Signals predictions CSV to '{full_path}'.")
+        dataf.loc[:, cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
 
     def _check_ticker_format(self, cols: list):
-        """ Check for valid ticker format. """
+        """Check for valid ticker format."""
         valid_tickers = set(cols).intersection(set(self.supported_ticker_formats))
         if not valid_tickers:
             raise NotImplementedError(
@@ -302,37 +265,25 @@ class NumeraiSignalsSubmitter(BaseSubmitter):
 Supported: '{self.supported_ticker_formats}'"
             )
 
+
 class NumeraiCryptoSubmitter(BaseSubmitter):
     """
     Submit for Numerai Crypto.
 
     :param directory_path: Base directory to save and read prediction files from. \n
     :param key: Key object containing valid credentials for Numerai Crypto. \n
-    :param max_retries: Maximum number of retries for uploading predictions to Numerai. 
+    :param max_retries: Maximum number of retries for uploading predictions to Numerai.
     :param sleep_time: Time to sleep between uploading retries.
-    :param fail_silently: Whether to skip uploading to Numerai without raising an error. 
+    :param fail_silently: Whether to skip uploading to Numerai without raising an error.
     Useful for if you are uploading many models in a loop and want to skip models that fail to upload.
     *args, **kwargs will be passed to CryptoAPI initialization.
     """
-    def __init__(self, directory_path: str, key: Key, 
-                 max_retries: int = 2, sleep_time: int = 10, 
-                 fail_silently=False, *args, **kwargs):
-        api = CryptoAPI(
-            public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs
-        )
-        super().__init__(
-            directory_path=directory_path, api=api,
-            max_retries=max_retries, sleep_time=sleep_time,
-            fail_silently=fail_silently
-        )
 
-    def save_csv(
-            self,
-            dataf: pd.DataFrame,
-            cols: list,
-            file_name: str = "submission.csv",
-            *args, **kwargs
-    ):
+    def __init__(self, directory_path: str, key: Key, max_retries: int = 2, sleep_time: int = 10, fail_silently=False, *args, **kwargs):
+        api = CryptoAPI(public_id=key.pub_id, secret_key=key.secret_key, *args, **kwargs)
+        super().__init__(directory_path=directory_path, api=api, max_retries=max_retries, sleep_time=sleep_time, fail_silently=fail_silently)
+
+    def save_csv(self, dataf: pd.DataFrame, cols: list, file_name: str = "submission.csv", *args, **kwargs):
         """
         :param dataf: DataFrame which should have at least the following columns:
          1. symbol col
@@ -350,12 +301,9 @@ class NumeraiCryptoSubmitter(BaseSubmitter):
         self._check_value_range(dataf=dataf, cols="signal")
 
         full_path = str(self.dir / file_name)
-        print(
-            f"Saving Signals predictions CSV to '{full_path}'."
-        )
-        dataf.loc[:, cols].reset_index(drop=True).to_csv(
-            full_path, index=False, *args, **kwargs
-        )
+        print(f"Saving Signals predictions CSV to '{full_path}'.")
+        dataf.loc[:, cols].reset_index(drop=True).to_csv(full_path, index=False, *args, **kwargs)
+
 
 class NumerBaySubmitter(BaseSubmitter):
     """
@@ -366,27 +314,16 @@ class NumerBaySubmitter(BaseSubmitter):
     :param numerbay_username: NumerBay username
     :param numerbay_password: NumerBay password
     """
-    def __init__(self,
-                 tournament_submitter: Union[NumeraiClassicSubmitter, NumeraiSignalsSubmitter],
-                 upload_to_numerai: bool = True,
-                 numerbay_username: str = None,
-                 numerbay_password: str = None):
-        super().__init__(
-            directory_path=str(tournament_submitter.dir), api=tournament_submitter.api,
-            max_retries=tournament_submitter.max_retries, sleep_time=tournament_submitter.sleep_time,
-            fail_silently=tournament_submitter.fail_silently
-        )
+
+    def __init__(self, tournament_submitter: Union[NumeraiClassicSubmitter, NumeraiSignalsSubmitter], upload_to_numerai: bool = True, numerbay_username: str = None, numerbay_password: str = None):
+        super().__init__(directory_path=str(tournament_submitter.dir), api=tournament_submitter.api, max_retries=tournament_submitter.max_retries, sleep_time=tournament_submitter.sleep_time, fail_silently=tournament_submitter.fail_silently)
         from numerbay import NumerBay
+
         self.numerbay_api = NumerBay(username=numerbay_username, password=numerbay_password)
         self.tournament_submitter = tournament_submitter
         self.upload_to_numerai = upload_to_numerai
 
-    def upload_predictions(self,
-                           file_name: str,
-                           model_name: str,
-                           numerbay_product_full_name: str,
-                           *args,
-                           **kwargs):
+    def upload_predictions(self, file_name: str, model_name: str, numerbay_product_full_name: str, *args, **kwargs):
         """
         Upload CSV file to NumerBay (and Numerai if 'upload_to_numerai' is True) for given model name and NumerBay product full name.
         :param file_name: File name/path relative to directory_path.
@@ -398,16 +335,10 @@ class NumerBaySubmitter(BaseSubmitter):
 
         full_path = str(self.dir / file_name)
         api_type = str(self.numerbay_api.__class__.__name__)
-        print(
-            f"{api_type}: Uploading predictions from '{full_path}' for NumerBay product '{numerbay_product_full_name}'"
-        )
-        artifact = self.numerbay_api.upload_artifact(
-            str(full_path), product_full_name=numerbay_product_full_name
-        )
+        print(f"{api_type}: Uploading predictions from '{full_path}' for NumerBay product '{numerbay_product_full_name}'")
+        artifact = self.numerbay_api.upload_artifact(str(full_path), product_full_name=numerbay_product_full_name)
         if artifact:
-            print(
-                f"{api_type} submission of '{full_path}' for NumerBay product [bold blue]{numerbay_product_full_name} is successful!"
-            )
+            print(f"{api_type} submission of '{full_path}' for NumerBay product [bold blue]{numerbay_product_full_name} is successful!")
         else:
             print(f"""WARNING: Upload skipped for NumerBay product '{numerbay_product_full_name}', 
                   the product uses buyer-side encryption but does not have any active sale order to upload for.""")
@@ -418,7 +349,7 @@ class NumerBaySubmitter(BaseSubmitter):
         model_name: str,
         cols: Union[str, list],
         numerbay_product_full_name: str,
-        file_name: str = 'submission.csv',
+        file_name: str = "submission.csv",
         *args,
         **kwargs,
     ):
@@ -436,13 +367,10 @@ class NumerBaySubmitter(BaseSubmitter):
         For example `version` argument in Numerai Classic submissions.
         """
         self.save_csv(dataf=dataf, file_name=file_name, cols=cols)
-        self.upload_predictions(
-            file_name=file_name, model_name=model_name, numerbay_product_full_name=numerbay_product_full_name,
-            *args, **kwargs
-        )
+        self.upload_predictions(file_name=file_name, model_name=model_name, numerbay_product_full_name=numerbay_product_full_name, *args, **kwargs)
 
-    def combine_csvs(self, *args,**kwargs) -> pd.DataFrame:
-        return self.tournament_submitter.combine_csvs(*args,**kwargs)
+    def combine_csvs(self, *args, **kwargs) -> pd.DataFrame:
+        return self.tournament_submitter.combine_csvs(*args, **kwargs)
 
     def save_csv(self, *args, **kwargs):
         self.tournament_submitter.save_csv(*args, **kwargs)
@@ -452,14 +380,14 @@ class NumerBaySubmitter(BaseSubmitter):
         return self.tournament_submitter.api.get_models()
 
     def __call__(
-            self,
-            dataf: pd.DataFrame,
-            model_name: str,
-            numerbay_product_full_name: str,
-            file_name: str = "submission.csv",
-            cols: Union[str, list] = "prediction",
-            *args,
-            **kwargs,
+        self,
+        dataf: pd.DataFrame,
+        model_name: str,
+        numerbay_product_full_name: str,
+        file_name: str = "submission.csv",
+        cols: Union[str, list] = "prediction",
+        *args,
+        **kwargs,
     ):
         """
         The most common use case will be to create a CSV and submit it immediately after that.

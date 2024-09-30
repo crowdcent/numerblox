@@ -1,14 +1,15 @@
 import warnings
+from abc import abstractmethod
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from typing import Union, List
 import scipy.stats as sp
-from abc import abstractmethod
-from joblib import Parallel, delayed
 import sklearn
-from sklearn.preprocessing import MinMaxScaler
+from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import MinMaxScaler
+from tqdm import tqdm
 
 
 class BaseNeutralizer(BaseEstimator, TransformerMixin):
@@ -16,6 +17,7 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
     Base class for neutralization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.
     """
+
     def __init__(self, new_col_names: list):
         self.new_col_names = new_col_names
         sklearn.set_config(enable_metadata_routing=True)
@@ -27,27 +29,23 @@ class BaseNeutralizer(BaseEstimator, TransformerMixin):
         return self
 
     @abstractmethod
-    def transform(
-        self, X: Union[np.array, pd.DataFrame], 
-        features: pd.DataFrame, era_series: pd.Series
-    ) -> np.array:
-        ...
+    def transform(self, X: Union[np.array, pd.DataFrame], features: pd.DataFrame, era_series: pd.Series) -> np.array: ...
 
     def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
-        """ Convenience function for scikit-learn compatibility. """
+        """Convenience function for scikit-learn compatibility."""
         return self.transform(X=X, features=features, era_series=era_series)
 
     def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
-        """ 
+        """
         Convenience function for scikit-learn compatibility.
         Needed because fit and transform except different arguments here.
         """
         return self.fit().transform(X=X, features=features, era_series=era_series)
-    
+
     def get_feature_names_out(self, input_features: list = None) -> list:
-        """ 
+        """
         Get feature names for neutralized output.
-        
+
         :param input_features: Optional list of input feature names.
         :return: List of feature names for neutralized output.
         """
@@ -58,40 +56,30 @@ class FeatureNeutralizer(BaseNeutralizer):
     """
     Classic feature neutralization by subtracting a linear model.
 
-    :param pred_name: Name of prediction column. For creating the new column name. 
+    :param pred_name: Name of prediction column. For creating the new column name.
     :param proportion: Number in range [0...1] indicating how much to neutralize.
     :param suffix: Optional suffix that is added to new column name.
     :param num_cores: Number of cores to use for parallel processing.
     By default, all CPU cores are used.
     """
-    def __init__(
-        self,
-        pred_name: Union[str, list] = "prediction",
-        proportion: Union[float, List[float]] = 0.5,
-        suffix: str = None,
-        num_cores: int = -1
-    ):
+
+    def __init__(self, pred_name: Union[str, list] = "prediction", proportion: Union[float, List[float]] = 0.5, suffix: str = None, num_cores: int = -1):
         self.pred_name = [pred_name] if isinstance(pred_name, str) else pred_name
         self.proportion = [proportion] if isinstance(proportion, float) else proportion
         assert len(self.pred_name) == len(set(self.pred_name)), "Duplicate 'pred_names' found. Make sure all names are unique."
         assert len(self.proportion) == len(set(self.proportion)), "Duplicate 'proportions' found. Make sure all proportions are unique."
         for prop in self.proportion:
-            assert (
-                0.0 <= prop <= 1.0
-            ), f"'proportion' should be a float in range [0...1]. Got '{prop}'."
+            assert 0.0 <= prop <= 1.0, f"'proportion' should be a float in range [0...1]. Got '{prop}'."
 
         new_col_names = []
         for pred_name in self.pred_name:
             for prop in self.proportion:
-                new_col_names.append(
-                    f"{pred_name}_neutralized_{prop}_{suffix}" if suffix else f"{pred_name}_neutralized_{prop}"
-                )
+                new_col_names.append(f"{pred_name}_neutralized_{prop}_{suffix}" if suffix else f"{pred_name}_neutralized_{prop}")
         super().__init__(new_col_names=new_col_names)
         self.suffix = suffix
         self.num_cores = num_cores
 
-    def transform(self, X: Union[np.array, pd.Series, pd.DataFrame], 
-                  features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
+    def transform(self, X: Union[np.array, pd.Series, pd.DataFrame], features: pd.DataFrame, era_series: Union[np.array, pd.Series] = None) -> np.array:
         """
         Main transform function.
         :param X: Input predictions to neutralize. \n
@@ -121,17 +109,13 @@ class FeatureNeutralizer(BaseNeutralizer):
         df["era"] = era_series if era_series is not None else "X"
 
         feature_cols = list(features.columns)
-        tasks = [
-            delayed(self._process_pred_name)(df, pred_name, proportion, feature_cols)
-            for pred_name in tqdm(self.pred_name, desc="Processing feature neutralizations") 
-            for proportion in self.proportion
-        ]
+        tasks = [delayed(self._process_pred_name)(df, pred_name, proportion, feature_cols) for pred_name in tqdm(self.pred_name, desc="Processing feature neutralizations") for proportion in self.proportion]
         neutralized_results = Parallel(n_jobs=self.num_cores)(tasks)
         neutralized_preds = pd.concat(neutralized_results, axis=1).to_numpy()
         return neutralized_preds
-    
+
     def _process_pred_name(self, df: pd.DataFrame, pred_name: str, proportion: float, feature_cols: List[str]) -> pd.DataFrame:
-        """ 
+        """
         Process one combination of prediction and proportion.
         :param df: DataFrame with features and predictions.
         :param pred_name: Name of prediction column.
@@ -140,14 +124,12 @@ class FeatureNeutralizer(BaseNeutralizer):
         :return: Neutralized predictions.
         Neutralized predictions are scaled to [0...1].
         """
-        neutralized_pred = df.groupby("era", group_keys=False).apply(
-            lambda x: self.normalize_and_neutralize(x, [pred_name], feature_cols, proportion)
-        )
+        neutralized_pred = df.groupby("era", group_keys=False).apply(lambda x: self.normalize_and_neutralize(x, [pred_name], feature_cols, proportion))
         return pd.DataFrame(MinMaxScaler().fit_transform(neutralized_pred))
 
     def neutralize(self, dataf: pd.DataFrame, columns: list, by: list, proportion: float) -> pd.DataFrame:
-        """ 
-        Neutralize on CPU. 
+        """
+        Neutralize on CPU.
         :param dataf: DataFrame with features and predictions.
         :param columns: List of prediction column names.
         :param by: List of feature column names.
@@ -161,7 +143,7 @@ class FeatureNeutralizer(BaseNeutralizer):
 
     @staticmethod
     def normalize(dataf: pd.DataFrame) -> np.ndarray:
-        """ Normalize predictions.
+        """Normalize predictions.
         1. Rank predictions.
         2. Normalize ranks.
         3. Gaussianize ranks.
@@ -172,11 +154,9 @@ class FeatureNeutralizer(BaseNeutralizer):
         # Gaussianized ranks
         return sp.norm.ppf(normalized_ranks)
 
-    def normalize_and_neutralize(
-        self, dataf: pd.DataFrame, columns: list, by: list, proportion: float
-    ) -> pd.DataFrame:
-        """ 
-        Gaussianize predictions and neutralize with one combination of prediction and proportion. 
+    def normalize_and_neutralize(self, dataf: pd.DataFrame, columns: list, by: list, proportion: float) -> pd.DataFrame:
+        """
+        Gaussianize predictions and neutralize with one combination of prediction and proportion.
         :param dataf: DataFrame with features and predictions.
         :param columns: List of prediction column names.
         :param by: List of feature column names.
@@ -186,15 +166,14 @@ class FeatureNeutralizer(BaseNeutralizer):
         dataf[columns] = self.normalize(dataf[columns])
         dataf[columns] = self.neutralize(dataf, columns, by, proportion)
         return dataf[columns]
-    
+
     @staticmethod
     def _get_raw_exposures(exposures: np.array, scores: pd.DataFrame) -> np.array:
-        """ 
+        """
         Get raw feature exposures.
         Make sure predictions are normalized!
-        :param exposures: Exposures for each era. 
+        :param exposures: Exposures for each era.
         :param scores: DataFrame with predictions.
         :return: Raw exposures for each era.
         """
         return exposures @ np.linalg.lstsq(exposures, scores.values, rcond=None)[0]
-    

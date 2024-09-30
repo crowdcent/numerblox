@@ -1,8 +1,9 @@
 import time
+from typing import Any, Callable, List, Optional, Union
+
 import cloudpickle
 import pandas as pd
 from numerapi import NumerAPI
-from typing import List, Callable, Optional, Union, Any
 
 from .misc import Key
 
@@ -16,8 +17,8 @@ class NumeraiModelUpload:
     :param sleep_time: Number of seconds to wait between retries.
     :param fail_silently: Whether to suppress exceptions during upload.
     """
-    def __init__(self, key: Key = None, max_retries: int = 2, sleep_time: int = 10,
-                 fail_silently: bool = False, *args, **kwargs):
+
+    def __init__(self, key: Key = None, max_retries: int = 2, sleep_time: int = 10, fail_silently: bool = False, *args, **kwargs):
         """
         Initializes the NumeraiModelUpload class with the necessary configuration.
 
@@ -34,14 +35,7 @@ class NumeraiModelUpload:
         self.sleep_time = sleep_time  # Set the sleep time between retries
         self.fail_silently = fail_silently  # Determine whether to fail silently
 
-    def create_and_upload_model(self,
-                                model: Any,
-                                feature_cols: Optional[List[str]] = None,
-                                model_name: str = None,
-                                file_path: str = None,
-                                data_version: str = None,
-                                docker_image: str = None,
-                                custom_predict_func: Callable[[pd.DataFrame], pd.DataFrame] = None) -> Union[str, None]:
+    def create_and_upload_model(self, model: Any, feature_cols: Optional[List[str]] = None, model_name: str = None, file_path: str = None, data_version: str = None, docker_image: str = None, custom_predict_func: Callable[[pd.DataFrame], pd.DataFrame] = None) -> Union[str, None]:
         """
         Creates a model prediction function, serializes it, and uploads the model to Numerai.
         :param model: The machine learning model object.
@@ -70,7 +64,7 @@ class NumeraiModelUpload:
                 live_predictions = model.predict(live_features[feature_cols_local])
 
                 # Rank predictions and convert to a DataFrame
-                submission = pd.Series(live_predictions, index=live_features.index).rank(pct=True, method='first')
+                submission = pd.Series(live_predictions, index=live_features.index).rank(pct=True, method="first")
                 return submission.to_frame("prediction")
 
         # Serialize the prediction function and save to the specified file path
@@ -87,20 +81,13 @@ class NumeraiModelUpload:
         for attempt in range(self.max_retries):
             try:
                 # Attempt to upload the model
-                upload_id = self.api.model_upload(
-                    file_path=file_path,
-                    model_id=model_id,
-                    data_version=data_version,
-                    docker_image=docker_image
-                )
-                print(
-                    f"{api_type} model upload of '{file_path}' for '{model_name}' is successful! Upload ID: {upload_id}")
+                upload_id = self.api.model_upload(file_path=file_path, model_id=model_id, data_version=data_version, docker_image=docker_image)
+                print(f"{api_type} model upload of '{file_path}' for '{model_name}' is successful! Upload ID: {upload_id}")
                 return upload_id  # Return upload ID if successful
             except Exception as e:
                 # Handle failed upload attempts
                 if attempt < self.max_retries - 1:
-                    print(
-                        f"Failed to upload model '{file_path}' for '{model_name}' to Numerai. Retrying in {self.sleep_time} seconds...")
+                    print(f"Failed to upload model '{file_path}' for '{model_name}' to Numerai. Retrying in {self.sleep_time} seconds...")
                     print(f"Error: {e}")
                     time.sleep(self.sleep_time)  # Wait before retrying
                 else:
@@ -109,8 +96,7 @@ class NumeraiModelUpload:
                         print(f"Failed to upload model '{file_path}' for '{model_name}' to Numerai. Skipping...")
                         print(f"Error: {e}")
                     else:
-                        print(
-                            f"Failed to upload model '{file_path}' for '{model_name}' after {self.max_retries} attempts.")
+                        print(f"Failed to upload model '{file_path}' for '{model_name}' after {self.max_retries} attempts.")
                         raise e  # Raise the exception if not failing silently
 
     def get_available_data_versions(self) -> dict:
@@ -137,7 +123,7 @@ class NumeraiModelUpload:
 
         :param model_name: The name of the model.
         :return: The ID of the model.
-        
+
         Raises ValueError if the model name is not found in the user's Numerai account.
         """
         # Get the mapping of model names to model IDs
@@ -146,9 +132,8 @@ class NumeraiModelUpload:
             return model_mapping[model_name]  # Return the model ID if found
         else:
             # Raise an error if the model name is not found
-            available_models = ', '.join(model_mapping.keys())
-            raise ValueError(f"Model name '{model_name}' not found in your Numerai account. "
-                             f"Available model names: {available_models}")
+            available_models = ", ".join(model_mapping.keys())
+            raise ValueError(f"Model name '{model_name}' not found in your Numerai account. " f"Available model names: {available_models}")
 
     @property
     def get_model_mapping(self) -> dict:

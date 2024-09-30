@@ -1,7 +1,7 @@
 import pandas as pd
-from xgboost import XGBRegressor
 import sklearn
 from sklearn.utils.validation import check_is_fitted
+from xgboost import XGBRegressor
 
 from .evaluation import NumeraiClassicEvaluator
 
@@ -22,6 +22,7 @@ class EraBoostedXGBRegressor(XGBRegressor):
     :param trees_per_step: Number of trees to add per iteration.
     :param num_iters: Number of total era boosting iterations.
     """
+
     def __init__(self, proportion=0.5, trees_per_step=10, num_iters=200, **xgb_params):
         sklearn.set_config(enable_metadata_routing=True)
         self.set_fit_request(era_series=True)
@@ -51,9 +52,7 @@ class EraBoostedXGBRegressor(XGBRegressor):
             era_scores = pd.Series(index=iter_df["era"].unique())
 
             # Per era Corrv2 aka "Numerai Corr".
-            era_scores = evaluator.per_era_numerai_corrs(
-                dataf=iter_df, pred_col="predictions", target_col="target"
-                )
+            era_scores = evaluator.per_era_numerai_corrs(dataf=iter_df, pred_col="predictions", target_col="target")
             # Filter on eras with worst Corrv2.
             era_scores.sort_values(inplace=True)
             worst_eras = era_scores[era_scores <= era_scores.quantile(self.proportion)].index
@@ -62,14 +61,10 @@ class EraBoostedXGBRegressor(XGBRegressor):
             # Add estimators and fit on worst eras.
             self.n_estimators += self.trees_per_step
             booster = self.get_booster()
-            super().fit(worst_df.drop(columns=["target", "era", "predictions"]), 
-                        worst_df["target"],
-                        xgb_model=booster,
-                        **fit_params)
+            super().fit(worst_df.drop(columns=["target", "era", "predictions"]), worst_df["target"], xgb_model=booster, **fit_params)
         return self
-    
+
     def get_feature_names_out(self, input_features=None):
-        """ Get output feature names for transformation. """
+        """Get output feature names for transformation."""
         check_is_fitted(self)
         return self.feature_names if not input_features else input_features
-    

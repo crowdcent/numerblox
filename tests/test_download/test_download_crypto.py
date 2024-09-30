@@ -1,11 +1,12 @@
 import os
-import pytest
 from uuid import uuid4
+
+import pytest
 
 from numerblox.download import NumeraiCryptoDownloader
 
-
 ALL_CRYPTO_VERSIONS = ["v1.0"]
+
 
 @pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_crypto():
@@ -24,6 +25,7 @@ def test_crypto():
     dl.download_training_data("train/", version="1.0")
     assert os.path.exists(dl.dir / "train")
     assert os.path.exists(dl.dir / "train" / "train_targets.parquet")
+
 
 @pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_crypto_versions():

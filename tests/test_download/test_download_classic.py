@@ -1,16 +1,17 @@
 import os
-import pytest
-from uuid import uuid4
 from pathlib import PosixPath
+from uuid import uuid4
+
+import pytest
 from numerapi import NumerAPI
 
 from numerblox.download import NumeraiClassicDownloader
 
-
-ALL_CLASSIC_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets() if not "signals" in s)
+ALL_CLASSIC_VERSIONS = set(s.split("/")[0] for s in NumerAPI().list_datasets() if "signals" not in s)
 
 TEST_CLASSIC_DIR = f"test_numclassic_general_{uuid4()}"
 TEST_CLASSIC_VERSIONS = ["5.0"]
+
 
 def test_base():
     numer_classic_downloader = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
@@ -26,6 +27,7 @@ def test_base():
     # Remove contents
     numer_classic_downloader.remove_base_directory()
     assert not os.path.exists(TEST_CLASSIC_DIR)
+
 
 def test_classic():
     dl = NumeraiClassicDownloader(TEST_CLASSIC_DIR)
@@ -54,6 +56,7 @@ def test_classic():
 
     dl.remove_base_directory()
 
+
 def test_classic_versions():
     downloader = NumeraiClassicDownloader(directory_path=f"some_path_{uuid4()}")
 
@@ -64,5 +67,5 @@ def test_classic_versions():
             downloader.download_training_data(version=version)
         with pytest.raises(AssertionError):
             downloader.download_live_data(version=version)
-            
+
     downloader.remove_base_directory()

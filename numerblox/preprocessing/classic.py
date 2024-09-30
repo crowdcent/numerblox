@@ -1,34 +1,26 @@
 import warnings
-import numpy as np
-import pandas as pd
 from typing import List
 
-from numerblox.preprocessing.base import BasePreProcessor
+import numpy as np
+import pandas as pd
+
 from numerblox.feature_groups import V5_FEATURE_GROUP_MAPPING
+from numerblox.preprocessing.base import BasePreProcessor
+
 
 class GroupStatsPreProcessor(BasePreProcessor):
     """
     Note that this class only works with `pd.DataFrame` input.
     When using in a Pipeline, make sure that the Pandas output API is set (`.set_output(transform="pandas")`.
-    
+
     Calculates group statistics for all data groups. \n
     :param groups: Groups to create features for. All groups by default. \n
     """
+
     def __init__(self, groups: list = None):
         super().__init__()
-        self.all_groups = [
-            'intelligence', 
-            'charisma', 
-            'strength', 
-            'dexterity', 
-            'constitution', 
-            'wisdom', 
-            'agility', 
-            'serenity', 
-            'sunshine', 
-            'rain'
-        ]
-        self.groups = groups 
+        self.all_groups = ["intelligence", "charisma", "strength", "dexterity", "constitution", "wisdom", "agility", "serenity", "sunshine", "rain"]
+        self.groups = groups
         self.group_names = groups if self.groups else self.all_groups
         self.feature_group_mapping = V5_FEATURE_GROUP_MAPPING
 
@@ -51,7 +43,7 @@ class GroupStatsPreProcessor(BasePreProcessor):
             dataf.loc[:, f"feature_{group}_std"] = X[valid_cols].std(axis=1)
             dataf.loc[:, f"feature_{group}_skew"] = X[valid_cols].skew(axis=1)
         return dataf
-    
+
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
         if not input_features:
@@ -63,4 +55,3 @@ class GroupStatsPreProcessor(BasePreProcessor):
         else:
             feature_names = input_features
         return feature_names
-    
