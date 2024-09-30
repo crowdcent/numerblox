@@ -26,20 +26,25 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: |
-          uv pip install --system -e ".[test]"
+          uv pip install -e ".[test]"
 
       - name: Run tests with coverage
         run: |
-          uv pip install --system pytest-cov
-          uv run pytest -s tests/ --cov=numerblox --cov-report term-missing
+          uv pip install pytest-cov
+          pytest -s tests/ --cov=numerblox --cov-report term-missing
 
       - name: Build wheel
         run: |
-          uv pip install --system build
-          uv run python -m build --wheel
+          uv pip install build
+          python -m build --wheel
 
       - name: Install built wheel
         run: |
-          uv pip install --system dist/*.whl
+          uv pip install dist/*.whl
