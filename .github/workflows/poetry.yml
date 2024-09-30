@@ -1,4 +1,4 @@
-name: Poetry CI
+name: UV CI
 
 on:
   push:
@@ -14,38 +14,36 @@ jobs:
         python-version: ['3.10', '3.11', '3.12']
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
+      - name: Install uv
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: |
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
-          poetry config virtualenvs.create false
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: poetry install
+        run: |
+          uv pip install -e ".[test]"
 
       - name: Run tests
-        run: poetry run pytest
-
-      - name: Build wheel with poetry
         run: |
-          poetry build -f wheel
-  
+          uv run -- pytest
+
+      - name: Build wheel
+        run: |
+          uv pip install build
+          uv run -- python -m build --wheel
+
       - name: Install built wheel
         run: |
-          pip install dist/*.whl
-  
-      - name: Run tests
+          uv pip install dist/*.whl
+
+      - name: Run tests with coverage
         run: |
-          poetry run pytest -s tests/ --cov=numerblox --cov-report term-missing
+          uv pip install pytest-cov
+          uv run -- pytest -s tests/ --cov=numerblox --cov-report term-missing
