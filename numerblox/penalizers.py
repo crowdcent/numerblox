@@ -1,24 +1,26 @@
-import scipy
+import warnings
+from abc import abstractmethod
+from typing import Union
+
 import numpy as np
 import pandas as pd
-from typing import Union
-from tqdm.auto import tqdm
-from abc import abstractmethod
+import scipy
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
+from tqdm.auto import tqdm
 
 try:
     import tensorflow as tf
 except ImportError:
-    raise ImportError(
-        "TensorFlow is required for NumerBlox Penalizers. `pip install tensorflow` first."
-    )
+    warnings.warn("TensorFlow is not installed. Some NumerBlox Penalizers may not work. " "To use all features, please install TensorFlow: `pip install tensorflow`", ImportWarning)
+
 
 class BasePenalizer(BaseEstimator, TransformerMixin):
     """
     Base class for penalization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.
     """
+
     def __init__(self, new_col_name: str):
         sklearn.set_config(enable_metadata_routing=True)
         self.set_transform_request(features=True, era_series=True)
@@ -30,31 +32,28 @@ class BasePenalizer(BaseEstimator, TransformerMixin):
         return self
 
     @abstractmethod
-    def transform(
-        self, X: Union[np.array, pd.DataFrame], 
-        features: pd.DataFrame, era_series: pd.Series
-    ) -> np.array:
-        ...
+    def transform(self, X: Union[np.array, pd.DataFrame], features: pd.DataFrame, era_series: pd.Series) -> np.array: ...
 
     def predict(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
-        """ Convenience function for scikit-learn compatibility. """
+        """Convenience function for scikit-learn compatibility."""
         return self.transform(X=X, features=features, era_series=era_series)
 
     def fit_transform(self, X: np.array, features: pd.DataFrame, era_series: Union[np.array, pd.Series]) -> np.array:
-        """ 
+        """
         Convenience function for scikit-learn compatibility.
         Needed because fit and transform except different arguments here.
         """
         return self.fit().transform(X=X, features=features, era_series=era_series)
-    
+
     def get_feature_names_out(self, input_features: list = None) -> list:
-        """ 
+        """
         Get feature names for neutralized output.
-        
+
         :param input_features: Optional list of input feature names.
         :return: List of feature names for neutralized output.
         """
         return input_features if input_features else [self.new_col_name]
+
 
 class FeaturePenalizer(BasePenalizer):
     """
@@ -68,6 +67,7 @@ class FeaturePenalizer(BasePenalizer):
     :param pred_name: Prediction column name. Used for new column name. \n
     :param suffix: Optional suffix that is added to new column name.
     """
+
     def __init__(
         self,
         max_exposure: float,
@@ -76,23 +76,17 @@ class FeaturePenalizer(BasePenalizer):
     ):
         self.max_exposure = max_exposure
         self.pred_name = pred_name
-        assert (
-            0.0 <= max_exposure <= 1.0
-        ), f"'max_exposure' should be a float in range [0...1]. Got '{self.max_exposure}'."
-        new_col_name = (
-            f"{self.pred_name}_penalized_{self.max_exposure}_{suffix}"
-            if suffix
-            else f"{self.pred_name}_penalized_{self.max_exposure}"
-        )
+        assert 0.0 <= max_exposure <= 1.0, f"'max_exposure' should be a float in range [0...1]. Got '{self.max_exposure}'."
+        new_col_name = f"{self.pred_name}_penalized_{self.max_exposure}_{suffix}" if suffix else f"{self.pred_name}_penalized_{self.max_exposure}"
         super().__init__(new_col_name=new_col_name)
         self.suffix = suffix
 
     def transform(self, X: pd.DataFrame, features: pd.DataFrame, era_series: pd.Series) -> np.array:
         """
         Main transform method.
-        :param X: Input predictions to neutralize. 
-        :param features: DataFrame with features for neutralization. 
-        :param era_series: Series with era labels for each row in features. 
+        :param X: Input predictions to neutralize.
+        :param features: DataFrame with features for neutralization.
+        :param era_series: Series with era labels for each row in features.
         Features, eras and the prediction column must all have the same length.
         :return: Penalized predictions.
         """
@@ -101,9 +95,7 @@ class FeaturePenalizer(BasePenalizer):
         df = features.copy()
         df["prediction"] = X
         df["era"] = era_series
-        penalized_data = self._reduce_all_exposures(
-            dataf=df, column=self.pred_name, neutralizers=list(features.columns)
-        )
+        penalized_data = self._reduce_all_exposures(dataf=df, column=self.pred_name, neutralizers=list(features.columns))
         return penalized_data
 
     def _reduce_all_exposures(
@@ -130,18 +122,14 @@ class FeaturePenalizer(BasePenalizer):
                     scores2.append(x)
                 scores = np.array(scores2)[0]
 
-            scores, _ = self._reduce_exposure(
-                scores, exposure_values, len(neutralizers), None
-            )
+            scores, _ = self._reduce_exposure(scores, exposure_values, len(neutralizers), None)
 
             scores /= tf.math.reduce_std(scores)
             scores -= tf.reduce_min(scores)
             scores /= tf.reduce_max(scores)
             neutralized.append(scores.numpy())
 
-        predictions = pd.DataFrame(
-            np.concatenate(neutralized), columns=[column], index=dataf.index
-        )
+        predictions = pd.DataFrame(np.concatenate(neutralized), columns=[column], index=dataf.index)
         return predictions
 
     def _reduce_exposure(self, prediction, features, input_size=50, weights=None):
@@ -156,9 +144,7 @@ class FeaturePenalizer(BasePenalizer):
         if weights is None:
             optimizer = tf.keras.optimizers.Adamax()
             start_exp = self.__exposures(feats, pred[:, None])
-            target_exps = tf.clip_by_value(
-                start_exp, -self.max_exposure, self.max_exposure
-            )
+            target_exps = tf.clip_by_value(start_exp, -self.max_exposure, self.max_exposure)
             self._train_loop(model, optimizer, feats, pred, target_exps)
         else:
             model.set_weights(weights)
@@ -174,10 +160,7 @@ class FeaturePenalizer(BasePenalizer):
     def __train_loop_body(self, model, feats, pred, target_exps):
         with tf.GradientTape() as tape:
             exps = self.__exposures(feats, pred[:, None] - model(feats, training=True))
-            loss = tf.reduce_sum(
-                tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps))
-                + tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps))
-            )
+            loss = tf.reduce_sum(tf.nn.relu(tf.nn.relu(exps) - tf.nn.relu(target_exps)) + tf.nn.relu(tf.nn.relu(-exps) - tf.nn.relu(-target_exps)))
         return loss, tape.gradient(loss, model.trainable_variables)
 
     @staticmethod
@@ -187,4 +170,3 @@ class FeaturePenalizer(BasePenalizer):
         y = y - tf.math.reduce_mean(y, axis=0)
         y = y / tf.norm(y, axis=0)
         return tf.matmul(x, y, transpose_a=True)
-    

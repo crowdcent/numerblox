@@ -1,9 +1,10 @@
 import os
-import pytest
 from uuid import uuid4
+
+import pytest
 from numerapi import SignalsAPI
 
-from numerblox.download import NumeraiSignalsDownloader, KaggleDownloader, EODDownloader
+from numerblox.download import EODDownloader, KaggleDownloader, NumeraiSignalsDownloader
 
 ALL_SIGNALS_VERSIONS = set(s.replace("signals/", "").split("/")[0] for s in SignalsAPI().list_datasets() if s.startswith("signals/v"))
 TEST_SIGNALS_DIR = f"test_numsignals_general_{uuid4()}"
@@ -31,6 +32,7 @@ def test_signals():
 
     dl.remove_base_directory()
 
+
 @pytest.mark.xfail(reason="May fail due to API rate limiting")
 def test_signals_versions():
     downloader = NumeraiSignalsDownloader(directory_path=f"some_path_{uuid4()}")
@@ -42,8 +44,9 @@ def test_signals_versions():
             downloader.download_training_data(version=version)
         with pytest.raises(AssertionError):
             downloader.download_live_data(version=version)
-            
+
     downloader.remove_base_directory()
+
 
 @pytest.mark.xfail(reason="May fail due to API rate limiting or missing credentials")
 def test_kaggle_downloader():
@@ -53,6 +56,7 @@ def test_kaggle_downloader():
         kd.remove_base_directory()
     except OSError:
         pass
+
 
 @pytest.mark.xfail(reason="May fail due to API rate limiting or missing credentials")
 def test_eod():

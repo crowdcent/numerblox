@@ -1,17 +1,19 @@
+from abc import abstractmethod
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from typing import List, Union
-from abc import abstractmethod
-from scipy.stats import rankdata
 import sklearn
-from sklearn.linear_model import Ridge
+from scipy.stats import rankdata
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.linear_model import Ridge
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import check_is_fitted
+from tqdm import tqdm
 
 # Ignore SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
+
 
 class BaseTargetProcessor(BaseEstimator, TransformerMixin):
     """Common functionality for preprocessors and postprocessors."""
@@ -25,14 +27,10 @@ class BaseTargetProcessor(BaseEstimator, TransformerMixin):
         return self
 
     @abstractmethod
-    def transform(
-        self, X: Union[np.array, pd.DataFrame], y=None
-    ) -> pd.DataFrame:
-        ...
-    
+    def transform(self, X: Union[np.array, pd.DataFrame], y=None) -> pd.DataFrame: ...
+
     @abstractmethod
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        ...
+    def get_feature_names_out(self, input_features=None) -> List[str]: ...
 
 
 class BayesianGMMTargetProcessor(BaseTargetProcessor):
@@ -43,6 +41,7 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
 
     :param n_components: Number of components for fitting Bayesian Gaussian Mixture Model.
     """
+
     def __init__(
         self,
         n_components: int = 3,
@@ -82,7 +81,7 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         X = X.astype(float)
         X /= X.max()
         X -= 0.5
-        X.loc[:, 'era'] = era_series
+        X.loc[:, "era"] = era_series
 
         fake_target = self._generate_target(dataf=X, all_eras=all_eras)
         return fake_target
@@ -94,25 +93,23 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
         :param y: Series containing real target.
         """
         coefs = []
-        dataf.loc[:, 'era'] = era_series
-        dataf.loc[:, 'target'] = y
-        all_eras = dataf['era'].unique().tolist()
+        dataf.loc[:, "era"] = era_series
+        dataf.loc[:, "target"] = y
+        all_eras = dataf["era"].unique().tolist()
         for era in all_eras:
-            era_df = dataf[dataf['era'] == era]
-            era_y = era_df.loc[:, 'target']
+            era_df = dataf[dataf["era"] == era]
+            era_y = era_df.loc[:, "target"]
             era_df = era_df.drop(columns=["era", "target"])
             self.ridge.fit(era_df, era_y)
             coefs.append(self.ridge.coef_)
         stacked_coefs = np.vstack(coefs)
         return stacked_coefs
 
-    def _generate_target(
-        self, dataf: pd.DataFrame, all_eras: list
-    ) -> np.ndarray:
+    def _generate_target(self, dataf: pd.DataFrame, all_eras: list) -> np.ndarray:
         """Generate fake target using Bayesian Gaussian Mixture model."""
         fake_target = []
         for era in tqdm(all_eras, desc="Generating fake target"):
-            features = dataf[dataf['era'] == era]
+            features = dataf[dataf["era"] == era]
             features = features.drop(columns=["era", "target"])
             # Sample a set of weights from GMM
             beta, _ = self.bgmm_.sample(1)
@@ -123,11 +120,11 @@ class BayesianGMMTargetProcessor(BaseTargetProcessor):
             fake_targ = (np.digitize(fake_targ, self.bins) - 1) / 4
             fake_target.append(fake_targ)
         return np.concatenate(fake_target)
-    
+
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Return feature names."""
         return ["fake_target"] if not input_features else input_features
-    
+
 
 class SignalsTargetProcessor(BaseTargetProcessor):
     """
@@ -156,26 +153,16 @@ class SignalsTargetProcessor(BaseTargetProcessor):
 
     def transform(self, dataf: pd.DataFrame, era_series: pd.Series) -> np.array:
         for window in tqdm(self.windows, desc="Signals target engineering windows"):
-            dataf.loc[:, f"target_{window}d_raw"] = (
-                dataf[self.price_col].pct_change(periods=window).shift(-window)
-            )
+            dataf.loc[:, f"target_{window}d_raw"] = dataf[self.price_col].pct_change(periods=window).shift(-window)
             era_groups = dataf.groupby(era_series)
 
-            dataf.loc[:, f"target_{window}d_rank"] = era_groups[
-                f"target_{window}d_raw"
-            ].rank(pct=True, method="first")
-            dataf.loc[:, f"target_{window}d_group"] = era_groups[
-                f"target_{window}d_rank"
-            ].transform(
-                lambda group: pd.cut(
-                    group, bins=self.bins, labels=self.labels, include_lowest=True
-                )
-            )
+            dataf.loc[:, f"target_{window}d_rank"] = era_groups[f"target_{window}d_raw"].rank(pct=True, method="first")
+            dataf.loc[:, f"target_{window}d_group"] = era_groups[f"target_{window}d_rank"].transform(lambda group: pd.cut(group, bins=self.bins, labels=self.labels, include_lowest=True))
         output_cols = self.get_feature_names_out()
         return dataf[output_cols].to_numpy()
 
     def get_feature_names_out(self, input_features=None) -> List[str]:
-        """Return feature names of Signals targets. """
+        """Return feature names of Signals targets."""
         if not input_features:
             feature_names = []
             for window in self.windows:

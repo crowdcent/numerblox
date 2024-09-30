@@ -1,19 +1,19 @@
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from typing import Union, List
 import sklearn
 from sklearn import clone
+from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline, FeatureUnion, _name_estimators
-from sklearn.utils.validation import check_is_fitted
-from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.model_selection import BaseCrossValidator
+from sklearn.pipeline import FeatureUnion, Pipeline, _name_estimators
 from sklearn.utils.validation import (
+    FLOAT_DTYPES,
     check_is_fitted,
     check_X_y,
-    FLOAT_DTYPES,
-)     
+)
+from tqdm import tqdm
 
 
 class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
@@ -38,7 +38,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         self.model_type = model_type
         # predict_proba for classifiers -> multi output
         self.proba_class_ = predict_func == "predict_proba" and model_type == "classifier"
-        
+
     def fit(self, X: Union[np.array, pd.DataFrame], y, **kwargs):
         """
         Fit underlying estimator and set attributes.
@@ -49,7 +49,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
-    
+
     def transform(self, X: Union[np.array, pd.DataFrame], **kwargs) -> np.array:
         """
         Apply the `predict_func` on the fitted estimator.
@@ -60,14 +60,14 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         check_is_fitted(self, "estimator_")
         output = getattr(self.estimator_, self.predict_func)(X, **kwargs)
         return output if self.multi_output_ else output.reshape(-1, 1)
-    
+
     def predict(self, X: Union[np.array, pd.DataFrame], **kwargs) -> np.array:
-        """ 
+        """
         For if a MetaEstimator happens to be the last step in the pipeline. Has same behavior as transform.
         """
         return self.transform(X, **kwargs)
-    
-    def get_feature_names_out(self, input_features = None) -> List[str]:
+
+    def get_feature_names_out(self, input_features=None) -> List[str]:
         check_is_fitted(self)
         feature_names = [f"{self.estimator.__class__.__name__}_{self.predict_func}_output"]
         return feature_names if not input_features else input_features
@@ -87,6 +87,7 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
     For example, XGBRegressor has 'predict' and 'predict_proba' functions.
     :param verbose: Whether to print progress.
     """
+
     def __init__(self, estimator: BaseEstimator, cv: BaseCrossValidator, evaluation_func=None, predict_func="predict", verbose=False):
         sklearn.set_config(enable_metadata_routing=True)
         super().__init__()
@@ -104,21 +105,17 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
         self.verbose = verbose
 
     def fit(self, X: Union[np.array, pd.DataFrame], y: Union[np.array, pd.Series], **kwargs):
-        """ Use cross validation object to fit estimators. """
+        """Use cross validation object to fit estimators."""
         self.estimators_ = []
         self.eval_results_ = []
         if isinstance(X, (pd.Series, pd.DataFrame)):
             X = X.reset_index(drop=True).values
         if isinstance(y, (pd.Series, pd.DataFrame)):
             y = y.reset_index(drop=True).values
-        for i, (train_idx, val_idx) in tqdm(enumerate(self.cv.split(X, y)), 
-                                            desc=f"CrossValEstimator Fitting. Estimator='{self.estimator_name}'", 
-                                            total=self.cv.get_n_splits(), 
-                                            disable=not self.verbose):
+        for i, (train_idx, val_idx) in tqdm(enumerate(self.cv.split(X, y)), desc=f"CrossValEstimator Fitting. Estimator='{self.estimator_name}'", total=self.cv.get_n_splits(), disable=not self.verbose):
             estimator = clone(self.estimator)
             if self.verbose:
                 print(f"Fitting {self.estimator_name} on fold {len(self.estimators_)}")
-
 
             estimator.fit(X[train_idx], y[train_idx], **kwargs)
 
@@ -144,17 +141,17 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                 self.multi_output_ = len(y.shape) > 1
                 self.n_outputs_per_model_ = np.prod(self.output_shape_).astype(int)
         return self
-    
+
     def transform(self, X, model_idxs: List[int] = None, **kwargs) -> np.array:
-        """ 
-        Use cross validation object to transform estimators. 
+        """
+        Use cross validation object to transform estimators.
         :param X: Input data for inference.
         :param y: Target data for inference.
-        :param model_idxs: List of indices of models to use for inference. 
+        :param model_idxs: List of indices of models to use for inference.
         By default, all fitted models are used.
         :param kwargs: Additional arguments to pass to the estimator's predict function.
         """
-        check_is_fitted(self)        
+        check_is_fitted(self)
         inference_estimators = [self.estimators_[i] for i in model_idxs] if model_idxs else self.estimators_
 
         # Create an empty array to store predictions
@@ -163,11 +160,11 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
         for idx, estimator in enumerate(inference_estimators):
             pred = getattr(estimator, self.predict_func)(X, **kwargs)
             pred = self._postprocess_pred(pred)
-            
+
             # Calculate where to place these predictions in the final array
             start_idx = idx * self.n_outputs_per_model_
             end_idx = (idx + 1) * self.n_outputs_per_model_
-            
+
             final_predictions[:, start_idx:end_idx] = pred
 
         return final_predictions
@@ -188,15 +185,15 @@ class CrossValEstimator(BaseEstimator, TransformerMixin):
                 for j in range(self.n_outputs_per_model_):
                     feature_names.append(f"{base_str}_{i}_output_{j}")
         return feature_names
-    
+
     def _postprocess_pred(self, pred):
         # Make sure predictions are 2D
         if len(pred.shape) == 1:
             pred = pred.reshape(-1, 1)
         return pred
-    
+
     def __sklearn_is_fitted__(self) -> bool:
-        """ Check fitted status. """
+        """Check fitted status."""
         # Must have a fitted estimator for each split.
         return len(self.estimators_) == self.cv.get_n_splits()
 
@@ -212,6 +209,7 @@ class MetaPipeline(Pipeline):
     :param verbose: If True, the time elapsed while fitting each step will be printed as it is completed.
     :param predict_func: Name of the function that will be used for prediction.
     """
+
     def __init__(self, steps, memory=None, verbose=False, predict_func="predict"):
         sklearn.set_config(enable_metadata_routing=True)
         self.predict_func = predict_func
@@ -219,7 +217,7 @@ class MetaPipeline(Pipeline):
         self.steps = self.modified_steps
         self.memory = memory
         self.verbose = verbose
-    
+
     def wrap_estimators_as_transformers(self, steps):
         """
         Converts all estimator steps (except the last step) into transformers by wrapping them in MetaEstimator.
@@ -229,7 +227,7 @@ class MetaPipeline(Pipeline):
         transformed_steps = []
         for i, step_tuple in enumerate(steps):
             is_last_step = i == len(steps) - 1
-            
+
             if len(step_tuple) == 3:
                 name, step, columns = step_tuple
                 transformed_steps.append(self._wrap_step(name, step, columns, is_last_step))
@@ -237,34 +235,34 @@ class MetaPipeline(Pipeline):
                 name, step = step_tuple
                 transformed_steps.append(self._wrap_step(name, step, is_last_step=is_last_step))
         return transformed_steps
-    
+
     def _wrap_step(self, name, step, columns=None, is_last_step=False):
-            """ Recursive function to wrap steps """
-            # Recursive call
-            if isinstance(step, (Pipeline, FeatureUnion, ColumnTransformer)):
-                if isinstance(step, Pipeline):
-                    transformed = step.__class__(self.wrap_estimators_as_transformers(step.steps))
-                elif isinstance(step, FeatureUnion):
-                    transformed = FeatureUnion(self.wrap_estimators_as_transformers(step.transformer_list))
-                elif isinstance(step, ColumnTransformer):
-                    transformed_transformers = self.wrap_estimators_as_transformers(step.transformers)
-                    transformed = ColumnTransformer(transformed_transformers)
-                return (name, transformed, columns) if columns else (name, transformed)
+        """Recursive function to wrap steps"""
+        # Recursive call
+        if isinstance(step, (Pipeline, FeatureUnion, ColumnTransformer)):
+            if isinstance(step, Pipeline):
+                transformed = step.__class__(self.wrap_estimators_as_transformers(step.steps))
+            elif isinstance(step, FeatureUnion):
+                transformed = FeatureUnion(self.wrap_estimators_as_transformers(step.transformer_list))
+            elif isinstance(step, ColumnTransformer):
+                transformed_transformers = self.wrap_estimators_as_transformers(step.transformers)
+                transformed = ColumnTransformer(transformed_transformers)
+            return (name, transformed, columns) if columns else (name, transformed)
 
-            # If it's the last step and it doesn't have a transform method, don't wrap it
-            if is_last_step and not hasattr(step, 'transform'):
-                return (name, step, columns) if columns else (name, step)
-
-            # Wrap estimator that has the predict function but not the transform function
-            elif hasattr(step, self.predict_func) and not hasattr(step, 'transform'):
-                return (name, MetaEstimator(step, predict_func=self.predict_func))
-
+        # If it's the last step and it doesn't have a transform method, don't wrap it
+        if is_last_step and not hasattr(step, "transform"):
             return (name, step, columns) if columns else (name, step)
+
+        # Wrap estimator that has the predict function but not the transform function
+        elif hasattr(step, self.predict_func) and not hasattr(step, "transform"):
+            return (name, MetaEstimator(step, predict_func=self.predict_func))
+
+        return (name, step, columns) if columns else (name, step)
 
 
 def make_meta_pipeline(*steps, memory=None, verbose=False) -> MetaPipeline:
-    """ 
-    Convenience function for creating a MetaPipeline. 
+    """
+    Convenience function for creating a MetaPipeline.
     :param steps: List of (name, transform) tuples (implementing fit/transform) that are chained, in the order in which they are chained, with the last object an instance of BaseNeutralizer.
     :param memory: Used to cache the fitted transformers of the pipeline.
     :param verbose: If True, the time elapsed while fitting each step will be printed as it is completed.

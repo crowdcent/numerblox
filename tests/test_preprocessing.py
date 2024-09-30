@@ -1,31 +1,34 @@
-import pytest
 import warnings
+
 import numpy as np
-import polars as pl
 import pandas as pd
-from tqdm import tqdm
-from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline
-from sklearn.decomposition import PCA
+import polars as pl
+import pytest
 from sklearn.base import BaseEstimator, TransformerMixin, check_is_fitted
-
-from numerblox.preprocessing.base import BasePreProcessor
-from numerblox.preprocessing import (ReduceMemoryProcessor, GroupStatsPreProcessor,
-                                     KatsuFeatureGenerator,
-                                     EraQuantileProcessor, TickerMapper,
-                                     LagPreProcessor, 
-                                     DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster,
-                                     MinimumDataFilter)
-from numerblox.feature_groups import V5_FEATURE_GROUP_MAPPING
-
+from sklearn.decomposition import PCA
+from sklearn.pipeline import FeatureUnion, Pipeline, make_pipeline
+from tqdm import tqdm
 from utils import create_signals_sample_data
 
+from numerblox.feature_groups import V5_FEATURE_GROUP_MAPPING
+from numerblox.preprocessing import (
+    DifferencePreProcessor,
+    EraQuantileProcessor,
+    GroupStatsPreProcessor,
+    HLOCVAdjuster,
+    KatsuFeatureGenerator,
+    LagPreProcessor,
+    MinimumDataFilter,
+    PandasTaFeatureGenerator,
+    ReduceMemoryProcessor,
+    TickerMapper,
+)
+from numerblox.preprocessing.base import BasePreProcessor
+
 CLASSIC_PREPROCESSORS = [ReduceMemoryProcessor, GroupStatsPreProcessor]
-SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper,
-                         LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster,
-                         MinimumDataFilter]
+SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper, LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster, MinimumDataFilter]
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
-WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, 
-                         DifferencePreProcessor]
+WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, DifferencePreProcessor]
 TICKER_PROCESSORS = [LagPreProcessor]
 
 dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
@@ -33,17 +36,20 @@ dummy_signals_data = create_signals_sample_data
 
 
 def test_base_preprocessor():
-    assert hasattr(BasePreProcessor, 'fit')
-    assert hasattr(BasePreProcessor, 'transform')
+    assert hasattr(BasePreProcessor, "fit")
+    assert hasattr(BasePreProcessor, "transform")
     assert issubclass(BasePreProcessor, (BaseEstimator, TransformerMixin))
+
 
 def test_processors_sklearn(dummy_signals_data):
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
-    data['ticker'] = ["AAPL US"] * 25 + ["MSFT US"] * 25
+    data["ticker"] = ["AAPL US"] * 25 + ["MSFT US"] * 25
     y = data["target_xerxes_20"].fillna(0.5)
-    feature_names = ['feature_melismatic_daily_freak',
-                     'feature_pleasurable_facultative_benzol',]
+    feature_names = [
+        "feature_melismatic_daily_freak",
+        "feature_pleasurable_facultative_benzol",
+    ]
     classic_X = data[feature_names].fillna(0.5)
     signals_X = dummy_signals_data[["open", "high", "low", "close", "volume", "adjusted_close"]]
 
@@ -66,23 +72,19 @@ def test_processors_sklearn(dummy_signals_data):
         # Inherits from BasePreProcessor
         assert issubclass(processor_cls, BasePreProcessor)
         # Has fit_transform
-        assert hasattr(processor_cls, 'fit_transform')
+        assert hasattr(processor_cls, "fit_transform")
 
         # Pipeline
-        pipeline = Pipeline([
-                ('processor', processor)
-            ])
+        pipeline = Pipeline([("processor", processor)])
         _ = pipeline.fit(X)
 
         # FeatureUnion
-        combined_features = FeatureUnion([
-                ('processor', processor),
-                ('pca', PCA())
-            ])
+        combined_features = FeatureUnion([("processor", processor), ("pca", PCA())])
         _ = combined_features.fit(X)
 
         # Test every processor has get_feature_names_out
-        assert hasattr(processor, 'get_feature_names_out'), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessor should have this method."
+        assert hasattr(processor, "get_feature_names_out"), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessor should have this method."
+
 
 def test_reduce_memory_preprocessor(dummy_signals_data):
     # Reduce memory
@@ -114,10 +116,7 @@ def test_group_stats_preprocessor():
 
     result = test_group_processor.fit_transform(dataset)
 
-    expected_cols = [
-        "feature_sunshine_mean", "feature_sunshine_std", "feature_sunshine_skew",
-        "feature_rain_mean", "feature_rain_std", "feature_rain_skew"
-    ]
+    expected_cols = ["feature_sunshine_mean", "feature_sunshine_std", "feature_sunshine_skew", "feature_rain_mean", "feature_rain_std", "feature_rain_skew"]
     for col in expected_cols:
         assert col in result.columns
         # Mean should be between 0 and 4
@@ -129,14 +128,14 @@ def test_group_stats_preprocessor():
             assert result[col].min() >= 0.0
             assert result[col].max() <= 2.1081851067789197
 
-    random_rain_features = np.random.choice(V5_FEATURE_GROUP_MAPPING['rain'], size=10).tolist()
+    random_rain_features = np.random.choice(V5_FEATURE_GROUP_MAPPING["rain"], size=10).tolist()
     # Warn if not all columns of a group are in the dataset
-    processor = GroupStatsPreProcessor(groups=['rain'])
+    processor = GroupStatsPreProcessor(groups=["rain"])
     processor.set_output(transform="pandas")
     with warnings.catch_warnings(record=True) as w:
         result = processor.transform(dataset[random_rain_features])
         assert issubclass(w[-1].category, UserWarning)
-        assert f"Not all columns of 'rain' are in the input data" in str(w[-1].message)
+        assert "Not all columns of 'rain' are in the input data" in str(w[-1].message)
         # Check output has no nans
         assert not result.isna().any().any()
         # Check Mean between 0 and 4
@@ -147,7 +146,7 @@ def test_group_stats_preprocessor():
         assert result["feature_rain_std"].max() <= 2.1081851067789197
 
     # Warn if none of the columns of a group are in the dataset
-    processor = GroupStatsPreProcessor(groups=['intelligence'])
+    processor = GroupStatsPreProcessor(groups=["intelligence"])
     processor.set_output(transform="pandas")
     with warnings.catch_warnings(record=True) as w:
         result = processor.transform(dataset[random_rain_features])
@@ -155,7 +154,7 @@ def test_group_stats_preprocessor():
         assert "None of the columns of 'intelligence' are in the input data. Output will be nans for the group features." in str(w[-1].message)
         # Check result contains only nans
         assert result.isna().all().all()
-    
+
     # Test set_output API
     processor.set_output(transform="default")
     result = processor.transform(dataset)
@@ -169,21 +168,12 @@ def test_group_stats_preprocessor():
     assert test_group_processor.get_feature_names_out() == expected_cols
     assert test_group_processor.get_feature_names_out(["fancy"]) == ["fancy"]
 
+
 def test_katsu_feature_generator(dummy_signals_data):
     kfg = KatsuFeatureGenerator(windows=[20, 40])
     kfg.set_output(transform="pandas")
     result = kfg.fit_transform(dummy_signals_data)
-    expected_cols = [
-    "feature_close_ROCP_20", 
-    "feature_close_VOL_20",
-    "feature_close_MA_gap_20",
-    "feature_close_ROCP_40",
-    "feature_close_VOL_40",
-    "feature_close_MA_gap_40",
-    "feature_RSI",
-    "feature_MACD",
-    "feature_MACD_signal"
-]
+    expected_cols = ["feature_close_ROCP_20", "feature_close_VOL_20", "feature_close_MA_gap_20", "feature_close_ROCP_40", "feature_close_VOL_40", "feature_close_MA_gap_40", "feature_RSI", "feature_MACD", "feature_MACD_signal"]
     assert result.columns.tolist() == expected_cols
     assert kfg.get_feature_names_out() == expected_cols
 
@@ -191,6 +181,7 @@ def test_katsu_feature_generator(dummy_signals_data):
     kfg.set_output(transform="default")
     result = kfg.transform(dummy_signals_data)
     assert isinstance(result, np.ndarray)
+
 
 def test_era_quantile_processor(dummy_signals_data):
     eqp = EraQuantileProcessor(num_quantiles=2)
@@ -241,8 +232,7 @@ def test_ticker_mapper():
 
     # From CSV
     test_dataf = pd.Series(["LLB SW", "DRAK NA", "SWB MK", "ELEKTRA* MF", "NOT_A_TICKER"])
-    mapper = TickerMapper(ticker_col="bloomberg_ticker", target_ticker_format="signals_ticker",
-                        mapper_path="tests/test_assets/eodhd-map.csv")
+    mapper = TickerMapper(ticker_col="bloomberg_ticker", target_ticker_format="signals_ticker", mapper_path="tests/test_assets/eodhd-map.csv")
     result = mapper.transform(test_dataf)
     assert result.tolist() == ["LLB.SW", "DRAK.AS", "5211.KLSE", "ELEKTRA.MX", None]
 
@@ -254,34 +244,34 @@ def test_ticker_mapper():
     mapper.set_output(transform="polars")
     result = mapper.transform(test_dataf)
     assert isinstance(result, pl.DataFrame)
-    
+
 
 def test_lag_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
-    X = dummy_signals_data[['close', 'volume']]
+    X = dummy_signals_data[["close", "volume"]]
     ticker_series = dummy_signals_data["ticker"]
     lpp.fit(X)
     # DataFrame input
     result = lpp.transform(X, ticker_series=ticker_series)
     expected_cols = [
-    "close_lag20",
-    "close_lag40",
-    "volume_lag20",
-    "volume_lag40",
-]
+        "close_lag20",
+        "close_lag40",
+        "volume_lag20",
+        "volume_lag40",
+    ]
     assert result.columns.tolist() == expected_cols
     assert lpp.get_feature_names_out() == expected_cols
 
     # Numpy input
     result = lpp.transform(X.to_numpy(), ticker_series=ticker_series)
     expected_cols = [
-    "0_lag20",
-    "0lag40",
-    "1_lag20",
-    "1_lag40",
-]
-    
+        "0_lag20",
+        "0lag40",
+        "1_lag20",
+        "1_lag40",
+    ]
+
     # Just unaligned X and ticker_series
     with pytest.raises(AssertionError):
         lpp.transform(X, ticker_series=ticker_series.iloc[1:])
@@ -311,16 +301,29 @@ def test_lag_preprocessor(dummy_signals_data):
 def test_difference_preprocessor(dummy_signals_data):
     lpp = LagPreProcessor(windows=[20, 40])
     lpp.set_output(transform="pandas")
-    lpp.fit(dummy_signals_data[['close', 'volume']])
-    lags = lpp.transform(dummy_signals_data[['close', 'volume']],
-                         ticker_series=dummy_signals_data["ticker"])
+    lpp.fit(dummy_signals_data[["close", "volume"]])
+    lags = lpp.transform(dummy_signals_data[["close", "volume"]], ticker_series=dummy_signals_data["ticker"])
     dpp = DifferencePreProcessor(windows=[20, 40], abs_diff=True)
     dpp.set_output(transform="pandas")
     result = dpp.fit_transform(lags)
-    assert result.columns.tolist() == ['close_lag20_diff20', 'close_lag20_absdiff20', 'close_lag20_diff40', 'close_lag20_absdiff40', 'close_lag40_diff20', 'close_lag40_absdiff20', 'close_lag40_diff40', 'close_lag40_absdiff40', 'volume_lag20_diff20', 'volume_lag20_absdiff20', 'volume_lag20_diff40',
-    'volume_lag20_absdiff40', 'volume_lag40_diff20',
-    'volume_lag40_absdiff20', 'volume_lag40_diff40',
-    'volume_lag40_absdiff40']
+    assert result.columns.tolist() == [
+        "close_lag20_diff20",
+        "close_lag20_absdiff20",
+        "close_lag20_diff40",
+        "close_lag20_absdiff40",
+        "close_lag40_diff20",
+        "close_lag40_absdiff20",
+        "close_lag40_diff40",
+        "close_lag40_absdiff40",
+        "volume_lag20_diff20",
+        "volume_lag20_absdiff20",
+        "volume_lag20_diff40",
+        "volume_lag20_absdiff40",
+        "volume_lag40_diff20",
+        "volume_lag40_absdiff20",
+        "volume_lag40_diff40",
+        "volume_lag40_absdiff40",
+    ]
 
     # Test set_output API
     dpp.set_output(transform="default")
@@ -331,6 +334,7 @@ def test_difference_preprocessor(dummy_signals_data):
     result = dpp.transform(lags)
     assert isinstance(result, pl.DataFrame)
 
+
 def test_pandasta_feature_generator(dummy_signals_data):
     ptfg = PandasTaFeatureGenerator()
     result = ptfg.fit_transform(dummy_signals_data)
@@ -338,17 +342,18 @@ def test_pandasta_feature_generator(dummy_signals_data):
     assert result.columns.tolist() == expected_cols
     assert ptfg.get_feature_names_out() == expected_cols
 
+
 def test_hlocv_adjuster_basic(dummy_signals_data):
     adjuster = HLOCVAdjuster()
     adjuster.fit(dummy_signals_data)
-    
+
     adjusted_array = adjuster.transform(dummy_signals_data)
     adjusted_df = pd.DataFrame(adjusted_array, columns=adjuster.get_feature_names_out())
-    
+
     # Check for column presence
     assert all(col in adjusted_df.columns for col in adjuster.get_feature_names_out())
 
-    # Check if the ratio is maintained correctly. 
+    # Check if the ratio is maintained correctly.
     original_row = dummy_signals_data.iloc[0]
     adjusted_row = adjusted_df.iloc[0]
 
@@ -366,6 +371,7 @@ def test_hlocv_adjuster_basic(dummy_signals_data):
     adjuster.set_output(transform="polars")
     result = adjuster.transform(dummy_signals_data)
     assert isinstance(result, pl.DataFrame)
+
 
 def test_minimum_data_filter(dummy_signals_data):
     before_tickers = dummy_signals_data["ticker"].unique().tolist()
@@ -392,4 +398,3 @@ def test_minimum_data_filter(dummy_signals_data):
     filter.set_output(transform="polars")
     result = filter.transform(dummy_signals_data)
     assert isinstance(result, pl.DataFrame)
-

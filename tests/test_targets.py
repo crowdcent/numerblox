@@ -1,25 +1,21 @@
 import numpy as np
-import polars as pl
 import pandas as pd
-from tqdm import tqdm
+import polars as pl
 from sklearn.base import BaseEstimator, TransformerMixin
+from tqdm import tqdm
+from utils import create_signals_sample_data
 
 from numerblox.targets import BayesianGMMTargetProcessor, SignalsTargetProcessor
-
-from utils import create_signals_sample_data
 
 dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 dummy_signals_data = create_signals_sample_data
 
 ALL_PROCESSORS = [BayesianGMMTargetProcessor, SignalsTargetProcessor]
 
+
 def test_processors_sklearn():
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
-    y = data["target_xerxes_20"].fillna(0.5)
-    feature_names = ['feature_melismatic_daily_freak',
-                     'feature_pleasurable_facultative_benzol',]
-    X = data[feature_names].fillna(0.5)
 
     for processor_cls in tqdm(ALL_PROCESSORS, desc="Testing target processors for scikit-learn compatibility"):
         # Initialization
@@ -29,15 +25,18 @@ def test_processors_sklearn():
         assert issubclass(processor_cls, (BaseEstimator, TransformerMixin))
 
         # Test every processor has get_feature_names_out
-        assert hasattr(processor, 'get_feature_names_out'), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessors should have this method."
+        assert hasattr(processor, "get_feature_names_out"), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessors should have this method."
+
 
 def test_bayesian_gmm_target_preprocessor():
     bgmm = BayesianGMMTargetProcessor(n_components=2)
 
     y = dataset["target_xerxes_20"].fillna(0.5)
     era_series = dataset["era"]
-    feature_names = ['feature_melismatic_daily_freak',
-                     'feature_pleasurable_facultative_benzol',]
+    feature_names = [
+        "feature_melismatic_daily_freak",
+        "feature_pleasurable_facultative_benzol",
+    ]
     X = dataset[feature_names]
 
     bgmm.fit(X, y, era_series=era_series)
@@ -62,6 +61,7 @@ def test_bayesian_gmm_target_preprocessor():
     result = bgmm.transform(X, era_series=era_series)
     assert isinstance(result, np.ndarray)
 
+
 def test_signals_target_processor(dummy_signals_data):
     stp = SignalsTargetProcessor()
     stp.set_output(transform="pandas")
@@ -81,4 +81,3 @@ def test_signals_target_processor(dummy_signals_data):
     stp.set_output(transform="polars")
     result = stp.transform(dummy_signals_data, era_series=era_series)
     assert isinstance(result, pl.DataFrame)
-    

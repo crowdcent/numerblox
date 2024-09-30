@@ -6,34 +6,44 @@ on:
     - master
 
 jobs:
-  build:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+  coverage:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11']
+        python-version: ['3.12']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    - name: Create and activate virtual environment
+      run: |
+        uv venv
+        echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install poetry
-        poetry config virtualenvs.create false --local
-        poetry install
+        uv pip install 'setuptools[pkg_resources]'
+        uv pip install -e ".[test]"
     - name: Run tests
       run: |
-        poetry run pytest -s tests/ --cov=numerblox --cov-report term-missing --cov-report=xml
+        uv pip install pytest pytest-cov
+        pytest -s tests/ --cov=numerblox --cov-report term-missing --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
-        directory: ./coverage/reports/
+        files: ./coverage.xml
         fail_ci_if_error: false
         verbose: true
-        files: ./coverage.xml
-    
