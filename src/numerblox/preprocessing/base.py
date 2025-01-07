@@ -7,7 +7,7 @@ import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class BasePreProcessor(BaseEstimator, TransformerMixin):
+class BasePreProcessor(TransformerMixin, BaseEstimator):
     """Common functionality for preprocessors and postprocessors."""
 
     def __init__(self):

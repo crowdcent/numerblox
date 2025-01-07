@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 
 
-class BaseNeutralizer(BaseEstimator, TransformerMixin):
+class BaseNeutralizer(TransformerMixin, BaseEstimator):
     """
     Base class for neutralization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.

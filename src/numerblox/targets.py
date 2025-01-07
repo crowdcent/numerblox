@@ -15,7 +15,7 @@ from tqdm import tqdm
 pd.options.mode.chained_assignment = None
 
 
-class BaseTargetProcessor(BaseEstimator, TransformerMixin):
+class BaseTargetProcessor(TransformerMixin, BaseEstimator):
     """Common functionality for preprocessors and postprocessors."""
 
     def __init__(self):

@@ -15,7 +15,7 @@ except ImportError:
     warnings.warn("TensorFlow is not installed. Some NumerBlox Penalizers may not work. " "To use all features, please install TensorFlow: `pip install tensorflow`", ImportWarning)
 
 
-class BasePenalizer(BaseEstimator, TransformerMixin):
+class BasePenalizer(TransformerMixin, BaseEstimator):
     """
     Base class for penalization so it is compatible with scikit-learn.
     :param new_col_name: Name of new neutralized column.

@@ -8,7 +8,7 @@ import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class NumeraiEnsemble(BaseEstimator, TransformerMixin):
+class NumeraiEnsemble(TransformerMixin, BaseEstimator):
     """
     Ensembler that standardizes predictions by era and averages them.
     :param weights: Sequence of weights (float or int), optional, default: None.
@@ -133,7 +133,7 @@ class NumeraiEnsemble(BaseEstimator, TransformerMixin):
         return ["numerai_ensemble_predictions"] if not input_features else input_features
 
 
-class PredictionReducer(BaseEstimator, TransformerMixin):
+class PredictionReducer(TransformerMixin, BaseEstimator):
     """
     Reduce multiclassification and proba preds to 1 column per model.
     If predictions were generated with a regressor or regular predict you don't need this step.

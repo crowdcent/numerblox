@@ -7,7 +7,7 @@ from sklearn.datasets import make_regression
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from numerblox.prediction_loaders import ExamplePredictions
+from numerblox.prediction_loaders import BasePredictionLoader, ExamplePredictions
 
 
 def test_example_predictions_basic():
@@ -17,7 +17,8 @@ def test_example_predictions_basic():
     assert preds["prediction"].min() >= 0
     assert preds["prediction"].max() <= 1
     assert isinstance(preds, pd.DataFrame)
-    assert issubclass(ExamplePredictions, (BaseEstimator, TransformerMixin))
+    assert issubclass(ExamplePredictions, (BasePredictionLoader, TransformerMixin, BaseEstimator))
+    assert BasePredictionLoader.__bases__[-1] == BaseEstimator, "BaseEstimator must be the rightmost base class"
 
 
 def test_example_predictions_pipeline():

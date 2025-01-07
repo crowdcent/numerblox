@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from tqdm import tqdm
 from utils import create_signals_sample_data
 
-from numerblox.targets import BayesianGMMTargetProcessor, SignalsTargetProcessor
+from numerblox.targets import BaseTargetProcessor, BayesianGMMTargetProcessor, SignalsTargetProcessor
 
 dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 dummy_signals_data = create_signals_sample_data
@@ -17,12 +17,14 @@ def test_processors_sklearn():
     data = dataset.sample(50)
     data = data.drop(columns=["data_type"])
 
+    assert BaseTargetProcessor.__bases__[-1] == BaseEstimator, "BaseEstimator must be the rightmost base class"
+
     for processor_cls in tqdm(ALL_PROCESSORS, desc="Testing target processors for scikit-learn compatibility"):
         # Initialization
         processor = processor_cls()
 
         # Inherits from Sklearn classes
-        assert issubclass(processor_cls, (BaseEstimator, TransformerMixin))
+        assert issubclass(processor_cls, (BaseTargetProcessor, TransformerMixin, BaseEstimator))
 
         # Test every processor has get_feature_names_out
         assert hasattr(processor, "get_feature_names_out"), "Processor {processor.__name__} does not have get_feature_names_out. Every implemented preprocessors should have this method."

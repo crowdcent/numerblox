@@ -31,7 +31,7 @@ def multiclass_sample_data():
     return make_classification(n_samples=100, n_features=20, n_classes=3, n_informative=3)
 
 
-class ConstantMockEstimator(BaseEstimator, RegressorMixin):
+class ConstantMockEstimator(RegressorMixin, BaseEstimator):
     """A mock estimator that always predicts a constant value."""
 
     def fit(self, X, y):
@@ -41,7 +41,7 @@ class ConstantMockEstimator(BaseEstimator, RegressorMixin):
         return np.ones(X.shape[0]) * 3
 
 
-class ValidMockEstimator(BaseEstimator, RegressorMixin):
+class ValidMockEstimator(RegressorMixin, BaseEstimator):
     """A mock estimator that always predicts values within [0, 1] range."""
 
     def fit(self, X, y):
@@ -283,7 +283,7 @@ def test_binary_class_postprocess():
 sklearn.set_config(enable_metadata_routing=True)
 
 
-class MockTransform(BaseEstimator, TransformerMixin):
+class MockTransform(TransformerMixin, BaseEstimator):
     """A mock transformer that requires 'era_series' as an argument in its transform method."""
 
     def __init__(self):
@@ -298,7 +298,7 @@ class MockTransform(BaseEstimator, TransformerMixin):
         return self.transform(X, era_series)
 
 
-class MockFinalStep(BaseEstimator, RegressorMixin):
+class MockFinalStep(RegressorMixin, BaseEstimator):
     """A mock final step for the pipeline that requires 'features' and 'era_series' in its predict method."""
 
     def __init__(self):
@@ -379,7 +379,7 @@ def test_meta_pipeline_missing_eras_for_final_step(setup_data):
 
 def test_do_not_wrap_transformer():
     # Define a custom mock transformer with only a transform method (not an estimator)
-    class MockOnlyTransformer(BaseEstimator, TransformerMixin):
+    class MockOnlyTransformer(TransformerMixin, BaseEstimator):
         def fit(self, X, y=None):
             return self
 
