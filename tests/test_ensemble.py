@@ -27,7 +27,7 @@ def test_numeraiensemble_fit(ensemble, sample_data):
     X, y = sample_data
     ensemble.fit(X, y)
     check_is_fitted(ensemble)
-    assert issubclass(type(ensemble), (BaseEstimator, TransformerMixin))
+    assert issubclass(type(ensemble), (TransformerMixin, BaseEstimator))
 
 
 def test_numeraiensemble_predict(ensemble, sample_data):

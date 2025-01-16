@@ -61,20 +61,6 @@ eq_processor = EraQuantileProcessor(num_quantiles=50, random_state=42)
 transformed_data = eq_processor.fit_transform(X, era_series=eras_series)
 ```
 
-### TickerMapper
-
-`TickerMapper` maps tickers from one format to another. Useful when working with data from multiple sources that have different ticker formats.
-
-For the default ticker mapper the following formats are supported: `['ticker', 'bloomberg_ticker', 'yahoo']`. You can also specify a custom mapping by passing a dictionary to the `mapper_path` argument at the instantiation.
-
-```py
-from numerblox.preprocessing import TickerMapper
-
-# Transform from ticker to Bloomberg format.
-ticker_mapper = TickerMapper(ticker_col="ticker", target_ticker_format="bloomberg_ticker")
-mapped_data = ticker_mapper.transform(dataf["ticker"])
-```
-
 ### LagPreProcessor
 
 `LagPreProcessor` generates lag features based on specified windows. Lag features can capture temporal patterns in time-series data.

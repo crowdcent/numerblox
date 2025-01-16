@@ -21,15 +21,13 @@ from numerblox.preprocessing import (
     MinimumDataFilter,
     PandasTaFeatureGenerator,
     ReduceMemoryProcessor,
-    TickerMapper,
 )
 from numerblox.preprocessing.base import BasePreProcessor
 
 CLASSIC_PREPROCESSORS = [ReduceMemoryProcessor, GroupStatsPreProcessor]
-SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, TickerMapper, LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster, MinimumDataFilter]
+SIGNALS_PREPROCESSORS = [KatsuFeatureGenerator, EraQuantileProcessor, LagPreProcessor, DifferencePreProcessor, PandasTaFeatureGenerator, HLOCVAdjuster, MinimumDataFilter]
 ALL_PREPROCESSORS = CLASSIC_PREPROCESSORS + SIGNALS_PREPROCESSORS
 WINDOW_COL_PROCESSORS = [KatsuFeatureGenerator, LagPreProcessor, DifferencePreProcessor]
-TICKER_PROCESSORS = [LagPreProcessor]
 
 dataset = pd.read_parquet("tests/test_assets/val_3_eras.parquet")
 dummy_signals_data = create_signals_sample_data
@@ -38,7 +36,8 @@ dummy_signals_data = create_signals_sample_data
 def test_base_preprocessor():
     assert hasattr(BasePreProcessor, "fit")
     assert hasattr(BasePreProcessor, "transform")
-    assert issubclass(BasePreProcessor, (BaseEstimator, TransformerMixin))
+    assert issubclass(BasePreProcessor, (TransformerMixin, BaseEstimator))
+    assert BasePreProcessor.__bases__[-1] == BaseEstimator, "BaseEstimator must be the rightmost base class"
 
 
 def test_processors_sklearn(dummy_signals_data):
@@ -221,29 +220,6 @@ def test_era_quantile_processor(dummy_signals_data):
     eqp.set_transform_request(era_series=None)
     with pytest.raises(ValueError):
         make_pipeline(eqp).transform(X, era_series=dummy_signals_data["date"])
-
-
-def test_ticker_mapper():
-    # Basic
-    test_dataf = pd.Series(["AAPL", "MSFT"])
-    mapper = TickerMapper()
-    result = mapper.fit_transform(test_dataf)
-    assert result.tolist() == ["AAPL US", "MSFT US"]
-
-    # From CSV
-    test_dataf = pd.Series(["LLB SW", "DRAK NA", "SWB MK", "ELEKTRA* MF", "NOT_A_TICKER"])
-    mapper = TickerMapper(ticker_col="bloomberg_ticker", target_ticker_format="signals_ticker", mapper_path="tests/test_assets/eodhd-map.csv")
-    result = mapper.transform(test_dataf)
-    assert result.tolist() == ["LLB.SW", "DRAK.AS", "5211.KLSE", "ELEKTRA.MX", None]
-
-    # Test set_output API
-    mapper.set_output(transform="default")
-    result = mapper.transform(test_dataf)
-    assert isinstance(result, np.ndarray)
-
-    mapper.set_output(transform="polars")
-    result = mapper.transform(test_dataf)
-    assert isinstance(result, pl.DataFrame)
 
 
 def test_lag_preprocessor(dummy_signals_data):

@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from .download import NumeraiClassicDownloader
 
 
-class BasePredictionLoader(BaseEstimator, TransformerMixin):
+class BasePredictionLoader(TransformerMixin, BaseEstimator):
     """Shared functionality for all Prediction Loaders."""
 
     def __init__(self): ...

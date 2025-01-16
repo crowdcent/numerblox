@@ -284,44 +284,6 @@ class EraQuantileProcessor(BasePreProcessor):
         return feature_names
 
 
-class TickerMapper(BasePreProcessor):
-    """
-    Map ticker from one format to another. \n
-    :param ticker_col: Column used for mapping. Must already be present in the input data. \n
-    :param target_ticker_format: Format to map tickers to. Must be present in the ticker map. \n
-    For default mapper supported ticker formats are: ['ticker', 'bloomberg_ticker', 'yahoo'] \n
-    :param mapper_path: Path to CSV file containing at least ticker_col and target_ticker_format columns. \n
-    Can be either a web link of local path. Numerai Signals mapping by default.
-    """
-
-    def __init__(self, ticker_col: str = "ticker", target_ticker_format: str = "bloomberg_ticker", mapper_path: str = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com/signals_ticker_map_w_bbg.csv"):
-        super().__init__()
-        self.ticker_col = ticker_col
-        self.target_ticker_format = target_ticker_format
-
-        self.signals_map_path = mapper_path
-        self.ticker_map = pd.read_csv(self.signals_map_path)
-
-        assert self.ticker_col in self.ticker_map.columns, f"Ticker column '{self.ticker_col}' is not available in ticker mapping."
-        assert self.target_ticker_format in self.ticker_map.columns, f"Target ticker column '{self.target_ticker_format}' is not available in ticker mapping."
-
-        self.mapping = dict(self.ticker_map[[self.ticker_col, self.target_ticker_format]].values)
-
-    def transform(self, X: Union[np.array, pd.Series]) -> np.array:
-        """
-        Transform ticker column.
-        :param X: Ticker column
-        :return tickers: Mapped tickers
-        """
-        tickers = pd.DataFrame(X, columns=[self.ticker_col])[self.ticker_col].map(self.mapping)
-        # Convert NaN values to None so we have all strings.
-        tickers = tickers.where(pd.notna(tickers), None)
-        return tickers.to_numpy()
-
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        return [self.target_ticker_format] if not input_features else input_features
-
-
 class LagPreProcessor(BasePreProcessor):
     """
     Add lag features based on given windows.

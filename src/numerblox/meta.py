@@ -16,7 +16,7 @@ from sklearn.utils.validation import (
 from tqdm import tqdm
 
 
-class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
+class MetaEstimator(MetaEstimatorMixin, TransformerMixin, BaseEstimator):
     """
     Helper for NumeraiPipeline and NumeraiFeatureUnion to use a model as a transformer.
 
@@ -73,7 +73,7 @@ class MetaEstimator(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         return feature_names if not input_features else input_features
 
 
-class CrossValEstimator(BaseEstimator, TransformerMixin):
+class CrossValEstimator(TransformerMixin, BaseEstimator):
     """
     Split your data into multiple folds and fit an estimator on each fold.
     For transforms predictions are concatenated into a 2D array.
@@ -210,11 +210,12 @@ class MetaPipeline(Pipeline):
     :param predict_func: Name of the function that will be used for prediction.
     """
 
-    def __init__(self, steps, memory=None, verbose=False, predict_func="predict"):
+    def __init__(self, steps, *, transform_input=None, memory=None, verbose=False, predict_func="predict"):
         sklearn.set_config(enable_metadata_routing=True)
         self.predict_func = predict_func
         self.modified_steps = self.wrap_estimators_as_transformers(steps)
         self.steps = self.modified_steps
+        self.transform_input = transform_input
         self.memory = memory
         self.verbose = verbose
 
