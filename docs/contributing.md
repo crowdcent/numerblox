@@ -4,14 +4,21 @@ First, thank you for your consideration to contribute to `numerblox`! This docum
 
 ## Installation
 
-If you haven't installed `numerblox` yet, clone the project into your favorite development environment and install the repository in editable mode with all dev dependencies. 
+If you haven't installed `numerblox` yet, clone the project into your favorite development environment. Install the repository in editable mode with all dev dependencies.
 
-This can be done through the following commands:
+Using pip:
 ```bash
 git clone https://github.com/crowdcent/numerblox.git
-pip install poetry
 cd numerblox
-poetry install
+pip install -e ".[test]"
+```
+
+Using [uv](https://github.com/astral-sh/uv):
+```bash
+git clone https://github.com/crowdcent/numerblox.git
+cd numerblox
+uv venv
+uv pip install -e ".[test]"
 ```
 
 ## Developing considerations
