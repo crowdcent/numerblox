@@ -5,7 +5,7 @@ from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+import pandas_ta_classic as ta
 from joblib import Parallel, delayed
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.utils.validation import check_is_fitted
@@ -382,14 +382,14 @@ class DifferencePreProcessor(BasePreProcessor):
 
 class PandasTaFeatureGenerator(BasePreProcessor):
     """
-    Generate features with pandas-ta.
-    https://github.com/twopirllc/pandas-ta
+    Generate features with pandas-ta-classic.
+    https://github.com/xgboosted/pandas-ta-classic
     Usage in Pipeline works only with Pandas API.
     Run `.set_output("pandas")` on your pipeline first.
 
     :param strategy: Valid Pandas Ta strategy. \n
     For more information on creating a strategy, see: \n
-    https://github.com/twopirllc/pandas-ta#pandas-ta-strategy \n
+    https://github.com/xgboosted/pandas-ta-classic#pandas-ta-strategy \n
     By default, a strategy with RSI(14) and RSI(60) is used. \n
     :param ticker_col: Column name for grouping by tickers. \n
     :param num_cores: Number of cores to use for multiprocessing. \n

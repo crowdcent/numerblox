@@ -131,6 +131,34 @@ kd = KaggleDownloader(directory_path="my_numerai_signals_folder")
 kd.download_live_data("code1110/yfinance-stock-price-data-for-numerai-signals")
 ```
 
+### Google Cloud Storage Integration
+
+All NumerBlox downloaders inherit from `BaseIO`, which provides built-in support for Google Cloud Storage (GCS). This allows you to easily upload and download data to/from GCS buckets.
+
+#### Prerequisites
+
+Make sure you have Google Cloud Storage credentials configured. You'll need:
+- The `google-cloud-storage` Python package installed
+- Authentication set up (typically via `GOOGLE_APPLICATION_CREDENTIALS` environment variable or default credentials)
+
+#### Usage
+
+```py
+from numerblox.download import NumeraiClassicDownloader
+
+dl = NumeraiClassicDownloader(directory_path="my_numerai_data_folder")
+
+# Download from GCS
+dl.download_file_from_gcs(bucket_name="my-bucket", gcs_path="path/to/file.parquet")
+dl.download_directory_from_gcs(bucket_name="my-bucket", gcs_path="path/to/directory")
+
+# Upload to GCS
+dl.upload_file_to_gcs(bucket_name="my-bucket", gcs_path="path/to/file.parquet", local_path="local_file.parquet")
+dl.upload_directory_to_gcs(bucket_name="my-bucket", gcs_path="path/to/directory")
+```
+
+This functionality is available for all downloaders (NumeraiClassicDownloader, NumeraiSignalsDownloader, NumeraiCryptoDownloader, EODDownloader, and KaggleDownloader) since they all inherit from BaseIO.
+
 ### Rolling your own downloader
 
 We invite users to build out their own downloaders for Numerai Signals. The only requirements are that you inherit from `numerblox.download.BaseDownloader` and implement the `download_training_data` and `download_live_data` methods. Below you will find a template for this.

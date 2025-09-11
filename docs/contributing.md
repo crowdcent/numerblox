@@ -30,7 +30,7 @@ If you would like to build a new component for Numerblox, please consider the fo
 1. Place the new component in the appropriate section. Is it a Downloader (`download.py`), a Preprocessor (`preprocessing.py`) or a Submitting tool (`submission.py`)? Also check the documentation on that section for templates, conventions and how these blocks are constructed in general.
 2. Add tests for this new component in the appropriate test file. If you are introducing a new Downloader, add tests in `tests/test_downloader.py`. If you are introducing a new Preprocessor, add tests in `tests/test_preprocessing.py`. etc.
 3. When making a preprocessor or postprocessor, make sure the component follows [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator). The core things to implement are inheriting from `BaseEstimator` and implementing `fit`, `transform` and `get_feature_names_out` methods. 
-4. If your component introduces new dependencies, make sure to add them to poetry with `poetry add <library>`.
+4. If your component introduces new dependencies, make sure to add them to uv with `uv add <library>`.
 5. Consider adding support for [metadata routing](https://scikit-learn.org/stable/metadata_routing.html) if your component uses additional arguments for `fit`, `transform` and/or `predict`. Check out the documentation and other Numerblox components that use this feature for examples. We are also happy to help out with implementation of metadata routing.
 
 
