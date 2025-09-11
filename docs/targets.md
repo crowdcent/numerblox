@@ -16,14 +16,14 @@ By integrating these processors into your workflow, you can enhance your modelin
 
 ## BayesianGMMTargetProcessor
 
-The `BayesianGMMTargetProcessor`` generates synthetic targets based on a Bayesian Gaussian Mixture model. It's primarily used for creating fake targets, which are useful for experimenting and validating model structures without exposing true labels.
+The `BayesianGMMTargetProcessor` generates synthetic targets based on a Bayesian Gaussian Mixture model. It's primarily used for creating fake targets, which are useful for experimenting and validating model structures without exposing true labels.
 
 ### Example:
 ```py
 from numerblox.targets import BayesianGMMTargetProcessor
 processor = BayesianGMMTargetProcessor(n_components=3)
-processor.fit(X=train_features, y=train_targets, eras=train_eras)
-fake_target = processor.transform(X=train_features, eras=train_eras)
+processor.fit(X=train_features, y=train_targets, era_series=train_eras)
+fake_target = processor.transform(X=train_features, era_series=train_eras)
 ```
 
 For more detailed examples and use-cases, check out `examples/synthetic_data_generation.ipynb.`
@@ -35,7 +35,7 @@ The `SignalsTargetProcessor` is specifically designed to engineer targets for Nu
 
 ### Example:
 ```py
-from numerblox.target_processing import SignalsTargetProcessor
+from numerblox.targets import SignalsTargetProcessor
 processor = SignalsTargetProcessor(price_col="close")
-signals_target_data = processor.transform(dataf=data, eras=eras_column)
+signals_target_data = processor.transform(dataf=data, era_series=eras_column)
 ```

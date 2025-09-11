@@ -98,12 +98,12 @@ diff_data = pipe.transform(X, ticker_series=tickers_series)
 
 ### PandasTaFeatureGenerator
 
-`PandasTaFeatureGenerator` uses the `pandas-ta` library to generate technical analysis features. It's a powerful tool for those interested in financial time-series data.
+`PandasTaFeatureGenerator` uses the `pandas-ta-classic` library to generate technical analysis features. It's a powerful tool for those interested in financial time-series data.
 
-Make sure you have `pandas-ta` installed before using this feature generator:
+Make sure you have `pandas-ta-classic` installed before using this feature generator:
 
 ```bash
-!pip install pandas-ta
+!pip install pandas-ta-classic
 ```
 
 Currently `PandasTaFeatureGenerator` only works on `pd.DataFrame` input. Its input is a DataFrame with columns `[ticker, date, open, high, low, close, volume]`.
