@@ -148,7 +148,8 @@ class BaseEvaluator:
         return dataf.groupby(dataf[self.era_col]).apply(
             lambda d: self._normalize_uniform(d[pred_col].fillna(0.5)).corr(
                 d[target_col]
-            )
+            ),
+            include_groups=False,
         )
 
     def mean_std_sharpe(
@@ -207,7 +208,8 @@ class BaseEvaluator:
     ) -> np.float64:
         """Maximum exposure over all features."""
         max_per_era = dataf.groupby(self.era_col).apply(
-            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max()
+            lambda d: d[dataf.feature_cols].corrwith(d[pred_col]).abs().max(),
+            include_groups=False,
         )
         max_feature_exposure = max_per_era.mean(skipna=True)
         return max_feature_exposure

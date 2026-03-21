@@ -184,7 +184,8 @@ class FeatureNeutralizer(BasePostProcessor):
     def transform(self, dataf: NumerFrame) -> NumerFrame:
         feature_names = self.feature_names if self.feature_names else dataf.feature_cols
         neutralized_preds = dataf.groupby(dataf.meta.era_col).apply(
-            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names)
+            lambda x: self.normalize_and_neutralize(x, [self.pred_name], feature_names),
+            include_groups=False,
         )
         dataf.loc[:, self.new_col_name] = MinMaxScaler().fit_transform(
             neutralized_preds
